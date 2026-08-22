@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+build/
+dist/
+.eggs/
+
+# Environments
+.venv/
+venv/
+env/
+.python-version
+
+# Test / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Tooling caches
+.ruff_cache/
+.mypy_cache/
+.uv-cache/
+
+# Secrets — this repo runs with zero API keys by default; never commit a key.
+.env
+.env.*
+!.env.example
+*.pem
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Generated report output. `fixtures/` IS tracked (recorded fixtures are the point),
+# but freshly generated run output goes to reports/ and is not.
+reports/
+*.local.json

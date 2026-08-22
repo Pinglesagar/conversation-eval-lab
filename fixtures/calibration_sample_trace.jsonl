@@ -1,0 +1,82 @@
+{"actor": "system", "engine": null, "kind": "session_start", "payload": {"adapter": "calibration:mock", "delay_s": 0.5, "repeats": 20, "scenario_id": "calibration/delay_500ms", "session_id": "calib-500ms"}, "ts": 0.0}
+{"actor": "caller", "engine": "mock-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "turn 1: a table for two at eight, please"}, "ts": 0.0}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "turn 1: a table for two at eight, please"}, "ts": 0.009}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 1}, "ts": 0.5129004221570423}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_utterance", "payload": {"agent": "MockDelayedAgent", "text": "[mock reply 1] turn 1: a table for two at eight, please"}, "ts": 0.5339004221570424}
+{"actor": "caller", "engine": "mock-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "turn 2: a table for two at eight, please"}, "ts": 0.5339004221570424}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "turn 2: a table for two at eight, please"}, "ts": 0.5429004221570424}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 2}, "ts": 1.043862478696994}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_utterance", "payload": {"agent": "MockDelayedAgent", "text": "[mock reply 2] turn 2: a table for two at eight, please"}, "ts": 1.0648624786969938}
+{"actor": "caller", "engine": "mock-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "turn 3: a table for two at eight, please"}, "ts": 1.0648624786969938}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "turn 3: a table for two at eight, please"}, "ts": 1.0738624786969937}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 3}, "ts": 1.5711131887164225}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_utterance", "payload": {"agent": "MockDelayedAgent", "text": "[mock reply 3] turn 3: a table for two at eight, please"}, "ts": 1.5921131887164224}
+{"actor": "caller", "engine": "mock-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "turn 4: a table for two at eight, please"}, "ts": 1.5921131887164224}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "turn 4: a table for two at eight, please"}, "ts": 1.6011131887164223}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 4}, "ts": 2.1067141161114056}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_utterance", "payload": {"agent": "MockDelayedAgent", "text": "[mock reply 4] turn 4: a table for two at eight, please"}, "ts": 2.1277141161114055}
+{"actor": "caller", "engine": "mock-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "turn 5: a table for two at eight, please"}, "ts": 2.1277141161114055}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "turn 5: a table for two at eight, please"}, "ts": 2.1367141161114054}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 5}, "ts": 2.6382226882706075}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_utterance", "payload": {"agent": "MockDelayedAgent", "text": "[mock reply 5] turn 5: a table for two at eight, please"}, "ts": 2.6592226882706074}
+{"actor": "caller", "engine": "mock-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "turn 6: a table for two at eight, please"}, "ts": 2.6592226882706074}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "turn 6: a table for two at eight, please"}, "ts": 2.6682226882706073}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 6}, "ts": 3.169991672534403}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_utterance", "payload": {"agent": "MockDelayedAgent", "text": "[mock reply 6] turn 6: a table for two at eight, please"}, "ts": 3.1909916725344027}
+{"actor": "caller", "engine": "mock-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "turn 7: a table for two at eight, please"}, "ts": 3.1909916725344027}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "turn 7: a table for two at eight, please"}, "ts": 3.1999916725344026}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 7}, "ts": 3.7032657149642594}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_utterance", "payload": {"agent": "MockDelayedAgent", "text": "[mock reply 7] turn 7: a table for two at eight, please"}, "ts": 3.7242657149642593}
+{"actor": "caller", "engine": "mock-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "turn 8: a table for two at eight, please"}, "ts": 3.7242657149642593}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "turn 8: a table for two at eight, please"}, "ts": 3.733265714964259}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 8}, "ts": 4.23659061932476}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_utterance", "payload": {"agent": "MockDelayedAgent", "text": "[mock reply 8] turn 8: a table for two at eight, please"}, "ts": 4.25759061932476}
+{"actor": "caller", "engine": "mock-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "turn 9: a table for two at eight, please"}, "ts": 4.25759061932476}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "turn 9: a table for two at eight, please"}, "ts": 4.26659061932476}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 9}, "ts": 4.766280222738794}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_utterance", "payload": {"agent": "MockDelayedAgent", "text": "[mock reply 9] turn 9: a table for two at eight, please"}, "ts": 4.787280222738794}
+{"actor": "caller", "engine": "mock-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "turn 10: a table for two at eight, please"}, "ts": 4.787280222738794}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "turn 10: a table for two at eight, please"}, "ts": 4.796280222738794}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 10}, "ts": 5.291702381951721}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_utterance", "payload": {"agent": "MockDelayedAgent", "text": "[mock reply 10] turn 10: a table for two at eight, please"}, "ts": 5.312702381951721}
+{"actor": "caller", "engine": "mock-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "turn 11: a table for two at eight, please"}, "ts": 5.312702381951721}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "turn 11: a table for two at eight, please"}, "ts": 5.321702381951721}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 11}, "ts": 5.8179306937058985}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_utterance", "payload": {"agent": "MockDelayedAgent", "text": "[mock reply 11] turn 11: a table for two at eight, please"}, "ts": 5.8389306937058985}
+{"actor": "caller", "engine": "mock-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "turn 12: a table for two at eight, please"}, "ts": 5.8389306937058985}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "turn 12: a table for two at eight, please"}, "ts": 5.847930693705899}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 12}, "ts": 6.345549104463691}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_utterance", "payload": {"agent": "MockDelayedAgent", "text": "[mock reply 12] turn 12: a table for two at eight, please"}, "ts": 6.366549104463691}
+{"actor": "caller", "engine": "mock-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "turn 13: a table for two at eight, please"}, "ts": 6.366549104463691}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "turn 13: a table for two at eight, please"}, "ts": 6.375549104463691}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 13}, "ts": 6.878970459849776}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_utterance", "payload": {"agent": "MockDelayedAgent", "text": "[mock reply 13] turn 13: a table for two at eight, please"}, "ts": 6.899970459849776}
+{"actor": "caller", "engine": "mock-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "turn 14: a table for two at eight, please"}, "ts": 6.899970459849776}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "turn 14: a table for two at eight, please"}, "ts": 6.908970459849776}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 14}, "ts": 7.410062559607589}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_utterance", "payload": {"agent": "MockDelayedAgent", "text": "[mock reply 14] turn 14: a table for two at eight, please"}, "ts": 7.4310625596075885}
+{"actor": "caller", "engine": "mock-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "turn 15: a table for two at eight, please"}, "ts": 7.4310625596075885}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "turn 15: a table for two at eight, please"}, "ts": 7.440062559607589}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 15}, "ts": 7.938461846767643}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_utterance", "payload": {"agent": "MockDelayedAgent", "text": "[mock reply 15] turn 15: a table for two at eight, please"}, "ts": 7.959461846767643}
+{"actor": "caller", "engine": "mock-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "turn 16: a table for two at eight, please"}, "ts": 7.959461846767643}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "turn 16: a table for two at eight, please"}, "ts": 7.968461846767643}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 16}, "ts": 8.470949417681362}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_utterance", "payload": {"agent": "MockDelayedAgent", "text": "[mock reply 16] turn 16: a table for two at eight, please"}, "ts": 8.491949417681363}
+{"actor": "caller", "engine": "mock-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "turn 17: a table for two at eight, please"}, "ts": 8.491949417681363}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "turn 17: a table for two at eight, please"}, "ts": 8.500949417681364}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 17}, "ts": 9.008377811012448}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_utterance", "payload": {"agent": "MockDelayedAgent", "text": "[mock reply 17] turn 17: a table for two at eight, please"}, "ts": 9.029377811012449}
+{"actor": "caller", "engine": "mock-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "turn 18: a table for two at eight, please"}, "ts": 9.029377811012449}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "turn 18: a table for two at eight, please"}, "ts": 9.038377811012449}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 18}, "ts": 9.543300484713352}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_utterance", "payload": {"agent": "MockDelayedAgent", "text": "[mock reply 18] turn 18: a table for two at eight, please"}, "ts": 9.564300484713353}
+{"actor": "caller", "engine": "mock-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "turn 19: a table for two at eight, please"}, "ts": 9.564300484713353}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "turn 19: a table for two at eight, please"}, "ts": 9.573300484713354}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 19}, "ts": 10.076657614287267}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_utterance", "payload": {"agent": "MockDelayedAgent", "text": "[mock reply 19] turn 19: a table for two at eight, please"}, "ts": 10.097657614287268}
+{"actor": "caller", "engine": "mock-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "turn 20: a table for two at eight, please"}, "ts": 10.097657614287268}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "turn 20: a table for two at eight, please"}, "ts": 10.106657614287268}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 20}, "ts": 10.6026014038929}
+{"actor": "agent", "engine": "mock-tts", "kind": "agent_utterance", "payload": {"agent": "MockDelayedAgent", "text": "[mock reply 20] turn 20: a table for two at eight, please"}, "ts": 10.6236014038929}
+{"actor": "system", "engine": null, "kind": "session_end", "payload": {"reason": "completed", "turns": 20}, "ts": 10.6236014038929}
