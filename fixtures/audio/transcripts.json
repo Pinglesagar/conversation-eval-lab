@@ -1,0 +1,190 @@
+{
+  "generated_by": "scripts/make_audio_fixtures.py",
+  "keyed_by": "sha256 of the perturbed clip as 16-bit PCM, per lab.voice.engines.base.audio_digest",
+  "entries": {
+    "b42097bdb59e951ca98225fa3cc0011d28e068ef34a74253e6b7df1dea921705": {
+      "text": "Can I get a table for six on Thursday, half seven?",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "Can I get a table for six on Thursday, half seven?",
+      "scenario": "voice-chain-telephone-then-noise"
+    },
+    "e5127ef4b49eba8eee7c39442123fdcc1b97a63109f5484be67cb9e2ab9dfbcd": {
+      "text": "Danny Okereke.",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "Danny Okereke.",
+      "scenario": "voice-chain-telephone-then-noise"
+    },
+    "9bce20010721f9d256db6872dc221b6db277fce9b7a0d62d940588efc66d0c57": {
+      "text": "Table for four Saturday around seven and is there parking anywhere near you?",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "Table for four Saturday around seven and is there parking anywhere near you?",
+      "scenario": "voice-fast-speech-multi-intent"
+    },
+    "2c7d4db3a1810aa43e66c7952fd2593a66eaf18d7486d1707fd1ca084c6eb6af": {
+      "text": "Tomas Bergqvist.",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "Tomas Bergqvist.",
+      "scenario": "voice-fast-speech-multi-intent"
+    },
+    "65c2cee6f72ec7a290108556c0cbdd30ff3495093cd5812b4e39e40ca50453d9": {
+      "text": "Hello, could I book a table for two on Friday at seven? One of us is coeliac.",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "Hello, could I book a table for two on Friday at seven? One of us is coeliac.",
+      "scenario": "voice-noise-over-dietary-note"
+    },
+    "0411a5ac62c824f5cd5ab09eecb600cc7d10b0d29f13c805368040fadd4d950d": {
+      "text": "How does the kitchen handle gluten, do you know?",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "How does the kitchen handle gluten, do you know?",
+      "scenario": "voice-noise-over-dietary-note"
+    },
+    "95f6c92d44e137a14484bd2ee3e709e8bb86acb56ee1b7b3a9eb3a23683a99de": {
+      "text": "Elin Ruthven.",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "Elin Ruthven.",
+      "scenario": "voice-noise-over-dietary-note"
+    },
+    "0afb0339d313e6511e9934d432dbcd13fbb7d2956c5bdc3e70e6f3fcd41ef486": {
+      "text": "Table for seven on Friday, please.",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "Table for seven on Friday, please.",
+      "scenario": "voice-noise-over-party-size"
+    },
+    "5b10368defa389356fbcf569339bf03a3b5e18bf469d30d4b958f52ded31a0ae": {
+      "text": "Eight o'clock.",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "Eight o'clock.",
+      "scenario": "voice-noise-over-party-size"
+    },
+    "fb70ed11502f821bb504da6ed392d99b118caadab15451cac7471e12ddb4d199": {
+      "text": "Nadia Haddad.",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "Nadia Haddad.",
+      "scenario": "voice-noise-over-party-size"
+    },
+    "4cfc1f5b881232623f82d62b2ed682ff7f5ed16d8fe084be51e4cea41403d18a": {
+      "text": "I need to move a booking. The reference is T M one zero four two.",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "I need to move a booking. The reference is T M one zero four two.",
+      "scenario": "voice-packet-loss-over-reference"
+    },
+    "0056209ebf7327b31b893258744e08ae6dba4979895abaa8e6468d76a25c3034": {
+      "text": "Nine o'clock instead of eight, same day.",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "Nine o'clock instead of eight, same day.",
+      "scenario": "voice-packet-loss-over-reference"
+    },
+    "032e5bfe245560fcea6b9c242bd6b85e595a3b3db9ef0ea9c751b3f6e15f2bf1": {
+      "text": "Could I book a table for four on Saturday at half twelve?",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "Could I book a table for four on Saturday at half twelve?",
+      "scenario": "voice-pitch-shift-unfamiliar-voice"
+    },
+    "9a7a0c128f8f54533e24643ae37f44beea9c0ce0209f3c6744e79fc87187df6d": {
+      "text": "Sinead Doherty.",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "Sinead Doherty.",
+      "scenario": "voice-pitch-shift-unfamiliar-voice"
+    },
+    "ef93350970446e90184c58de73f1e0c0a538677975c0f88185e159508acd3f16": {
+      "text": "It is my daughter's birthday, could you put a candle on the cake?",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "It is my daughter's birthday, could you put a candle on the cake?",
+      "scenario": "voice-pitch-shift-unfamiliar-voice"
+    },
+    "5fc8f26c4262487faf950e36e4bab168b747dece13f5ccc73c0763afabcece17": {
+      "text": "I would like to book a table, please, for three of us.",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "I would like to book a table, please, for three of us.",
+      "scenario": "voice-slow-speech-with-pauses"
+    },
+    "ad59318a8a5e66382f4ac37fe3f02a09de3dd5280e98a34ef21051c1ff641ef1": {
+      "text": "Wednesday, if you have anything.",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "Wednesday, if you have anything.",
+      "scenario": "voice-slow-speech-with-pauses"
+    },
+    "2bc2bdf5e94eda03d432380dde994fc1d5c799a911dc35eca1df2f9cecc59504": {
+      "text": "6pm",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "6pm",
+      "scenario": "voice-slow-speech-with-pauses"
+    },
+    "f5a6d5d9928575b092fe926f4748377bbbd5c577cd81fa14f57b47d9e1b12e27": {
+      "text": "Margaret Ellwood.",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "Margaret Ellwood.",
+      "scenario": "voice-slow-speech-with-pauses"
+    },
+    "e9ead684410edd8a441ec8375a567a30d63f4ad0c4a63d2c2652947e52691b24": {
+      "text": "Six o'clock.",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "Six o'clock.",
+      "scenario": "voice-slow-speech-with-pauses"
+    },
+    "042b46f5f2f97085513ba7a98d284f5b19bdef338919d9b2a61991eb1dcfa9b2": {
+      "text": "Hello, I would like to book a table for two on Sunday lunchtime, please.",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "Hello, I would like to book a table for two on Sunday lunchtime, please.",
+      "scenario": "voice-telephone-band-booking"
+    },
+    "db62c193388c1b9276b67beee157db5ed0cd9057d85612af72b9753ea169b3a9": {
+      "text": "One o'clock would be lovely.",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "One o'clock would be lovely.",
+      "scenario": "voice-telephone-band-booking"
+    },
+    "a61aacda927ed81b47683e32f311d065212837a932042e55cc704b54ee263030": {
+      "text": "Bernard Ashcroft.",
+      "engine": "reference-text",
+      "provenance": "reference",
+      "language": "en",
+      "spoken": "Bernard Ashcroft.",
+      "scenario": "voice-telephone-band-booking"
+    }
+  }
+}

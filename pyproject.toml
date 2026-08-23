@@ -46,11 +46,31 @@ dependencies = [
 # pytest` is green on a clean machine, and now it exercises those modules for
 # real instead of skipping them. The library itself still runs without either:
 # `wer` falls back to a built-in alignment, and nothing imports `perturb` eagerly.
+# soundfile is here for the same reason numpy and jiwer are. The committed audio
+# fixtures are 16 kHz mono Ogg Opus (see lab/voice/engines/audiofile.py for the
+# arithmetic), and decoding Ogg Opus needs libsndfile >= 1.1, which soundfile
+# ships prebuilt inside its wheel — no system package, no network at test time,
+# no compiler. Without it every test that reads the real committed clips would
+# skip itself, and a skipped test is not a verdict a reviewer can read. The library
+# still works without it: `lab.voice.engines.audiofile` handles WAV with the
+# standard library alone, and says so when it cannot honour an Opus request.
+#
+# matplotlib is here on the same argument, one step further. `make demo` is the
+# two-minute tour, and two of the three artefacts it advertises — the handoff
+# heatmap and the Pareto chart — are PNGs. With matplotlib only in [charts], the
+# install the README tells a reviewer to run could never produce either of them,
+# and the two heatmap tests skipped themselves. Both figures are drawn from
+# committed data by offline code, so nothing about the cardinal rule changes;
+# what changes is that the documented install now draws them. [charts] is kept
+# as its own extra for anyone depending on the library who does not want a
+# plotting stack pulled in.
 dev = [
   "pytest>=8.0",
   "pytest-cov>=5.0",
   "numpy>=1.26",
   "jiwer>=3.0",
+  "soundfile>=0.12",
+  "matplotlib>=3.8",
 ]
 audio = [
   "jiwer>=3.0",

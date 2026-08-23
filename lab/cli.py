@@ -901,6 +901,21 @@ def cmd_run(args: argparse.Namespace) -> int:
             file=sys.stderr,
         )
 
+    # The same refusal as `--live`, for the same reason. `--live-judge` only
+    # changes how the report *describes* the judge stage: it flips the source
+    # column to `live`, drops the abstention caveat and adds the "not
+    # reproducible offline" note. With no provider behind it those three edits
+    # are a provenance claim about calls that never happened, which is the one
+    # failure mode this whole repository exists to argue against. Gate it before
+    # it can be written, not after.
+    if args.live_judge and not os.environ.get("LAB_LIVE_JUDGE"):
+        print(
+            "--live-judge needs LAB_LIVE_JUDGE=1 and a provider key; refusing to "
+            "label fixture verdicts as live ones",
+            file=sys.stderr,
+        )
+        return 2
+
     out_dir = _resolve(args.out)
     trace_dir = out_dir / "traces"
     if args.traces:
@@ -1013,11 +1028,21 @@ def cmd_run(args: argparse.Namespace) -> int:
         f"{_gate_line(failures, stale, non_deterministic, diff)}"
     )
     print(f"baseline:         {diff.describe()}")
+    # The headline's denominator is the number of scenarios *driven*, which is
+    # smaller than the corpus. That difference belongs on the terminal and not
+    # only in the report's notes: a reviewer who reads "44/47" and never learns
+    # the corpus holds 55 rows has been shown a pass rate over a subset chosen
+    # by the harness. Printed unconditionally, so the line is there to be
+    # noticed when the numbers agree as well as when they do not.
+    print(f"corpus coverage:  {_coverage_line(selection)}")
     print()
     for label, path in written.items():
         print(f"  wrote {label}: {path}")
     if args.traces:
         print(f"  wrote traces:   {trace_dir} ({len(trace_paths)} files)")
+
+    if args.heatmap:
+        _write_heatmap(report, out_dir, path=_resolve(args.heatmap))
 
     if not gate_ok:
         print()
@@ -1051,6 +1076,22 @@ def cmd_run(args: argparse.Namespace) -> int:
             return 1
         return 0 if gate_ok else 1
     return 0
+
+
+def _coverage_line(selection: _Selection) -> str:
+    """How much of the corpus this run actually drove, and where the rest went.
+
+    Every row the harness dropped is accounted for by name of reason. A run that
+    quietly evaluates a subset and reports a rate over it is the most flattering
+    mistake an eval harness can make, so the subset is stated next to the rate.
+    """
+    driven = len(selection.scenarios)
+    reasons = [
+        f"{len(selection.voice_skipped)} voice row(s) need the audio adapter",
+        f"{len(selection.unscripted)} unscripted",
+        f"{selection.filtered_out} filtered out by the command line",
+    ]
+    return f"{driven}/{selection.corpus_size} scenarios driven — " + ", ".join(reasons)
 
 
 def _gate_line(
@@ -1464,6 +1505,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="ignore the baseline and gate on undeclared failures alone",
     )
     run.add_argument("--no-traces", dest="traces", action="store_false", help="do not write traces")
+    run.add_argument(
+        "--heatmap",
+        default=None,
+        help="also draw the handoff failure heatmap here (needs the [charts] extra)",
+    )
     run.add_argument("--transcript", action="store_true", help="print each conversation")
     run.add_argument(
         "--ci",

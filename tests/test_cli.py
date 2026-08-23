@@ -423,6 +423,75 @@ def test_live_needs_an_env_var(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) 
     assert cli.main(["run", "--live", "--out", str(tmp_path), "--no-baseline"]) == 2
 
 
+def test_live_judge_needs_an_env_var(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys
+) -> None:
+    """`--live-judge` with no provider must refuse, not relabel the fixture.
+
+    The flag does not fetch anything; it changes how the report describes the
+    judge stage — source `live` instead of `fixture`, no abstention caveat, and a
+    note that the run is not reproducible offline. Unguarded, those three edits
+    are a provenance claim about calls that never happened, produced by a command
+    line that needs no key. Refusing is the whole point of the repo, so it is
+    asserted rather than assumed, and the report must not exist afterwards.
+    """
+    monkeypatch.delenv("LAB_LIVE_JUDGE", raising=False)
+    code = cli.main(
+        ["run", "--live-judge", "--out", str(tmp_path), "--no-baseline", "--no-traces"]
+    )
+    assert code == 2
+    assert "LAB_LIVE_JUDGE" in capsys.readouterr().err
+    assert not (tmp_path / "run_report.json").exists()
+
+
+def test_live_judge_is_honoured_when_the_env_var_is_set(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The gate is the missing variable, not the flag: with it set, the run goes."""
+    monkeypatch.setenv("LAB_LIVE_JUDGE", "1")
+    code = cli.main(
+        ["run", "--live-judge", "--out", str(tmp_path), "--no-baseline", "--no-traces"]
+    )
+    assert code == 0
+    payload = json.loads((tmp_path / "run_report.json").read_text(encoding="utf-8"))
+    assert payload["judges"][0]["replayed_from_fixture"] is False
+
+
+def test_run_can_draw_the_heatmap_beside_the_report(tmp_path: Path, capsys) -> None:
+    """`make demo` promises a heatmap PNG, so `run` has to be able to write one.
+
+    The matrix table is printed whether or not a plotting backend is installed —
+    the numbers are the finding, the picture is a convenience — so that half is
+    asserted unconditionally and the PNG only where matplotlib is present.
+    """
+    out = tmp_path / "run"
+    chart = tmp_path / "charts" / "handoff_heatmap.png"
+    assert (
+        cli.main(
+            ["run", "--suite", "happy", "--out", str(out), "--no-baseline", "--heatmap", str(chart)]
+        )
+        == 0
+    )
+    assert "GreeterAgent" in capsys.readouterr().out
+    pytest.importorskip("matplotlib", reason="matplotlib lives in the [dev] and [charts] extras")
+    assert chart.read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
+
+
+def test_the_run_summary_states_how_much_of_the_corpus_was_driven(
+    tmp_path: Path, capsys
+) -> None:
+    """A pass rate over a self-selected subset is the harness flattering itself.
+
+    The headline's denominator counts driven scenarios, which is smaller than the
+    corpus, so the terminal has to say so next to it.
+    """
+    assert cli.main(["run", "--out", str(tmp_path), "--no-baseline", "--no-traces"]) == 0
+    out = capsys.readouterr().out
+    corpus_size = len(cli._import_module("scenarios.loader").load_corpus().scenarios)
+    assert f"/{corpus_size} scenarios driven" in out
+    assert "voice row(s) need the audio adapter" in out
+
+
 def test_the_judge_gate_accepts_the_reported_judge() -> None:
     """`--ci` refuses an uncalibrated judge; the one this run reports clears it."""
     assert cli._audit_judges_for_ci() is True

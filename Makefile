@@ -7,38 +7,76 @@
 PYTHON ?= python3
 PIP    ?= $(PYTHON) -m pip
 
+# The interpreter check, before anything else can fail obscurely because of it.
+#
+# `python3` on a stock macOS is 3.9, and this package needs 3.12. Without this
+# guard the two entry points a newcomer types first both mislead: `make install`
+# reports that setup.py is missing (an ancient pip on an unsupported Python, not
+# a packaging problem), and `make test` collapses into a wall of
+# `TypeError: unsupported operand type(s)` from PEP 604 annotations. Neither
+# names the actual cause. So every target that runs Python depends on `python-ok`
+# and stops with a sentence a person can act on.
+REQUIRED_PYTHON := 3.12
+PY_OK := $(shell $(PYTHON) -c 'import sys; print(1 if sys.version_info[:2] >= (3, 12) else 0)' 2>/dev/null)
+PY_HAVE := $(shell $(PYTHON) -c 'import sys; print("%d.%d" % sys.version_info[:2])' 2>/dev/null)
+
 .DEFAULT_GOAL := help
-.PHONY: help install test demo calibrate report validate replay errors reference clean
+.PHONY: help python-ok install test demo calibrate report validate replay errors reference audio-fixtures audio-check audio-setup clean
 
 help:  ## Show this help.
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
 		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-install:  ## Install the package plus dev extras in editable mode.
+python-ok:
+ifneq ($(PY_OK),1)
+	@echo "$(PYTHON) is Python $(if $(PY_HAVE),$(PY_HAVE),<not found>); this package needs $(REQUIRED_PYTHON) or newer." >&2
+	@echo "Point make at a newer interpreter, e.g.:" >&2
+	@echo "    python3.12 -m venv .venv && . .venv/bin/activate && make install" >&2
+	@echo "    make test PYTHON=python3.12" >&2
+	@exit 1
+endif
+
+install: python-ok  ## Install the package plus dev extras in editable mode.
 	$(PIP) install -e ".[dev]"
 
-test:  ## Run the full offline test suite.
+test: python-ok  ## Run the full offline test suite.
 	$(PYTHON) -m pytest
 
-calibrate:  ## Run the timing and judge calibration gates; non-zero if either fails.
+calibrate: python-ok  ## Run the timing and judge calibration gates; non-zero if either fails.
 	$(PYTHON) -m lab.cli calibrate
 
-validate:  ## Validate the scenario corpus against its schema, with coverage.
+validate: python-ok  ## Validate the scenario corpus against its schema, with coverage.
 	$(PYTHON) -m lab.cli validate --coverage
 
-demo:  ## Run the case study end to end against the recorded fixtures, into reports/.
-	$(PYTHON) -m lab.cli run --out reports
+audio-fixtures: python-ok  ## Re-record fixtures/audio from real speech (needs a TTS engine; macOS `say` by default).
+	$(PYTHON) -m scripts.make_audio_fixtures
 
-report:  ## Re-render the committed reference report from its own JSON.
+audio-check: python-ok  ## Replay the committed audio fixtures and fail if they no longer match.
+	$(PYTHON) -m scripts.make_audio_fixtures --check
+
+audio-setup:  ## Show what the local speech engines would download, then install them.
+	./scripts/setup_audio.sh
+
+# The demo is the two-minute tour, so it produces every artefact the README
+# discusses rather than only the one the runner happens to write: the report, the
+# handoff heatmap, and the Pareto chart of hand-coded failure modes. The two PNGs
+# need matplotlib, which `[dev]` installs; without it both steps print what is
+# missing and carry on, and the tables they annotate are printed either way.
+demo: python-ok  ## Run the case study end to end against the recorded fixtures, into reports/.
+	$(PYTHON) -m lab.cli run --out reports --heatmap reports/handoff_heatmap.png
+	@echo
+	$(PYTHON) -m error_analysis.pareto --out reports/pareto.png
+
+report: python-ok  ## Re-render the committed reference report from its own JSON.
 	$(PYTHON) -m lab.cli report
 
-replay:  ## Re-check every committed trace with no agent and no runner involved.
+replay: python-ok  ## Re-check every committed trace with no agent and no runner involved.
 	$(PYTHON) -m lab.cli replay --failures-only
 
-errors:  ## Recount the hand-assigned failure modes and redraw error_analysis/pareto.png.
+errors: python-ok  ## Recount the hand-assigned failure modes and redraw error_analysis/pareto.png.
 	$(PYTHON) -m error_analysis.pareto --check
 
-reference:  ## Regenerate the committed reference run. Review the diff before committing it.
+reference: python-ok  ## Regenerate the committed reference run. Review the diff before committing it.
 	$(PYTHON) -m lab.cli run --out fixtures/replay_run
 	@git --no-pager diff --stat -- fixtures/replay_run
 
