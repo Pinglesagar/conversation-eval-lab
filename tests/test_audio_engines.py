@@ -236,8 +236,16 @@ def test_audio_digest_can_flip_on_a_sample_sitting_exactly_on_a_tie() -> None:
     remedy, not a wrong transcript — which is the trade a content-addressed
     cassette is making. The alternative, keying on the line of dialogue, would
     never miss and would therefore answer for audio it had never heard.
+
+    The tie is now constructed against the real quantiser step rather than hoped
+    for from a `linspace`. That matters: the old version relied on 400 evenly
+    spaced samples happening to straddle a boundary at a scale factor of 32767,
+    and when that factor was corrected to 32768 the array no longer produced a tie
+    at all — so the test passed for a reason that had stopped being true. A test
+    whose subject is a boundary should place itself on the boundary.
     """
-    contrived = np.linspace(-0.5, 0.5, 400)
+    step = 1.0 / 32768.0
+    contrived = np.array([(k + 0.5) * step for k in range(400)])
     assert audio_digest(contrived, 16_000) != audio_digest(contrived + 1e-9, 16_000)
 
 
@@ -266,9 +274,33 @@ def test_pcm16_bytes_and_duration_are_arithmetic_not_estimates() -> None:
 
 
 def test_quantise_pcm16_clips_rather_than_wrapping() -> None:
-    """A sample above 1.0 must saturate; int16 overflow would invert the waveform."""
+    """A sample above 1.0 must saturate; int16 overflow would invert the waveform.
+
+    Full-scale negative is -32768 because that is what the bottom of the int16
+    range is. It used to be -32767, from a scale factor of 32767 that did not match
+    the 32768 every decode path divides by — see `quantise_pcm16` for the
+    cache-digest drift that asymmetry caused.
+    """
     quantised = quantise_pcm16(np.array([-4.0, -1.0, 0.0, 1.0, 4.0]))
-    assert quantised.tolist() == [-32767, -32767, 0, 32767, 32767]
+    assert quantised.tolist() == [-32768, -32768, 0, 32767, 32767]
+
+
+def test_int16_survives_a_float_round_trip_exactly() -> None:
+    """The property the digest depends on, asserted directly.
+
+    `audio_digest` keys the transcript cassette, and every decode path in the
+    package produces floats by dividing int16 by 32768. So quantisation must be
+    the exact inverse of that, or a clip's digest changes just by being written to
+    a fixture store and read back — and the cassette then misses on audio it has
+    already heard. It also has to be *stable*, not merely close, because the error
+    would otherwise accumulate over successive rewrites.
+    """
+    every_edge = np.array([-32768, -32767, -1, 0, 1, 32766, 32767], dtype=np.int16)
+    as_float = every_edge.astype(np.float64) / 32768.0
+    assert quantise_pcm16(as_float).tolist() == every_edge.tolist()
+    # Idempotent: a second cycle changes nothing.
+    twice = quantise_pcm16(quantise_pcm16(as_float).astype(np.float64) / 32768.0)
+    assert twice.tolist() == every_edge.tolist()
 
 
 # --------------------------------------------------------------------------- #

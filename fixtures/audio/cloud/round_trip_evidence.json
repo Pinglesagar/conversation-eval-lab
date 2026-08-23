@@ -1,0 +1,1286 @@
+{
+ "captured": "2026-08-23",
+ "ledger": {
+  "characters_spent_this_run": 0,
+  "corpus_characters": 655,
+  "corpus_credits_if_uncached": 345,
+  "credits_spent_this_run": 0
+ },
+ "note": "One row per synthesised line. `heard_raw_scored` is the only string a WER may be computed on; `heard_smart_display_unscored` is for human display and is named so it cannot be quoted by mistake. The normalised_wer block is a two-by-two of reference against formatting: only spoken-form/raw is a legitimate figure, and the other three cells are what the suite refuses to report.",
+ "rows": [
+  {
+   "audio_digest": "15c7909029419de3e1c25b751ffea81b2d97137e9bee7bdbed769a578f8e4fdf",
+   "audio_duration_s": 3.2973,
+   "cache_hit": true,
+   "characters": 41,
+   "confidence": 0.99609375,
+   "credits": 0,
+   "detected_language": null,
+   "field_capture": {
+    "surname": true
+   },
+   "group": "read-back",
+   "heard_raw_scored": "my name is priya gupta that's g u p t a",
+   "heard_smart_display_unscored": "My name is Priya Gupta, that's g u p t a.",
+   "language": "en",
+   "lowest_confidence_words": [
+    {
+     "confidence": 0.9099121,
+     "word": "priya"
+    },
+    {
+     "confidence": 0.9472656,
+     "word": "my"
+    },
+    {
+     "confidence": 0.97094727,
+     "word": "gupta"
+    }
+   ],
+   "mean_word_confidence": 0.9823552863636364,
+   "model": "eleven_flash_v2_5",
+   "note": "a spelled surname: the letters are the whole point",
+   "reference_source": "spoken-form",
+   "row_id": "readback-name-spelled",
+   "sent_text": "My name is Priya Gupta, that's G-U-P-T-A.",
+   "spoken_text": "My name is Priya Gupta, that's G U P T A.",
+   "stt_engine": "stt:deepgram/nova-3/multi/raw",
+   "tts_engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+   "voice": "JBFqnCBsd6RMkjVDRZzb",
+   "wer_matrix": {
+    "caller-input/raw": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 1.1428571428571428,
+     "reference_words": 12,
+     "substitutions": 0
+    },
+    "caller-input/smart": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.7142857142857143,
+     "reference_words": 12,
+     "substitutions": 0
+    },
+    "spoken-form/raw": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.7272727272727273,
+     "reference_words": 12,
+     "substitutions": 0
+    },
+    "spoken-form/smart": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.45454545454545453,
+     "reference_words": 12,
+     "substitutions": 0
+    }
+   },
+   "word_count": 11
+  },
+  {
+   "audio_digest": "cbbfb795b4bef197a76f243bfcbbf77a89965f771423fe4e9ffd7b3943f75361",
+   "audio_duration_s": 3.483,
+   "cache_hit": true,
+   "characters": 60,
+   "confidence": 0.99121094,
+   "credits": 0,
+   "detected_language": null,
+   "field_capture": {
+    "dob_day": true,
+    "dob_year": true
+   },
+   "group": "read-back",
+   "heard_raw_scored": "date of birth the fourteenth of march nineteen eighty two",
+   "heard_smart_display_unscored": "Date of birth: the 03/14/1982.",
+   "language": "en",
+   "lowest_confidence_words": [
+    {
+     "confidence": 0.41625977,
+     "word": "the"
+    },
+    {
+     "confidence": 0.8833008,
+     "word": "march"
+    },
+    {
+     "confidence": 0.9003906,
+     "word": "two"
+    }
+   ],
+   "mean_word_confidence": 0.9128417990000001,
+   "model": "eleven_flash_v2_5",
+   "note": "a spoken date, which smart formatting rewrites and WER then punishes",
+   "reference_source": "spoken-form",
+   "row_id": "readback-dob",
+   "sent_text": "Date of birth: the fourteenth of March, nineteen eighty-two.",
+   "spoken_text": "Date of birth: the fourteenth of March, nineteen eighty-two.",
+   "stt_engine": "stt:deepgram/nova-3/multi/raw",
+   "tts_engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+   "voice": "JBFqnCBsd6RMkjVDRZzb",
+   "wer_matrix": {
+    "caller-input/raw": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.5555555555555556,
+     "reference_words": 9,
+     "substitutions": 0
+    },
+    "caller-input/smart": {
+     "deletions": 2,
+     "errors": 5,
+     "insertions": 0,
+     "normalised_wer": 0.5555555555555556,
+     "raw_wer": 0.5555555555555556,
+     "reference_words": 9,
+     "substitutions": 3
+    },
+    "spoken-form/raw": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.5555555555555556,
+     "reference_words": 9,
+     "substitutions": 0
+    },
+    "spoken-form/smart": {
+     "deletions": 2,
+     "errors": 5,
+     "insertions": 0,
+     "normalised_wer": 0.5555555555555556,
+     "raw_wer": 0.5555555555555556,
+     "reference_words": 9,
+     "substitutions": 3
+    }
+   },
+   "word_count": 10
+  },
+  {
+   "audio_digest": "caab30f352c88e3d3e5abbc82040f2b0eb8d7b50aca4e58a4b5ce18b5c036ffb",
+   "audio_duration_s": 2.9257,
+   "cache_hit": true,
+   "characters": 25,
+   "confidence": 0.9975586,
+   "credits": 0,
+   "detected_language": null,
+   "field_capture": {
+    "postcode": true
+   },
+   "group": "read-back",
+   "heard_raw_scored": "the postcode is s w one a one a a",
+   "heard_smart_display_unscored": "The postcode is SW1A1AA.",
+   "language": "en",
+   "lowest_confidence_words": [
+    {
+     "confidence": 0.9838867,
+     "word": "a"
+    },
+    {
+     "confidence": 0.9885254,
+     "word": "a"
+    },
+    {
+     "confidence": 0.9941406,
+     "word": "s"
+    }
+   ],
+   "mean_word_confidence": 0.9951415969999999,
+   "model": "eleven_flash_v2_5",
+   "note": "the canonical case: perfect capture, ~50% WER under smart formatting",
+   "reference_source": "spoken-form",
+   "row_id": "readback-postcode",
+   "sent_text": "The postcode is SW1A 1AA.",
+   "spoken_text": "The postcode is S W one A one A A.",
+   "stt_engine": "stt:deepgram/nova-3/multi/raw",
+   "tts_engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+   "voice": "JBFqnCBsd6RMkjVDRZzb",
+   "wer_matrix": {
+    "caller-input/raw": {
+     "deletions": 0,
+     "errors": 7,
+     "insertions": 5,
+     "normalised_wer": 1.4,
+     "raw_wer": 1.6,
+     "reference_words": 5,
+     "substitutions": 2
+    },
+    "caller-input/smart": {
+     "deletions": 1,
+     "errors": 2,
+     "insertions": 0,
+     "normalised_wer": 0.4,
+     "raw_wer": 0.4,
+     "reference_words": 5,
+     "substitutions": 1
+    },
+    "spoken-form/raw": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.6,
+     "reference_words": 10,
+     "substitutions": 0
+    },
+    "spoken-form/smart": {
+     "deletions": 6,
+     "errors": 7,
+     "insertions": 0,
+     "normalised_wer": 0.7,
+     "raw_wer": 0.7,
+     "reference_words": 10,
+     "substitutions": 1
+    }
+   },
+   "word_count": 10
+  },
+  {
+   "audio_digest": "d935af9ea2357b3634f91723da242909159d41d40ba2bafd5769f82fb5eb5246",
+   "audio_duration_s": 3.4366,
+   "cache_hit": true,
+   "characters": 25,
+   "confidence": 0.89837646,
+   "credits": 0,
+   "detected_language": null,
+   "field_capture": {
+    "account": true
+   },
+   "group": "read-back",
+   "heard_raw_scored": "account number four-zero-seven-one-nine-nine-two-eight",
+   "heard_smart_display_unscored": "Account number four-zero-seven-one-nine-nine-two-eight",
+   "language": "en",
+   "lowest_confidence_words": [
+    {
+     "confidence": 0.48583984,
+     "word": "account"
+    },
+    {
+     "confidence": 0.89837646,
+     "word": "four-zero-seven-one-nine-nine-two-eight"
+    },
+    {
+     "confidence": 0.9951172,
+     "word": "number"
+    }
+   ],
+   "mean_word_confidence": 0.7931111666666667,
+   "model": "eleven_flash_v2_5",
+   "note": "digits, where a single substitution is a wrong account",
+   "reference_source": "spoken-form",
+   "row_id": "readback-account-number",
+   "sent_text": "Account number 4071 9928.",
+   "spoken_text": "Account number four zero seven one, nine nine two eight.",
+   "stt_engine": "stt:deepgram/nova-3/multi/raw",
+   "tts_engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+   "voice": "JBFqnCBsd6RMkjVDRZzb",
+   "wer_matrix": {
+    "caller-input/raw": {
+     "deletions": 0,
+     "errors": 5,
+     "insertions": 3,
+     "normalised_wer": 1.25,
+     "raw_wer": 0.75,
+     "reference_words": 4,
+     "substitutions": 2
+    },
+    "caller-input/smart": {
+     "deletions": 0,
+     "errors": 5,
+     "insertions": 3,
+     "normalised_wer": 1.25,
+     "raw_wer": 0.5,
+     "reference_words": 4,
+     "substitutions": 2
+    },
+    "spoken-form/raw": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.9,
+     "reference_words": 7,
+     "substitutions": 0
+    },
+    "spoken-form/smart": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.8,
+     "reference_words": 7,
+     "substitutions": 0
+    }
+   },
+   "word_count": 3
+  },
+  {
+   "audio_digest": "88db4827a87457fb1a38f358d29cd36b7249337c8a32290aad1c174b811a6741",
+   "audio_duration_s": 1.6254,
+   "cache_hit": true,
+   "characters": 28,
+   "confidence": 0.93359375,
+   "credits": 0,
+   "detected_language": null,
+   "field_capture": {
+    "surname": false
+   },
+   "group": "read-back",
+   "heard_raw_scored": "my name is siobono rock",
+   "heard_smart_display_unscored": "My name is Siobono Rock.",
+   "language": "en",
+   "lowest_confidence_words": [
+    {
+     "confidence": 0.7180176,
+     "word": "rock"
+    },
+    {
+     "confidence": 0.7543335,
+     "word": "siobono"
+    },
+    {
+     "confidence": 0.93359375,
+     "word": "my"
+    }
+   ],
+   "mean_word_confidence": 0.8807983500000001,
+   "model": "eleven_flash_v2_5",
+   "note": "a name whose spelling and pronunciation diverge",
+   "reference_source": "spoken-form",
+   "row_id": "readback-irish-name",
+   "sent_text": "My name is Siobhan O'Rourke.",
+   "spoken_text": "My name is Siobhan O'Rourke.",
+   "stt_engine": "stt:deepgram/nova-3/multi/raw",
+   "tts_engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+   "voice": "JBFqnCBsd6RMkjVDRZzb",
+   "wer_matrix": {
+    "caller-input/raw": {
+     "deletions": 0,
+     "errors": 2,
+     "insertions": 0,
+     "normalised_wer": 0.4,
+     "raw_wer": 0.6,
+     "reference_words": 5,
+     "substitutions": 2
+    },
+    "caller-input/smart": {
+     "deletions": 0,
+     "errors": 2,
+     "insertions": 0,
+     "normalised_wer": 0.4,
+     "raw_wer": 0.4,
+     "reference_words": 5,
+     "substitutions": 2
+    },
+    "spoken-form/raw": {
+     "deletions": 0,
+     "errors": 2,
+     "insertions": 0,
+     "normalised_wer": 0.4,
+     "raw_wer": 0.6,
+     "reference_words": 5,
+     "substitutions": 2
+    },
+    "spoken-form/smart": {
+     "deletions": 0,
+     "errors": 2,
+     "insertions": 0,
+     "normalised_wer": 0.4,
+     "raw_wer": 0.4,
+     "reference_words": 5,
+     "substitutions": 2
+    }
+   },
+   "word_count": 5
+  },
+  {
+   "audio_digest": "c642fef89d1c33989a80367af76c9cfe131f444b4674be2bf4d5f9aea201adff",
+   "audio_duration_s": 5.805,
+   "cache_hit": true,
+   "characters": 38,
+   "confidence": 0.9980469,
+   "credits": 0,
+   "detected_language": null,
+   "field_capture": {
+    "sort_code": true
+   },
+   "group": "read-back",
+   "heard_raw_scored": "sort code two zero four five seven seven reference fca one one three eight",
+   "heard_smart_display_unscored": "Sort code 204577 reference FCA1138.",
+   "language": "en",
+   "lowest_confidence_words": [
+    {
+     "confidence": 0.53515625,
+     "word": "code"
+    },
+    {
+     "confidence": 0.57421875,
+     "word": "one"
+    },
+    {
+     "confidence": 0.7475586,
+     "word": "two"
+    }
+   ],
+   "mean_word_confidence": 0.9091796892857144,
+   "model": "eleven_flash_v2_5",
+   "note": "grouped digits plus an alphanumeric reference",
+   "reference_source": "spoken-form",
+   "row_id": "readback-sort-code",
+   "sent_text": "Sort code 20-45-77, reference FCA1138.",
+   "spoken_text": "Sort code two zero, four five, seven seven, reference F C A one one three eight.",
+   "stt_engine": "stt:deepgram/nova-3/multi/raw",
+   "tts_engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+   "voice": "JBFqnCBsd6RMkjVDRZzb",
+   "wer_matrix": {
+    "caller-input/raw": {
+     "deletions": 0,
+     "errors": 10,
+     "insertions": 6,
+     "normalised_wer": 1.4285714285714286,
+     "raw_wer": 2.4,
+     "reference_words": 7,
+     "substitutions": 4
+    },
+    "caller-input/smart": {
+     "deletions": 2,
+     "errors": 3,
+     "insertions": 0,
+     "normalised_wer": 0.42857142857142855,
+     "raw_wer": 0.2,
+     "reference_words": 7,
+     "substitutions": 1
+    },
+    "spoken-form/raw": {
+     "deletions": 2,
+     "errors": 3,
+     "insertions": 0,
+     "normalised_wer": 0.2,
+     "raw_wer": 0.5,
+     "reference_words": 15,
+     "substitutions": 1
+    },
+    "spoken-form/smart": {
+     "deletions": 10,
+     "errors": 12,
+     "insertions": 0,
+     "normalised_wer": 0.8,
+     "raw_wer": 0.8125,
+     "reference_words": 15,
+     "substitutions": 2
+    }
+   },
+   "word_count": 14
+  },
+  {
+   "audio_digest": "cd59b445d78294c8adf23bab27d847fcfb21945fb93e3b7650fef8a0b11a7c46",
+   "audio_duration_s": 3.1579,
+   "cache_hit": true,
+   "characters": 56,
+   "confidence": 1.0,
+   "credits": 0,
+   "detected_language": null,
+   "field_capture": {},
+   "group": "advisory",
+   "heard_raw_scored": "i'd like to review my drawdown before the tax year ends",
+   "heard_smart_display_unscored": "I'd like to review my drawdown before the tax year ends.",
+   "language": "en",
+   "lowest_confidence_words": [
+    {
+     "confidence": 0.91845703,
+     "word": "i'd"
+    },
+    {
+     "confidence": 0.9890137,
+     "word": "drawdown"
+    },
+    {
+     "confidence": 0.9995117,
+     "word": "ends"
+    }
+   ],
+   "mean_word_confidence": 0.9915438572727272,
+   "model": "eleven_flash_v2_5",
+   "note": "ordinary domain prose, for the correction reconciliation",
+   "reference_source": "spoken-form",
+   "row_id": "advisory-drawdown",
+   "sent_text": "I'd like to review my drawdown before the tax year ends.",
+   "spoken_text": "I'd like to review my drawdown before the tax year ends.",
+   "stt_engine": "stt:deepgram/nova-3/multi/raw",
+   "tts_engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+   "voice": "JBFqnCBsd6RMkjVDRZzb",
+   "wer_matrix": {
+    "caller-input/raw": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.18181818181818182,
+     "reference_words": 12,
+     "substitutions": 0
+    },
+    "caller-input/smart": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.0,
+     "reference_words": 12,
+     "substitutions": 0
+    },
+    "spoken-form/raw": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.18181818181818182,
+     "reference_words": 12,
+     "substitutions": 0
+    },
+    "spoken-form/smart": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.0,
+     "reference_words": 12,
+     "substitutions": 0
+    }
+   },
+   "word_count": 11
+  },
+  {
+   "audio_digest": "b773eac39c3bbbd7e7d002474d2e4a3268f2014374bd1e0eed4ccc2a76b5e7be",
+   "audio_duration_s": 3.2508,
+   "cache_hit": true,
+   "characters": 54,
+   "confidence": 1.0,
+   "credits": 0,
+   "detected_language": null,
+   "field_capture": {},
+   "group": "advisory",
+   "heard_raw_scored": "is this fund still suitable given my attitude to risk",
+   "heard_smart_display_unscored": "Is this fund still suitable given my attitude to risk?",
+   "language": "en",
+   "lowest_confidence_words": [
+    {
+     "confidence": 0.8125,
+     "word": "is"
+    },
+    {
+     "confidence": 0.9970703,
+     "word": "fund"
+    },
+    {
+     "confidence": 0.9970703,
+     "word": "to"
+    }
+   ],
+   "mean_word_confidence": 0.9806152300000001,
+   "model": "eleven_flash_v2_5",
+   "note": "suitability language, the vocabulary a compliance check reads",
+   "reference_source": "spoken-form",
+   "row_id": "advisory-suitability",
+   "sent_text": "Is this fund still suitable given my attitude to risk?",
+   "spoken_text": "Is this fund still suitable given my attitude to risk?",
+   "stt_engine": "stt:deepgram/nova-3/multi/raw",
+   "tts_engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+   "voice": "JBFqnCBsd6RMkjVDRZzb",
+   "wer_matrix": {
+    "caller-input/raw": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.2,
+     "reference_words": 10,
+     "substitutions": 0
+    },
+    "caller-input/smart": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.0,
+     "reference_words": 10,
+     "substitutions": 0
+    },
+    "spoken-form/raw": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.2,
+     "reference_words": 10,
+     "substitutions": 0
+    },
+    "spoken-form/smart": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.0,
+     "reference_words": 10,
+     "substitutions": 0
+    }
+   },
+   "word_count": 10
+  },
+  {
+   "audio_digest": "e2c9c918f4c87a9716671377b7ab100ba7aaba3b3a6df7d73d3b83eb9c4d11d7",
+   "audio_duration_s": 2.4149,
+   "cache_hit": true,
+   "characters": 45,
+   "confidence": 1.0,
+   "credits": 0,
+   "detected_language": null,
+   "field_capture": {},
+   "group": "advisory",
+   "heard_raw_scored": "can you confirm the annual management charge",
+   "heard_smart_display_unscored": "Can you confirm the annual management charge?",
+   "language": "en",
+   "lowest_confidence_words": [
+    {
+     "confidence": 0.99609375,
+     "word": "can"
+    },
+    {
+     "confidence": 0.99902344,
+     "word": "annual"
+    },
+    {
+     "confidence": 1.0,
+     "word": "you"
+    }
+   ],
+   "mean_word_confidence": 0.9993024557142858,
+   "model": "eleven_flash_v2_5",
+   "note": "a factual question, the kind live in-call support corrects",
+   "reference_source": "spoken-form",
+   "row_id": "advisory-charges",
+   "sent_text": "Can you confirm the annual management charge?",
+   "spoken_text": "Can you confirm the annual management charge?",
+   "stt_engine": "stt:deepgram/nova-3/multi/raw",
+   "tts_engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+   "voice": "JBFqnCBsd6RMkjVDRZzb",
+   "wer_matrix": {
+    "caller-input/raw": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.2857142857142857,
+     "reference_words": 7,
+     "substitutions": 0
+    },
+    "caller-input/smart": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.0,
+     "reference_words": 7,
+     "substitutions": 0
+    },
+    "spoken-form/raw": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.2857142857142857,
+     "reference_words": 7,
+     "substitutions": 0
+    },
+    "spoken-form/smart": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.0,
+     "reference_words": 7,
+     "substitutions": 0
+    }
+   },
+   "word_count": 7
+  },
+  {
+   "audio_digest": "1eafed2be1178b6d5157e0167faece5133cec85d554660915a89c4cc6c57e161",
+   "audio_duration_s": 3.2044,
+   "cache_hit": true,
+   "characters": 48,
+   "confidence": 1.0,
+   "credits": 0,
+   "detected_language": null,
+   "field_capture": {},
+   "group": "code-switched",
+   "heard_raw_scored": "necesito revisar mi pensi\u00f3n antes de fin de a\u00f1o",
+   "heard_smart_display_unscored": "Necesito revisar mi pensi\u00f3n antes de fin de a\u00f1o.",
+   "language": "es",
+   "lowest_confidence_words": [
+    {
+     "confidence": 0.95166016,
+     "word": "necesito"
+    },
+    {
+     "confidence": 0.9951172,
+     "word": "pensi\u00f3n"
+    },
+    {
+     "confidence": 1.0,
+     "word": "revisar"
+    }
+   ],
+   "mean_word_confidence": 0.9940863733333334,
+   "model": "eleven_flash_v2_5",
+   "note": "Spanish: inside Deepgram's ten, so genuinely code-switchable",
+   "reference_source": "spoken-form",
+   "row_id": "switch-es",
+   "sent_text": "Necesito revisar mi pensi\u00f3n antes de fin de a\u00f1o.",
+   "spoken_text": "Necesito revisar mi pensi\u00f3n antes de fin de a\u00f1o.",
+   "stt_engine": "stt:deepgram/nova-3/multi/raw",
+   "tts_engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+   "voice": "JBFqnCBsd6RMkjVDRZzb",
+   "wer_matrix": {
+    "caller-input/raw": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.2222222222222222,
+     "reference_words": 9,
+     "substitutions": 0
+    },
+    "caller-input/smart": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.0,
+     "reference_words": 9,
+     "substitutions": 0
+    },
+    "spoken-form/raw": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.2222222222222222,
+     "reference_words": 9,
+     "substitutions": 0
+    },
+    "spoken-form/smart": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.0,
+     "reference_words": 9,
+     "substitutions": 0
+    }
+   },
+   "word_count": 9
+  },
+  {
+   "audio_digest": "af825b58c8476664fbc8d8e0f184d39a2bce718347d100efe5a4af3147e6e32f",
+   "audio_duration_s": 1.9969,
+   "cache_hit": true,
+   "characters": 31,
+   "confidence": 0.9975586,
+   "credits": 0,
+   "detected_language": null,
+   "field_capture": {},
+   "group": "code-switched",
+   "heard_raw_scored": "\u092e\u0941\u091d\u0947 \u0905\u092a\u0928\u093e portfolio \u0926\u0947\u0916\u0928\u093e \u0939\u0948",
+   "heard_smart_display_unscored": "\u092e\u0941\u091d\u0947 \u0905\u092a\u0928\u093e portfolio \u0926\u0947\u0916\u0928\u093e \u0939\u0948.",
+   "language": "hi",
+   "lowest_confidence_words": [
+    {
+     "confidence": 0.9716797,
+     "word": "portfolio"
+    },
+    {
+     "confidence": 0.98950195,
+     "word": "\u0939\u0948"
+    },
+    {
+     "confidence": 0.9975586,
+     "word": "\u092e\u0941\u091d\u0947"
+    }
+   ],
+   "mean_word_confidence": 0.99174805,
+   "model": "eleven_flash_v2_5",
+   "note": "Hindi in Devanagari, not romanised: romanised text would test English phonetics rather than the language capability",
+   "reference_source": "spoken-form",
+   "row_id": "switch-hi",
+   "sent_text": "\u092e\u0941\u091d\u0947 \u0905\u092a\u0928\u093e \u092a\u094b\u0930\u094d\u091f\u092b\u094b\u0932\u093f\u092f\u094b \u0926\u0947\u0916\u0928\u093e \u0939\u0948\u0964",
+   "spoken_text": "\u092e\u0941\u091d\u0947 \u0905\u092a\u0928\u093e \u092a\u094b\u0930\u094d\u091f\u092b\u094b\u0932\u093f\u092f\u094b \u0926\u0947\u0916\u0928\u093e \u0939\u0948\u0964",
+   "stt_engine": "stt:deepgram/nova-3/multi/raw",
+   "tts_engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+   "voice": "JBFqnCBsd6RMkjVDRZzb",
+   "wer_matrix": {
+    "caller-input/raw": {
+     "deletions": 0,
+     "errors": 1,
+     "insertions": 0,
+     "normalised_wer": 0.2,
+     "raw_wer": 0.4,
+     "reference_words": 5,
+     "substitutions": 1
+    },
+    "caller-input/smart": {
+     "deletions": 0,
+     "errors": 1,
+     "insertions": 0,
+     "normalised_wer": 0.2,
+     "raw_wer": 0.4,
+     "reference_words": 5,
+     "substitutions": 1
+    },
+    "spoken-form/raw": {
+     "deletions": 0,
+     "errors": 1,
+     "insertions": 0,
+     "normalised_wer": 0.2,
+     "raw_wer": 0.4,
+     "reference_words": 5,
+     "substitutions": 1
+    },
+    "spoken-form/smart": {
+     "deletions": 0,
+     "errors": 1,
+     "insertions": 0,
+     "normalised_wer": 0.2,
+     "raw_wer": 0.4,
+     "reference_words": 5,
+     "substitutions": 1
+    }
+   },
+   "word_count": 5
+  },
+  {
+   "audio_digest": "b2f0083610e806f998d59a3a2630be82212fe8fa3c84087f3198efcad8c1abff",
+   "audio_duration_s": 3.2044,
+   "cache_hit": true,
+   "characters": 60,
+   "confidence": 1.0,
+   "credits": 0,
+   "detected_language": null,
+   "field_capture": {},
+   "group": "code-switched",
+   "heard_raw_scored": "je voudrais revoir mon portefeuille avant la fin de l'ann\u00e9e",
+   "heard_smart_display_unscored": "Je voudrais revoir mon portefeuille avant la fin de l'ann\u00e9e.",
+   "language": "fr",
+   "lowest_confidence_words": [
+    {
+     "confidence": 0.5019531,
+     "word": "je"
+    },
+    {
+     "confidence": 0.9951172,
+     "word": "revoir"
+    },
+    {
+     "confidence": 1.0,
+     "word": "voudrais"
+    }
+   ],
+   "mean_word_confidence": 0.9497070300000001,
+   "model": "eleven_flash_v2_5",
+   "note": "French: inside the ten",
+   "reference_source": "spoken-form",
+   "row_id": "switch-fr",
+   "sent_text": "Je voudrais revoir mon portefeuille avant la fin de l'ann\u00e9e.",
+   "spoken_text": "Je voudrais revoir mon portefeuille avant la fin de l'ann\u00e9e.",
+   "stt_engine": "stt:deepgram/nova-3/multi/raw",
+   "tts_engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+   "voice": "JBFqnCBsd6RMkjVDRZzb",
+   "wer_matrix": {
+    "caller-input/raw": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.2,
+     "reference_words": 10,
+     "substitutions": 0
+    },
+    "caller-input/smart": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.0,
+     "reference_words": 10,
+     "substitutions": 0
+    },
+    "spoken-form/raw": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.2,
+     "reference_words": 10,
+     "substitutions": 0
+    },
+    "spoken-form/smart": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.0,
+     "reference_words": 10,
+     "substitutions": 0
+    }
+   },
+   "word_count": 10
+  },
+  {
+   "audio_digest": "8d6988cc5b8294935cad42b00f899933e45223cb59b23f2385b6243772309aff",
+   "audio_duration_s": 2.1362,
+   "cache_hit": true,
+   "characters": 13,
+   "confidence": 0.99902344,
+   "credits": 0,
+   "detected_language": null,
+   "field_capture": {},
+   "group": "code-switched",
+   "heard_raw_scored": "\u8cc7\u7523\u914d\u5206\u3092\u898b\u76f4\u3057\u305f\u3044\u3067\u3059\u3002",
+   "heard_smart_display_unscored": "\u8cc7\u7523\u914d\u5206\u3092\u898b\u76f4\u3057\u305f\u3044\u3067\u3059\u3002",
+   "language": "ja",
+   "lowest_confidence_words": [
+    {
+     "confidence": 0.96777344,
+     "word": "\u76f4"
+    },
+    {
+     "confidence": 0.9970703,
+     "word": "\u3067\u3059\u3002"
+    },
+    {
+     "confidence": 0.9980469,
+     "word": "\u8cc7"
+    }
+   ],
+   "mean_word_confidence": 0.9949951225,
+   "model": "eleven_flash_v2_5",
+   "note": "Japanese in native script: inside the ten, so genuinely switchable",
+   "reference_source": "caller-input",
+   "row_id": "switch-ja",
+   "sent_text": "\u8cc7\u7523\u914d\u5206\u3092\u898b\u76f4\u3057\u305f\u3044\u3067\u3059\u3002",
+   "spoken_text": null,
+   "stt_engine": "stt:deepgram/nova-3/multi/raw",
+   "tts_engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+   "voice": "JBFqnCBsd6RMkjVDRZzb",
+   "wer_matrix": {
+    "caller-input/raw": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.0,
+     "reference_words": 12,
+     "substitutions": 0
+    },
+    "caller-input/smart": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.0,
+     "reference_words": 12,
+     "substitutions": 0
+    },
+    "spoken-form/raw": null,
+    "spoken-form/smart": null
+   },
+   "word_count": 8
+  },
+  {
+   "audio_digest": "db3d751d941fb1098d06ac5917ffb964c1057437c7d33ab5c2a92dd1a181c51c",
+   "audio_duration_s": 2.1362,
+   "cache_hit": true,
+   "characters": 11,
+   "confidence": 0.9921875,
+   "credits": 0,
+   "detected_language": "zh",
+   "field_capture": {},
+   "group": "monolingual",
+   "heard_raw_scored": "\u6211\u60f3\u89c1\u8bc6\u6211\u7684\u6295\u8d44\u7ec4\u5408",
+   "heard_smart_display_unscored": "\u6211\u60f3\u89c1\u8bc6\u6211\u7684\u6295\u8d44\u7ec4\u5408",
+   "language": "zh",
+   "lowest_confidence_words": [
+    {
+     "confidence": 0.9243164,
+     "word": "\u89c1\u8bc6"
+    },
+    {
+     "confidence": 0.93359375,
+     "word": "\u6211\u60f3"
+    },
+    {
+     "confidence": 0.9921875,
+     "word": "\u6211"
+    }
+   ],
+   "mean_word_confidence": 0.9692382800000001,
+   "model": "eleven_flash_v2_5",
+   "note": "Singapore Mandarin. ElevenLabs calls this id 'zh' and documents it as Mandarin; it synthesises fine and is outside Deepgram's code-switching ten",
+   "reference_source": "caller-input",
+   "row_id": "mono-zh-singapore",
+   "sent_text": "\u6211\u60f3\u68c0\u89c6\u6211\u7684\u6295\u8d44\u7ec4\u5408\u3002",
+   "spoken_text": null,
+   "stt_engine": "stt:deepgram/nova-3/zh/raw",
+   "tts_engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+   "voice": "JBFqnCBsd6RMkjVDRZzb",
+   "wer_matrix": {
+    "caller-input/raw": {
+     "deletions": 0,
+     "errors": 2,
+     "insertions": 0,
+     "normalised_wer": 0.2,
+     "raw_wer": 1.0,
+     "reference_words": 10,
+     "substitutions": 2
+    },
+    "caller-input/smart": {
+     "deletions": 0,
+     "errors": 2,
+     "insertions": 0,
+     "normalised_wer": 0.2,
+     "raw_wer": 1.0,
+     "reference_words": 10,
+     "substitutions": 2
+    },
+    "spoken-form/raw": null,
+    "spoken-form/smart": null
+   },
+   "word_count": 5
+  },
+  {
+   "audio_digest": "c86b60f3a8a9e9fef2aaffa03c6c2482a37871b67d9a2d4c6933871903499f95",
+   "audio_duration_s": 2.9257,
+   "cache_hit": true,
+   "characters": 35,
+   "confidence": 0.9980469,
+   "credits": 0,
+   "detected_language": "ar",
+   "field_capture": {},
+   "group": "monolingual",
+   "heard_raw_scored": "\u0623\u0631\u064a\u062f \u0645\u0631\u0627\u062c\u0639\u0629 \u0645\u062d\u0641\u0638\u062a\u064a \u0642\u0628\u0644 \u0646\u0647\u0627\u064a\u0629 \u0627\u0644\u0639\u0627\u0645",
+   "heard_smart_display_unscored": "\u0623\u0631\u064a\u062f \u0645\u0631\u0627\u062c\u0639\u0629 \u0645\u062d\u0641\u0638\u062a\u064a \u0642\u0628\u0644 \u0646\u0647\u0627\u064a\u0629 \u0627\u0644\u0639\u0627\u0645.",
+   "language": "ar",
+   "lowest_confidence_words": [
+    {
+     "confidence": 0.98950195,
+     "word": "\u0627\u0644\u0639\u0627\u0645"
+    },
+    {
+     "confidence": 0.99316406,
+     "word": "\u0623\u0631\u064a\u062f"
+    },
+    {
+     "confidence": 0.99560547,
+     "word": "\u0645\u0631\u0627\u062c\u0639\u0629"
+    }
+   ],
+   "mean_word_confidence": 0.9960530633333334,
+   "model": "eleven_flash_v2_5",
+   "note": "UAE Arabic in native script: synthesises, outside the ten",
+   "reference_source": "spoken-form",
+   "row_id": "mono-ar-uae",
+   "sent_text": "\u0623\u0631\u064a\u062f \u0645\u0631\u0627\u062c\u0639\u0629 \u0645\u062d\u0641\u0637\u062a\u064a \u0642\u0628\u0644 \u0646\u0647\u0627\u064a\u0629 \u0627\u0644\u0639\u0627\u0645.",
+   "spoken_text": "\u0623\u0631\u064a\u062f \u0645\u0631\u0627\u062c\u0639\u0629 \u0645\u062d\u0641\u0637\u062a\u064a \u0642\u0628\u0644 \u0646\u0647\u0627\u064a\u0629 \u0627\u0644\u0639\u0627\u0645.",
+   "stt_engine": "stt:deepgram/nova-3/ar/raw",
+   "tts_engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+   "voice": "JBFqnCBsd6RMkjVDRZzb",
+   "wer_matrix": {
+    "caller-input/raw": {
+     "deletions": 0,
+     "errors": 1,
+     "insertions": 0,
+     "normalised_wer": 0.16666666666666666,
+     "raw_wer": 0.3333333333333333,
+     "reference_words": 6,
+     "substitutions": 1
+    },
+    "caller-input/smart": {
+     "deletions": 0,
+     "errors": 1,
+     "insertions": 0,
+     "normalised_wer": 0.16666666666666666,
+     "raw_wer": 0.16666666666666666,
+     "reference_words": 6,
+     "substitutions": 1
+    },
+    "spoken-form/raw": {
+     "deletions": 0,
+     "errors": 1,
+     "insertions": 0,
+     "normalised_wer": 0.16666666666666666,
+     "raw_wer": 0.3333333333333333,
+     "reference_words": 6,
+     "substitutions": 1
+    },
+    "spoken-form/smart": {
+     "deletions": 0,
+     "errors": 1,
+     "insertions": 0,
+     "normalised_wer": 0.16666666666666666,
+     "raw_wer": 0.16666666666666666,
+     "reference_words": 6,
+     "substitutions": 1
+    }
+   },
+   "word_count": 6
+  },
+  {
+   "audio_digest": "87ac1861c98aa84f02f1037cc61ff2f0a920644171a9ecc7a9daee00e4c4f6b3",
+   "audio_duration_s": 4.08,
+   "cache_hit": true,
+   "characters": 27,
+   "confidence": 0.9892578,
+   "credits": 0,
+   "detected_language": null,
+   "field_capture": {},
+   "group": "reference-trap",
+   "heard_raw_scored": "ring at seven thirty from sw1 a1 aa",
+   "heard_smart_display_unscored": "Ring at 07:30 from SW1 A1 AA.",
+   "language": "en",
+   "lowest_confidence_words": [
+    {
+     "confidence": 0.80322266,
+     "word": "aa"
+    },
+    {
+     "confidence": 0.907959,
+     "word": "a1"
+    },
+    {
+     "confidence": 0.94189453,
+     "word": "ring"
+    }
+   ],
+   "mean_word_confidence": 0.95315551875,
+   "model": "eleven_v3",
+   "note": "eleven_v3 ignores the normalisation request; the engine must decline to publish a spoken form and fall back to caller-input, labelled",
+   "reference_source": "caller-input",
+   "row_id": "trap-v3-no-spoken-form",
+   "sent_text": "Ring at 7:30 from SW1A 1AA.",
+   "spoken_text": null,
+   "stt_engine": "stt:deepgram/nova-3/multi/raw",
+   "tts_engine": "tts:elevenlabs/eleven_v3/JBFqnCBsd6RMkjVDRZzb",
+   "voice": "JBFqnCBsd6RMkjVDRZzb",
+   "wer_matrix": {
+    "caller-input/raw": {
+     "deletions": 0,
+     "errors": 3,
+     "insertions": 1,
+     "normalised_wer": 0.42857142857142855,
+     "raw_wer": 1.0,
+     "reference_words": 7,
+     "substitutions": 2
+    },
+    "caller-input/smart": {
+     "deletions": 0,
+     "errors": 4,
+     "insertions": 1,
+     "normalised_wer": 0.5714285714285714,
+     "raw_wer": 0.6666666666666666,
+     "reference_words": 7,
+     "substitutions": 3
+    },
+    "spoken-form/raw": null,
+    "spoken-form/smart": null
+   },
+   "word_count": 8
+  },
+  {
+   "audio_digest": "7f258f65eb6e5ea19326c6ed7354479a809066fb7cffb02f9d0ba23783d67f2d",
+   "audio_duration_s": 3.2973,
+   "cache_hit": true,
+   "characters": 58,
+   "confidence": 1.0,
+   "credits": 0,
+   "detected_language": null,
+   "field_capture": {},
+   "group": "agent-voice",
+   "heard_raw_scored": "certainly your appointment is confirmed for seven thirty",
+   "heard_smart_display_unscored": "Certainly, your appointment is confirmed for 07:30.",
+   "language": "en",
+   "lowest_confidence_words": [
+    {
+     "confidence": 0.62158203,
+     "word": "seven"
+    },
+    {
+     "confidence": 0.9909668,
+     "word": "thirty"
+    },
+    {
+     "confidence": 0.9930013,
+     "word": "certainly"
+    }
+   ],
+   "mean_word_confidence": 0.95069376625,
+   "model": "eleven_flash_v2_5",
+   "note": "the agent voice, so the harness can measure its own noise floor",
+   "reference_source": "spoken-form",
+   "row_id": "agent-confirmation",
+   "sent_text": "Certainly. Your appointment is confirmed for seven thirty.",
+   "spoken_text": "Certainly. Your appointment is confirmed for seven thirty.",
+   "stt_engine": "stt:deepgram/nova-3/multi/raw",
+   "tts_engine": "tts:elevenlabs/eleven_flash_v2_5/Xb7hH8MSUJpSbSDYk0k2",
+   "voice": "Xb7hH8MSUJpSbSDYk0k2",
+   "wer_matrix": {
+    "caller-input/raw": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.375,
+     "reference_words": 8,
+     "substitutions": 0
+    },
+    "caller-input/smart": {
+     "deletions": 0,
+     "errors": 1,
+     "insertions": 0,
+     "normalised_wer": 0.125,
+     "raw_wer": 0.5,
+     "reference_words": 8,
+     "substitutions": 1
+    },
+    "spoken-form/raw": {
+     "deletions": 0,
+     "errors": 0,
+     "insertions": 0,
+     "normalised_wer": 0.0,
+     "raw_wer": 0.375,
+     "reference_words": 8,
+     "substitutions": 0
+    },
+    "spoken-form/smart": {
+     "deletions": 0,
+     "errors": 1,
+     "insertions": 0,
+     "normalised_wer": 0.125,
+     "raw_wer": 0.5,
+     "reference_words": 8,
+     "substitutions": 1
+    }
+   },
+   "word_count": 8
+  }
+ ]
+}

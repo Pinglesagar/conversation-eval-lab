@@ -1,0 +1,12 @@
+{
+ "apply_text_normalization": "on",
+ "credits": 29,
+ "engine": "tts:elevenlabs/eleven_flash_v2_5/Xb7hH8MSUJpSbSDYk0k2",
+ "language_code": null,
+ "model_id": "eleven_flash_v2_5",
+ "output_format": "pcm_16000",
+ "sample_rate": 16000,
+ "spoken_text": "Certainly. Your appointment is confirmed for seven thirty.",
+ "text": "Certainly. Your appointment is confirmed for seven thirty.",
+ "voice_id": "Xb7hH8MSUJpSbSDYk0k2"
+}

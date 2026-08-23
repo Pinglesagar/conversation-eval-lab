@@ -1,0 +1,174 @@
+{
+ "entries": {
+  "15c7909029419de3e1c25b751ffea81b2d97137e9bee7bdbed769a578f8e4fdf": {
+   "confidence": 0.99609375,
+   "display_text": "My name is Priya Gupta, that's g u p t a.",
+   "engine": "stt:deepgram/nova-3/multi/raw",
+   "formatting": "raw",
+   "language": null,
+   "provenance": "recorded",
+   "row_id": "readback-name-spelled",
+   "text": "my name is priya gupta that's g u p t a"
+  },
+  "1eafed2be1178b6d5157e0167faece5133cec85d554660915a89c4cc6c57e161": {
+   "confidence": 1.0,
+   "display_text": "Necesito revisar mi pensi\u00f3n antes de fin de a\u00f1o.",
+   "engine": "stt:deepgram/nova-3/multi/raw",
+   "formatting": "raw",
+   "language": null,
+   "provenance": "recorded",
+   "row_id": "switch-es",
+   "text": "necesito revisar mi pensi\u00f3n antes de fin de a\u00f1o"
+  },
+  "7f258f65eb6e5ea19326c6ed7354479a809066fb7cffb02f9d0ba23783d67f2d": {
+   "confidence": 1.0,
+   "display_text": "Certainly, your appointment is confirmed for 07:30.",
+   "engine": "stt:deepgram/nova-3/multi/raw",
+   "formatting": "raw",
+   "language": null,
+   "provenance": "recorded",
+   "row_id": "agent-confirmation",
+   "text": "certainly your appointment is confirmed for seven thirty"
+  },
+  "87ac1861c98aa84f02f1037cc61ff2f0a920644171a9ecc7a9daee00e4c4f6b3": {
+   "confidence": 0.9892578,
+   "display_text": "Ring at 07:30 from SW1 A1 AA.",
+   "engine": "stt:deepgram/nova-3/multi/raw",
+   "formatting": "raw",
+   "language": null,
+   "provenance": "recorded",
+   "row_id": "trap-v3-no-spoken-form",
+   "text": "ring at seven thirty from sw1 a1 aa"
+  },
+  "88db4827a87457fb1a38f358d29cd36b7249337c8a32290aad1c174b811a6741": {
+   "confidence": 0.93359375,
+   "display_text": "My name is Siobono Rock.",
+   "engine": "stt:deepgram/nova-3/multi/raw",
+   "formatting": "raw",
+   "language": null,
+   "provenance": "recorded",
+   "row_id": "readback-irish-name",
+   "text": "my name is siobono rock"
+  },
+  "8d6988cc5b8294935cad42b00f899933e45223cb59b23f2385b6243772309aff": {
+   "confidence": 0.99902344,
+   "display_text": "\u8cc7\u7523\u914d\u5206\u3092\u898b\u76f4\u3057\u305f\u3044\u3067\u3059\u3002",
+   "engine": "stt:deepgram/nova-3/multi/raw",
+   "formatting": "raw",
+   "language": null,
+   "provenance": "recorded",
+   "row_id": "switch-ja",
+   "text": "\u8cc7\u7523\u914d\u5206\u3092\u898b\u76f4\u3057\u305f\u3044\u3067\u3059\u3002"
+  },
+  "af825b58c8476664fbc8d8e0f184d39a2bce718347d100efe5a4af3147e6e32f": {
+   "confidence": 0.9975586,
+   "display_text": "\u092e\u0941\u091d\u0947 \u0905\u092a\u0928\u093e portfolio \u0926\u0947\u0916\u0928\u093e \u0939\u0948.",
+   "engine": "stt:deepgram/nova-3/multi/raw",
+   "formatting": "raw",
+   "language": null,
+   "provenance": "recorded",
+   "row_id": "switch-hi",
+   "text": "\u092e\u0941\u091d\u0947 \u0905\u092a\u0928\u093e portfolio \u0926\u0947\u0916\u0928\u093e \u0939\u0948"
+  },
+  "b2f0083610e806f998d59a3a2630be82212fe8fa3c84087f3198efcad8c1abff": {
+   "confidence": 1.0,
+   "display_text": "Je voudrais revoir mon portefeuille avant la fin de l'ann\u00e9e.",
+   "engine": "stt:deepgram/nova-3/multi/raw",
+   "formatting": "raw",
+   "language": null,
+   "provenance": "recorded",
+   "row_id": "switch-fr",
+   "text": "je voudrais revoir mon portefeuille avant la fin de l'ann\u00e9e"
+  },
+  "b773eac39c3bbbd7e7d002474d2e4a3268f2014374bd1e0eed4ccc2a76b5e7be": {
+   "confidence": 1.0,
+   "display_text": "Is this fund still suitable given my attitude to risk?",
+   "engine": "stt:deepgram/nova-3/multi/raw",
+   "formatting": "raw",
+   "language": null,
+   "provenance": "recorded",
+   "row_id": "advisory-suitability",
+   "text": "is this fund still suitable given my attitude to risk"
+  },
+  "c642fef89d1c33989a80367af76c9cfe131f444b4674be2bf4d5f9aea201adff": {
+   "confidence": 0.9980469,
+   "display_text": "Sort code 204577 reference FCA1138.",
+   "engine": "stt:deepgram/nova-3/multi/raw",
+   "formatting": "raw",
+   "language": null,
+   "provenance": "recorded",
+   "row_id": "readback-sort-code",
+   "text": "sort code two zero four five seven seven reference fca one one three eight"
+  },
+  "c86b60f3a8a9e9fef2aaffa03c6c2482a37871b67d9a2d4c6933871903499f95": {
+   "confidence": 0.9980469,
+   "display_text": "\u0623\u0631\u064a\u062f \u0645\u0631\u0627\u062c\u0639\u0629 \u0645\u062d\u0641\u0638\u062a\u064a \u0642\u0628\u0644 \u0646\u0647\u0627\u064a\u0629 \u0627\u0644\u0639\u0627\u0645.",
+   "engine": "stt:deepgram/nova-3/ar/raw",
+   "formatting": "raw",
+   "language": "ar",
+   "provenance": "recorded",
+   "row_id": "mono-ar-uae",
+   "text": "\u0623\u0631\u064a\u062f \u0645\u0631\u0627\u062c\u0639\u0629 \u0645\u062d\u0641\u0638\u062a\u064a \u0642\u0628\u0644 \u0646\u0647\u0627\u064a\u0629 \u0627\u0644\u0639\u0627\u0645"
+  },
+  "caab30f352c88e3d3e5abbc82040f2b0eb8d7b50aca4e58a4b5ce18b5c036ffb": {
+   "confidence": 0.9975586,
+   "display_text": "The postcode is SW1A1AA.",
+   "engine": "stt:deepgram/nova-3/multi/raw",
+   "formatting": "raw",
+   "language": null,
+   "provenance": "recorded",
+   "row_id": "readback-postcode",
+   "text": "the postcode is s w one a one a a"
+  },
+  "cbbfb795b4bef197a76f243bfcbbf77a89965f771423fe4e9ffd7b3943f75361": {
+   "confidence": 0.99121094,
+   "display_text": "Date of birth: the 03/14/1982.",
+   "engine": "stt:deepgram/nova-3/multi/raw",
+   "formatting": "raw",
+   "language": null,
+   "provenance": "recorded",
+   "row_id": "readback-dob",
+   "text": "date of birth the fourteenth of march nineteen eighty two"
+  },
+  "cd59b445d78294c8adf23bab27d847fcfb21945fb93e3b7650fef8a0b11a7c46": {
+   "confidence": 1.0,
+   "display_text": "I'd like to review my drawdown before the tax year ends.",
+   "engine": "stt:deepgram/nova-3/multi/raw",
+   "formatting": "raw",
+   "language": null,
+   "provenance": "recorded",
+   "row_id": "advisory-drawdown",
+   "text": "i'd like to review my drawdown before the tax year ends"
+  },
+  "d935af9ea2357b3634f91723da242909159d41d40ba2bafd5769f82fb5eb5246": {
+   "confidence": 0.89837646,
+   "display_text": "Account number four-zero-seven-one-nine-nine-two-eight",
+   "engine": "stt:deepgram/nova-3/multi/raw",
+   "formatting": "raw",
+   "language": null,
+   "provenance": "recorded",
+   "row_id": "readback-account-number",
+   "text": "account number four-zero-seven-one-nine-nine-two-eight"
+  },
+  "db3d751d941fb1098d06ac5917ffb964c1057437c7d33ab5c2a92dd1a181c51c": {
+   "confidence": 0.9921875,
+   "display_text": "\u6211\u60f3\u89c1\u8bc6\u6211\u7684\u6295\u8d44\u7ec4\u5408",
+   "engine": "stt:deepgram/nova-3/zh/raw",
+   "formatting": "raw",
+   "language": "zh",
+   "provenance": "recorded",
+   "row_id": "mono-zh-singapore",
+   "text": "\u6211\u60f3\u89c1\u8bc6\u6211\u7684\u6295\u8d44\u7ec4\u5408"
+  },
+  "e2c9c918f4c87a9716671377b7ab100ba7aaba3b3a6df7d73d3b83eb9c4d11d7": {
+   "confidence": 1.0,
+   "display_text": "Can you confirm the annual management charge?",
+   "engine": "stt:deepgram/nova-3/multi/raw",
+   "formatting": "raw",
+   "language": null,
+   "provenance": "recorded",
+   "row_id": "advisory-charges",
+   "text": "can you confirm the annual management charge"
+  }
+ }
+}

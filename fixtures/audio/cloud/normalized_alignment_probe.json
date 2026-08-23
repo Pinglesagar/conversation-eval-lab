@@ -1,0 +1,114 @@
+{
+ "answers": {
+  "normalized_alignment_ever_null": "no \u2014 populated on every model probed",
+  "pcm_16000_on_free_tier": "yes \u2014 real 16 kHz mono PCM on every case below",
+  "spoken_form_models": [
+   "eleven_flash_v2_5 (normalization=on)",
+   "eleven_multilingual_v2 (normalization=on)"
+  ],
+  "trap_auto": "under apply_text_normalization=\"auto\" (the API default) the field is the input text padded with one space each side, while the audio still speaks the numerals aloud",
+  "trap_v3": "eleven_v3 silently ignores apply_text_normalization=\"on\": normalized_alignment comes back byte-identical to alignment, with none of the padding the honouring models add"
+ },
+ "captured": "2026-08-23",
+ "cases": [
+  {
+   "alignment": {
+    "characters_joined": "Ring at 7:30 from SW1A 1AA.",
+    "last_end_time_s": 3.855,
+    "n_characters": 27
+   },
+   "apply_text_normalization": "auto",
+   "audio_bytes": 123344,
+   "audio_duration_s": 3.8545,
+   "audio_samples": 61672,
+   "http_status": 200,
+   "model_id": "eleven_flash_v2_5",
+   "normalized_alignment": {
+    "characters_joined": " Ring at 7:30 from SW1A 1AA. ",
+    "last_end_time_s": 3.855,
+    "n_characters": 29
+   },
+   "normalized_equals_input_exactly": false,
+   "normalized_is_padded": true,
+   "normalized_is_spoken_form": false,
+   "output_format": "pcm_16000",
+   "wire_audio_field": "audio_base64"
+  },
+  {
+   "alignment": {
+    "characters_joined": "Ring at 7:30 from SW1A 1AA.",
+    "last_end_time_s": 3.808,
+    "n_characters": 27
+   },
+   "apply_text_normalization": "on",
+   "audio_bytes": 121858,
+   "audio_duration_s": 3.808063,
+   "audio_samples": 60929,
+   "http_status": 200,
+   "model_id": "eleven_flash_v2_5",
+   "normalized_alignment": {
+    "characters_joined": " Ring at seven thirty from S W one A one A A. ",
+    "last_end_time_s": 3.808,
+    "n_characters": 46
+   },
+   "normalized_equals_input_exactly": false,
+   "normalized_is_padded": true,
+   "normalized_is_spoken_form": true,
+   "output_format": "pcm_16000",
+   "wire_audio_field": "audio_base64"
+  },
+  {
+   "alignment": {
+    "characters_joined": "Ring at 7:30 from SW1A 1AA.",
+    "last_end_time_s": 3.622,
+    "n_characters": 27
+   },
+   "apply_text_normalization": "on",
+   "audio_bytes": 115914,
+   "audio_duration_s": 3.622313,
+   "audio_samples": 57957,
+   "http_status": 200,
+   "model_id": "eleven_multilingual_v2",
+   "normalized_alignment": {
+    "characters_joined": " Ring at seven thirty from S W one A one A A. ",
+    "last_end_time_s": 3.622,
+    "n_characters": 46
+   },
+   "normalized_equals_input_exactly": false,
+   "normalized_is_padded": true,
+   "normalized_is_spoken_form": true,
+   "output_format": "pcm_16000",
+   "wire_audio_field": "audio_base64"
+  },
+  {
+   "alignment": {
+    "characters_joined": "Ring at 7:30 from SW1A 1AA.",
+    "last_end_time_s": 4.4,
+    "n_characters": 27
+   },
+   "apply_text_normalization": "on",
+   "audio_bytes": 140800,
+   "audio_duration_s": 4.4,
+   "audio_samples": 70400,
+   "http_status": 200,
+   "model_id": "eleven_v3",
+   "normalized_alignment": {
+    "characters_joined": "Ring at 7:30 from SW1A 1AA.",
+    "last_end_time_s": 4.4,
+    "n_characters": 27
+   },
+   "normalized_equals_input_exactly": true,
+   "normalized_is_padded": false,
+   "normalized_is_spoken_form": false,
+   "output_format": "pcm_16000",
+   "wire_audio_field": "audio_base64"
+  }
+ ],
+ "endpoint": "POST /v1/text-to-speech/{voice_id}/with-timestamps",
+ "note": "Audio payloads stripped; the clips themselves live in the digest cache.",
+ "probe_text": "Ring at 7:30 from SW1A 1AA.",
+ "probe_text_characters": 27,
+ "question": "is normalized_alignment populated, and is it the SPOKEN FORM, on each model? And does pcm_16000 return audio on a free-tier key?",
+ "voice_category": "premade",
+ "voice_id": "JBFqnCBsd6RMkjVDRZzb"
+}

@@ -1,0 +1,12 @@
+{
+ "apply_text_normalization": "on",
+ "credits": 27,
+ "engine": "tts:elevenlabs/eleven_v3/JBFqnCBsd6RMkjVDRZzb",
+ "language_code": null,
+ "model_id": "eleven_v3",
+ "output_format": "pcm_16000",
+ "sample_rate": 16000,
+ "spoken_text": null,
+ "text": "Ring at 7:30 from SW1A 1AA.",
+ "voice_id": "JBFqnCBsd6RMkjVDRZzb"
+}

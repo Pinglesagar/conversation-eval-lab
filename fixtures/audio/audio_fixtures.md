@@ -12,7 +12,7 @@ number below is measured by that script at generation time, not estimated.
 
 | | clips | audio | on disk |
 |---|---|---|---|
-| Ogg Opus (committed) | 29 | 84.1 s | 296.9 KiB |
+| Ogg Opus (committed) | 29 | 84.1 s | 296.8 KiB |
 | 16 kHz mono PCM16 WAV (not committed) | 29 | 84.1 s | 2628.7 KiB |
 
 **8.9x smaller.** Git stores a binary blob per revision with no useful

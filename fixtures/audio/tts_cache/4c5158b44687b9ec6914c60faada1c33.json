@@ -1,0 +1,12 @@
+{
+ "apply_text_normalization": "on",
+ "credits": 18,
+ "engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+ "language_code": "ar",
+ "model_id": "eleven_flash_v2_5",
+ "output_format": "pcm_16000",
+ "sample_rate": 16000,
+ "spoken_text": "\u0623\u0631\u064a\u062f \u0645\u0631\u0627\u062c\u0639\u0629 \u0645\u062d\u0641\u0637\u062a\u064a \u0642\u0628\u0644 \u0646\u0647\u0627\u064a\u0629 \u0627\u0644\u0639\u0627\u0645.",
+ "text": "\u0623\u0631\u064a\u062f \u0645\u0631\u0627\u062c\u0639\u0629 \u0645\u062d\u0641\u0637\u062a\u064a \u0642\u0628\u0644 \u0646\u0647\u0627\u064a\u0629 \u0627\u0644\u0639\u0627\u0645.",
+ "voice_id": "JBFqnCBsd6RMkjVDRZzb"
+}

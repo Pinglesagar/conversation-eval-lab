@@ -15,6 +15,7 @@ through speech. This package holds the timing and audio machinery.
     lab.voice.wer           word error rate, raw and normalised, explicitly
                             harness-relative
     lab.voice.silence       dead-air detection and attribution to the tool calls
+    lab.voice.interaction   silence misattribution and barge-in — what text cannot see
                             and handoffs recorded inside each gap
     lab.voice.perturb       controlled caller-audio degradation — noise at a
                             target SNR, speed/pitch, telephone band, packet loss
@@ -80,6 +81,19 @@ if TYPE_CHECKING:  # pragma: no cover - for type checkers only, never at runtime
         shift_pitch,
         telephone_band,
     )
+    from lab.voice.interaction import (  # noqa: F401
+        PRODUCTION_AWAY_TIMEOUT_S,
+        BargeIn,
+        BargeInReport,
+        SilenceAttribution,
+        SpeechActivity,
+        attribute_silence,
+        barge_in,
+        barge_in_report,
+        emit_barge_in,
+        insert_pause,
+        speech_activity,
+    )
     from lab.voice.silence import (  # noqa: F401
         SilenceGap,
         SilenceReport,
@@ -129,6 +143,18 @@ _LAZY: dict[str, str] = {
     "normalise": "lab.voice.wer",
     "trace_wer": "lab.voice.wer",
     "wer": "lab.voice.wer",
+    # lab.voice.interaction — silence misattribution and barge-in
+    "BargeIn": "lab.voice.interaction",
+    "BargeInReport": "lab.voice.interaction",
+    "PRODUCTION_AWAY_TIMEOUT_S": "lab.voice.interaction",
+    "SilenceAttribution": "lab.voice.interaction",
+    "SpeechActivity": "lab.voice.interaction",
+    "attribute_silence": "lab.voice.interaction",
+    "barge_in": "lab.voice.interaction",
+    "barge_in_report": "lab.voice.interaction",
+    "emit_barge_in": "lab.voice.interaction",
+    "insert_pause": "lab.voice.interaction",
+    "speech_activity": "lab.voice.interaction",
     # lab.voice.silence — dead air
     "SilenceGap": "lab.voice.silence",
     "SilenceReport": "lab.voice.silence",

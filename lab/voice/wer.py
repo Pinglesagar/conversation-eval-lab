@@ -62,6 +62,7 @@ from __future__ import annotations
 
 import re
 import statistics
+import unicodedata
 from typing import Iterable, Literal, Sequence
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -75,6 +76,8 @@ __all__ = [
     "WERScore",
     "available_backends",
     "normalise",
+    "is_spaceless_script",
+    "scoring_unit",
     "corpus_wer",
     "trace_wer",
     "wer",
@@ -196,8 +199,127 @@ _ORDINALS: dict[str, int] = {
 }
 
 _APOSTROPHES = str.maketrans({"’": "'", "ʼ": "'", "‘": "'"})
-_NON_WORD = re.compile(r"[^a-z0-9' ]+")
+
+#: Everything that is not a letter, a digit, an apostrophe or a space, in **any**
+#: script. Unicode-aware, and it has to be.
+#:
+#: This was `[^a-z0-9' ]+` — ASCII only — and that was a defect with a wide blast
+#: radius, found by pointing the real engines at the real markets. Under the old
+#: pattern:
+#:
+#:     "मुझे अपना पोर्टफोलियो देखना है।"  ->  ""      (Hindi)
+#:     "資産配分を見直したいです。"          ->  ""      (Japanese)
+#:     "我想检视我的投资组合。"              ->  ""      (Mandarin)
+#:     "أريد مراجعة محفظتي."               ->  ""      (Arabic)
+#:     "pensión"                          ->  "pensi n"
+#:     "año"                              ->  "a o"
+#:
+#: Two different failures, and the second is the dangerous one. Non-Latin scripts
+#: normalised to the empty string, which makes WER *undefined* — the denominator
+#: is the reference word count — so those rows either raise or get dropped from
+#: the corpus. Loud, at least. But accented Latin characters were silently
+#: **deleted**, splitting one word into two tokens: every accented word in a
+#: Spanish or French row scored as a substitution plus an insertion. Nothing
+#: raised, nothing looked wrong, and es/fr word error rates were inflated by an
+#: amount proportional to how many accents the sentence happened to contain.
+#:
+#: For a suite whose headline claim is about coverage across 24 markets, that
+#: meant the multilingual figures were the least trustworthy numbers in it.
+_NON_WORD = re.compile(r"[^\w' ]+", re.UNICODE)
+_UNDERSCORES = re.compile(r"_+")
 _WHITESPACE = re.compile(r"\s+")
+
+#: Unicode general categories for combining marks: nonspacing (Mn), spacing
+#: combining (Mc) and enclosing (Me).
+#:
+#: These have to be kept explicitly, because a regex `\w` does **not** match them
+#: and Python's `re` has no `\p{M}`. Devanagari writes its vowels as combining
+#: marks, so under a `\w`-only filter Hindi lost every matra:
+#:
+#:     "मुझे अपना पोर्टफोलियो"  ->  "म झ अपन प र टफ ल य"
+#:
+#: which is the Spanish accent bug again, one script further along and worse — not
+#: an empty string that raises, but a plausible-looking token stream with the
+#: vowels removed and the words split. Arabic harakat, Thai vowel marks and
+#: Hebrew niqqud are all the same shape of problem. So the filter is
+#: category-based rather than regex-based: keep anything alphanumeric in any
+#: script, keep combining marks, keep the apostrophe and the space, drop the rest.
+_MARK_CATEGORIES: frozenset[str] = frozenset({"Mn", "Mc", "Me"})
+
+
+def _keep_for_scoring(character: str) -> bool:
+    """True for a character that carries meaning in a token. See `_MARK_CATEGORIES`."""
+    if character in " '":
+        return True
+    if character.isalnum():
+        return True
+    return unicodedata.category(character) in _MARK_CATEGORIES
+
+
+def _strip_punctuation(text: str) -> str:
+    """Replace everything that is not token material with a space.
+
+    A space rather than nothing, so that "twenty-six" becomes two tokens on both
+    sides instead of one joined token on one side — the substitution has to be
+    identical for reference and hypothesis or the metric measures the normaliser.
+    """
+    return "".join(character if _keep_for_scoring(character) else " " for character in text)
+
+#: Codepoint ranges for scripts written without spaces between words: CJK
+#: ideographs (plus the extension A block), Japanese hiragana and katakana, and
+#: Hangul syllables.
+_SPACELESS_RANGES: tuple[tuple[int, int], ...] = (
+    (0x3040, 0x30FF),  # hiragana + katakana
+    (0x3400, 0x4DBF),  # CJK unified ideographs extension A
+    (0x4E00, 0x9FFF),  # CJK unified ideographs
+    (0xAC00, 0xD7AF),  # hangul syllables
+    (0xF900, 0xFAFF),  # CJK compatibility ideographs
+)
+
+
+def is_spaceless_script(character: str) -> bool:
+    """True for a character from a script that does not delimit words with spaces."""
+    code = ord(character)
+    return any(low <= code <= high for low, high in _SPACELESS_RANGES)
+
+
+def scoring_unit(text: str) -> str:
+    """`"character"` for a spaceless script, `"word"` otherwise. Label your figures.
+
+    Japanese and Mandarin do not put spaces between words, so "the word error
+    rate" of a Japanese sentence is not a well-defined quantity without a
+    tokeniser — and this package does not ship one, because a Japanese
+    morphological analyser is a large dependency and getting it wrong would
+    produce confident nonsense. What it does instead is segment those scripts per
+    character, which makes the figure a **character** error rate.
+
+    That is a perfectly standard metric for those languages, and it is *not* the
+    same metric as the English rows' word error rate. So it must not share a
+    column with them unlabelled: a table that averaged a Japanese CER with an
+    English WER would be adding two different quantities. This function is how a
+    report says which one it is holding.
+    """
+    return "character" if any(is_spaceless_script(c) for c in text) else "word"
+
+
+def _segment_spaceless(text: str) -> str:
+    """Insert spaces around characters from spaceless scripts, so tokens exist.
+
+    Applied to both sides identically, like every other normalisation step. A
+    Japanese sentence with no separators is a single enormous token, against which
+    any transcript scores either 0% or 100% error and nothing in between — a
+    metric with two possible values is not a measurement. Segmenting per character
+    turns it into a character error rate, which `scoring_unit` names.
+    """
+    if not any(is_spaceless_script(c) for c in text):
+        return text
+    out: list[str] = []
+    for character in text:
+        if is_spaceless_script(character):
+            out.extend((" ", character, " "))
+        else:
+            out.append(character)
+    return "".join(out)
 
 
 _ORDINAL_SUFFIXES: dict[int, str] = {1: "st", 2: "nd", 3: "rd"}
@@ -323,12 +445,18 @@ def normalise(text: str) -> str:
 
     Reversing steps 2 and 3 would turn every contraction into a made-up word that
     matches nothing, which raises WER while looking like it lowered it.
+
+    Step 3 is Unicode-aware, and step 3a segments spaceless scripts per character.
+    See `_NON_WORD` for the ASCII-only defect that used to live here and what it
+    did to the Spanish, French, Hindi, Japanese, Mandarin and Arabic rows, and
+    `scoring_unit` for why a segmented figure must be labelled a character error
+    rate rather than quietly averaged with the word rates.
     """
     lowered = text.translate(_APOSTROPHES).lower()
     for contraction, expansion in CONTRACTIONS.items():
         lowered = re.sub(rf"\b{re.escape(contraction)}\b", expansion, lowered)
-    stripped = _NON_WORD.sub(" ", lowered).replace("'", "")
-    tokens = [t for t in _WHITESPACE.split(stripped) if t]
+    stripped = _strip_punctuation(lowered).replace("'", "")
+    tokens = [t for t in _WHITESPACE.split(_segment_spaceless(stripped)) if t]
     return " ".join(_convert_numbers(tokens))
 
 
@@ -709,9 +837,25 @@ def trace_wer(trace: Trace, *, backend: Backend = "auto") -> CorpusWER:
     misheard one, but it is a different failure, and burying it inside a WER
     average would hide it. Total-loss turns are visible as the gap between
     `len(trace.events_of_kind("caller_utterance"))` and `CorpusWER.n`.
+
+    **The reference is `spoken_text` when the event carries one**, and the
+    utterance text only otherwise. That order is not a nicety. A synthesiser that
+    normalises before it speaks — ElevenLabs does — turns "7:30" into "seven
+    thirty" and "SW1A 1AA" into spelled letters, so the string we *sent* is not
+    the string the recogniser *heard*. Scoring against the sent string measured
+    1.400 normalised WER on a transcript that was perfect, against 0.000 for the
+    spoken form — 7 errors against a 5-word reference, mostly insertions, because
+    the spoken form has twice the tokens. Pure formatting mismatch, concentrated in
+    exactly the digit and postcode rows whose whole purpose is proving those
+    survive the channel. `lab/voice/engines/WER_NORMALISATION.md` is the full account, and
+    `caller_utterance.reference_source` records which of the two was used so the
+    choice is auditable from the trace alone.
     """
     pairs = [
-        (str(caller.get("text", "")), str(transcript.get("text", "")))
+        (
+            str(caller.get("spoken_text") or caller.get("text", "")),
+            str(transcript.get("text", "")),
+        )
         for caller, transcript in trace.event_pairs(
             EventKind.CALLER_UTTERANCE, EventKind.TRANSCRIPT_IN
         )

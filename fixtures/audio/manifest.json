@@ -13,7 +13,7 @@
       "sample_rate": 16000,
       "samples": 51641,
       "duration_s": 3.2276,
-      "bytes": 11697,
+      "bytes": 11704,
       "pcm16_bytes": 103282
     },
     "384faca9a5fb69fc9923e845cfa44ef63d423dece52c36e87d5f0a19cce4ede5": {
@@ -24,7 +24,7 @@
       "sample_rate": 16000,
       "samples": 18948,
       "duration_s": 1.1843,
-      "bytes": 4785,
+      "bytes": 4769,
       "pcm16_bytes": 37896
     },
     "ba8a63396da20e052b5aa42d81b9f25ff2e2e529e7abb157a0a630b927c5d643": {
@@ -35,7 +35,7 @@
       "sample_rate": 16000,
       "samples": 61487,
       "duration_s": 3.8429,
-      "bytes": 14130,
+      "bytes": 14145,
       "pcm16_bytes": 122974
     },
     "1719824683a3f5a52882808e68c62ad57abec6511a475d4d359a31c7fc4663c9": {
@@ -46,7 +46,7 @@
       "sample_rate": 16000,
       "samples": 19505,
       "duration_s": 1.2191,
-      "bytes": 4898,
+      "bytes": 4906,
       "pcm16_bytes": 39010
     },
     "6f6a4d8c838f0930ef0c38f2eda6e65fa771db69432d576675d03673ea285776": {
@@ -57,7 +57,7 @@
       "sample_rate": 16000,
       "samples": 78391,
       "duration_s": 4.8994,
-      "bytes": 17072,
+      "bytes": 17052,
       "pcm16_bytes": 156782
     },
     "02115f84213fae983ccad40a3eb19bcc259519196cad8e20b651fcabc0f1694f": {
@@ -68,7 +68,7 @@
       "sample_rate": 16000,
       "samples": 46069,
       "duration_s": 2.8793,
-      "bytes": 10282,
+      "bytes": 10264,
       "pcm16_bytes": 92138
     },
     "5daa03ac3f1d51e4c04ab2ce803db95f7ceaff0af93a5a0f2943d0ca01842d1e": {
@@ -79,7 +79,7 @@
       "sample_rate": 16000,
       "samples": 14861,
       "duration_s": 0.9288,
-      "bytes": 3851,
+      "bytes": 3835,
       "pcm16_bytes": 29722
     },
     "676bbd2a530d7093e2ae35023a431e992606c4362fd4da8ba8374a170490f1e3": {
@@ -90,7 +90,7 @@
       "sample_rate": 16000,
       "samples": 37895,
       "duration_s": 2.3684,
-      "bytes": 8701,
+      "bytes": 8696,
       "pcm16_bytes": 75790
     },
     "65f5107f649f99eb30a8574811f6f56ede022a8ee17134cf6dc07df86f9cc0d1": {
@@ -101,7 +101,7 @@
       "sample_rate": 16000,
       "samples": 12818,
       "duration_s": 0.8011,
-      "bytes": 3612,
+      "bytes": 3627,
       "pcm16_bytes": 25636
     },
     "30fbe4bce100c3322350c844cedbaea987af3681505e580d530902a114a12157": {
@@ -112,7 +112,7 @@
       "sample_rate": 16000,
       "samples": 14861,
       "duration_s": 0.9288,
-      "bytes": 4051,
+      "bytes": 4036,
       "pcm16_bytes": 29722
     },
     "b96592f43930270f8a3d563e34083cf07ae57a97135677cc9ace07e41eccf8d7": {
@@ -123,7 +123,7 @@
       "sample_rate": 16000,
       "samples": 61858,
       "duration_s": 3.8661,
-      "bytes": 13470,
+      "bytes": 13458,
       "pcm16_bytes": 123716
     },
     "867ad86e9f2703acfc376e66738ef0c81244db9902b62badcdfd2a24273b340b": {
@@ -134,7 +134,7 @@
       "sample_rate": 16000,
       "samples": 39381,
       "duration_s": 2.4613,
-      "bytes": 8950,
+      "bytes": 8955,
       "pcm16_bytes": 78762
     },
     "a70a630aadadafc629e93b7e705796e42b82d6e7e2d7ee514e6b8d24ed85cacf": {
@@ -145,7 +145,7 @@
       "sample_rate": 16000,
       "samples": 47740,
       "duration_s": 2.9838,
-      "bytes": 11175,
+      "bytes": 11172,
       "pcm16_bytes": 95480
     },
     "25b828f46df079851ad47b3f5ab71b293cb0b9ca6a05d9bee65e6f5f1544dad6": {
@@ -156,7 +156,7 @@
       "sample_rate": 16000,
       "samples": 15976,
       "duration_s": 0.9985,
-      "bytes": 4187,
+      "bytes": 4197,
       "pcm16_bytes": 31952
     },
     "36d01b18714b409e5677453c1eb8037fa97870a24f10e1df1635f919ada0b220": {
@@ -167,7 +167,7 @@
       "sample_rate": 16000,
       "samples": 54985,
       "duration_s": 3.4366,
-      "bytes": 12195,
+      "bytes": 12192,
       "pcm16_bytes": 109970
     },
     "97b876cb0fc813f5c2a6965cff2665db9237faa2e5457ca12d6a415b248a9d22": {
@@ -178,7 +178,7 @@
       "sample_rate": 16000,
       "samples": 50527,
       "duration_s": 3.1579,
-      "bytes": 11439,
+      "bytes": 11451,
       "pcm16_bytes": 101054
     },
     "1f54c6cd481d765ccd84bcb7517d581299abaf11d0f0fe1627783696d5c5088c": {
@@ -189,7 +189,7 @@
       "sample_rate": 16000,
       "samples": 29908,
       "duration_s": 1.8693,
-      "bytes": 6961,
+      "bytes": 6981,
       "pcm16_bytes": 59816
     },
     "ae4f310b1384d1676f34c4609e5b82ade0d3ff8413f1b69ec48d2f56e71ac2b0": {
@@ -200,7 +200,7 @@
       "sample_rate": 16000,
       "samples": 14861,
       "duration_s": 0.9288,
-      "bytes": 4014,
+      "bytes": 4023,
       "pcm16_bytes": 29722
     },
     "0f8e6f19300529ce71af7ba136ab0ac12ff4811fa93204408c22c6d9038c1133": {
@@ -211,7 +211,7 @@
       "sample_rate": 16000,
       "samples": 16533,
       "duration_s": 1.0333,
-      "bytes": 4214,
+      "bytes": 4203,
       "pcm16_bytes": 33066
     },
     "ba5b2596c1c492369c2d5fba4556daa6c81b772f2db794ba9626b526b6ba2be2": {
@@ -222,7 +222,7 @@
       "sample_rate": 16000,
       "samples": 14861,
       "duration_s": 0.9288,
-      "bytes": 4088,
+      "bytes": 4084,
       "pcm16_bytes": 29722
     },
     "fb2c106440a91f46d8893a2e383a5f51f71adcf22a9e7b88bfe8ea825799f7bc": {
@@ -233,7 +233,7 @@
       "sample_rate": 16000,
       "samples": 16533,
       "duration_s": 1.0333,
-      "bytes": 4214,
+      "bytes": 4203,
       "pcm16_bytes": 33066
     },
     "718dee17766dacccbdab5bce743d0e074ea7c00f0bc3d3c49dc1480aacbe7bd6": {
@@ -244,7 +244,7 @@
       "sample_rate": 16000,
       "samples": 71703,
       "duration_s": 4.4814,
-      "bytes": 15653,
+      "bytes": 15655,
       "pcm16_bytes": 143406
     },
     "0a30ed5f9a7c238c104d7a755b972b4e8019dbf93e3406d363f568cd30cd71e8": {
@@ -255,7 +255,7 @@
       "sample_rate": 16000,
       "samples": 23220,
       "duration_s": 1.4512,
-      "bytes": 5867,
+      "bytes": 5863,
       "pcm16_bytes": 46440
     },
     "ebcb2c2cded5b53e4598246a7198e0022911cf6512ff6bb9140b876bce0316cc": {
@@ -266,7 +266,7 @@
       "sample_rate": 16000,
       "samples": 17462,
       "duration_s": 1.0914,
-      "bytes": 4554,
+      "bytes": 4542,
       "pcm16_bytes": 34924
     },
     "4133d85a3343c66120edfaa50421e7cbb62ddf55d286cc9127a8b30dfadde6bb": {
@@ -277,7 +277,7 @@
       "sample_rate": 16000,
       "samples": 22849,
       "duration_s": 1.4281,
-      "bytes": 5778,
+      "bytes": 5801,
       "pcm16_bytes": 45698
     },
     "a4706618b9394c67752d15fa1904c2b30c1f51ac8b62c1d0fbeee5274b29e5ad": {
@@ -288,7 +288,7 @@
       "sample_rate": 16000,
       "samples": 156596,
       "duration_s": 9.7873,
-      "bytes": 32602,
+      "bytes": 32529,
       "pcm16_bytes": 313192
     },
     "4257964176475a30ad2d80353ec2db909904223c66bd2f5e69f7bfd06aeaf8bf": {
@@ -299,7 +299,7 @@
       "sample_rate": 16000,
       "samples": 162354,
       "duration_s": 10.1471,
-      "bytes": 34471,
+      "bytes": 34479,
       "pcm16_bytes": 324708
     },
     "2d94d3da912a61cfb6166256524718ceed94a69c6cd5eb125867d040093300ce": {
@@ -310,7 +310,7 @@
       "sample_rate": 16000,
       "samples": 120001,
       "duration_s": 7.5001,
-      "bytes": 25538,
+      "bytes": 25470,
       "pcm16_bytes": 240002
     },
     "87e4b6b31805f0a0f6391b73dfd066b0437bdf36aebefcccf09da2726934e1ba": {
@@ -321,7 +321,7 @@
       "sample_rate": 16000,
       "samples": 51456,
       "duration_s": 3.216,
-      "bytes": 11626,
+      "bytes": 11630,
       "pcm16_bytes": 102912
     }
   },

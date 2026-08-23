@@ -1,0 +1,12 @@
+{
+ "apply_text_normalization": "on",
+ "credits": 28,
+ "engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+ "language_code": null,
+ "model_id": "eleven_flash_v2_5",
+ "output_format": "pcm_16000",
+ "sample_rate": 16000,
+ "spoken_text": "I'd like to review my drawdown before the tax year ends.",
+ "text": "I'd like to review my drawdown before the tax year ends.",
+ "voice_id": "JBFqnCBsd6RMkjVDRZzb"
+}

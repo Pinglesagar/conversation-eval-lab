@@ -76,12 +76,18 @@ from pydantic import BaseModel, ConfigDict, Field
 
 __all__ = [
     "Audio",
+    "CALLER_INPUT_REFERENCE",
     "DEFAULT_SAMPLE_RATE",
     "SETUP_SCRIPT",
     "EngineUnavailable",
+    "Formatting",
     "Provenance",
+    "ReferenceSource",
+    "SCORABLE_FORMATTING",
+    "SPOKEN_FORM_REFERENCE",
     "SynthesisResult",
     "Transcription",
+    "WordTiming",
     "TTSEngine",
     "STTEngine",
     "require_available",
@@ -112,6 +118,45 @@ SETUP_SCRIPT: str = "scripts/setup_audio.sh"
 
 #: See the module docstring. "reference" is the value that makes WER meaningless.
 Provenance = Literal["engine", "recorded", "reference"]
+
+#: Where the string a WER is scored *against* came from. Two values, and on the
+#: committed round trip the difference between them was 0.000 against 1.400
+#: normalised WER on a flawless postcode capture — see
+#: `engines/WER_NORMALISATION.md` and `docs/AUDIO_SUITE.md`.
+#:
+#:     "spoken-form"    the synthesiser told us which words it actually spoke
+#:     "caller-input"   nobody told us; this is the string we asked it to speak,
+#:                      which differs from the spoken form wherever the vendor
+#:                      normalised a numeral, a time or a postcode
+#:
+#: It is a named field rather than an inference because "which reference did you
+#: use?" is the first question to ask of any word error rate in this repo, and a
+#: report that cannot answer it is quoting a number of unknown meaning.
+ReferenceSource = Literal["spoken-form", "caller-input"]
+
+#: The value `ReferenceSource` takes when the spoken form is unavailable.
+CALLER_INPUT_REFERENCE: ReferenceSource = "caller-input"
+
+#: The value it takes when the synthesiser published the words it spoke.
+SPOKEN_FORM_REFERENCE: ReferenceSource = "spoken-form"
+
+#: How the text on a `Transcription` was formatted by the recogniser.
+#:
+#:     "raw"     verbatim tokens. The only formatting a WER may be scored on.
+#:     "smart"   vendor-prettified for reading: "seven thirty" becomes "07:30",
+#:               spelled letters are joined, sentence punctuation is inserted.
+#:
+#: This is a field rather than a convention because the difference is not
+#: cosmetic. A smart-formatted hypothesis scored against a spoken-form reference
+#: reported 0.556 to 0.800 word error on transcripts perfect to the last digit
+#: (`engines/WER_NORMALISATION.md`). So `lab.voice.adapter.audio_wer_report`
+#: *refuses* a trace whose scored transcripts are smart-formatted, in exactly the
+#: same way it refuses reference-provenance transcripts. A rule in a docstring is
+#: a rule that gets forgotten under deadline; a rule in a refusal is not.
+Formatting = Literal["raw", "smart"]
+
+#: The only formatting a word error rate may be computed on.
+SCORABLE_FORMATTING: Formatting = "raw"
 
 
 class EngineUnavailable(RuntimeError):
@@ -151,10 +196,40 @@ def duration_s(audio: Audio, sample_rate: int) -> float:
 
 
 def quantise_pcm16(audio: Audio) -> NDArray[np.int16]:
-    """Clip to [-1, 1] and quantise to int16 — the canonical byte form of a clip."""
+    """Clip to [-1, 1] and quantise to int16 — the canonical byte form of a clip.
+
+    The scale factor is **32768**, matching the 32768 that every decode path in
+    this package divides by (`audiofile.read_audio`, `tts._decode_wav_bytes`,
+    `elevenlabs_tts._decode`). That symmetry is not cosmetic: it makes
+    `int16 -> float -> int16` the exact identity, because 1/32768 is a power of
+    two and therefore exact in float64.
+
+    It used to be 32767, and the mismatch was a real data-integrity bug found by
+    running the cloud engines twice. With 32767 on the way out and 32768 on the
+    way in, a clip written to the cache and read back differed from the original
+    in **1,966 of 4,000 samples**, each by one least-significant bit. Two
+    consequences, and the second is the serious one:
+
+    *   `audio_digest` changed across a cache round trip, so the Deepgram
+        transcript cassette — which is keyed on that digest — *missed* whenever a
+        clip arrived by the other path. The cassette silently grew a second entry
+        per clip (17 rows produced 23 entries), which is precisely the failure
+        this digest was introduced to prevent: a fixture store answering for audio
+        it never heard, or failing to answer for audio it did.
+    *   The error was cumulative. Every write-then-read cycle shifted the samples
+        again, so a committed fixture would drift a little further from the
+        recorded audio each time it was promoted or rewritten. A fixture store
+        that quietly degrades its own contents is worse than one that loses them,
+        because nothing ever fails.
+
+    Full-scale negative now maps to -32768 rather than -32767, which is simply
+    what the int16 range is; the explicit clip keeps a float of exactly +1.0 from
+    wrapping to -32768 on the positive side.
+    """
     array = np.asarray(audio, dtype=np.float64)
     clipped = np.clip(array, -1.0, 1.0)
-    return np.round(clipped * 32767.0).astype(np.int16)
+    scaled = np.round(clipped * 32768.0)
+    return np.clip(scaled, -32768.0, 32767.0).astype(np.int16)
 
 
 def audio_digest(audio: Audio, sample_rate: int) -> str:
@@ -226,6 +301,13 @@ class SynthesisResult(BaseModel):
         description="True when these samples were read from a fixture, not synthesised now.",
     )
     text: str = ""
+    spoken_text: str | None = Field(
+        default=None,
+        description=(
+            "The words the synthesiser states it actually spoke, when it publishes them "
+            "and they can be trusted. None means 'unknown', never 'same as text'."
+        ),
+    )
 
     @property
     def duration_s(self) -> float:
@@ -237,11 +319,58 @@ class SynthesisResult(BaseModel):
         """Size of the clip as 16-bit PCM."""
         return pcm16_bytes(self.audio)
 
+    @property
+    def reference_source(self) -> ReferenceSource:
+        """Which of the two references this clip can offer. Never inferred downstream."""
+        return SPOKEN_FORM_REFERENCE if self.spoken_text else CALLER_INPUT_REFERENCE
+
+    @property
+    def wer_reference(self) -> str:
+        """The string a word error rate for this clip must be scored against.
+
+        The spoken form when the synthesiser published one, else the text we sent.
+        Falling back is legitimate and is *not* silent: `reference_source` says
+        which happened, the adapter writes it onto the `caller_utterance` event,
+        and `lab.voice.adapter.audio_wer_report` names it in the report. The bug
+        `WER_NORMALISATION.md` documents is not the fallback — it is a fallback
+        nobody can see afterwards.
+        """
+        return self.spoken_text or self.text
+
     def describe(self) -> str:
         return (
             f"{self.engine} voice={self.voice or '-'} "
-            f"{self.duration_s:.3f}s {self.num_bytes}B @ {self.sample_rate}Hz"
+            f"{self.duration_s:.3f}s {self.num_bytes}B @ {self.sample_rate}Hz "
+            f"ref={self.reference_source}"
         )
+
+
+class WordTiming(BaseModel):
+    """One recognised word, when it was said, and how sure the recogniser was.
+
+    Kept per word rather than per utterance because an utterance-level confidence
+    cannot locate a problem. "0.91 overall" is a mood; "the postcode token came
+    back at 0.42 while every other word was above 0.95" is a defect with an
+    address. It is also what makes the silent-correction reconciliation in
+    `lab.voice.adapter` able to attribute a substitution to a specific token
+    instead of noting that the sentence changed.
+
+    `word` is the verbatim token. When the recogniser also offers a prettified
+    spelling it goes in `punctuated_word`, which is display material and is never
+    scored — the same separation `Formatting` enforces at the utterance level.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    word: str
+    start_s: float = Field(ge=0.0)
+    end_s: float = Field(ge=0.0)
+    confidence: float | None = Field(default=None, ge=0.0, le=1.0)
+    punctuated_word: str | None = None
+
+    @property
+    def duration_s(self) -> float:
+        return max(0.0, self.end_s - self.start_s)
 
 
 class Transcription(BaseModel):
@@ -250,6 +379,13 @@ class Transcription(BaseModel):
     `provenance` is the field that matters — see the module docstring. `confidence`
     is `None` unless the engine really reports one: inventing 1.0 for an engine
     that has no opinion is how a confidence-gated check ends up gated on nothing.
+
+    `formatting` is the field that matters second. `text` is the string that gets
+    scored, so it must be verbatim; `display_text` is the prettified one and
+    exists only so a human reading a report is not made to parse "sw one a one a
+    a". They are separate fields, with a flag saying which kind `text` is, because
+    the alternative — one field and a convention — is how a formatting policy
+    ends up being reported as a recognition error rate.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -262,6 +398,21 @@ class Transcription(BaseModel):
     transcribe_s: float | None = Field(
         default=None, description="Wall time the transcription took, seconds. Harness cost."
     )
+    formatting: Formatting = Field(
+        default=SCORABLE_FORMATTING,
+        description="How `text` was formatted. Only 'raw' may be scored.",
+    )
+    display_text: str | None = Field(
+        default=None,
+        description=(
+            "Vendor-prettified transcript, for human display only. Never scored; "
+            "`lab.voice.adapter` does not read it and a test asserts as much."
+        ),
+    )
+    words: list[WordTiming] = Field(
+        default_factory=list,
+        description="Word-level timings and confidences, when the engine reports them.",
+    )
 
     @property
     def is_measurable(self) -> bool:
@@ -269,9 +420,22 @@ class Transcription(BaseModel):
 
         False for `provenance == "reference"`: that text *is* the reference, so
         the WER against it is zero by construction and says nothing about any
-        engine. Callers that report WER must consult this rather than assuming.
+        engine. Also false for smart-formatted text, which measures the vendor's
+        formatting policy rather than its recognition. Callers that report WER
+        must consult this rather than assuming.
         """
-        return self.provenance in ("engine", "recorded")
+        return self.provenance in ("engine", "recorded") and self.formatting == SCORABLE_FORMATTING
+
+    @property
+    def mean_word_confidence(self) -> float | None:
+        """Mean of the per-word confidences, or None when none were reported."""
+        values = [w.confidence for w in self.words if w.confidence is not None]
+        return sum(values) / len(values) if values else None
+
+    def lowest_confidence_words(self, limit: int = 3) -> list[WordTiming]:
+        """The least-confident words, worst first. Where to look when a row fails."""
+        scored = [w for w in self.words if w.confidence is not None]
+        return sorted(scored, key=lambda w: w.confidence or 0.0)[:limit]
 
     def trace_payload(self) -> dict[str, Any]:
         """Extra payload keys for the `transcript_in` event carrying this result.
@@ -280,11 +444,32 @@ class Transcription(BaseModel):
         refusal to report WER can be decided from a trace file alone — including
         one a reviewer downloaded without ever running the harness.
         """
-        payload: dict[str, Any] = {"provenance": self.provenance}
+        payload: dict[str, Any] = {
+            "provenance": self.provenance,
+            # Always written, never conditional. An absent formatting key would be
+            # indistinguishable from "raw" to a reader, and the whole point of the
+            # field is that the difference between the two values is 50 points of
+            # apparent word error rate.
+            "formatting": self.formatting,
+        }
         if self.language is not None:
             payload["language"] = self.language
         if self.transcribe_s is not None:
             payload["transcribe_s"] = round(self.transcribe_s, 6)
+        if self.display_text is not None:
+            # Deliberately *not* called `display_text`. The key names its own
+            # prohibition, so a `grep display` through the scoring code shows a
+            # reader instantly that nothing there consumes it.
+            payload["display_text_unscored"] = self.display_text
+        if self.words:
+            payload["word_count"] = len(self.words)
+            mean = self.mean_word_confidence
+            if mean is not None:
+                payload["mean_word_confidence"] = round(mean, 6)
+            worst = self.lowest_confidence_words(1)
+            if worst and worst[0].confidence is not None:
+                payload["lowest_confidence_word"] = worst[0].word
+                payload["lowest_word_confidence"] = round(worst[0].confidence, 6)
         return payload
 
 

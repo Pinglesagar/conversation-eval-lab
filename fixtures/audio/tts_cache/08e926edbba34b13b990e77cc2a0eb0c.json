@@ -1,0 +1,12 @@
+{
+ "apply_text_normalization": "on",
+ "credits": 16,
+ "engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+ "language_code": "hi",
+ "model_id": "eleven_flash_v2_5",
+ "output_format": "pcm_16000",
+ "sample_rate": 16000,
+ "spoken_text": "\u092e\u0941\u091d\u0947 \u0905\u092a\u0928\u093e \u092a\u094b\u0930\u094d\u091f\u092b\u094b\u0932\u093f\u092f\u094b \u0926\u0947\u0916\u0928\u093e \u0939\u0948\u0964",
+ "text": "\u092e\u0941\u091d\u0947 \u0905\u092a\u0928\u093e \u092a\u094b\u0930\u094d\u091f\u092b\u094b\u0932\u093f\u092f\u094b \u0926\u0947\u0916\u0928\u093e \u0939\u0948\u0964",
+ "voice_id": "JBFqnCBsd6RMkjVDRZzb"
+}
