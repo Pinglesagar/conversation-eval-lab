@@ -607,6 +607,74 @@ matter most in this product category's two Asian hubs are **not** in the speech 
 supported code-switching set (`markets_languages.md` §3.1). A locale axis that only
 swaps disclosure strings proves less than it looks.
 
+### 4.3 The registers, computed rather than reasoned
+
+Everything above §4.3 was written while the tables in §4.1 were **hand-reasoned**: the
+registers were cited data, `expectation.human_verdict` and every per-regime block were
+labels a person typed, and no code turned one into the other. `roleplay/regime_eval.py`
+closes that gap. `RegimeEvaluator` reads the same thirty-six YAML entries, runs each row
+through the existing roleplay adapter, and returns a verdict per regime with a status per
+entry — `satisfied` / `missed` / `not-applicable` / `instrument-gap` — each carrying the
+entry's own paragraph citation, so any verdict traces to a source.
+
+One command: `make advisory-verdicts`, or
+`python -m roleplay.regime_eval --divergence --shadow`.
+
+| measurement | result |
+|---|---|
+| rows where the computed verdict matches the hand label | **16/18** (confusion: pass/pass 7, fail/fail 9, fail/pass 1, fail/undecidable 1) |
+| divergence blocks producing **opposite** computed verdicts on one transcript | **6/6** |
+| per-regime block verdicts reproduced on the entry each block names | **18/18** |
+| the same, graded against that regime's **whole** register | **16/18** |
+| rows the computed register fails and `RubricScorer` certifies | **4** |
+| register entries a lax check over the same vocabulary over-credits | **3**, every one of them on **position** |
+| rows a lax check passes outright that the register does not pass | **1/4** |
+
+**The agreement figure is in-sample and the CLI says so on every run.** The probes were
+written with these eighteen transcripts in view. 16/18 is evidence that the register is
+*computable* — that a cited paragraph can be turned into a decision procedure with its
+assumptions written down — and is not a held-out accuracy. Every probe prints the
+ASSUMPTION it rests on beside the sourced requirement it implements, because the
+requirement is sourced and the pattern that looks for it is not.
+
+**The two disagreements are the interesting part, and neither was tuned away.**
+`nearmiss-warning-addressed-to-the-partner` returns **undecidable**: the understanding
+check is present and the transcript shows it addressed to the customer's partner, so the
+answer turns on a disclosure's *addressee*, and no field in the register, the evaluator or
+the scorer records one. The hand label is right and the instrument declines to answer —
+which is that row's own stated schema gap, now measured. `lang-indirect-refusal-recorded-
+as-open` computes **pass**: the SFC register is genuinely clean, and the row fails on
+reading an indirect refusal as an open outcome, which no register entry addresses. A
+session verdict and a register verdict are different objects, and this is the one row
+where they come apart.
+
+**What `kind` buys, as a number rather than an argument.** A paraphrase of COBS
+4.5A.10R's prescribed sentence *misses* the FCA entry and *satisfies* the MAS substance
+counterpart, from the same words. Three per cent of the sum invested satisfies the SFC's
+whole-percentage-point unit and one and a half per cent of the same sum does not, while
+both satisfy MAS's amount requirement. Fourteen days from receipt of the policy is right
+in Singapore and wrong in both the UK and Hong Kong — on the number *and* the trigger.
+Each of those is pinned by a test on a synthetic trace whose timestamps are all
+identical, so the positional rules can only be passing because they are decided on
+event-stream position.
+
+**Where a judge belongs, it is named and it does not gate.** Two entries have a limb no
+pattern can decide — PRIN 2A.5.3R's "likely to be understood", the SFC's "reasonable in
+all the circumstances". Both name the judge that would decide it, ask
+`lab.judges.registry` for it, and record the answer ("not registered") as a residue on a
+status decided by the deterministic limb alone. The same discipline covers the two
+detectors `call_craft.md` labels ASSUMPTION: the minimisation-adjacency detector fires on
+`clause-surrender-value-understated` and the prominence observation fires on
+`nearmiss-restricted-advice-buried-in-a-long-turn`, and neither decides an entry, because
+neither has a calibrated TNR. The row still fails; another entry carries it.
+
+**And what the instrument cannot see, stated in its own output.** A transcript cannot show
+that a document was provided, so a written-artefact limb is a printed residue rather than a
+silent pass. An entry gated on a topic being raised cannot catch an adviser who never
+raises it. Product class is detected over the whole transcript, so the two-product
+Singapore row is graded on the union — which is exactly why the `not-required` carve-out
+entry is load-bearing there rather than decorative.
+
 ---
 
 ## 5. How I would know the eval itself is trustworthy

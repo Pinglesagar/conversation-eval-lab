@@ -101,3 +101,11 @@ notes: >-
   courteous, and indistinguishable on surface features from a genuine deferral, and
   where the adviser's response is indistinguishable on surface features from good
   manners.
+  COMPUTED, and it disagrees: roleplay.regime_eval grades this transcript against the
+  whole SFC register and returns PASS - the percentage-ceiling unit is satisfied, the
+  transaction information precedes the ask, and no entry in the register addresses
+  reading an indirect refusal as an open outcome. The human_verdict here is a SESSION
+  verdict and the computed one is a REGISTER verdict, and this is the one row in the
+  pack where the two come apart. Both are right about what they measure, and a
+  compliance instrument that reported this call as clean would be right and useless -
+  which is the argument for the LL group existing outside the register at all.

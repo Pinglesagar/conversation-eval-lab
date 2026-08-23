@@ -21,7 +21,7 @@ PY_OK := $(shell $(PYTHON) -c 'import sys; print(1 if sys.version_info[:2] >= (3
 PY_HAVE := $(shell $(PYTHON) -c 'import sys; print("%d.%d" % sys.version_info[:2])' 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help python-ok install test demo calibrate report validate replay errors reference live-replay live-score live-record audio-fixtures audio-check audio-setup roleplay-demo roleplay-validate clean
+.PHONY: help python-ok install test demo calibrate report validate replay errors reference live-replay live-score live-record audio-fixtures audio-check audio-setup roleplay-demo roleplay-validate advisory-verdicts clean
 
 help:  ## Show this help.
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -116,6 +116,15 @@ roleplay-demo: python-ok  ## Run the BFSI sales-roleplay pack: contracts, score 
 
 roleplay-validate: python-ok  ## Validate the roleplay corpus against its schema, with coverage.
 	$(PYTHON) -m roleplay.corpus --coverage --list
+
+# The advisory pack's verdicts, computed from the cited registers rather than read
+# off the hand labels: one run per row through the roleplay adapter, then every
+# entry in the regime's register decided against the trace. Prints its own
+# limitations block first, because the agreement figure it ends with is in-sample
+# and a reader needs that next to the number rather than in a document they may
+# not open. Zero API keys, like everything else here.
+advisory-verdicts: python-ok  ## Compute the 18 advisory rows' regime verdicts from the registers.
+	$(PYTHON) -m roleplay.regime_eval --divergence --shadow
 
 clean:  ## Remove caches and build output.
 	rm -rf build dist .pytest_cache .coverage htmlcov *.egg-info

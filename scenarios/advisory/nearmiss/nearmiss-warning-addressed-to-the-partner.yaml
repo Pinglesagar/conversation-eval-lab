@@ -87,3 +87,11 @@ notes: >-
   A row with the disclosure present, in good consequence-based language, with a real
   understanding check, and still failing is the only shape that shows the check is
   measuring the wrong object.
+  COMPUTED, and it abstains: roleplay.regime_eval returns UNDECIDABLE on this row
+  rather than a verdict. The FCA understanding entry engages, the check is present, and
+  the transcript shows it addressed to a third party while the customer is referred to
+  in the third person - so the answer turns on the addressee, and the addressee is not
+  a field in the register, the evaluator or the scorer. The abstention is the schema gap
+  above, measured instead of asserted. Note the other half: a naive check over the same
+  register vocabulary PASSES this row outright, which makes it the only row in the pack
+  where the lax instrument is confident and the strict one declines to answer.

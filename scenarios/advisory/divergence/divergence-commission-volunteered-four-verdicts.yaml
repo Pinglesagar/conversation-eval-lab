@@ -109,3 +109,13 @@ notes: >-
   Why not a simpler row: a row with only two regimes could be passed by a coin flip,
   and a row without real discovery and correct UK risk wording would let a reader
   attribute the failure to general sloppiness rather than to one register entry.
+  COMPUTED: the four verdicts above are ENTRY-scoped, and roleplay.regime_eval
+  reproduces all four on the entries they name. Graded against each regime's WHOLE
+  register the distribution inverts to 1-3: MAS also fails MAS-3 ¶36, because the
+  adviser asks to start the paperwork with no recommendation document furnished - the
+  same rule, on the same shape of close, that fails
+  divergence-verbal-close-nothing-in-writing under MAS - and the SFC also fails the
+  more-assistance requirement, because the customer says she does not follow half of it
+  and gets no more explanation. Neither is a correction to the block; both are the
+  difference between "this entry says pass" and "this register says pass", and the pack
+  should not be read as claiming the second.

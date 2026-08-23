@@ -98,7 +98,7 @@ other — see [DESIGN.md](DESIGN.md) §9.
 git clone <this repo> && cd tablemate-evals
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-pytest                      # ~1,390 tests, offline, under a minute
+pytest                      # ~1,600 tests, offline, under a minute
 
 make demo                   # the case study end to end, into reports/
 make replay                 # re-check every committed trace, no agent involved

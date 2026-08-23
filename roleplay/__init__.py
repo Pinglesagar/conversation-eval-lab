@@ -41,6 +41,8 @@ defect it does not itself contain.
 WHERE THINGS ARE
 ----------------
     roleplay.register     jurisdictional disclosure requirements, as records
+    roleplay.advisory     the advisory corpus's vocabularies and the four registers
+    roleplay.regime_eval  the registers computed: one verdict per regime, per entry
     roleplay.persona      the customer: concerns, objections, manner
     roleplay.scorer       the rubric, the score card, the feedback
     roleplay.runtime      the adapter: one session, one trace, two stages
@@ -52,8 +54,12 @@ WHERE THINGS ARE
     roleplay.demo         `python -m roleplay.demo`, or `make roleplay-demo`
 
 Only `roleplay.runtime`, `roleplay.contracts`, `roleplay.consistency`,
-`roleplay.calibration` and `roleplay.corpus` import from `lab`. Everything that
-decides, acts, grades or remembers is `lab`-free.
+`roleplay.calibration`, `roleplay.corpus` and `roleplay.regime_eval` import from
+`lab`. Everything that decides, acts, grades or remembers is `lab`-free — with
+`regime_eval` the one that has to be argued rather than asserted: it consumes a
+`Trace`, borrows `lab.checks.text` for the matching primitives, and asks
+`lab.judges.registry` whether a model-graded limb is allowed to decide anything.
+It answers no, which is the point.
 """
 
 from roleplay.runtime import RoleplayCoach, RoleplayResult, run_roleplay

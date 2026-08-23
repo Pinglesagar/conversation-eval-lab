@@ -506,6 +506,21 @@ class RegimeVerdict(_Block):
     cite a requirement nobody wrote down — which is the failure mode that makes a
     jurisdiction suite look rigorous and prove nothing.
 
+    THE VERDICT IS ENTRY-SCOPED, AND THAT IS NOW MEASURED
+    ----------------------------------------------------
+    `verdict` is a claim about `register_entry`, not about every requirement that
+    regime imposes. The distinction was implicit while these blocks were
+    hand-written and became load-bearing the moment `roleplay.regime_eval` started
+    computing them: it reports both scopings, and on the eighteen-row corpus they
+    agree on 18 of 18 entry-scoped regime verdicts and 16 of 18 whole-register
+    ones. Both deviations are on
+    `divergence-commission-volunteered-four-verdicts`, where the full MAS and SFC
+    registers fail a transcript whose named entries are satisfied — MAS on the
+    recommendation document ¶36 requires before signing, which is the same rule
+    that makes `divergence-verbal-close-nothing-in-writing` fail under MAS. Neither
+    block is wrong; a reader who took `verdict` for a whole-register claim would
+    be.
+
     Attributes:
         regime: One of `roleplay.advisory.REGIMES`.
         verdict: What a competent reviewer in that regime would say.

@@ -14,7 +14,15 @@ different tools, a different regulator, a different failure taxonomy — and
 ```
 make roleplay-validate      # the corpus against its schema, with coverage
 make roleplay-demo          # everything: contracts, consistency, calibration
+make advisory-verdicts      # the advisory pack's verdicts, computed from the registers
 ```
+
+The third command belongs to the sibling pack rather than to this tour — eighteen
+rows under `scenarios/advisory/`, graded against four cited regulatory registers
+by `roleplay/regime_eval.py`, with
+[`docs/ADVISORY_TEST_STRATEGY.md`](ADVISORY_TEST_STRATEGY.md) §4.3 carrying its
+numbers. It is listed here because it runs the same adapter over the same trace
+schema, and because the register it computes against is the one §1 introduces.
 
 Offline, deterministic, zero API keys. Every number in this document is copied
 from a run of `make roleplay-demo` on a clean checkout.
@@ -529,6 +537,8 @@ that row goes red and the exemplary row stays green.
 ```
 roleplay/
   register.py           jurisdictional disclosure requirements, as records
+  advisory.py           the advisory pack's vocabularies and the four registers
+  regime_eval.py        those registers computed: a verdict per regime, per entry
   persona.py            the customer: concerns, objections, manner   (clean)
   scorer.py             the rubric, the score card, the feedback     (3 defects)
   runtime.py            the adapter: one session, one trace, two stages
@@ -549,6 +559,7 @@ tests/
   test_roleplay_sut.py       the product: register, persona, scorer, adapter
   test_roleplay_checks.py    the two contracts, both directions, and the schema
   test_roleplay_evaluation.py consistency, calibration, and the demo's gate
+  test_advisory_regime_eval.py the computed register verdicts, pinned
 ```
 
 113 tests, all offline, all deterministic, no API keys, added to a suite that
@@ -557,11 +568,11 @@ was already green — the three files above still total exactly that:
 ```
 1130 passed          # before this pack
 1243 passed          # after it
-1576 passed          # the whole suite today, after the later phases
+1608 passed          # the whole suite today, after the later phases
 ```
 
-Only `runtime.py`, `contracts.py`, `corpus.py`, `consistency.py` and
-`calibration.py` import from `lab`. Everything that decides, acts, grades or
+Only `runtime.py`, `contracts.py`, `corpus.py`, `consistency.py`,
+`calibration.py` and `regime_eval.py` import from `lab`. Everything that decides, acts, grades or
 remembers is `lab`-free — which is what makes "an instrument pointed at a system,
 rather than a framework the system must adopt" checkable rather than aspirational.
 
