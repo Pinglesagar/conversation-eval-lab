@@ -285,12 +285,26 @@ def test_synthesis_refuses_and_names_both_missing_requirements(
 
 
 def test_a_key_alone_does_not_authorise_spending(monkeypatch: pytest.MonkeyPatch) -> None:
-    """A key exported for other work is not consent for this suite to spend it."""
+    """A key exported for other work is not consent for this suite to spend it.
+
+    Asserted as "the flag is missing and the key is not", rather than as equality
+    against the whole list. `missing_requirements()` also reports an absent
+    `elevenlabs` package, which is an environment fact and not part of this
+    claim — and `[".[dev]"]` does not install that package, so an equality
+    assertion here failed on a fresh clone while passing in every development
+    environment. That is the cardinal rule broken by a test rather than by the
+    code it tests, which is the hardest direction to notice.
+    """
     monkeypatch.delenv("LAB_LIVE_TTS", raising=False)
     monkeypatch.setenv("ELEVENLABS_API_KEY", "not-a-real-key")
     engine = ElevenLabsTTS()
     assert engine.available() is False
-    assert engine.missing_requirements() == ["LAB_LIVE_TTS"]
+    missing = engine.missing_requirements()
+    assert "LAB_LIVE_TTS" in missing
+    assert "ELEVENLABS_API_KEY" not in missing, (
+        "the key is present, so it must not be reported missing; a suite that "
+        "reported it would send the reader to fix the wrong thing"
+    )
 
 
 def test_a_voice_off_the_premade_allowlist_is_refused_at_construction() -> None:
