@@ -91,7 +91,7 @@ Homepage = "https://github.com/OWNER/tablemate-evals"
 Source = "https://github.com/OWNER/tablemate-evals"
 
 [tool.setuptools.packages.find]
-include = ["lab*", "tablemate*"]
+include = ["lab*", "ragcheck*", "tablemate*"]
 exclude = ["tests*", "fixtures*", "scenarios*", "error_analysis*"]
 
 # The judge's prompts, labels and calibration reports are part of the library,
@@ -104,6 +104,14 @@ exclude = ["tests*", "fixtures*", "scenarios*", "error_analysis*"]
 # cannot find its own prompts is not extractable.
 [tool.setuptools.package-data]
 lab = ["judges/**/*.md", "judges/**/*.json", "judges/**/*.jsonl"]
+
+# Same argument, same failure mode, one package over: `ragcheck` reads its three
+# judge prompts, its corpus, its 18-question evaluation set and its hand labels
+# off disk at run time. Only Python files land in a wheel by default, so without
+# this an installed copy could not answer a single question — and an editable
+# install would never notice, which is exactly how the equivalent gap in `lab`
+# went unseen.
+ragcheck = ["prompts/*.md", "fixtures/*.yaml"]
 
 [tool.pytest.ini_options]
 minversion = "8.0"

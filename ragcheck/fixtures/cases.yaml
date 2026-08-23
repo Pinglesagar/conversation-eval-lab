@@ -1,0 +1,153 @@
+# The evaluation set: 18 questions over ragcheck/fixtures/corpus.yaml.
+#
+# Each row is a question plus the chunk ids that genuinely answer it. `gold` is
+# the only ground truth a retrieval metric needs; everything else on a row is
+# there to exercise one specific generation failure.
+#
+# WHY SOME ROWS PIN `retrieved`
+# -----------------------------
+# A generation metric measured over whatever the toy retriever happened to
+# return measures two things at once, and when the number moves you cannot say
+# which one moved. So the eight rows that carry an `answer` also pin the context
+# the answer was produced from. The retrieval metrics are still measured over
+# the live retriever, on all 18 rows; the generation metrics are measured over a
+# fixed context, which is the only way the fixture can assert an exact
+# groundedness fraction and mean it.
+#
+# WHAT EACH ANSWERED ROW IS FOR
+# -----------------------------
+#   c01  the control: retrieval right, every claim supported.
+#   c02  THE CLASSIC FAILURE. Retrieval is perfect (recall@3 = 1.0) and the
+#        answer states a deposit of GBP 25 when the retrieved chunk says 15.
+#        Retrieval metrics see nothing wrong. This is why groundedness exists.
+#   c04  a half-invented answer: one supported claim, one fabricated courtesy.
+#   c05  a grounded refusal. Saying "no" is not a defect.
+#   c09  single-claim control.
+#   c12  GROUNDED AND USELESS. Every claim is supported by a retrieved chunk,
+#        and none of them answers the question that was asked. This is why
+#        groundedness alone cannot be the gate.
+#   c13  a contradiction the corpus states explicitly ("may not be used to pay a
+#        deposit"). The offline stand-in judge gets this one WRONG, on purpose:
+#        word overlap cannot see negation, and its calibration report is where
+#        that shows up.
+#   c18  GROUNDED, RELEVANT, AND STILL NOT THE ANSWER. Retrieval missed p01, so
+#        the deposit amount is absent from the context. The answer is faithful
+#        to what it was given and incomplete anyway. This is the case that
+#        context recall — measured against a reference answer, not against the
+#        generated one — is the only metric here to catch.
+
+cases:
+  - id: c01
+    question: How much notice do I need to cancel without being charged?
+    gold: [p02]
+    retrieved: [p02, p03, p15]
+    answer: >-
+      You can cancel free of charge up to 48 hours before your reservation time.
+      Inside 48 hours we keep the deposit in full.
+    note: control; both claims supported by p02
+
+  - id: c02
+    question: Do I have to pay a deposit for a party of ten?
+    gold: [p01]
+    retrieved: [p01, p03, p14]
+    answer: >-
+      Yes, a party of ten requires a card deposit. It is GBP 25 per person,
+      taken on the night.
+    note: retrieval perfect, generation wrong; p01 says GBP 15 at time of booking
+
+  - id: c03
+    question: Is there a deposit for a table of six?
+    gold: [p03]
+    note: near-duplicate of c01's neighbourhood; p02 is the wrong chunk here
+
+  - id: c04
+    question: How long will you hold my table if I am running late?
+    gold: [p04]
+    retrieved: [p04, p02, p08]
+    answer: >-
+      We hold your table for 20 minutes past the booked time, and after that we
+      will phone you to check you are still coming.
+    note: one supported claim, one invented courtesy
+
+  - id: c05
+    question: Can you guarantee the kitchen is nut free?
+    gold: [p05]
+    retrieved: [p05, p06, p11]
+    answer: >-
+      No, we cannot guarantee a nut-free environment. Your allergy note goes on
+      the booking record and is repeated to the kitchen at service.
+    note: a grounded refusal is a pass
+
+  - id: c06
+    question: Where can I see the allergen information?
+    gold: [p06]
+
+  - id: c07
+    question: How many people fit in the private dining room?
+    gold: [p07]
+    note: the question never says "Cellar Room"; lexical retrieval has to earn this one
+
+  - id: c08
+    question: What time does the kitchen stop taking orders in the evening?
+    gold: [p08]
+
+  - id: c09
+    question: Are you open on a Monday bank holiday?
+    gold: [p09]
+    retrieved: [p09, p08, p12]
+    answer: No, we are closed every Monday, including bank holidays.
+    note: single-claim control
+
+  - id: c10
+    question: Can I bring my dog?
+    gold: [p10]
+
+  - id: c11
+    question: Do you have high chairs for toddlers?
+    gold: [p11]
+
+  - id: c12
+    question: Is there a dress code for the Cellar Room?
+    gold: [p12]
+    retrieved: [p12, p07, p10]
+    answer: >-
+      The Cellar Room seats up to 22 people. Minimum spend is GBP 900 on Fridays
+      and Saturdays.
+    note: fully grounded in p07, answers a different question than the one asked
+
+  - id: c13
+    question: Can I pay the deposit with a gift voucher?
+    gold: [p13, p01]
+    retrieved: [p13, p01, p02]
+    answer: >-
+      Gift vouchers are valid for 12 months from issue, and a voucher may be
+      used against your deposit.
+    note: second claim contradicts p13; the lexical stand-in cannot see negation
+
+  - id: c14
+    question: We are fourteen people, do we have to pre-order?
+    gold: [p14]
+
+  - id: c15
+    question: Can I move my booking to another night?
+    gold: [p15]
+
+  - id: c16
+    question: What happens if we do not turn up?
+    gold: [p16]
+
+  - id: c17
+    question: What is the minimum spend for the Cellar Room on a Saturday?
+    gold: [p07]
+
+  - id: c18
+    question: I booked for nine. What will I be charged if I cancel tomorrow?
+    gold: [p01, p02]
+    retrieved: [p02, p03, p15]
+    answer: >-
+      Cancelling tomorrow is inside the 48-hour window, so your deposit is kept
+      in full.
+    reference: >-
+      A party of nine pays a deposit of GBP 15 per person. Cancelling tomorrow
+      is inside the 48-hour window, so the deposit is kept in full.
+    note: retrieval missed p01; the answer is faithful to its context and incomplete

@@ -1,0 +1,208 @@
+# Hand labels for the claim-support judge: 18 claim/context pairs.
+#
+# The question this set answers is not "is the RAG system any good". It is "how
+# often is the thing that grades the RAG system right", and it is the only reason
+# any groundedness number in this repository can be quoted at all.
+#
+# HOW TO READ A ROW
+# ----------------
+#   label: pass   the claim IS supported by the listed passages
+#   label: fail   it is NOT supported — wrong figure, contradicted, or absent
+#
+# `fail` is the positive class, because the error that matters is a missed
+# unsupported claim. TPR is then recall on exactly the defect a grounding check
+# exists to find, and `lab.judges.registry` gates on TPR and TNR separately for
+# the reason it gives: a judge with 1.00 TNR and 0.20 TPR has a respectable
+# average and misses four fifths of the defects.
+#
+# WHERE THE ROWS COME FROM
+# ------------------------
+# Sixteen are every claim of every answer in cases.yaml, checked against the
+# context that answer was produced from — so this set covers the metric's real
+# inputs rather than a convenient subset.
+#
+# Two are probes, written to target a blind spot I already knew the offline
+# lexical oracle had. Writing the adversarial items on purpose is the difference
+# between a calibration set and a sample: a random sample of a working system
+# mostly contains items everything gets right, and tells you nothing about the
+# cases where the instrument fails.
+#
+#   probe-paraphrase   the same fact as p15 with no shared vocabulary. A human
+#                      says supported; word overlap says no. FALSE POSITIVE.
+#   probe-figure       20 minutes in the passage, 30 in the claim, everything
+#                      else identical. A human says unsupported; so does the
+#                      oracle, and the figure check is why.
+#
+# The row I would put in front of an interviewer is c13#claim2. The passage says
+# vouchers "may not be used to pay a deposit"; the claim says a voucher "may be
+# used against your deposit"; every content word matches and the meaning is
+# reversed. The oracle calls it supported. That single row is why this file
+# exists, why the gate refuses the oracle, and why "groundedness: 0.92" is not a
+# statement about a product until somebody has measured the grader.
+
+labeller: repo author, by hand, reading each passage
+
+items:
+  - item_id: c01#claim1
+    source: c01
+    question: How much notice do I need to cancel without being charged?
+    context: [p02, p03, p15]
+    claim: You can cancel free of charge up to 48 hours before your reservation time.
+    label: pass
+    note: p02 states the 48-hour free-cancellation window in almost these words.
+
+  - item_id: c01#claim2
+    source: c01
+    question: How much notice do I need to cancel without being charged?
+    context: [p02, p03, p15]
+    claim: Inside 48 hours we keep the deposit in full.
+    label: pass
+    note: >-
+      p02 says "inside 48 hours the deposit is retained in full". "Keep" for
+      "retain" is a paraphrase, not a new claim.
+
+  - item_id: c02#claim1
+    source: c02
+    question: Do I have to pay a deposit for a party of ten?
+    context: [p01, p03, p14]
+    claim: Yes, a party of ten requires a card deposit.
+    label: pass
+    note: >-
+      p01 covers parties of eight or more, so ten is inside it. A claim narrower
+      than the passage is supported by it.
+
+  - item_id: c02#claim2
+    source: c02
+    question: Do I have to pay a deposit for a party of ten?
+    context: [p01, p03, p14]
+    claim: It is GBP 25 per person, taken on the night.
+    label: fail
+    note: >-
+      p01 says GBP 15 per person, taken at the time of booking. Both halves are
+      wrong; either one alone would be enough.
+
+  - item_id: c04#claim1
+    source: c04
+    question: How long will you hold my table if I am running late?
+    context: [p04, p02, p08]
+    claim: We hold your table for 20 minutes past the booked time.
+    label: pass
+    note: p04, verbatim in substance.
+
+  - item_id: c04#claim2
+    source: c04
+    question: How long will you hold my table if I am running late?
+    context: [p04, p02, p08]
+    claim: After that we will phone you to check you are still coming.
+    label: fail
+    note: >-
+      No passage mentions calling the guest. A plausible courtesy, invented — the
+      commonest shape of ungrounded output and the hardest for a reader to spot.
+
+  - item_id: c05#claim1
+    source: c05
+    question: Can you guarantee the kitchen is nut free?
+    context: [p05, p06, p11]
+    claim: No, we cannot guarantee a nut-free environment.
+    label: pass
+    note: p05 says the restaurant does not guarantee one. A grounded refusal.
+
+  - item_id: c05#claim2
+    source: c05
+    question: Can you guarantee the kitchen is nut free?
+    context: [p05, p06, p11]
+    claim: Your allergy note goes on the booking record and is repeated to the kitchen at service.
+    label: pass
+    note: p05, both halves.
+
+  - item_id: c09#claim1
+    source: c09
+    question: Are you open on a Monday bank holiday?
+    context: [p09, p08, p12]
+    claim: No, we are closed every Monday, including bank holidays.
+    label: pass
+    note: p09, including the bank-holiday clause.
+
+  - item_id: c12#claim1
+    source: c12
+    question: Is there a dress code for the Cellar Room?
+    context: [p12, p07, p10]
+    claim: The Cellar Room seats up to 22 people.
+    label: pass
+    note: >-
+      p07. Supported and irrelevant: the answer relevance judge is the one that
+      objects to this claim, and it is a separate question on purpose.
+
+  - item_id: c12#claim2
+    source: c12
+    question: Is there a dress code for the Cellar Room?
+    context: [p12, p07, p10]
+    claim: Minimum spend is GBP 900 on Fridays and Saturdays.
+    label: pass
+    note: p07, figure included.
+
+  - item_id: c13#claim1
+    source: c13
+    question: Can I pay the deposit with a gift voucher?
+    context: [p13, p01, p02]
+    claim: Gift vouchers are valid for 12 months from issue.
+    label: pass
+    note: p13, figure included.
+
+  - item_id: c13#claim2
+    source: c13
+    question: Can I pay the deposit with a gift voucher?
+    context: [p13, p01, p02]
+    claim: A voucher may be used against your deposit.
+    label: fail
+    note: >-
+      p13 says vouchers may NOT be used to pay a deposit. The claim asserts the
+      opposite with the same vocabulary, which is exactly the case word overlap
+      cannot decide.
+
+  - item_id: c18#claim1
+    source: c18
+    question: I booked for nine. What will I be charged if I cancel tomorrow?
+    context: [p02, p03, p15]
+    claim: Cancelling tomorrow is inside the 48-hour window, so your deposit is kept in full.
+    label: pass
+    note: >-
+      p02 supports the window and the retention. Faithful to the context it was
+      given, and still an incomplete answer, because the context was incomplete.
+
+  - item_id: c18#ref1
+    source: c18
+    question: I booked for nine. What will I be charged if I cancel tomorrow?
+    context: [p02, p03, p15]
+    claim: A party of nine pays a deposit of GBP 15 per person.
+    label: fail
+    note: >-
+      True of the corpus, absent from this context: p01 was not retrieved. This is
+      the row that makes context recall 1/2 rather than 2/2, and it is a retrieval
+      finding, not a generation one.
+
+  - item_id: c18#ref2
+    source: c18
+    question: I booked for nine. What will I be charged if I cancel tomorrow?
+    context: [p02, p03, p15]
+    claim: Cancelling tomorrow is inside the 48-hour window, so the deposit is kept in full.
+    label: pass
+    note: p02.
+
+  - item_id: probe-paraphrase
+    question: Can I move my booking to another night?
+    context: [p15]
+    claim: Bookings can be pushed back a single time at no cost.
+    label: pass
+    note: >-
+      p15 says a booking may be moved once free of charge. Same fact, almost no
+      shared vocabulary. Written to catch a support check that only counts words.
+
+  - item_id: probe-figure
+    question: How long will you hold my table if I am running late?
+    context: [p04]
+    claim: Tables are held for 30 minutes past the booked time.
+    label: fail
+    note: >-
+      p04 says 20 minutes. Every word but one matches, and the one that does not
+      is the whole claim.

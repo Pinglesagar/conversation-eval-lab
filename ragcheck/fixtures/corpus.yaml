@@ -1,0 +1,138 @@
+# The corpus a RAG system would retrieve over: a restaurant's policy handbook.
+#
+# Sixteen chunks, written to make retrieval genuinely non-trivial rather than to
+# flatter it. Three properties are deliberate:
+#
+#   * NEAR-DUPLICATES. p02 and p03 both talk about cancelling; only one of them
+#     applies to a party of nine. A retriever that scores on surface overlap
+#     returns both, and a generator that reads the wrong one produces a
+#     confident, well-grounded, wrong answer. That is the failure this corpus
+#     exists to expose.
+#   * CONTRADICTION BAIT. p13 says vouchers may NOT be used against the deposit.
+#     A support check that works on word overlap cannot see the negation, which
+#     is why the offline stand-in in ragcheck/offline.py gets it wrong and its
+#     calibration report says so out loud.
+#   * SPLIT ANSWERS. c18 needs p01 for the deposit amount and p02 for the
+#     window. No single chunk answers it, so recall@1 is 0.5 at best — the
+#     shape of question that makes k a design decision rather than a default.
+#
+# Everything here is invented. It is a policy handbook for a restaurant that
+# does not exist, in the same domain as the rest of this repository.
+
+doc: "TableMate house policy handbook (fictional), rev 7"
+
+chunks:
+  - id: p01
+    title: Deposits for large parties
+    section: "2.1 Deposits"
+    text: >-
+      Parties of eight or more require a card deposit of GBP 15 per person,
+      taken at the time of booking. The deposit is redeemed against the final
+      bill on the night.
+
+  - id: p02
+    title: Cancellation window
+    section: "2.2 Cancellations"
+    text: >-
+      A booking may be cancelled free of charge up to 48 hours before the
+      reservation time. Inside 48 hours the deposit is retained in full.
+
+  - id: p03
+    title: Cancellation for smaller parties
+    section: "2.2 Cancellations"
+    text: >-
+      Parties of seven or fewer carry no deposit, so there is nothing to
+      forfeit and no charge for cancelling at any notice.
+
+  - id: p04
+    title: Late arrival
+    section: "3.1 Service"
+    text: >-
+      Tables are held for 20 minutes past the booked time. After 20 minutes the
+      table may be released to walk-ins.
+
+  - id: p05
+    title: Allergy notes
+    section: "4.1 Allergens"
+    text: >-
+      Every allergy note must be entered on the booking record and repeated to
+      the kitchen at service. The restaurant does not guarantee a nut-free
+      environment.
+
+  - id: p06
+    title: Allergen matrix
+    section: "4.2 Allergens"
+    text: >-
+      A full fourteen-allergen matrix is available on request; the duty manager
+      keeps the current version behind the bar.
+
+  - id: p07
+    title: The Cellar Room
+    section: "5.1 Private dining"
+    text: >-
+      The Cellar Room seats up to 22 and is booked on a minimum-spend basis
+      rather than a per-head deposit. Minimum spend is GBP 900 on Fridays and
+      Saturdays.
+
+  - id: p08
+    title: Service times
+    section: "1.1 Hours"
+    text: >-
+      Service runs Tuesday to Sunday, 12:00 to 14:30 and 18:00 to 22:00. The
+      kitchen closes to new orders 30 minutes before the end of each service.
+
+  - id: p09
+    title: Monday closure
+    section: "1.2 Hours"
+    text: >-
+      The restaurant is closed on Mondays, including bank holidays.
+
+  - id: p10
+    title: Dogs
+    section: "3.4 Guests"
+    text: >-
+      Assistance dogs are welcome throughout. Other dogs are permitted on the
+      terrace only.
+
+  - id: p11
+    title: Children
+    section: "3.5 Guests"
+    text: >-
+      High chairs are available, two per service, so they are allocated in
+      booking order. Children's portions are offered from the main menu at half
+      price.
+
+  - id: p12
+    title: Dress code
+    section: "3.6 Guests"
+    text: >-
+      There is no formal dress code anywhere in the restaurant. Guests are asked
+      to avoid sportswear in the Cellar Room.
+
+  - id: p13
+    title: Gift vouchers
+    section: "2.4 Payment"
+    text: >-
+      Gift vouchers are valid for 12 months from issue and may be used against
+      food only. Vouchers may not be used to pay a deposit.
+
+  - id: p14
+    title: Group menu
+    section: "5.2 Large groups"
+    text: >-
+      Parties of twelve or more order from a fixed group menu, chosen at least
+      72 hours in advance.
+
+  - id: p15
+    title: Amendments
+    section: "2.3 Amendments"
+    text: >-
+      A booking may be moved once free of charge, provided the new date is
+      within 30 days and the request arrives more than 48 hours ahead.
+
+  - id: p16
+    title: No-shows
+    section: "2.5 No-shows"
+    text: >-
+      A no-show forfeits the deposit in full and is recorded on the guest's
+      profile.
