@@ -1,0 +1,44 @@
+id: edge-ambiguous-time-request
+title: Asks for a table "eightish" on the weekend
+persona: chatty_planner
+tags: [booking, availability, vague-opener]
+
+goal:
+  intent: get a table around eight, some time at the weekend
+  facts:
+    party_size: "2"
+    vague_time: you say eightish, and you mean around eight in the evening
+    vague_date: you say the weekend and you do not mind which night
+    time: 8pm
+    date: Saturday
+    name: Neve Ashworth
+  on_request_only: [name]
+  ask_patterns:
+    name: ["your name", "name for the booking"]
+  success_criteria:
+    - the vague day and time are resolved with the caller, not silently invented
+    - the booking that results carries a definite date and time
+
+tools:
+  expected: [search_tables, create_booking]
+  min_calls: {create_booking: 1}
+  args:
+    - tool: create_booking
+      arg: date
+      op: present
+    - tool: create_booking
+      arg: time
+      op: present
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+
+promises: {}
+
+notes: >-
+  Under-specified input, which a booking tool cannot accept. The row is about where
+  the ambiguity gets resolved: with the caller, or silently inside the agent. The
+  `present` predicates deliberately do not test *which* slot was chosen, because
+  any of several would be correct and a corpus that insisted on one would be
+  measuring compliance with the author's guess rather than good behaviour.

@@ -1,0 +1,47 @@
+id: edge-two-bookings-one-call
+title: Two separate tables on two nights, one phone call
+persona: corporate_pa
+tags: [multi-booking, booking, third-party]
+
+goal:
+  intent: book two separate dinners for your director on consecutive nights
+  facts:
+    party_size: "2"
+    date: Wednesday
+    second_date: and another table on Thursday, same time, same size
+    time: 7pm
+    name: Helena Marchetti
+  on_request_only: []
+  success_criteria:
+    - two reservations exist, not one
+    - both carry the director's name and the right party size
+
+tools:
+  expected: [create_booking]
+  min_calls: {create_booking: 2}
+  max_calls: {create_booking: 2}
+  args:
+    - tool: create_booking
+      arg: name
+      op: contains
+      ref: name
+      match: tokens
+      quantifier: all
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+      quantifier: all
+
+promises: {}
+
+no_re_ask:
+  fields:
+    - name: party_size
+    - name: time
+
+notes: >-
+  Counting is the check here. `min_calls` and `max_calls` are both two, because the
+  two failures are symmetrical and equally invisible in a fluent transcript: only
+  one table booked while both are confirmed, or a duplicate created for the same
+  night. The `all` quantifiers make the second booking as accountable as the first.

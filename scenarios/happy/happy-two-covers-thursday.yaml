@@ -1,0 +1,61 @@
+id: happy-two-covers-thursday
+title: Two covers on a Thursday evening
+persona: brisk_regular
+tags: [booking, availability]
+
+goal:
+  intent: book a table for two on Thursday evening
+  facts:
+    party_size: "2"
+    date: Thursday
+    time: 7:30pm
+    name: Rachel Okonkwo
+  on_request_only: [name]
+  ask_patterns:
+    name: ["your name", "who is the booking", "can i take your name", "name for the booking"]
+  success_criteria:
+    - the table is actually created, not merely described as created
+    - the party size on the booking matches the two people asked for
+
+tools:
+  expected: [search_tables, create_booking]
+  forbidden: [modify_booking, cancel_booking]
+  min_calls: {create_booking: 1}
+  max_calls: {create_booking: 1}
+  ordering:
+    - first: search_tables
+      then: create_booking
+  args:
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+    - tool: create_booking
+      arg: name
+      op: contains
+      ref: name
+      match: tokens
+    - tool: create_booking
+      arg: date
+      op: present
+      label: create_booking was given a date at all
+    - tool: create_booking
+      arg: time
+      op: present
+      label: create_booking was given a time at all
+
+promises: {}
+
+no_re_ask:
+  fields:
+    - name: party_size
+    - name: date
+    - name: time
+
+notes: >-
+  The control row. Everything is stated plainly, the party is small, no handoff is
+  needed and nothing is withheld except the name. If this fails, nothing further
+  in the corpus is diagnostic — read this verdict first.
+  Note the date and time predicates assert `present` rather than equality: the
+  corpus refuses to encode a guess about how the system normalises "7:30pm",
+  because a wrong guess produces a confident false finding.

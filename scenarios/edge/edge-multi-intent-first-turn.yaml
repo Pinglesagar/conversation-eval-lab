@@ -1,0 +1,43 @@
+id: edge-multi-intent-first-turn
+title: Booking request and a policy question in one breath
+persona: brisk_regular
+tags: [multi-intent, booking, policy]
+
+goal:
+  intent: book Friday for four and ask about the set menu in the same sentence
+  facts:
+    party_size: "4"
+    date: Friday
+    time: 7:30pm
+    name: Owen Trevithick
+    topic: whether there is a set menu for groups
+  on_request_only: [name]
+  ask_patterns:
+    name: ["your name", "name for the booking", "who is the booking"]
+  success_criteria:
+    - both requests are served, not just the one the agent recognised first
+    - the booking exists and the menu question is answered from policy
+
+tools:
+  expected: [create_booking, check_policy]
+  min_calls: {create_booking: 1, check_policy: 1}
+  args:
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+
+promises: {}
+
+no_re_ask:
+  fields:
+    - name: party_size
+    - name: date
+    - name: time
+
+notes: >-
+  Two intents arriving together is the ordinary case in speech and the awkward case
+  for a router: whichever intent is classified wins, and the other is dropped
+  without any error. Requiring both tools makes the dropped half visible; the
+  no-re-ask fields catch the variant where the agent restarts the booking from
+  scratch after the detour.

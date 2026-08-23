@@ -1,0 +1,68 @@
+id: edge-dietary-then-policy-detour
+title: Peanut allergy, then a question about the kitchen's allergen handling
+persona: chatty_planner
+tags: [booking, dietary, policy, multi-intent]
+
+goal:
+  intent: book for two with a severe peanut allergy and ask how the kitchen handles allergens
+  facts:
+    party_size: "2"
+    date: Friday
+    time: 7pm
+    name: Sam Ellery
+    dietary: one of you has a severe peanut allergy
+    topic: how the kitchen avoids cross-contamination
+  on_request_only: []
+  success_criteria:
+    - the allergen question is answered from policy
+    - the booking is created for two
+    - the allergy reaches the booking's notes despite the detour
+
+tools:
+  expected: [check_policy, create_booking]
+  min_calls: {check_policy: 1, create_booking: 1}
+  args:
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+
+promises: {}
+
+propagation:
+  - name: propagation:allergy
+    tool: create_booking
+    arg: notes
+    require_handoff: true
+    field:
+      name: allergy
+      value: peanut
+      supply_patterns:
+        - "(?i)\\bpeanut"
+        - "(?i)\\ballerg"
+
+no_re_ask:
+  fields:
+    - name: party_size
+    - name: dietary
+      value: peanut
+
+expected_failure:
+  contracts: [propagation:allergy]
+  since: first observed in the 0.1.0 case-study build
+  expectation: >-
+    We expect the allergy to be stated once, acknowledged in conversation, and then
+    absent from the create_booking notes after the call passes through the agent
+    that answers the allergen question. Nothing is expected to error: the booking
+    should be well formed, the transcript reassuring, and the notes field built
+    from whatever context survived the boundary. The evidence should show the
+    caller's words, the handoffs either side of the detour, and the arguments the
+    booking was finally created with.
+
+notes: >-
+  The loaded version of happy-parking-question-midbooking: same conversational
+  shape, but the detail crossing the boundary is one that matters at the table.
+  `require_handoff` is true so that the contract is asserting the specific
+  hypothesis "the boundary lost it" rather than the general one "the note is
+  missing" — on a trace with no handoff it reports itself inapplicable instead of
+  claiming a finding it cannot support.

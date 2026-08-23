@@ -1,0 +1,43 @@
+id: happy-parking-question-midbooking
+title: Parking question in the middle of a booking, then finish
+persona: chatty_planner
+tags: [policy, booking, multi-intent]
+
+goal:
+  intent: book a table for four and check whether there is parking
+  facts:
+    party_size: "4"
+    date: Thursday
+    time: 7pm
+    name: Fiona Cadwell
+    topic: whether the restaurant has its own parking
+  on_request_only: []
+  success_criteria:
+    - the parking question is answered from policy
+    - the booking still completes afterwards, with the details already given
+
+tools:
+  expected: [check_policy, create_booking]
+  min_calls: {check_policy: 1, create_booking: 1}
+  args:
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+    - tool: check_policy
+      arg: topic
+      op: present
+
+promises: {}
+
+no_re_ask:
+  fields:
+    - name: party_size
+    - name: date
+    - name: time
+
+notes: >-
+  A policy detour with nothing fragile riding on it. Whatever the assistant does
+  internally to answer the parking question, the party size, date and time were
+  already given and must not be requested again on the way back. This row is the
+  clean baseline for the detour shape; the edge suite carries the loaded version.

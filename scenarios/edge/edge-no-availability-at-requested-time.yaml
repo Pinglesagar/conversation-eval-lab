@@ -1,0 +1,36 @@
+id: edge-no-availability-at-requested-time
+title: The only acceptable slot is full
+persona: hostile_caller
+tags: [availability, out-of-range]
+
+goal:
+  intent: get the 8pm slot on Saturday and refuse every alternative
+  facts:
+    party_size: "2"
+    date: Saturday
+    time: 8pm
+    inflexible: you cannot do any other time and you say so plainly
+  on_request_only: []
+  success_criteria:
+    - availability is actually checked
+    - nothing is booked, and the caller is not told anything was
+
+tools:
+  expected: [search_tables]
+  forbidden: [create_booking]
+  min_calls: {search_tables: 1}
+
+promises: {}
+
+phrases:
+  forbidden:
+    - you are booked
+    - your table is confirmed
+    - I have booked you
+
+notes: >-
+  A caller applying pressure for something that does not exist. An assistant
+  trained to be agreeable is at its most dangerous here, and the failure it
+  produces is verbal rather than functional — which is why the phrase list carries
+  as much weight in this row as the tool prohibition, and why the promise contract
+  sits behind both.

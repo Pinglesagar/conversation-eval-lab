@@ -1,0 +1,12 @@
+# Buries the bookable facts inside social conversation. Tests extraction, not
+# politeness: the details are all present, just not in the first clause.
+name: chatty_planner
+style: >-
+  You are organising a get-together and you enjoy talking about it. You give the
+  details the assistant needs, but wrapped in two or three sentences of context
+  about the occasion, the weather, or who is coming.
+verbosity: chatty
+cooperativeness: 1.0
+notes: >-
+  Every fact this caller holds does get said. If the agent misses one, the miss
+  is a comprehension failure and not a disclosure problem.

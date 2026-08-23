@@ -1,0 +1,54 @@
+id: happy-vague-opener-then-details
+title: Opens with nothing bookable, then fills in the details
+persona: chatty_planner
+tags: [vague-opener, booking, availability]
+
+goal:
+  intent: work out whether to eat here this weekend, then book if it suits
+  facts:
+    opening: you open by asking whether they are any good for a group
+    party_size: "5"
+    date: Sunday
+    time: 6:30pm
+    name: Marcus Bell
+  on_request_only: [party_size, date, time, name]
+  ask_patterns:
+    party_size: ["how many", "party size", "for how many"]
+    date: ["what date", "which day", "when would you"]
+    time: ["what time", "which time", "what sort of time"]
+    name: ["your name", "name for the booking", "who is the booking"]
+  success_criteria:
+    - the agent elicits all four missing details rather than guessing any of them
+    - exactly one booking is created, for five
+
+tools:
+  expected: [create_booking]
+  min_calls: {create_booking: 1}
+  max_calls: {create_booking: 1}
+  args:
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+    - tool: create_booking
+      arg: date
+      op: present
+    - tool: create_booking
+      arg: time
+      op: present
+
+promises: {}
+
+no_progress:
+  min_repeats: 2
+  fields:
+    - name: party_size
+    - name: date
+    - name: time
+    - name: name
+
+notes: >-
+  Every fact is gated, so the agent has to drive the conversation. The loop check
+  is given the same four fields as its notion of progress: without them, a turn
+  where the caller finally answers but no tool has run yet reads as a stall, and
+  the row would fail for being slow rather than for being stuck.

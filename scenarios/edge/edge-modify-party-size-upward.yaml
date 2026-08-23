@@ -1,0 +1,55 @@
+id: edge-modify-party-size-upward
+title: Adding a guest to an existing reservation
+persona: brisk_regular
+tags: [modification, digits]
+
+goal:
+  intent: add one more person to an existing booking for four
+  facts:
+    booking_ref: TM-3364
+    party_size: "5"
+    old_party_size: the booking is currently for four
+    date: Thursday
+  on_request_only: []
+  success_criteria:
+    - the existing reservation is modified rather than duplicated
+    - the reference the caller read out is the one used
+
+tools:
+  expected: [modify_booking]
+  forbidden: [create_booking]
+  min_calls: {modify_booking: 1}
+  args:
+    - tool: modify_booking
+      arg: booking_ref
+      op: contains
+      ref: booking_ref
+      quantifier: all
+    - tool: modify_booking
+      arg: changes
+      op: present
+
+promises: {}
+
+no_re_ask:
+  fields:
+    - name: booking_ref
+    - name: date
+    - name: party_size
+
+expected_failure:
+  contracts: [no-re-ask]
+  since: first observed in the 0.1.0 case-study build
+  expectation: >-
+    We expect the reference and the day to be handled correctly and the new party
+    size to be asked for again, even though the caller opened the call by saying
+    how many people it would be. Three fields are tracked, so the contract's detail
+    line reports how many supplied fields came through clean against how many were
+    supplied at all — which field is re-asked is the finding, not simply that one
+    was.
+
+notes: >-
+  A modification that arrives with no preceding booking in the same call, so the
+  context the second agent needs came from the caller rather than from an earlier
+  tool result. That distinction matters: it separates "the handoff dropped it" from
+  "the agent never had it".

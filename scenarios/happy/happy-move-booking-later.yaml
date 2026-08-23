@@ -1,0 +1,40 @@
+id: happy-move-booking-later
+title: Moving an existing booking half an hour later
+persona: brisk_regular
+tags: [modification, digits]
+
+goal:
+  intent: move an existing booking from 7pm to 7:30pm
+  facts:
+    booking_ref: TM-2098
+    time: 7:30pm
+    old_time: the booking is currently at 7pm
+  on_request_only: []
+  success_criteria:
+    - modify_booking runs against the caller's own reference
+    - the reservation is not cancelled and re-created behind the caller's back
+
+tools:
+  expected: [modify_booking]
+  forbidden: [cancel_booking, create_booking]
+  min_calls: {modify_booking: 1}
+  args:
+    - tool: modify_booking
+      arg: booking_ref
+      op: contains
+      ref: booking_ref
+    - tool: modify_booking
+      arg: changes
+      op: present
+
+promises: {}
+
+no_re_ask:
+  fields:
+    - name: booking_ref
+    - name: time
+
+notes: >-
+  Modification is expressed as a change, not as a cancel-and-rebook: the two look
+  identical to the caller and are not identical to the restaurant, which is why
+  cancel_booking and create_booking are both forbidden here.

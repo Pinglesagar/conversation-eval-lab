@@ -1,0 +1,35 @@
+id: edge-correction-of-party-size
+title: Caller corrects the party size mid-booking
+persona: chatty_planner
+tags: [correction, booking]
+
+goal:
+  intent: book a table for two, then change your mind and say it is four
+  facts:
+    party_size: "4"
+    old_party_size: you said two at first and then corrected it to four
+    date: Saturday
+    time: 7pm
+    name: Neve Ashworth
+  on_request_only: []
+  success_criteria:
+    - the booking is created for the corrected party size
+    - no reservation exists for the number the caller retracted
+
+tools:
+  expected: [create_booking]
+  min_calls: {create_booking: 1}
+  args:
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+      quantifier: all
+      label: every create_booking call uses the corrected party size
+
+promises: {}
+
+notes: >-
+  The quantifier is `all`, not `any`: an agent that books two and then books four
+  satisfies "some call had the right number" while leaving a stale reservation
+  behind. A correction is only handled if nothing survives from before it.

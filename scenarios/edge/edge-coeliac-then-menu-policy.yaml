@@ -1,0 +1,51 @@
+id: edge-coeliac-then-menu-policy
+title: Coeliac guest, then a question about the gluten-free menu
+persona: polite_elder
+tags: [booking, dietary, policy]
+
+goal:
+  intent: book for three including a coeliac guest and ask what they can eat
+  facts:
+    party_size: "3"
+    date: Sunday
+    time: 12:30pm
+    name: Edward Naylor
+    dietary: your daughter is coeliac
+    topic: what is on the gluten-free menu
+  on_request_only: []
+  success_criteria:
+    - the menu question is answered from policy
+    - the coeliac requirement is recorded on the booking
+
+tools:
+  expected: [check_policy, create_booking]
+  min_calls: {check_policy: 1, create_booking: 1}
+
+promises: {}
+
+propagation:
+  - name: propagation:coeliac
+    tool: create_booking
+    arg: notes
+    require_handoff: true
+    field:
+      name: coeliac
+      value: coeliac
+      supply_patterns:
+        - "(?i)coeliac"
+        - "(?i)gluten"
+
+expected_failure:
+  contracts: [propagation:coeliac]
+  since: first observed in the 0.1.0 case-study build
+  expectation: >-
+    We expect the same shape of loss as the peanut row, with a different word and a
+    different caller, so that a passing verdict cannot be an artifact of one token
+    or one persona. The requirement should be discussed helpfully and then be
+    missing from the booking's notes.
+
+notes: >-
+  A second instance of one hypothesis, varied deliberately in the two dimensions
+  most likely to make a single row lucky: the vocabulary matched against, and the
+  caller's speaking style. One row is an anecdote; two rows that agree are the
+  beginning of a measurement.

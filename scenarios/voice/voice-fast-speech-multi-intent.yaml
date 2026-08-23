@@ -1,0 +1,65 @@
+id: voice-fast-speech-multi-intent
+title: Two requests at speed in a single turn
+persona: hurried_commuter
+tags: [fast-speech, multi-intent, booking]
+
+goal:
+  intent: >-
+    ask for a table for four on Saturday and whether there is parking, both in
+    one fast sentence from a station platform
+  facts:
+    party_size: "4"
+    date: Saturday
+    time: 7pm
+    topic: whether there is parking
+    name: Tomas Bergqvist
+  on_request_only: [name]
+  ask_patterns:
+    name: ["your name", "name for the booking", "who is the booking"]
+  success_criteria:
+    - both requests in the fast turn are handled
+    - the parking answer comes from the policy sheet
+    - the booking is for four, not for a number heard in passing
+
+tools:
+  expected: [check_policy, create_booking]
+  min_calls: {check_policy: 1, create_booking: 1}
+  args:
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+      quantifier: all
+
+promises: {}
+
+no_re_ask:
+  fields:
+    - name: party_size
+    - name: date
+
+voice:
+  sample_rate: 16000
+  latency_budget_ms: 1200
+  perturbations:
+    - name: resample_speed
+      params: {factor: 1.4}
+  reference_transcript:
+    - >-
+      Table for four Saturday around seven and is there parking anywhere near
+      you?
+    - Tomas Bergqvist.
+
+notes: >-
+  Speed and density at the same time, because they interact: a compressed turn
+  degrades the transcript, and a dense turn gives the agent two things to lose in
+  it. The failure this row is looking for is the dropped second intent — the
+  booking is made, the parking question is never answered, and nothing in the
+  call looks wrong, because the caller got most of what they rang for and may not
+  notice the rest until they are circling the block.
+  .
+  The latency budget is tighter here than elsewhere in the suite, at 1200 ms
+  rather than 1500. A caller speaking this fast is the caller least willing to sit
+  through a pause, so the budget is a property of the persona rather than of the
+  hardware. `resample_speed` is a deterministic resampling with no random
+  component, so no seed is needed.

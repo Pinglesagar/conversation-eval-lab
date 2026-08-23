@@ -1,0 +1,42 @@
+id: edge-correction-of-date-after-search
+title: Caller changes the day after availability was checked
+persona: brisk_regular
+tags: [correction, availability, booking]
+
+goal:
+  intent: ask about Thursday, then switch to Friday once you hear the times
+  facts:
+    party_size: "3"
+    date: Friday
+    old_date: you asked about Thursday first and then switched to Friday
+    time: 8pm
+    name: Lucas Fenn
+  on_request_only: []
+  success_criteria:
+    - availability is re-checked for the new day rather than reused from the old one
+    - the booking that exists is for the day the caller settled on
+
+tools:
+  expected: [search_tables, create_booking]
+  min_calls: {search_tables: 2, create_booking: 1}
+  ordering:
+    - first: search_tables
+      then: create_booking
+      strict: true
+  args:
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+    - tool: create_booking
+      arg: date
+      op: present
+
+promises: {}
+
+notes: >-
+  A correction that invalidates work already done. Two searches are required
+  because the first one answered a question the caller withdrew, and a strict
+  ordering rule insists the booking sits behind a search rather than behind the
+  stale one. The date argument is asserted `present` rather than equal, since the
+  corpus does not encode an opinion about date formatting.

@@ -1,0 +1,48 @@
+id: edge-large-party-of-six
+title: Group booking for six on a Friday
+persona: brisk_regular
+tags: [booking, large-party, boundary]
+
+goal:
+  intent: book a table for six on Friday evening
+  facts:
+    party_size: "6"
+    date: Friday
+    time: 8pm
+    name: Rachel Okonkwo
+  on_request_only: [name]
+  ask_patterns:
+    name: ["your name", "name for the booking", "who is the booking"]
+  success_criteria:
+    - a reservation for six actually exists at the end of the call
+    - whatever the caller is told about the reservation is true
+
+tools:
+  expected: [create_booking]
+  min_calls: {create_booking: 1}
+  args:
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+
+promises: {}
+
+expected_failure:
+  contracts: [tools, promise-kept]
+  since: first observed in the 0.1.0 case-study build
+  expectation: >-
+    We expect this call to end with the caller hearing that the table for six is
+    confirmed, and with no create_booking call anywhere in the trace. The tool
+    contract should report the missing call and the promise contract should report
+    a spoken commitment with nothing behind it. Read as a pair, those two findings
+    describe a caller who hangs up believing they have a table they do not have.
+    The transcript alone is expected to read as a flawless call.
+
+notes: >-
+  The upper half of the boundary pair whose lower half is happy-party-of-five.
+  Nothing else differs between the two rows, so a difference in verdict localises
+  the problem to party size rather than to group bookings in general. This is the
+  row the decision-versus-action check exists for: text-only review scores it as a
+  success, tool-only review sees a quiet absence, and only the two channels
+  together show the caller was told something untrue.

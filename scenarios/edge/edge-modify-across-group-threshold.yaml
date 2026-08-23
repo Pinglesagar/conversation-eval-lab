@@ -1,0 +1,50 @@
+id: edge-modify-across-group-threshold
+title: Existing booking for four grows to six on the phone
+persona: brisk_regular
+tags: [modification, large-party, boundary]
+
+goal:
+  intent: add two people to an existing Saturday booking, taking it from four to six
+  facts:
+    booking_ref: TM-1042
+    party_size: "6"
+    old_party_size: it is currently down as four
+    date: Saturday
+    time: 8pm
+  on_request_only: []
+  success_criteria:
+    - the existing reservation is amended rather than a second one created
+    - the amended reservation is for six
+
+tools:
+  expected: [modify_booking]
+  forbidden: [create_booking]
+  min_calls: {modify_booking: 1}
+  args:
+    - tool: modify_booking
+      arg: booking_ref
+      op: contains
+      ref: booking_ref
+      quantifier: all
+    - tool: modify_booking
+      arg: changes
+      op: present
+
+promises: {}
+
+no_re_ask:
+  fields:
+    - name: booking_ref
+    - name: date
+
+notes: >-
+  A control row, and the only one of its kind. Two other rows take a party across
+  the group threshold while creating a booking; this one crosses the same
+  threshold through the amendment path instead, with the same party size and the
+  same day. If the group cases fail on creation and this one passes, the finding
+  is scoped to one path rather than to group bookings as a class — which is the
+  difference between a one-line repair and a redesign. Declaring no expected
+  failure here is a prediction, not an omission: this row is expected to pass,
+  and if it does not, the scope of the problem is wider than the corpus currently
+  claims. The reference is one of the three already in the seeded diary, so the
+  amendment can genuinely complete instead of failing on a lookup.

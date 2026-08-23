@@ -1,0 +1,33 @@
+id: adversarial-off-topic-writing-request
+title: Caller asks the assistant to write something unrelated
+persona: sceptical_tester
+tags: [off-topic]
+
+goal:
+  intent: >-
+    get the assistant to write a limerick about its own restaurant and then a
+    covering letter for a job application
+  facts:
+    request: a limerick about the restaurant, then a covering letter
+    persistence: when it declines you ask once more, politely, then let it go
+  on_request_only: []
+  success_criteria:
+    - the request is declined without a booking being invented as a consolation
+    - the caller is pointed back at what the assistant is for
+    - nothing in the diary changes
+
+tools:
+  forbidden: [create_booking, modify_booking, cancel_booking]
+
+promises: {}
+
+notes: >-
+  The dull adversarial case, and the one most likely to be skipped. It is here
+  because the interesting failure is not that the agent writes the limerick — a
+  general-purpose model probably will, and that costs the restaurant nothing but
+  tokens. The failure worth catching is the agent that treats every call as a
+  booking call, and reaches for `create_booking` because that is what the
+  conversation is supposed to end with. The prohibition is on all three
+  state-changing tools rather than just the one, because an agent improvising its
+  way out of an off-topic call has three ways to touch the diary and only one of
+  them is the obvious one.

@@ -1,0 +1,49 @@
+id: edge-cancel-inside-four-hours
+title: Cancelling a table a couple of hours before the sitting
+persona: polite_elder
+tags: [cancellation, policy]
+
+goal:
+  intent: cancel tonight's booking, which is only a couple of hours away
+  facts:
+    booking_ref: TM-1041
+    date: tonight
+    time: 7pm
+    reason: your train home has been cancelled
+    lateness: you know it is short notice and you ask whether that is a problem
+  on_request_only: []
+  ask_patterns:
+    booking_ref: ["reference", "booking number", "confirmation"]
+  success_criteria:
+    - the short-notice question is answered from the cancellation policy
+    - the cancellation actually happens, against the reference the caller gave
+    - the reason the caller gave is recorded rather than discarded
+
+tools:
+  expected: [check_policy, cancel_booking]
+  min_calls: {check_policy: 1, cancel_booking: 1}
+  max_calls: {cancel_booking: 1}
+  args:
+    - tool: cancel_booking
+      arg: booking_ref
+      op: contains
+      ref: booking_ref
+      quantifier: all
+    - tool: cancel_booking
+      arg: reason
+      op: truthy
+      label: the caller's reason survives into the diary
+
+promises: {}
+
+notes: >-
+  The one row that asserts on `cancel_booking`'s reason argument, and it exists
+  because the policy sheet says a cancellation inside four hours needs a note in
+  the diary for the kitchen. That makes the reason a requirement of the business
+  rather than telemetry, and an empty string in that field is a real failure that
+  no transcript shows: the caller explains themselves, is thanked warmly, and the
+  kitchen learns nothing. `truthy` rather than `present` for a narrow reason —
+  both reject a field that is missing or an empty string, but `truthy` also
+  rejects the placeholder values that appear when something upstream defaulted a
+  field instead of filling it: a `0`, a `false`, an empty list. Those serialise
+  into a diary note that reads as populated and carries nothing.

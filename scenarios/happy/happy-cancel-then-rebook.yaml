@@ -1,0 +1,47 @@
+id: happy-cancel-then-rebook
+title: Cancel Friday and book Saturday instead
+persona: brisk_regular
+tags: [cancellation, booking, multi-intent]
+
+goal:
+  intent: cancel the Friday table and book the same party for Saturday
+  facts:
+    booking_ref: TM-7731
+    party_size: "4"
+    date: Saturday
+    time: 8pm
+    name: Rachel Okonkwo
+  on_request_only: []
+  success_criteria:
+    - the old reservation is cancelled against its reference
+    - a new reservation exists for Saturday, for the same four people
+    - the cancellation happens before the replacement is claimed to exist
+
+tools:
+  expected: [cancel_booking, create_booking]
+  min_calls: {cancel_booking: 1, create_booking: 1}
+  max_calls: {cancel_booking: 1, create_booking: 1}
+  ordering:
+    - first: cancel_booking
+      then: create_booking
+  args:
+    - tool: cancel_booking
+      arg: booking_ref
+      op: contains
+      ref: booking_ref
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+
+promises: {}
+
+no_re_ask:
+  fields:
+    - name: party_size
+    - name: booking_ref
+
+notes: >-
+  Two intents in one call, each with its own tool, plus a max_calls cap on both:
+  the failure worth catching is not omission but duplication, where an assistant
+  re-books after a partial confirmation and the caller ends up holding two tables.

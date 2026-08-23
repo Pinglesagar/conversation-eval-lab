@@ -1,0 +1,48 @@
+id: happy-availability-then-choice
+title: Caller asks what is free before choosing a slot
+persona: brisk_regular
+tags: [availability, booking]
+
+goal:
+  intent: find out what is available on Friday evening and then take a slot
+  facts:
+    party_size: "4"
+    date: Friday
+    time: anything after 7
+    name: Jo Vasey
+  on_request_only: [name]
+  ask_patterns:
+    name: ["your name", "name for the booking", "who is the booking"]
+  success_criteria:
+    - availability is checked before anything is promised
+    - the booking that is created is one of the slots actually offered
+
+tools:
+  expected: [search_tables, create_booking]
+  min_calls: {search_tables: 1, create_booking: 1}
+  ordering:
+    - first: search_tables
+      then: create_booking
+      strict: true
+  args:
+    - tool: search_tables
+      arg: party_size
+      op: eq
+      ref: party_size
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+
+promises: {}
+
+no_re_ask:
+  fields:
+    - name: party_size
+    - name: date
+
+notes: >-
+  The ordering rule is strict here rather than first-occurrence: every booking in
+  this row must have a search before it, because the whole point is that the slot
+  offered was a slot that existed. A first-occurrence rule would let a second,
+  unchecked booking through on the strength of the first search.

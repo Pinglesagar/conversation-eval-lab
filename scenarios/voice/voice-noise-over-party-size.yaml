@@ -1,0 +1,61 @@
+id: voice-noise-over-party-size
+title: Party size spoken over a noisy room
+persona: brisk_regular
+tags: [noise, booking, digits]
+
+goal:
+  intent: book a table for seven on Friday evening from a busy bar
+  facts:
+    party_size: "7"
+    date: Friday
+    time: 8pm
+    name: Nadia Haddad
+  on_request_only: [name]
+  ask_patterns:
+    name: ["your name", "name for the booking", "who is the booking"]
+  success_criteria:
+    - the party size that reaches the booking is the one the caller said
+    - a number heard imperfectly is confirmed rather than assumed
+
+tools:
+  expected: [create_booking]
+  min_calls: {create_booking: 1}
+  args:
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+      quantifier: all
+
+promises: {}
+
+no_re_ask:
+  fields:
+    - name: date
+
+voice:
+  sample_rate: 16000
+  latency_budget_ms: 1500
+  perturbations:
+    - name: add_noise
+      params: {snr_db: 5.0, kind: pink, seed: 20260822}
+  reference_transcript:
+    - Table for seven on Friday, please.
+    - Eight o'clock.
+    - Nadia Haddad.
+
+notes: >-
+  Pink noise rather than white, at the signal-to-noise ratio of a bar rather than
+  a wind tunnel: the point is a channel bad enough to confuse "seven" with
+  "eleven" and good enough that the rest of the sentence survives, because a
+  transcript that fails completely produces a call that obviously failed. The
+  expensive failure is the one where nine words in ten are correct and the tenth
+  is a number.
+  .
+  `seed` is set, and every stochastic perturbation in this suite sets one. Noise
+  without a seed makes the row's verdict a sample rather than a measurement, and
+  a suite that reports a different number each run cannot tell a regression from
+  the weather. `quantifier: all` because the failure being tested is a booking
+  made with a misheard number, and one correct call among two does not repair it.
+  The reference transcript is what the caller actually said, so the word error
+  rate scored against it is a property of the channel and not of a paraphrase.

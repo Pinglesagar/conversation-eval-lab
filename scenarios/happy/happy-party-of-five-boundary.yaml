@@ -1,0 +1,36 @@
+id: happy-party-of-five-boundary
+title: A party of five, one below the group threshold
+persona: brisk_regular
+tags: [booking, boundary]
+
+goal:
+  intent: book dinner for five on Saturday
+  facts:
+    party_size: "5"
+    date: Saturday
+    time: 8pm
+    name: Aditi Bose
+  on_request_only: [name]
+  ask_patterns:
+    name: ["your name", "name for the booking", "who is the booking"]
+  success_criteria:
+    - a real booking exists for five people
+    - the confirmation the caller hears is backed by that booking
+
+tools:
+  expected: [create_booking]
+  min_calls: {create_booking: 1}
+  args:
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+
+promises: {}
+
+notes: >-
+  The lower half of a boundary pair. Its partner in the edge suite differs only in
+  party size, so the two rows together locate the threshold rather than merely
+  reporting that large groups behave differently. A boundary pair is worth two rows
+  because "six fails" and "group bookings fail" are different findings and demand
+  different fixes.

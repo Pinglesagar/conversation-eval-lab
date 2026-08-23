@@ -1,0 +1,43 @@
+id: happy-read-back-confirmation
+title: Agent reads the details back before booking
+persona: distracted_parent
+tags: [booking, read-back]
+
+goal:
+  intent: book Sunday lunch for four and check the details were heard correctly
+  facts:
+    party_size: "4"
+    date: Sunday
+    time: 1:30pm
+    name: Cerys Hopkin
+  on_request_only: [name]
+  ask_patterns:
+    name: ["your name", "name for the booking", "who is the booking"]
+  success_criteria:
+    - the details are confirmed back to a caller who is half listening
+    - the booking is created once, with the confirmed values
+
+tools:
+  expected: [create_booking]
+  min_calls: {create_booking: 1}
+  max_calls: {create_booking: 1}
+  args:
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+
+promises: {}
+
+no_re_ask:
+  fields:
+    - name: party_size
+    - name: date
+    - name: time
+
+notes: >-
+  A precision row, and the one most likely to expose a badly written check rather
+  than a badly behaved agent. Reading values back is good practice with a
+  distracted caller, and the no-re-ask contract must stay silent through it: an
+  ask requests what it does not state, a confirmation states what it checks. If
+  this row fails, suspect the contract before the agent.

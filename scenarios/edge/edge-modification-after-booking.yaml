@@ -1,0 +1,51 @@
+id: edge-modification-after-booking
+title: Books a table, then changes the time in the same call
+persona: distracted_parent
+tags: [booking, modification, correction]
+
+goal:
+  intent: book Wednesday for four, then ask to move it to half an hour later
+  facts:
+    party_size: "4"
+    date: Wednesday
+    time: 7pm
+    new_time: you then ask to move it to 7:30pm
+    name: Ruth Kelleher
+  on_request_only: [name]
+  ask_patterns:
+    name: ["your name", "name for the booking", "who is the booking"]
+  success_criteria:
+    - the booking is created and then modified, both against the same reservation
+    - the party size is carried across the change rather than asked for again
+
+tools:
+  expected: [create_booking, modify_booking]
+  min_calls: {create_booking: 1, modify_booking: 1}
+  ordering:
+    - first: create_booking
+      then: modify_booking
+
+promises: {}
+
+no_re_ask:
+  fields:
+    - name: party_size
+    - name: date
+
+expected_failure:
+  contracts: [no-re-ask]
+  since: first observed in the 0.1.0 case-study build
+  expectation: >-
+    We expect the party size to be requested a second time after the call moves
+    on to the change, even though the caller stated it plainly while making the
+    original booking. The no-re-ask contract should quote both the caller's
+    original answer and the later question, and name the sub-agent that asked it.
+    Nothing is expected to error and the transcript is expected to read as
+    thorough rather than forgetful.
+
+notes: >-
+  A distracted caller is used on purpose: below the cooperativeness threshold,
+  every re-ask costs two turns rather than one, so the cost of this failure in a
+  real voice call is roughly double what the transcript suggests. The contract
+  scores sentences rather than turns, so a re-ask sitting next to a legitimate
+  read-back in the same breath is still caught.

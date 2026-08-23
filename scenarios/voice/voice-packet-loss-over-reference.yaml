@@ -1,0 +1,65 @@
+id: voice-packet-loss-over-reference
+title: Booking reference read out over a dropping connection
+persona: brisk_regular
+tags: [packet-loss, modification, digits]
+
+goal:
+  intent: move an existing booking later, reading out the reference over a bad line
+  facts:
+    booking_ref: TM-1042
+    date: Saturday
+    time: 9pm
+    old_time: it is currently down for eight
+  on_request_only: []
+  success_criteria:
+    - the reference used is the one the caller read out, in full
+    - a partially heard reference is checked back rather than completed by guesswork
+    - no other reservation is touched
+
+tools:
+  expected: [modify_booking]
+  forbidden: [create_booking, cancel_booking]
+  min_calls: {modify_booking: 1}
+  max_calls: {modify_booking: 1}
+  args:
+    - tool: modify_booking
+      arg: booking_ref
+      op: contains
+      ref: booking_ref
+      quantifier: all
+      label: every amendment names the reference the caller actually gave
+    - tool: modify_booking
+      arg: changes
+      op: truthy
+
+promises: {}
+
+no_re_ask:
+  fields:
+    - name: date
+
+voice:
+  sample_rate: 16000
+  latency_budget_ms: 1500
+  perturbations:
+    - name: packet_loss
+      params: {loss_rate: 0.08, packet_ms: 20.0, fill: zero, seed: 20260822}
+  reference_transcript:
+    - I need to move a booking. The reference is T M one zero four two.
+    - Nine o'clock instead of eight, same day.
+
+notes: >-
+  A reference is the one string in this domain with no redundancy: "one zero four
+  two" and "one zero four three" are equally plausible sentences and both name a
+  real table, so there is no context that can repair a lost digit. Eight per cent
+  loss in twenty-millisecond packets removes roughly one syllable in a spoken
+  reference, which is the amount that produces a confident wrong answer rather
+  than an obvious failure.
+  .
+  The predicate is `quantifier: all` and the prohibition covers `cancel_booking`
+  as well as `create_booking`, because the worst outcome here is not a failed
+  amendment — it is a successful amendment to someone else's Sunday table, which
+  the caller will never hear about and the other party will discover on arrival.
+  `fill: zero` rather than `hold` makes the loss audible as silence instead of as
+  a plausible stretched vowel, which is the harder condition for a transcriber to
+  paper over. Seeded, so the dropped packets fall in the same places every run.

@@ -1,0 +1,50 @@
+id: edge-reluctant-caller-two-asks
+title: Every question has to be asked twice
+persona: distracted_parent
+tags: [reluctant, booking, loop-risk]
+
+goal:
+  intent: book a table while barely paying attention to the questions
+  facts:
+    party_size: "4"
+    date: Saturday
+    time: 6pm
+    name: Ruth Kelleher
+  on_request_only: [party_size, date, time, name]
+  ask_patterns:
+    party_size: ["how many", "party size", "for how many"]
+    date: ["what date", "which day", "when would you"]
+    time: ["what time", "which time"]
+    name: ["your name", "name for the booking"]
+  success_criteria:
+    - the agent persists through the repeats without losing what it already has
+    - one complete booking exists at the end
+
+tools:
+  expected: [create_booking]
+  min_calls: {create_booking: 1}
+  max_calls: {create_booking: 1}
+  args:
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+    - tool: create_booking
+      arg: name
+      op: present
+
+promises: {}
+
+no_progress:
+  min_repeats: 3
+  fields:
+    - name: party_size
+    - name: date
+    - name: time
+    - name: name
+
+notes: >-
+  `min_repeats` is raised to three here, and that is the whole design of the row.
+  This caller asks for every question to be repeated once, so a threshold of two
+  would flag the persona's own behaviour as an agent loop. Tuning a loop detector
+  to the caller it is watching is the difference between a signal and a nuisance.

@@ -1,0 +1,78 @@
+id: voice-noise-over-dietary-note
+title: An allergy stated over background noise
+persona: chatty_planner
+tags: [noise, dietary, notes, policy]
+
+goal:
+  intent: >-
+    book for two, say that one of you is coeliac, and ask how the kitchen handles
+    it, all from a noisy kitchen at home
+  facts:
+    party_size: "2"
+    date: Friday
+    time: 7pm
+    name: Elin Ruthven
+    dietary: one of you is coeliac and cannot have gluten
+    topic: how the kitchen handles gluten
+  on_request_only: []
+  success_criteria:
+    - the allergen question is answered from the policy sheet
+    - the booking is created for two
+    - the requirement reaches the reservation the kitchen will read
+
+tools:
+  expected: [check_policy, create_booking]
+  min_calls: {check_policy: 1, create_booking: 1}
+  args:
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+
+promises: {}
+
+propagation:
+  - name: propagation:gluten
+    tool: create_booking
+    arg: notes
+    require_handoff: true
+    field:
+      name: dietary_note
+      value: gluten
+      supply_patterns:
+        - "(?i)\\bcoeliac"
+        - "(?i)\\bgluten"
+
+no_re_ask:
+  fields:
+    - name: party_size
+    - name: dietary
+      value: coeliac
+
+voice:
+  sample_rate: 16000
+  latency_budget_ms: 1500
+  perturbations:
+    - name: add_noise
+      params: {snr_db: 12.0, kind: white, seed: 20260823}
+  reference_transcript:
+    - >-
+      Hello, could I book a table for two on Friday at seven? One of us is
+      coeliac.
+    - How does the kitchen handle gluten, do you know?
+    - Elin Ruthven.
+
+notes: >-
+  The second half of a deliberate pair, and the reason the signal-to-noise ratio
+  is 12 dB rather than the 5 dB used elsewhere. This is a mildly noisy channel:
+  clean enough that the word "coeliac" should survive transcription, so that if
+  the requirement is missing from the booking the audio cannot be the explanation.
+  Turning the noise up would have made the row unfalsifiable — every finding would
+  have a second candidate cause and no way to choose between them.
+  .
+  `edge-coeliac-then-menu-policy` is the same call without audio. Read together the
+  two rows separate a transcription loss from a context loss, which are repaired
+  in entirely different places and are indistinguishable from the transcript
+  alone. `require_handoff` is true, matching the text row, so the contract is
+  asserting the same specific hypothesis rather than a looser one; a trace with no
+  handoff reports itself inapplicable instead of manufacturing a finding.

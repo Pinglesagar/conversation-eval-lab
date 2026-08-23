@@ -1,0 +1,74 @@
+id: voice-slow-speech-with-pauses
+title: A slow caller with long gaps between details
+persona: polite_elder
+tags: [slow-speech, booking, loop-risk]
+
+goal:
+  intent: book a table for three on Wednesday, taking your time over it
+  facts:
+    party_size: "3"
+    date: Wednesday
+    time: 6pm
+    name: Margaret Ellwood
+  on_request_only: [name, time]
+  ask_patterns:
+    name: ["your name", "name for the booking", "who is the booking"]
+    time: ["what time", "which time", "time would you"]
+  success_criteria:
+    - the caller is allowed to finish before the agent takes a turn
+    - the booking is created once, complete, with no detail dropped
+    - a pause is not treated as the end of the conversation
+
+tools:
+  expected: [create_booking]
+  min_calls: {create_booking: 1}
+  max_calls: {create_booking: 1}
+  args:
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+    - tool: create_booking
+      arg: time
+      op: present
+    - tool: create_booking
+      arg: name
+      op: present
+
+promises: {}
+
+no_progress:
+  min_repeats: 2
+  fields:
+    - name: party_size
+    - name: time
+    - name: name
+
+voice:
+  sample_rate: 16000
+  latency_budget_ms: 2000
+  perturbations:
+    - name: resample_speed
+      params: {factor: 0.75}
+  reference_transcript:
+    - I would like to book a table, please, for three of us.
+    - Wednesday, if you have anything.
+    - Six o'clock.
+    - Margaret Ellwood.
+
+notes: >-
+  Time-stretching is a crude stand-in for a slow speaker and this row says so
+  rather than pretending otherwise: it lengthens the words without lengthening the
+  gaps between them, so it tests the transcription path and not the endpointing
+  logic. What it can genuinely detect is the agent that starts answering a
+  sentence it has only half received and then has to reconcile the rest, which
+  shows up as a re-ask or as a booking missing a field.
+  .
+  The loop contract is here rather than in the tool block because the plausible
+  failure is a stall: an agent that keeps asking while the caller is still
+  speaking makes no progress and the exchange goes round. Its progress fields are
+  the same ones the booking needs, so patient questioning is scored as progress
+  and only genuine repetition counts against it. The budget is the most generous
+  in the suite, at 2000 ms, because this caller is the one least troubled by a
+  pause — a budget that ignored the persona would report a comfortable call as a
+  slow one.

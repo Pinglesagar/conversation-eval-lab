@@ -1,0 +1,53 @@
+id: happy-saturday-lunch-four
+title: Family lunch for four on Saturday
+persona: chatty_planner
+tags: [booking, notes]
+
+goal:
+  intent: book Saturday lunch for four, two of them children
+  facts:
+    party_size: "4"
+    date: Saturday
+    time: 1pm
+    name: Dermot Whelan
+    detail: two of the four are children and will need high chairs
+  on_request_only: []
+  ask_patterns:
+    name: ["your name", "who is the booking", "name for the booking"]
+  success_criteria:
+    - a booking for four exists
+    - the high-chair request reaches the booking rather than only the transcript
+
+tools:
+  expected: [create_booking]
+  forbidden: [cancel_booking, modify_booking]
+  min_calls: {create_booking: 1}
+  args:
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+
+promises: {}
+
+propagation:
+  - name: propagation:high-chairs
+    require_handoff: false
+    tool: create_booking
+    arg: notes
+    field:
+      name: high_chairs
+      value: high chair
+      supply_patterns:
+        - "(?i)high[- ]?chair"
+        - "(?i)\\bchildren\\b"
+
+no_re_ask:
+  fields:
+    - name: party_size
+    - name: date
+
+notes: >-
+  A chatty caller states every fact, just not concisely. The propagation rule runs
+  with `require_handoff: false` on purpose — no handoff is expected here, so the
+  question is only whether a detail said in passing survives into the tool call.

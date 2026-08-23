@@ -1,0 +1,71 @@
+id: voice-chain-telephone-then-noise
+title: A noisy street heard down a phone line
+persona: hurried_commuter
+tags: [perturbation-chain, telephone-band, noise, booking]
+
+goal:
+  intent: book a table for six on Thursday while walking along a main road
+  facts:
+    party_size: "6"
+    date: Thursday
+    time: 7:30pm
+    name: Danny Okereke
+  on_request_only: [name]
+  ask_patterns:
+    name: ["your name", "name for the booking", "who is the booking"]
+  success_criteria:
+    - a reservation for six exists at the end of the call
+    - whatever the caller is told about that reservation is true
+
+tools:
+  expected: [create_booking]
+  min_calls: {create_booking: 1}
+  args:
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+
+promises: {}
+
+voice:
+  sample_rate: 16000
+  latency_budget_ms: 1500
+  perturbations:
+    - name: telephone_band
+      params: {low_hz: 300.0, high_hz: 3400.0}
+    - name: add_noise
+      params: {snr_db: 6.0, kind: pink, seed: 20260823}
+  reference_transcript:
+    - Can I get a table for six on Thursday, half seven?
+    - Danny Okereke.
+
+expected_failure:
+  contracts: [tools, promise-kept]
+  since: first observed in the 0.1.0 case-study build
+  expectation: >-
+    We expect this call to end with the caller hearing that the table for six is
+    confirmed, and with no create_booking call anywhere in the trace — the same
+    outcome the text row with this party size produces, on a channel bad enough
+    that a listener would reach for the audio as the explanation. Both contracts
+    should report, and the audio metrics recorded alongside them are expected to
+    show a transcript good enough that the words were never in doubt.
+
+notes: >-
+  The row exists to be misdiagnosed, and then not to be. Two perturbations chained
+  in the order a real call applies them — the line first, then the street on top of
+  it — produce the worst channel in the suite, and it carries the one party size
+  the text suite already shows failing. A team looking at this failure in
+  isolation would spend a day on the audio pipeline.
+  .
+  What stops that is the pairing: `edge-large-party-of-six` is the same request
+  with no audio at all, and it is expected to fail identically. Two rows, one
+  variable, and the variable turns out not to be the audio. This is the whole
+  argument for keeping the voice suite a *layer* over the text corpus rather than
+  a separate corpus — a voice-only suite can tell you a call failed on a bad line
+  and cannot tell you the line was innocent.
+  .
+  Order matters and does not commute: band-limiting after adding noise would
+  filter out the noise the caller actually hears, which is a quieter and more
+  flattering channel than the real one. The chain is declared in the order it is
+  applied, and the noise stage is seeded.

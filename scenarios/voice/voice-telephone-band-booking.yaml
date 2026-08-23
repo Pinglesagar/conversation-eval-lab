@@ -1,0 +1,66 @@
+id: voice-telephone-band-booking
+title: An ordinary booking over a narrowband phone line
+persona: polite_elder
+tags: [telephone-band, booking]
+
+goal:
+  intent: book Sunday lunch for two on a landline that sounds thin
+  facts:
+    party_size: "2"
+    date: Sunday
+    time: 1pm
+    name: Bernard Ashcroft
+  on_request_only: [name]
+  ask_patterns:
+    name: ["your name", "name for the booking", "who is the booking"]
+  success_criteria:
+    - the booking completes without the caller having to repeat themselves
+    - the details on the reservation match what was said
+
+tools:
+  expected: [create_booking]
+  min_calls: {create_booking: 1}
+  max_calls: {create_booking: 1}
+  args:
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+    - tool: create_booking
+      arg: date
+      op: present
+    - tool: create_booking
+      arg: time
+      op: present
+
+promises: {}
+
+no_re_ask:
+  fields:
+    - name: party_size
+    - name: date
+    - name: time
+
+voice:
+  sample_rate: 16000
+  latency_budget_ms: 1500
+  perturbations:
+    - name: telephone_band
+      params: {low_hz: 300.0, high_hz: 3400.0}
+  reference_transcript:
+    - Hello, I would like to book a table for two on Sunday lunchtime, please.
+    - One o'clock would be lovely.
+    - Bernard Ashcroft.
+
+notes: >-
+  The control row of the voice suite. 300–3400 Hz is not an adversarial condition,
+  it is the telephone network, and the majority of real calls to a restaurant
+  arrive through it — so this row establishes the baseline every other voice row
+  is read against. If it fails, the perturbation-specific findings elsewhere mean
+  nothing, because the floor is already broken.
+  .
+  Deterministic by construction: a band-pass filter has no random component, so
+  this row needs no seed and its verdict is repeatable without one. The no-re-ask
+  fields are all three details rather than a subset, because the characteristic
+  narrowband failure is not a wrong value but an exchange that takes twice as many
+  turns as it should while everyone confirms everything.

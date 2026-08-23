@@ -1,0 +1,68 @@
+id: voice-pitch-shift-unfamiliar-voice
+title: A voice outside the range the models were tuned on
+persona: distracted_parent
+tags: [pitch-shift, booking, notes]
+
+goal:
+  intent: book Saturday lunch for four and mention it is a child's birthday
+  facts:
+    party_size: "4"
+    date: Saturday
+    time: 12:30pm
+    name: Sinead Doherty
+    occasion: it is your daughter's birthday and you would like a candle
+  on_request_only: [name]
+  ask_patterns:
+    name: ["your name", "name for the booking", "who is the booking"]
+  success_criteria:
+    - the booking is for four at lunchtime on Saturday
+    - the occasion reaches the reservation rather than being lost in the noise
+
+tools:
+  expected: [create_booking]
+  min_calls: {create_booking: 1}
+  args:
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+
+promises: {}
+
+propagation:
+  - name: propagation:birthday
+    tool: create_booking
+    arg: notes
+    require_handoff: false
+    field:
+      name: occasion
+      value: birthday
+      supply_patterns:
+        - "(?i)\\bbirthday"
+        - "(?i)\\bcandle"
+
+voice:
+  sample_rate: 16000
+  latency_budget_ms: 1500
+  perturbations:
+    - name: shift_pitch
+      params: {semitones: 5.0}
+  reference_transcript:
+    - Could I book a table for four on Saturday at half twelve?
+    - Sinead Doherty.
+    - It is my daughter's birthday, could you put a candle on the cake?
+
+notes: >-
+  A pitch shift is not a person, and this row is careful about what it claims. It
+  does not simulate a child or any particular speaker; it moves the fundamental
+  frequency five semitones out of the range most speech models see most of, and
+  measures whether accuracy travels with it. A demographic claim would need real
+  recorded speech from real speakers, which is a different piece of work with
+  different consent requirements, and inventing it from a filter would produce a
+  fairness number that was really a statement about a resampler.
+  .
+  What makes the row useful is the second assertion. Under a degraded channel the
+  agent's attention goes to the values it must have — party size, date, time — and
+  the optional detail is the first thing dropped. The propagation contract watches
+  exactly that: the booking will be correct and the candle will not arrive.
+  Deterministic with no seed, since the shift has no random component.

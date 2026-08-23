@@ -1,0 +1,76 @@
+id: edge-three-facts-one-turn
+title: Party size, day, allergy and a policy question in one breath
+persona: hurried_commuter
+tags: [multi-intent, dietary, notes, policy]
+
+goal:
+  intent: >-
+    book Thursday for three with a shellfish allergy and find out whether you can
+    bring your own wine, all in the opening turn
+  facts:
+    party_size: "3"
+    date: Thursday
+    time: 6:45pm
+    dietary: one of the three has a shellfish allergy
+    topic: whether you can bring your own wine
+    name: Marek Sobczak
+  on_request_only: [name]
+  ask_patterns:
+    name: ["your name", "name for the booking", "who is the booking"]
+  success_criteria:
+    - all four items in the opening turn are handled, none silently dropped
+    - the corkage question is answered from policy rather than from memory
+    - the allergy is on the reservation the kitchen will read
+
+tools:
+  expected: [check_policy, create_booking]
+  min_calls: {check_policy: 1, create_booking: 1}
+  args:
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+
+promises: {}
+
+propagation:
+  - name: propagation:shellfish
+    tool: create_booking
+    arg: notes
+    require_handoff: false
+    field:
+      name: dietary_note
+      value: shellfish
+      supply_patterns:
+        - "(?i)\\bshellfish"
+        - "(?i)\\ballerg"
+
+no_re_ask:
+  fields:
+    - name: party_size
+    - name: date
+    - name: dietary
+      value: shellfish
+
+expected_failure:
+  contracts: [propagation:shellfish]
+  since: first observed in the 0.1.0 case-study build
+  expectation: >-
+    We expect the corkage answer to be correct, the booking to be created for
+    three on Thursday, and the shellfish allergy to be absent from the notes the
+    reservation is created with. Nothing is expected to error and no question is
+    expected to go unanswered; the transcript should read as a competent call
+    that handled a dense opening turn well. The evidence should be the caller's
+    own words alongside the arguments the booking was finally created with.
+
+notes: >-
+  Density, not conversation length, is what this row varies: everything arrives at
+  once, so there is no later turn in which a dropped detail could be recovered by
+  a follow-up question. It is also the third row in the corpus to track a
+  dietary note across a policy answer, and the repetition is the point — one
+  failing row is an anecdote about one conversation, three with different
+  personas, different allergens and different shapes is a claim about the system.
+  This one sets `require_handoff: false` where the others require it, so it
+  asserts the outcome the caller experiences (the note is not on the booking)
+  rather than a hypothesis about where it was lost. The two framings failing
+  together says more than either alone.

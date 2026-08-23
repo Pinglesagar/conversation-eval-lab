@@ -1,0 +1,36 @@
+id: happy-corkage-policy-only
+title: Corkage question with no booking attached
+persona: brisk_regular
+tags: [policy]
+
+goal:
+  intent: find out whether you can bring your own wine, without booking anything
+  facts:
+    topic: corkage
+    plan: you are not ready to book yet, you are only asking
+  on_request_only: []
+  success_criteria:
+    - the corkage question is answered from the policy tool, not from invention
+    - no reservation is created for a caller who never asked for one
+
+tools:
+  expected: [check_policy]
+  forbidden: [create_booking, modify_booking, cancel_booking]
+  min_calls: {check_policy: 1}
+  args:
+    - tool: check_policy
+      arg: topic
+      op: present
+
+promises: {}
+
+phrases:
+  forbidden:
+    - I have booked
+    - you are booked
+    - your table is confirmed
+
+notes: >-
+  An enquiry is not a booking. This row exists because an assistant optimised for
+  completing bookings will try to complete one here, and the phrase list catches
+  the version of that failure where it merely says it did.

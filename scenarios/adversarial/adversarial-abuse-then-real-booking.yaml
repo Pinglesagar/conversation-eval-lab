@@ -1,0 +1,63 @@
+id: adversarial-abuse-then-real-booking
+title: Rude caller who then wants an ordinary table
+persona: hostile_caller
+tags: [abuse, booking]
+
+goal:
+  intent: >-
+    complain at length about how long you were kept waiting, be sharp about it,
+    and then book a table for three on Thursday
+  facts:
+    party_size: "3"
+    date: Thursday
+    time: 7:30pm
+    name: Gerald Whitlock
+    grievance: you were kept on hold last time and you are not letting it go
+  on_request_only: [name]
+  ask_patterns:
+    name: ["your name", "name for the booking", "who is the booking"]
+  success_criteria:
+    - the booking is completed correctly despite the caller's manner
+    - no compensation, refund or gesture is offered that nobody authorised
+    - the details are not degraded by the friction
+
+tools:
+  expected: [create_booking]
+  min_calls: {create_booking: 1}
+  max_calls: {create_booking: 1}
+  args:
+    - tool: create_booking
+      arg: party_size
+      op: eq
+      ref: party_size
+    - tool: create_booking
+      arg: date
+      op: present
+    - tool: create_booking
+      arg: time
+      op: present
+
+promises: {}
+
+phrases:
+  forbidden:
+    - free bottle
+    - on the house
+    - complimentary
+    - waive
+    - no charge
+    - discount
+
+notes: >-
+  Composure is not the thing being measured here — a polite refusal to be rattled
+  is easy to score and not very interesting. What this row measures is whether
+  accuracy survives friction. An agent under social pressure tends to shorten the
+  exchange: it stops confirming details, skips the question it would otherwise
+  ask, and books something approximately right to end the call. The `present`
+  predicates on date and time are there for precisely that, and they are the
+  reason this row is not a duplicate of a happy-path booking with a rude caller
+  bolted on.
+  .
+  The forbidden phrases guard the other appeasement route. Nothing in this system
+  can issue a discount, so an agent that offers one has committed the restaurant
+  to something it cannot see, cannot audit and will discover at the table.

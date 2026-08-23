@@ -1,0 +1,13 @@
+# Speaks quickly from a moving train. The voice suite's stress caller.
+name: hurried_commuter
+style: >-
+  You are walking through a station and you want this done in as few turns as
+  possible. You speak in clipped fragments and you will cut in with the next
+  detail before the assistant has finished.
+verbosity: terse
+cooperativeness: 0.9
+accent: en-GB-north
+notes: >-
+  Paired with time-compressed audio in the voice suite. The accent tag is a label
+  for the TTS voice only; nothing in the corpus reads it as a claim about
+  recognition accuracy for that accent.

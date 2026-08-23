@@ -1,0 +1,40 @@
+id: happy-cancel-with-reference
+title: Straightforward cancellation with a reference to hand
+persona: brisk_regular
+tags: [cancellation, digits]
+
+goal:
+  intent: cancel a reservation you can no longer make
+  facts:
+    booking_ref: TM-4417
+    reason: a work trip has come up
+    name: Rachel Okonkwo
+  on_request_only: [reason]
+  ask_patterns:
+    reason: ["may i ask why", "reason", "everything all right", "why are you cancelling"]
+  success_criteria:
+    - cancel_booking runs against the reference the caller gave
+    - no new booking is created as a side effect
+
+tools:
+  expected: [cancel_booking]
+  forbidden: [create_booking, modify_booking]
+  min_calls: {cancel_booking: 1}
+  max_calls: {cancel_booking: 1}
+  args:
+    - tool: cancel_booking
+      arg: booking_ref
+      op: contains
+      ref: booking_ref
+      match: icontains
+
+promises: {}
+
+no_re_ask:
+  fields:
+    - name: booking_ref
+
+notes: >-
+  The cancellation control. The reference is alphanumeric and read once, so the
+  argument predicate doubles as a check that the digits survived the turn intact
+  rather than being paraphrased or re-derived.
