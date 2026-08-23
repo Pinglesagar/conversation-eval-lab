@@ -35,6 +35,7 @@ from lab.voice.suite import (
     CLIPS,
     LADDERS,
     assemble_audio,
+    capture_outcome,
     clip_for,
     corpus_cost,
     is_cross_script,
@@ -665,3 +666,163 @@ def test_the_live_pass_covered_every_runnable_row() -> None:
     covered = {c["row_id"] for c in payload["comparisons"]}
     runnable = {s.id for s in tier() if s.audio_status() == "runnable"}
     assert covered == runnable, f"not re-transcribed live: {sorted(runnable - covered)}"
+
+
+# --------------------------------------------------------------------------- #
+# The matcher's discrimination boundary
+#
+# Every capture assertion in this tier — sixteen field checks across five English
+# rows and four multilingual ones — is decided by `capture_outcome`, and before
+# this block nothing tested it directly. Only whole rows were tested, and every
+# committed row passes, so the one thing never exercised was the matcher's
+# ability to say *no*. A check that has only ever been shown agreeing is not a
+# check yet.
+#
+# These tests are written as a characterisation of the boundary rather than as an
+# aspiration: they pin down both what the matcher rejects and what it does not,
+# because the second half is a limitation a reader of the report needs stated. It
+# is deliberately not a WER — see `lab/voice/engines/WER_NORMALISATION.md` — and
+# containment is the price of that choice.
+# --------------------------------------------------------------------------- #
+
+
+def _capture_expectation(row_id: str):
+    """The declared capture block of one row, read from the corpus."""
+    scenario = next(s for s in tier() if s.id == row_id)
+    return scenario.audio.capture
+
+
+@pytest.mark.parametrize(
+    "transcript,captured,why",
+    [
+        ("the postcode is s w one a one a a", True, "the committed truth, spoken form"),
+        ("SW1A 1AA", True, "the written form, spaced"),
+        ("SW1A1AA", True, "the written form, joined — the smart_format rendering"),
+        # The failures. The first is not hypothetical: it is what the live
+        # recogniser actually returned at -5 dB SNR, and it is the whole reason
+        # this row exists — a plausible wrong address delivered confidently.
+        ("the postcode s w one a one a f", False, "final letter wrong: the -5 dB failure"),
+        ("the postcode is s w one a one a", False, "truncated by one letter"),
+        ("the postcode is e c one a one b b", False, "a different valid postcode"),
+        ("", False, "empty transcript: what -10 dB returns"),
+        ("the caller did not give a postcode", False, "no postcode at all"),
+    ],
+)
+def test_the_postcode_matcher_rejects_a_wrong_value(
+    transcript: str, captured: bool, why: str
+) -> None:
+    """The field check can fail, and fails on the substitutions that matter.
+
+    Without this, `readback-postcode` passing would be evidence about one
+    transcript rather than evidence about the instrument.
+    """
+    outcome = capture_outcome(
+        _capture_expectation("audio-capture-postcode"), transcript=transcript
+    )
+    assert outcome.all_captured is captured, f"{why}: {transcript!r}"
+
+
+@pytest.mark.parametrize(
+    "transcript,why",
+    [
+        ("the postcode is s w one a one a a b", "a spurious trailing letter"),
+        ("sw1a1aab", "a spurious trailing letter, written form"),
+        ("nonsense s w one a one a a nonsense", "the value surrounded by noise"),
+        (
+            "actually not s w one a one a a but e c one a one b b",
+            "a self-correction whose FINAL value is a different postcode",
+        ),
+    ],
+)
+def test_the_matcher_is_containment_and_this_is_the_limit_of_it(
+    transcript: str, why: str
+) -> None:
+    """A stated limitation, pinned so it cannot become an unstated one.
+
+    `capture_outcome` asks "is the declared value present in what was heard",
+    which is the right question for a read-back on a degraded line and the wrong
+    one for two other cases. It cannot reject a superstring, and it cannot reject
+    a transcript where the declared value appears but is then *superseded*.
+
+    The second case is a real production failure mode — a caller correcting a
+    postcode and the agent keeping the first one is precisely the read-back
+    failure of reference bug 4 — and no row in this tier currently exercises it.
+    So this test exists to make the gap a recorded property with a name rather
+    than a surprise, and it is the assertion a future row that closes the gap
+    will have to change. It is referenced from the limitations section of
+    `docs/AUDIO_SUITE.md`; closing it needs the row to declare a *final* value,
+    which is a schema change and not a matcher change.
+    """
+    outcome = capture_outcome(
+        _capture_expectation("audio-capture-postcode"), transcript=transcript
+    )
+    assert outcome.all_captured is True, (
+        f"{why}: this test records that containment ACCEPTS this. If the matcher "
+        "has been tightened, that is an improvement — update this test and the "
+        "limitations section of docs/AUDIO_SUITE.md together."
+    )
+
+
+@pytest.mark.parametrize(
+    "transcript,captured,why",
+    [
+        ("the premium is four thousand two hundred and fifty pounds", True, "the truth"),
+        ("the premium is four thousand two hundred and sixty pounds", False, "off by ten"),
+        ("the premium is forty two thousand five hundred pounds", False, "off by 10x"),
+        ("the premium is four thousand two hundred and fifty one pounds", False, "off by one"),
+        ("", False, "empty"),
+    ],
+)
+def test_the_numeric_matcher_rejects_a_wrong_magnitude(
+    transcript: str, captured: bool, why: str
+) -> None:
+    """The money row asserts a magnitude, and the magnitude has to be the right one.
+
+    A tenfold error is the one that matters commercially and it is the one a
+    substring match would have missed, which is why this field is numeric.
+    """
+    outcome = capture_outcome(
+        _capture_expectation("audio-capture-money-amount"), transcript=transcript
+    )
+    assert outcome.all_captured is captured, f"{why}: {transcript!r}"
+
+
+def test_the_verbatim_matcher_rejects_a_translated_regulator_name() -> None:
+    """The point of the verbatim field: a translated acronym is a compliance defect.
+
+    `FINRA` rendered as "la autoridad reguladora" is a recogniser (or a model)
+    deciding to be helpful about a token that must survive untouched. The row
+    passes on the committed audio; this proves it would not pass on that.
+    """
+    expectation = _capture_expectation("audio-bilingual-es-us-regulator-verbatim")
+    kept = capture_outcome(
+        expectation, transcript="finra exige que le informemos del coste total"
+    )
+    translated = capture_outcome(
+        expectation, transcript="la autoridad reguladora exige que le informemos"
+    )
+    assert kept.all_captured is True
+    assert translated.all_captured is False
+
+
+def test_a_row_that_predicted_failure_fails_when_capture_SUCCEEDS() -> None:
+    """The two `expect_capture: false` rows are assertions, not exemptions.
+
+    `audio-capture-confusable-names` and `audio-sg-constructed-code-switch` pass
+    because they failed as declared. That is only meaningful if the reverse also
+    registers: were the recogniser to start capturing the value, the row must go
+    red and demand to be rewritten, rather than sitting green either way. A
+    prediction that is satisfied by every outcome is not a prediction.
+    """
+    for row_id, transcript in (
+        ("audio-capture-confusable-names", "is that Beattie or Beatty"),
+        ("audio-sg-constructed-code-switch", "i want to check my portfolio 投资组合"),
+    ):
+        expectation = _capture_expectation(row_id)
+        assert expectation.expect_capture is False, row_id
+        outcome = capture_outcome(expectation, transcript=transcript)
+        assert outcome.all_captured is True, f"{row_id}: the mutation did not capture"
+        assert outcome.passed is False, (
+            f"{row_id} predicted a capture failure and got a capture success, and "
+            "still reported passed=True — the declared expectation is decoration"
+        )

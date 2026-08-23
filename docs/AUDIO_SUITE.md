@@ -957,11 +957,29 @@ Stated rather than left to be discovered.
   seeded placement of packet loss is one realisation of where the gaps fell.
 - **Two clips is not a sample.** The confusable-name finding says that *this*
   pair defeats the recogniser, not that confusable names in general do.
+- **The field matcher is containment, and that has two blind spots.** Every
+  capture assertion here asks "is the declared value present in what was heard",
+  which is the right question for a read-back on a degraded line and is
+  deliberately not a WER (§22). The price is that it cannot reject a
+  **superstring** — `s w one a one a a b` contains the postcode and passes — and
+  it cannot reject a transcript where the declared value appears but is then
+  **superseded**, as in a caller correcting themselves: `actually not SW1A 1AA
+  but EC1A 1BB` passes, although the value the agent should have recorded is the
+  second one. That second case is a genuine instance of reference bug 4 and **no
+  row in this tier exercises it**. Both blind spots are pinned by
+  `test_the_matcher_is_containment_and_this_is_the_limit_of_it` in
+  `tests/test_audio_suite.py`, so they are asserted properties rather than
+  accidents, and that test is what a future row closing the gap will have to
+  change. Closing it needs a row to declare a *final* value — a schema change,
+  not a matcher change. What the matcher *does* reject is tested beside it: a
+  wrong final letter (the real −5 dB failure), a truncation, a different valid
+  postcode, an empty transcript, a magnitude off by one or by tenfold, and a
+  translated `FINRA`.
 
 ### Running it
 
 ```
-pytest tests/test_audio_suite.py          # 37 tests, no keys, no network
+pytest tests/test_audio_suite.py          # 64 tests, no keys, no network
 python -m scenarios.loader --summary      # the text corpus, unchanged
 ```
 
@@ -1008,15 +1026,21 @@ than a result: `scripts/run_audio_live.py` never imports the synthesiser.
 Tolerance is 5% and the worst row uses 5% of it. The naive whole-turn control
 **FAILS**, as designed, and the shape of its failure is the part worth reading:
 
-| nominal | naive control mean | naive error |
-|---|---|---|
-| 100 ms | 130.27 ms | **+30.3%** |
-| 250 ms | 279.90 ms | +12.0% |
-| 500 ms | 531.18 ms | +6.2% |
+| nominal | naive control mean | naive error | verdict |
+|---|---|---|---|
+| 100 ms | 130.27 ms | **+30.3%** | FAIL |
+| 250 ms | 279.90 ms | +12.0% | FAIL |
+| 500 ms | 531.18 ms | +6.2% | FAIL |
+| 1000 ms | 1029.53 ms | +3.0% | PASS |
+| 2000 ms | 2030.18 ms | +1.5% | PASS |
 
-The naive reading is wrong by a near-constant **~30 ms** — the harness's own
-injected compute — so its *relative* error is worst exactly where the budget is
-tightest. For a product whose value proposition is a suggestion arriving before
+All five rungs are shown because the two that *pass* are the argument: the
+control's overall verdict is FAIL on **3 of 5** rungs, and it is the three
+shortest. The naive reading is wrong by a near-constant **~30 ms** — the
+harness's own injected compute — so its *relative* error shrinks as the delay
+grows, until at 1 s and 2 s a 30 ms error slips inside a 5% tolerance and the
+broken instrument certifies itself. Its relative error is worst exactly where the
+budget is tightest. For a product whose value proposition is a suggestion arriving before
 the moment passes, the regime where the naive instrument overstates by a third is
 the only regime that matters. A control that failed by a constant percentage would
 have been much less informative than one that fails by a constant *offset*.
@@ -1032,6 +1056,15 @@ have been much less informative than one that fails by a constant *offset*.
 | 500 ms | 506.896 ms | +1.379% | PASS |
 | 1000 ms | 1006.209 ms | +0.621% | PASS |
 | 2000 ms | 2006.753 ms | +0.338% | PASS |
+
+**These five numbers are the only ones in this document that do not reproduce
+bit-for-bit,** and that is the arm's nature rather than a defect: it measures OS
+scheduling, so it measures the machine and its load at the time. A re-run on the
+same laptop while busier read **+7.910%** at 100 ms and passed every rung from
+250 ms up — the same verdict pattern, a different floor. What is stable is the
+*shape*: a scheduling floor of single-digit milliseconds, which fails a 5% test
+at 100 ms and passes it everywhere above. Quote the shape, not the digits. The
+deterministic arm above is the one that gates, and it is exactly reproducible.
 
 A ~6 ms scheduling floor is 6% of 100 ms and 0.3% of 2 s. So the honest statement
 of this harness's resolution is: **it can certify a 250 ms figure to 5% on a real
@@ -1419,7 +1452,10 @@ cut for budget, in this phase or any earlier one.
 ```
 # the gate — must pass before any latency figure is reportable
 python -m lab.voice.calibration
-python -m lab.voice.calibration --clock real     # the scheduling arm; fails at 100 ms
+# The scheduling arm; fails at 100 ms. --no-write because this arm's numbers are
+# machine- and load-dependent, so letting it overwrite fixtures/calibration_report.*
+# replaces committed evidence with a figure that will not reproduce.
+python -m lab.voice.calibration --clock real --no-write
 
 # the report, from committed fixtures, no keys, no network
 python -m scripts.run_audio_live
