@@ -29,7 +29,7 @@ help:  ## Show this help.
 
 python-ok:
 ifneq ($(PY_OK),1)
-	@echo "$(PYTHON) is Python $(if $(PY_HAVE),$(PY_HAVE),<not found>); this package needs $(REQUIRED_PYTHON) or newer." >&2
+	@echo "$(if $(PY_HAVE),$(PYTHON) is Python $(PY_HAVE) and,cannot run $(PYTHON);) this package needs Python $(REQUIRED_PYTHON) or newer." >&2
 	@echo "Point make at a newer interpreter, e.g.:" >&2
 	@echo "    python3.12 -m venv .venv && . .venv/bin/activate && make install" >&2
 	@echo "    make test PYTHON=python3.12" >&2
