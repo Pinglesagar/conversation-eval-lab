@@ -629,6 +629,91 @@ One command: `make advisory-verdicts`, or
 | rows the computed register fails and `RubricScorer` certifies | **4** |
 | register entries a lax check over the same vocabulary over-credits | **3**, every one of them on **position** |
 | rows a lax check passes outright that the register does not pass | **1/4** |
+| register entries with a **reachable failure** — a real row or a hostile input that makes them miss | **31/31** non-carve-out entries; the 5 `not-required` carve-outs must never miss and are asserted separately |
+
+### What each `kind` actually computes, and what decides nothing
+
+All six kinds are computed, but they are not equally strong, and the difference
+matters more than the agreement figure:
+
+| kind | entries | what decides it |
+|---|---|---|
+| `prescribed-unit` | 6 | **5 of 6** do arithmetic on a parsed figure and, for the three cooling-off entries, check the start **trigger** as well as the number. The strongest instrument here. The sixth (MAS oral-performance) is a presence check for a simultaneous written artefact, which a transcript can only ever approximate. |
+| `verbatim` | 3 | substring match on the prescribed form of words. **1 of 3** also decides on position; the other two carry a `timing` string the probe does not compute (see below). |
+| `prohibition` | 2 | presence of the conduct, over 5 patterns each. Polarity is inverted, so disclosing it does not cure it. |
+| `gate` | 4 | the precondition. **1 of 4** also has an explicit waiver pattern set; the other three are decided on presence of the required step. |
+| `not-required` | 5 | decided before the transcript is read. **3 of the 5 are load-bearing**: reclassify them as substance requirements and the passing regime fails. |
+| `substance` | 16 | presence and position over a pattern set — **9 of 16** decide on position against the recommendation or the call to action; the rest on presence, a custom decider, or refutation. The weakest kind, and the kind most of the register is. |
+
+**Seventeen of the thirty-six entries carry a `timing` string that the probe's own
+`position` field does not compute.** Several enforce ordering inside a custom decider
+instead — the FCA cash-terms probe demonstrably does: the same figure satisfies
+before the close and misses after it. Several more are legitimately not turn-ordering
+rules at all, being a duration with a trigger, or adjacency to a figure rather than a
+place in the call. But the gap is real, it produced one of the defects below, and it
+is not visible from the YAML: **treat a `timing` field as documentation unless the
+probe's printed `basis` says it is enforced.**
+
+**Two limbs refute and never certify**, and they are marked as such in their own
+output: FCA COBS 4.2.1R "fair, clear and not misleading" and SFC "reasonable in all
+the circumstances". A clean result on either means *no breach detected*, not
+confirmed compliance, and the naive control credits both by silence for the same
+reason a keyword check credits a prohibition.
+
+### What an adversarial pass found, and what was changed
+
+The verdicts are computed rather than restated, and the sharpest evidence is a
+**direction inversion**: rewrite `divergence-cooling-off-duration-and-trigger` from
+fourteen days-from-receipt to thirty days-from-conclusion and the computed MAS
+verdict goes pass→fail while the computed FCA verdict goes fail→pass, on hand labels
+that never move. An evaluator reading the labels could not do that.
+
+Two real defects were found by asking, of every entry, *is there any input that makes
+this fail?*
+
+- **`fca-fair-clear-not-misleading` could not fail.** It used a refutation-only
+  decider with an empty pattern set, so it returned `satisfied` on every input
+  including "this is risk-free and you cannot lose" — and it is the **only** engaged
+  entry on both survival rows, so two of the seven pass/pass agreements rested on a
+  check with no failing path. It now carries a cited urgency limb
+  (`call_craft.md` §8 C-6, against this entry's own COBS 4.2.1R) and an
+  ASSUMPTION-labelled misstated-risk limb.
+- **`fca-restricted-advice-oral-disclosure` ignored its own `timing`.** The entry
+  states "in good time before providing advice" and the probe graded presence alone,
+  so the prescribed term said *after* the close satisfied it. It now decides on
+  position against the recommendation landmark.
+- **Fourteen declared waiver patterns decided nothing.** Three entries in three
+  regimes declare the same pattern set for a customer purporting to discharge a duty
+  the firm owes — "you have said you know the risks, so I will take you at your word".
+  The waiver limb was read only under `kind: gate`, so that sentence failed the FCA
+  gate at COBS 9A.2.13R and was **silently ignored** by Reg BI's care obligation and
+  the SFC's "reasonable in all the circumstances", both of which are `kind:
+  substance`. Same words, same shape of failure, two regimes passing. The waiver limb
+  now runs whatever the kind, and a structural test refuses a probe that declares
+  patterns nothing reads.
+
+**None of the three fixes moved any of the numbers in the table above** — that is what
+made them safe to make, and it is also the point: each closed a path by which the
+instrument could have reported green for the wrong reason. Three tests now hold the
+invariants: every non-carve-out entry must have a demonstrated failing input, the five
+carve-outs must have none, and a declared pattern set must be reachable.
+
+**The brittleness that remains is pattern coverage, and here is a concrete
+instance.** The SFC percentage-ceiling probe recognises "three per cent of what you
+invest" and "three per cent of the amount invested"; it does **not** recognise "three
+per cent of the sum you invest", and returns *missed* — "remuneration discussed but
+not as a percentage" — on a disclosure that is correct. The unit arithmetic is right
+and the phrase list is short. This is the in-sample caveat with a face on it: recall
+against wording these eighteen transcripts do not contain is **unmeasured**, and a
+held-out set of paraphrases is the next thing this instrument needs.
+
+**One divergence block diverges partly off its own axis.** All six blocks produce
+opposite computed verdicts, and all 18 named-entry verdicts reproduce — but on
+`divergence-commission-volunteered-four-verdicts` the named entry is *not* what
+carries the MAS and SFC register-scope failures (a missing recommendation document,
+and an unexplained complex product). Its entry-scoped 3-pass/1-fail split reproduces
+exactly; its register-scoped split is 1-pass/3-fail. **Quote the entry-scoped figure
+for that row**, and the register-scoped one as the wider, weaker claim it is.
 
 **The agreement figure is in-sample and the CLI says so on every run.** The probes were
 written with these eighteen transcripts in view. 16/18 is evidence that the register is

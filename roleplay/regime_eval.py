@@ -1373,6 +1373,14 @@ def _negative_only(breach_label: str) -> Decider:
             "",
         )
 
+    # The polarity, marked so `RegimeEvaluator.naive_shadow` can model the lax
+    # instrument honestly. A refutation-only requirement has the same polarity as a
+    # `prohibition`: an engineer writing a keyword check has nothing to *look for*,
+    # so the requirement is credited by silence. Without this marker the naive
+    # control would treat the refutation patterns as things it must find in order to
+    # credit, which is backwards, and would make the lax instrument stricter than
+    # the register on exactly the requirement the register is least able to decide.
+    decide.refutation_only = True  # type: ignore[attr-defined]
     return decide
 
 
@@ -1518,7 +1526,40 @@ PROBES: dict[str, Probe] = {
     ),
     "fca-fair-clear-not-misleading": Probe(
         entry_id="fca-fair-clear-not-misleading",
-        decider=_negative_only("a limitation is stated and then discounted in the same breath"),
+        decider=_negative_only("the communication misstates the risk or manufactures urgency"),
+        # A refutation-only decider with no refutation patterns is a check that
+        # cannot fail, and this repo's own rule is that such a check is worse than
+        # none — `_negative_only` had an empty `forbidden` here until the
+        # reachability test below was written, so the entry was satisfied on every
+        # input including "this is risk-free and you cannot lose". Two limbs:
+        #
+        #   - the urgency limb is CITED. call_craft.md §8 C-6 puts "a deadline or
+        #     scarcity claim with no evidenced basis in the product ledger" against
+        #     this entry's own rule, COBS 4.2.1R (S-54), and calls it the most
+        #     conversion-rewarded non-compliant move in the set.
+        #   - the misstated-risk limb is an ASSUMPTION. No source enumerates the
+        #     sentences that make a communication misleading; that an unqualified
+        #     "risk-free" or "guaranteed returns" claim about a capital-at-risk
+        #     product refutes 4.2.1R(1) follows from the rule rather than from a
+        #     quotation, and the pattern list is this module's.
+        #
+        # Both limbs refute and neither certifies: a clean result still means "no
+        # detected breach", which is why `_negative_only` says so in every reason
+        # string. The patterns are deliberately unnegatable forms — the roleplay
+        # pack's `compliance-cautious-tone-crosses-anyway` row exists because "I
+        # would never say this is guaranteed" must NOT match a guarantee check, and
+        # a test below holds that trap shut.
+        forbidden=(
+            r"\bguaranteed returns?\b",
+            r"\bguaranteed to (beat|outperform|grow|return)\b",
+            r"\bno real risk\b",
+            r"\bno risk of loss\b",
+            r"\brisk[- ]free\b",
+            r"\byou cannot lose\b",
+            r"\bnothing can go wrong\b",
+            r"\bthis (month|week) only\b",
+            r"\boffer (closes|ends) (today|tomorrow|this week)\b",
+        ),
         advisory_positional=_minimisation_adjacency,
         advisory_note=(
             "the minimisation-adjacency detector fired. call_craft.md A-16 labels that "
@@ -1529,7 +1570,10 @@ PROBES: dict[str, Probe] = {
         basis=(
             "an instrument over a transcript can refute 'fair, clear and not misleading' and "
             "cannot certify it, so a clean result means no detected breach and never "
-            "confirmed compliance"
+            "confirmed compliance. The urgency limb is call_craft.md §8 C-6 against this "
+            "entry's own COBS 4.2.1R; the misstated-risk limb is an ASSUMPTION, and adding "
+            "neither moved any of the eighteen rows' verdicts — it removed a check that "
+            "could not fail"
         ),
     ),
     "fca-restricted-advice-oral-disclosure": Probe(
@@ -1537,6 +1581,12 @@ PROBES: dict[str, Probe] = {
         applies_to=frozenset({"investment"}),
         needs_landmark="recommendation",
         satisfied_by=(r"\brestricted advice\b", r"\bindependent advice\b"),
+        # The register entry's `timing` is "in good time before providing advice",
+        # and a verbatim check with no positional rule graded this on presence
+        # alone: the prescribed term said *after* the close satisfied it. The
+        # landmark is the recommendation, which is the same landmark COBS 6.2B.33R
+        # keys on, and adding it moved none of the eighteen rows' verdicts.
+        position="before-recommendation",
         naive_vocabulary=(r"\brestricted\b", r"\bindependent\b", r"\bpanel\b"),
         advisory_detector=(r"\bmost of it is marketing\b", r"\byou did not ring me to hear about us\b"),
         advisory_note=(
@@ -2078,10 +2128,12 @@ class RegimeEvaluator:
         for entry_id in engaged:
             probe = self.probes[entry_id]
             kind = next(e.kind for e in verdict.entries if e.entry_id == entry_id)
-            if kind == "prohibition":
+            if kind == "prohibition" or getattr(probe.decider, "refutation_only", False):
                 # The polarity inversion, and the whole reason the commission row
                 # exists: a keyword check looking for a commission disclosure finds
-                # one, credits it, and is right in three regimes out of four.
+                # one, credits it, and is right in three regimes out of four. A
+                # refutation-only requirement inverts the same way — see
+                # `_negative_only`, which marks its deciders for this branch.
                 credited.append(entry_id)
                 continue
             if probe.satisfied_by_discovery:
@@ -2201,17 +2253,24 @@ class RegimeEvaluator:
                 "satisfied", "nothing in the transcript describes the prohibited conduct"
             )
 
-        if entry.kind == "gate":
-            hit = tx.says(probe.forbidden) if probe.forbidden else None
+        # A declared waiver pattern is checked whatever the kind. It used to be read
+        # only under `gate`, which meant the identical sentence — "you have said you
+        # know the risks, so I will take you at your word" — failed the FCA gate at
+        # COBS 9A.2.13R and was silently ignored by Reg BI's care obligation and the
+        # SFC's "reasonable in all the circumstances", because those two entries are
+        # `kind: substance`. Same words, same shape of failure, and fourteen declared
+        # patterns doing nothing. The waiver still cannot *satisfy* anything; it can
+        # only refute, and the reason string names the kind it refuted.
+        if probe.forbidden:
+            hit = tx.says(probe.forbidden)
             if hit:
                 return built(
                     "missed",
                     f"the precondition is waived rather than met (matched {hit!r}); the duty "
                     "runs to the firm and the customer cannot discharge it",
                     tuple(tx.quote(i) for i in _turns_matching(tx.adviser, probe.forbidden)[:1]),
+                    "waiver",
                 )
-            return self._positional(entry, probe, tx, built)
-
         return self._positional(entry, probe, tx, built)
 
     def _positional(

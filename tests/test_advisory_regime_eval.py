@@ -577,3 +577,244 @@ def test_an_unknown_regime_raises_rather_than_returning_a_clean_sheet() -> None:
     trace = _trace(_DISCOVERY_TURN)
     with pytest.raises(KeyError):
         RegimeEvaluator().evaluate(trace, regime="apac-retail")
+
+
+# --------------------------------------------------------------------------- #
+# Every probe must be able to fail. A check that cannot fail is worse than none.
+# --------------------------------------------------------------------------- #
+
+#: The hostile transcript that makes each entry MISS, for the entries no row in
+#: the corpus fails. Written because the corpus sweep is not a reachability
+#: proof: eleven of the thirty-six entries are never missed by any of the
+#: eighteen rows under any regime, and "never fired here" and "cannot fire" look
+#: identical from the outside. One of them turned out to be the second kind —
+#: `fca-fair-clear-not-misleading` used a refutation-only decider with an empty
+#: pattern set, so it returned `satisfied` on "this is risk-free and you cannot
+#: lose", and two rows' computed PASS rested on it alone.
+_HOSTILE: dict[str, tuple[str, tuple[str, ...]]] = {
+    "fca-fair-clear-not-misleading": (
+        "fca",
+        (_DISCOVERY_TURN, _RECOMMENDATION_TURN, "This is risk-free and you cannot lose.", _CLOSE_TURN),
+    ),
+    "mas-commission-amount": (
+        "mas",
+        (
+            _DISCOVERY_TURN,
+            _RECOMMENDATION_TURN,
+            "The provider pays us a commission on this, and I will not say how much.",
+            _CLOSE_TURN,
+        ),
+    ),
+    "mas-oral-performance-needs-simultaneous-writing": (
+        "mas",
+        (
+            _DISCOVERY_TURN,
+            _RECOMMENDATION_TURN,
+            "That fund returned 9 per cent last year and grew by a third over five.",
+            _CLOSE_TURN,
+        ),
+    ),
+    "mas-free-look-14-days": (
+        "mas",
+        (
+            _DISCOVERY_TURN,
+            _RECOMMENDATION_TURN,
+            "There is a cooling-off period of seven days from receipt of the policy document.",
+            _CLOSE_TURN,
+        ),
+    ),
+    "reg-bi-fees-standardised-ranges-acceptable": (
+        "reg-bi",
+        (_DISCOVERY_TURN, _RECOMMENDATION_TURN, _CLOSE_TURN),
+    ),
+    "reg-bi-conflict-elimination-time-limited-incentives": (
+        "reg-bi",
+        (
+            _DISCOVERY_TURN,
+            _RECOMMENDATION_TURN,
+            "Frankly there is a sales contest on and I can get you the better rate.",
+            _CLOSE_TURN,
+        ),
+    ),
+    "sfc-ia-language-of-the-client-s-choice": (
+        "sfc-ia",
+        (
+            _DISCOVERY_TURN,
+            "You would rather have this in Cantonese, but the documents are only in "
+            "English and that is what you will get.",
+            _RECOMMENDATION_TURN,
+            _CLOSE_TURN,
+        ),
+    ),
+    "sfc-ia-benefit-illustration-no-emphasis-on-non-guaranteed": (
+        "sfc-ia",
+        (
+            _DISCOVERY_TURN,
+            _RECOMMENDATION_TURN,
+            "The projected value at an assumed rate of 6 per cent gets you to two "
+            "hundred thousand, and that is the number to hold on to.",
+            _CLOSE_TURN,
+        ),
+    ),
+}
+
+
+def test_every_entry_that_can_be_breached_has_an_input_that_breaches_it(
+    computed: dict[str, ComputedRow]
+) -> None:
+    """`missed` is reachable for every probed entry that is not a carve-out.
+
+    Two sources of evidence, and neither alone is enough. The corpus shows an
+    entry firing on a real transcript; `_HOSTILE` shows it firing at all. An
+    entry that appears in neither is decoration — it contributes a `satisfied`
+    to every verdict it touches and can never subtract one, which is the
+    "instrument that cannot fail" this repo's own report language calls worse
+    than no instrument.
+    """
+    registers = load_registers()
+    evaluator = RegimeEvaluator()
+    fired_on_corpus: set[str] = set()
+    for row in computed.values():
+        # Every regime, not only the ones the row names: an entry that no row
+        # *names* can still be exercised by a transcript, and the question here is
+        # whether the check works at all.
+        for verdict in evaluator.evaluate_all(row.result.trace).values():
+            fired_on_corpus.update(e.entry_id for e in verdict.missed)
+
+    unreachable: list[str] = []
+    for regime, register in sorted(registers.items()):
+        for entry_id, entry in register.entries.items():
+            if entry.kind == "not-required":
+                continue
+            if entry_id in fired_on_corpus:
+                continue
+            hostile = _HOSTILE.get(entry_id)
+            if hostile is None:
+                unreachable.append(f"{entry_id} (no corpus row fails it and no hostile input)")
+                continue
+            hostile_regime, turns = hostile
+            status = _status(_trace(*turns), regime=hostile_regime, entry_id=entry_id)
+            if status != "missed":
+                unreachable.append(f"{entry_id} (hostile input returned {status!r})")
+    assert not unreachable, "entries with no reachable failure:\n  " + "\n  ".join(unreachable)
+
+
+def test_a_carve_out_entry_cannot_be_made_to_miss(computed: dict[str, ComputedRow]) -> None:
+    """The other direction: `not-required` must never fail, on any input.
+
+    `not-required` is decided before the transcript is looked at, and this holds
+    that shortcut in place. If a carve-out could miss, a cross-market checker
+    would import a requirement into the market that does not have one — which is
+    the failure the four registers exist to make impossible.
+    """
+    registers = load_registers()
+    hostile = _trace(
+        "Frankly there is a sales contest on and this month only I can hold the rate.",
+        "You have said you know the risks, so no questions then.",
+        "This is risk-free and you cannot lose, with guaranteed returns of six per cent.",
+        _CLOSE_TURN,
+    )
+    evaluator = RegimeEvaluator()
+    checked = 0
+    for regime, register in sorted(registers.items()):
+        verdict = evaluator.evaluate(hostile, regime=regime)
+        for entry in verdict.entries:
+            if register.entries[entry.entry_id].kind != "not-required":
+                continue
+            checked += 1
+            assert entry.status == "not-applicable", (regime, entry.entry_id, entry.status)
+    assert checked == 5, f"expected five carve-out entries across the registers, saw {checked}"
+
+
+def test_the_misleading_check_does_not_fire_on_a_denial_of_the_thing_it_looks_for() -> None:
+    """A guarantee check that matches "I would never say this is guaranteed" is useless.
+
+    The roleplay pack already carries `compliance-cautious-tone-crosses-anyway`
+    for exactly this trap: a blocklist on "guaranteed returns" against a trainee
+    who said the opposite. The refutation patterns on the FCA fair-clear entry are
+    unnegatable forms for that reason, and this holds them to it.
+    """
+    for turn in (
+        "I would never say this is guaranteed, and I am not promising you anything.",
+        "Your capital is at risk and you could get back less than you put in.",
+        "There is no guarantee attached to any of this.",
+    ):
+        trace = _trace(_DISCOVERY_TURN, _RECOMMENDATION_TURN, turn, _CLOSE_TURN)
+        assert (
+            _status(trace, regime="fca", entry_id="fca-fair-clear-not-misleading") == "satisfied"
+        ), turn
+
+
+def test_a_verbatim_disclosure_after_the_close_misses_on_position() -> None:
+    """The prescribed words, said too late. `timing` is not decoration either.
+
+    COBS 6.2B.33R's restricted-advice disclosure is due "in good time before
+    providing advice" — the register entry says so in its own `timing` field — and
+    a verbatim check with no positional rule graded it on presence alone, so the
+    prescribed term said after the paperwork question satisfied it. Same trace
+    shape as the other timing tests: every `ts` is identical, so only a rule
+    decided on event-stream position can tell these two apart.
+    """
+    disclosure = "I should say we give restricted advice - we only look at our own panel."
+    in_time = _trace(_DISCOVERY_TURN, disclosure, _RECOMMENDATION_TURN, _CLOSE_TURN)
+    too_late = _trace(_DISCOVERY_TURN, _RECOMMENDATION_TURN, _CLOSE_TURN, disclosure)
+    entry = "fca-restricted-advice-oral-disclosure"
+    assert _status(in_time, regime="fca", entry_id=entry) == "satisfied"
+    assert _status(too_late, regime="fca", entry_id=entry) == "missed"
+
+
+def test_the_same_waiver_sentence_is_refused_under_every_regime_that_declares_it() -> None:
+    """A declared waiver pattern must be enforced whatever the entry's `kind`.
+
+    "You have said you know the risks, so I will take you at your word" is the
+    customer purporting to discharge a duty the firm owes. Three entries across
+    three regimes declare that pattern set — the FCA gate at COBS 9A.2.13R, Reg
+    BI's care obligation, and the SFC's "reasonable in all the circumstances" —
+    and the waiver limb used to be read only under `kind: gate`, so the identical
+    sentence failed the FCA and was silently ignored by the other two. Fourteen
+    declared patterns that decided nothing is the same defect as a check that
+    cannot fail, one indirection further away.
+    """
+    trace = _trace(
+        _DISCOVERY_TURN,
+        "You have said you know the risks, so I will take you at your word.",
+        _RECOMMENDATION_TURN,
+        _CLOSE_TURN,
+    )
+    for regime, entry_id in (
+        ("fca", "fca-must-not-recommend-on-insufficient-information"),
+        ("reg-bi", "reg-bi-care-obligation-binds-the-recommendation"),
+        ("sfc-ia", "sfc-ia-suitability-reasonable-in-all-circumstances"),
+    ):
+        verdict = RegimeEvaluator().evaluate(trace, regime=regime)
+        entry = next(e for e in verdict.entries if e.entry_id == entry_id)
+        assert entry.status == "missed", (regime, entry_id, entry.status)
+        assert entry.miss_class == "waiver", (regime, entry_id, entry.miss_class)
+        # And the discovery limb is not what caught it: the adviser did ask.
+        assert "waived rather than met" in entry.reason
+
+
+def test_a_declared_waiver_pattern_is_never_left_unenforced() -> None:
+    """Structural: no probe may declare `forbidden` patterns that nothing consults.
+
+    The behavioural test above covers the three entries that have them today. This
+    one covers the next one somebody adds: `_decide` reads `forbidden` on the
+    prohibition path, on the waiver path, and inside `_negative_only`, so a probe
+    whose only failing limb is a pattern set nothing reaches would be a silent
+    no-op — and the reachability test would only catch it if that entry had no
+    other way to fail.
+    """
+    registers = load_registers()
+    unenforced: list[str] = []
+    for register in registers.values():
+        for entry_id, entry in register.entries.items():
+            probe = PROBES[entry_id]
+            if not probe.forbidden:
+                continue
+            reached = (
+                entry.kind in {"prohibition", "gate", "substance"}
+                or getattr(probe.decider, "refutation_only", False)
+            )
+            if not reached:
+                unenforced.append(f"{entry_id} (kind {entry.kind!r}, decider bypasses forbidden)")
+    assert not unenforced, "probes declaring patterns nothing reads:\n  " + "\n  ".join(unenforced)

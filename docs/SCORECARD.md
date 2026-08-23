@@ -82,6 +82,30 @@ Every rate in this scorecard carries both, in the code and in the tables below,
 because a naked percentage is a defect in this repo and a rate whose exclusions are
 undeclared is the same defect wearing a denominator. Consolidated in §4.
 
+### 0.5 What in here is computed today, and what is a proposal
+
+This document is a **design** for twenty-eight KPIs and their detectors, and most of
+it is a proposal: `roleplay/scorecard.py` holds the rows as validated data, and the
+detectors named against each row describe the instrument that would compute it.
+
+The exception is the compliance-gate material — CG-1 through CG-5, and the
+cross-regime divergences they turn on. Those **are** computed, by
+`roleplay/regime_eval.py`, against the four cited registers at
+`scenarios/advisory/registers/`. One command, no API keys:
+
+```
+make advisory-verdicts
+```
+
+It grades all eighteen advisory rows entry by entry and prints its own limitations
+block first. The measured agreement with the hand labels is **16 of 18 rows**, and
+that figure is **in-sample** — the probes were written with those eighteen
+transcripts in view. Read
+[`ADVISORY_TEST_STRATEGY.md` §4.3](ADVISORY_TEST_STRATEGY.md) for what each entry
+kind computes, which limbs are refutation-only, and the two rows where the computed
+verdict and the hand label disagree. Nothing in §2 below should be read as claiming
+more than that.
+
 ---
 
 ## 1. The seven groups
