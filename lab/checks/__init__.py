@@ -69,6 +69,8 @@ from lab.checks.contracts import (
     DEFAULT_ASK_PATTERNS,
     DEFAULT_HEDGES,
     DEFAULT_PROMISES,
+    DEFAULT_ATTRIBUTIONS,
+    DEFAULT_REFUSALS,
     ArgPredicate,
     Contract,
     FieldPropagationContract,
@@ -111,6 +113,8 @@ __all__ = [
     # defaults worth overriding per scenario
     "DEFAULT_PROMISES",
     "DEFAULT_HEDGES",
+    "DEFAULT_REFUSALS",
+    "DEFAULT_ATTRIBUTIONS",
     "DEFAULT_ASK_PATTERNS",
     "CONFIRMATION_FRAMES",
     # engine

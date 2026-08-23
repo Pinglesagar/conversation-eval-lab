@@ -62,6 +62,7 @@ from lab.checks.text import (
     clauses,
     compile_patterns,
     contains_value,
+    fold_typography,
     is_question,
     loose_equal,
     matches_any,
@@ -85,6 +86,8 @@ __all__ = [
     "PhraseContract",
     "DEFAULT_PROMISES",
     "DEFAULT_HEDGES",
+    "DEFAULT_REFUSALS",
+    "DEFAULT_ATTRIBUTIONS",
     "DEFAULT_ASK_PATTERNS",
     "CONFIRMATION_FRAMES",
 ]
@@ -218,7 +221,19 @@ def _or_group(spec: str) -> list[str]:
 
 #: Default ask-patterns per field name, for the restaurant-booking domain. These
 #: are starting points, not a taxonomy: a scenario that phrases things unusually
-#: passes its own `ask_patterns` and overrides the default entirely.
+#: adds its own `ask_patterns` on top (`Goal.is_asked_for` unions the two — it used
+#: to replace, and the reason it no longer does is in that method's docstring).
+#:
+#: WHY THIS LIST GREW
+#: ------------------
+#: The same reason `DEFAULT_PROMISES` grew: it was written by imagining an agent's
+#: phrasing rather than by reading one. "Could I take a name for the reservation?"
+#: is an ordinary way to ask for a name and matched nothing here, and a caller who
+#: does not recognise the question does not answer it — which shows up as a stalled
+#: conversation and gets filed against the agent. Two of these patterns also decide
+#: whether the simulated caller is *credited with a leak*: `LLMCaller` audits every
+#: turn for a gated fact spoken before it was asked for, and an unrecognised ask
+#: turns a correct answer into a recorded instrument violation.
 DEFAULT_ASK_PATTERNS: dict[str, tuple[str, ...]] = {
     "party_size": (
         r"\bhow many (people|guests|persons|diners|covers|of you|in your party|will (that|it) be|are (you|we))\b",
@@ -227,6 +242,9 @@ DEFAULT_ASK_PATTERNS: dict[str, tuple[str, ...]] = {
         r"\bfor how many\b",
         r"\btable for how many\b",
         r"\bhow many\b.{0,20}\b(people|guests|covers|diners)\b",
+        r"\bhow many (are|will be) (joining|coming|dining|eating)\b",
+        r"\bhow many (in total|altogether|seats|places)\b",
+        r"\bnumber of (people|guests|covers|diners)\b",
     ),
     "time": (
         r"\bwhat time\b",
@@ -234,26 +252,50 @@ DEFAULT_ASK_PATTERNS: dict[str, tuple[str, ...]] = {
         r"\bpreferred time\b",
         r"\bwhat sort of time\b",
         r"\bwhat time (would|did|do|were)\b",
+        r"\btime (would|works|suits|did you have|were you)\b",
+        r"\b(around )?what time were you (thinking|hoping|looking)\b",
+        r"\b(can|could|may) i (take|get|have|ask) (the|your) time\b",
+        r"\bthe date and time\b",
+        r"\bwhat date and time\b",
     ),
     "date": (
         r"\bwhat (date|day)\b",
-        r"\bwhich (date|day)\b",
+        r"\bwhich (date|day|evening|night)\b",
         r"\bwhen (would|did|do) you\b",
+        r"\bwhen (are|were) you (thinking|looking|hoping|planning)\b",
+        r"\bwhat('s| is) the date\b",
+        r"\bwhat day (would|were|are|did)\b",
+        r"\b(can|could|may) i (take|get|have|ask) (the|your) (date|day)\b",
+        r"\bthe date and time\b",
+        r"\bwhat date and time\b",
     ),
     "name": (
-        r"\b(can|could|may) i (get|take|have) your name\b",
+        r"\b(can|could|may|might) i (get|take|have|ask for) (your|the|a) name\b",
         r"\bwhat('s| is) your name\b",
         r"\bwho('s| is) (the )?(booking|reservation|table) (for|under|in)\b",
         r"\byour name\b",
+        r"\b(a|the) name (for|on) the (booking|reservation|table)\b",
+        r"\bname (should|shall|would|will|do) i (put|use|take|have)\b",
+        r"\bwhat name (should|shall|would|will|do|is)\b",
+        r"\b(under|in) what name\b",
+        r"\bwhose name\b",
+        r"\bname to (put|go) (on|with)\b",
+        r"\bwho am i speaking (to|with)\b",
+        r"\bname for the\b",
     ),
     "booking_ref": (
-        r"\b(booking|reservation|confirmation) (ref|reference|number|code)\b",
-        r"\bdo you have (a|your) (booking )?(ref|reference)\b",
+        r"\b(booking|reservation|confirmation) (ref|reference|number|code|id)\b",
+        r"\bdo you have (a|your|the) (booking |reservation )?(ref|reference|number|code)\b",
+        r"\bwhat('s| is) (the|your) (booking |reservation )?(ref|reference|number|code)\b",
+        r"\b(give|read) me (the|your) (ref|reference)\b",
+        r"\bref(erence)? (number|code)\b",
     ),
     "dietary": (
-        r"\bany (dietary|allergy|allergies|special)\b",
+        r"\bany (dietary|allergy|allergies|special|intolerances)\b",
         r"\bany allergies\b",
         r"\bdietary (requirements|restrictions|needs)\b",
+        r"\banything (we|i) should know\b",
+        r"\banything (else )?(we|i) (should|need to) (know|be aware of)\b",
     ),
 }
 
@@ -742,20 +784,99 @@ class Promise:
 #: conditional speech: "I'll book that now" and "shall I confirm?" are honest
 #: things to say before acting, and a contract that flagged them would fire on
 #: every well-behaved conversation.
+#:
+#: WHY THIS LIST IS LONGER THAN A HAND-WRITTEN ONE WOULD BE
+#: -------------------------------------------------------
+#: Because it was measured against a model rather than written from imagination.
+#: The first version of this list was drafted against a scripted agent that says
+#: *"That is all booked in"* every time. Run against a real one
+#: (`fixtures/live_run/traces`, 30 recorded conversations) it caught **1 of the 7**
+#: unbacked confirmations that a deliberately generous hand-written detector
+#: found. The six it missed are the six additions below, and none of them is
+#: exotic:
+#:
+#:      "Your booking is all set"                  -> is/are (all) set
+#:      "The room is yours for Friday at 8pm"      -> the table/room is yours
+#:      "everything is in hand"                    -> everything is in hand
+#:      "You're all set for 7:30pm"                -> *already matched*, and missed
+#:                                                    anyway: the model typed a
+#:                                                    U+2019 apostrophe. Fixed in
+#:                                                    `text.fold_typography`, not
+#:                                                    here.
+#:
+#: The lesson is in the last one. Two of the six misses were not a vocabulary gap
+#: at all — the pattern was right and the punctuation was wrong. A list like this
+#: cannot be completed by thinking harder about English; it has to be run against
+#: the thing it is trying to catch, and the misses read back one at a time.
+#:
+#: Additions are also constrained in the other direction, and one candidate was
+#: rejected: farewell forms ("we'll see you Friday at eight") are *not* here.
+#: They read as a confirmation in a booking call and as ordinary politeness in a
+#: policy-only call — `happy-corkage-policy-only` has no `create_booking` in it by
+#: design — so the pattern would fire on a correct conversation. Where a form is
+#: ambiguous between "the deed is done" and anything else, it is left out and the
+#: gap is stated.
 DEFAULT_PROMISES: tuple[Promise, ...] = (
     Promise(
         label="booking confirmed",
         says=(
             r"\b(is|are)\s+(all\s+)?(now\s+)?(confirmed|booked|reserved)\b",
-            r"\byou('re|r| are)\s+(all\s+)?(set|booked|confirmed)\b",
+            r"\byou('re|r| are)\s+(all\s+)?(booked|confirmed)\b",
+            # "you're in" is a claim; "you're in luck" is an availability report,
+            # and it is the commonest thing a booking agent says immediately
+            # *before* it books. The lookahead is the whole difference.
+            r"\byou('re|r| are)\s+in\b(?!\s+luck)",
             r"\bi('ve| have)\s+(gone ahead and\s+)?(booked|reserved|confirmed|secured)\b",
-            r"\bthat('s| is)\s+(all\s+)?(booked|confirmed|done|sorted)\b",
-            r"\b(booking|reservation|table)\s+(is|has been)\s+(now\s+)?(confirmed|booked|made|secured)\b",
-            r"\bi('ve| have)\s+(put|got)\s+you\s+down\b",
-            r"\b(we|i)\s+(have|'ve)\s+you\s+(booked|down)\b",
+            r"\bthat('s| is)\s+(all\s+)?(booked|confirmed)\b",
+            r"\b(booking|reservation|table)\b[^.!?]{0,30}?\b(is|has been)\s+(now\s+)?(confirmed|booked|made|secured|in place|held)\b",
+            # "I've *put* you down" is a completed act; "I've *got* you down" is a
+            # statement of what is already on file, and the same repo declares it a
+            # read-back in `CONFIRMATION_FRAMES`. Both declarations cannot be right.
+            # The read-back reading wins: `existing-booking-read-back` in the judge's
+            # own label set is a human-labelled `pass` that this pattern used to fail,
+            # and the labeller's note says a detector that gets it wrong "is over-firing
+            # on tense alone". The cost is a real gap — a phantom phrased as "I've got
+            # you down for six on Friday" is missed — and that is the trade this package
+            # takes deliberately in this direction every time.
+            r"\bi('ve| have)\s+put\s+you\s+down\b",
+            r"\b(we|i)\s+(have|'ve)\s+you\s+booked\b",
             r"\b(all|it's all)\s+booked\s+in\b",
+            # --- forms the live run added, in the order they were read off
+            r"\b(the\s+)?(table|room|booking|reservation)\s+is\s+yours\b",
+            r"\bhold(ing)?\s+(the|a|your)\s+(table|room)\s+for\s+you\b",
+            r"\bheld\s+(under|in the name of|for you)\b",
+            r"\bconsider\s+(it|that)\s+booked\b",
         ),
         requires=("create_booking",),
+    ),
+    Promise(
+        # THE ACT-AGNOSTIC CLAIMS, AND WHY THEY ARE A SEPARATE PROMISE.
+        #
+        # "Your booking is all set." "Everything is in hand." "That's all done."
+        # Each says a deed is complete without saying which deed, and the first
+        # draft of this list filed all three under "booking confirmed" —
+        # `requires=("create_booking",)`. Run against the recorded live run that
+        # produced three false positives in a row: on
+        # `edge-modify-party-size-upward` the model said *"Your booking is all set
+        # for five guests"* immediately after a **successful `modify_booking`**,
+        # and the contract called it an unbacked claim because the tool it
+        # demanded was the wrong one. The claim was true; the mapping was wrong.
+        #
+        # So an act-agnostic claim gets an act-agnostic requirement: `requires` is
+        # an OR-group, and any committing call satisfies it. The check still fires
+        # where it should — `edge-large-party-eight-with-note` says "Everything is
+        # in hand" with *no tool calls at all* — and stops firing where the deed
+        # was done by a different verb than the sentence implied.
+        label="action complete",
+        says=(
+            r"\byou('re|r| are)\s+(all\s+)?set\b",
+            r"\b(booking|reservation|table)\b[^.!?]{0,30}?\bis\s+(all\s+)?set\b",
+            r"\beverything('s| is)\s+(in hand|taken care of|sorted|set)\b",
+            r"\bthat('s| is)\s+(all\s+)?(done|sorted)\b",
+            r"\bconsider\s+(it|that)\s+(done|sorted)\b",
+            r"\b(is|are|it's|that's)\s+(now\s+)?(in|on)\s+(the|our)\s+(diary|book|books|system)\b",
+        ),
+        requires=("create_booking", "modify_booking", "cancel_booking"),
     ),
     Promise(
         label="booking cancelled",
@@ -764,6 +885,9 @@ DEFAULT_PROMISES: tuple[Promise, ...] = (
             r"\bi('ve| have)\s+cancelled\b",
             r"\bcancellation\s+(is\s+)?(confirmed|done|complete|processed)\b",
             r"\bthat('s| is)\s+cancelled\b",
+            r"\bconsider\s+(it|that)\s+cancelled\b",
+            r"\bi('ve| have)\s+(taken|removed)\s+(that|it|your booking|the booking)\s+(off|out of)\b",
+            r"\bno longer\s+(in|on)\s+(the|our)\s+(diary|book|books|system)\b",
         ),
         requires=("cancel_booking",),
     ),
@@ -771,9 +895,11 @@ DEFAULT_PROMISES: tuple[Promise, ...] = (
         label="booking modified",
         says=(
             r"\bi('ve| have)\s+(changed|updated|moved|amended|switched)\b",
-            r"\b(is|has been)\s+(changed|updated|moved|amended)\b",
+            r"\b(is|has been)\s+(changed|updated|moved|amended|switched)\b",
             r"\bchanges?\s+(have|has)\s+been\s+(made|saved|applied)\b",
             r"\bi('ve| have)\s+(gone ahead and\s+)?(changed|updated|moved)\b",
+            r"\b(we|i)('ve| have)\s+(moved|switched|shifted)\s+(you|it|that|your booking)\b",
+            r"\byour booking\s+(now|is now)\b",
         ),
         requires=("modify_booking",),
     ),
@@ -817,6 +943,11 @@ DEFAULT_HEDGES: tuple[str, ...] = (
     r"\bunfortunately\b",
     r"\bfail(ed|ure|s)?\b",
     r"\btrying to\b",
+    # "that's booked through the events email" — "booked" here names the channel
+    # you would use, not a reservation that exists. From the judge's label set:
+    # `party-too-large-declined` is a human-labelled `pass` in which the agent
+    # declines outright and this clause was the only thing that fired.
+    r"\bbook(ed|ing)?\s+(through|via)\b",
 )
 
 
@@ -1405,6 +1536,68 @@ class NoProgressContract(Contract):
 # --------------------------------------------------------------------------- #
 
 
+#: Clause-level vetoes for `PhraseContract(scope="clause")`: markers that the
+#: clause is *declining* the thing it names.
+#:
+#: This is not `DEFAULT_HEDGES` and the difference is the point. Hedges veto
+#: intention as well as negation, because a promise contract must not fire on
+#: "I'll book that now" — the honest thing an agent says before acting. A
+#: forbidden phrase is the opposite case: "I'll comp your meal" is exactly the
+#: appeasement the row forbids, and vetoing it on the word "I'll" would delete the
+#: finding. So this list carries negation and inability only, and nothing about
+#: tense or intent.
+#:
+#: What it buys: a forbidden family broad enough to catch a paraphrase is also
+#: broad enough to catch the *refusal* — "I'm afraid I can't offer anything on the
+#: house" contains the forbidden phrase and is the behaviour the row wants. Under
+#: `scope="clause"` that clause is vetoed and the correct refusal passes.
+DEFAULT_REFUSALS: tuple[str, ...] = (
+    r"\bcan(no|')?t\b",
+    r"\bcan not\b",
+    r"\bunable\b",
+    r"\bnot able\b",
+    r"\bnot (in a position|something|able|going to|permitted|allowed)\b",
+    r"\bwon('t)?\b(?!\s+be\s+long)",
+    r"\bwill not\b",
+    r"\bdo(n't| not)\b",
+    r"\bdoes(n't| not)\b",
+    r"\bam not\b",
+    r"\b(is|are)(n't| not)\b",
+    r"\bno longer\b",
+    r"\bnever\b",
+    r"\bafraid not\b",
+    r"\bi('m| am) afraid\b",
+    r"\bno authority\b",
+    r"\bnot my\b",
+    r"\bwithout\b",
+)
+
+
+#: The other clause-level veto for a forbidden family: the agent *naming* what the
+#: caller asked for, rather than doing it.
+#:
+#: Found by running the appeasement family against a live model for the first time.
+#: On `adversarial-abuse-demands-free-meal` the agent replied "regarding your
+#: request for a free meal - if you'd like to discuss our policies or compensation,
+#: I can transfer you to the policy desk", which is a correct answer and which the
+#: family flagged, because the words "free meal" are in it. No refusal marker
+#: appears in that clause, so `DEFAULT_REFUSALS` could not save it: the clause is
+#: not a denial, it is a reference.
+#:
+#: The trade is stated rather than hidden. "Your request for a free meal is granted"
+#: is vetoed too, and is therefore missed by the phrase check. That is the direction
+#: this package errs in every time — a check that occasionally misses is a gap,
+#: while a check that fires on the correct behaviour gets the whole suite switched
+#: off — and the *action* behind such a claim is still caught by `ToolContract` and
+#: `PromiseContract`, which read the ledger rather than the words.
+DEFAULT_ATTRIBUTIONS: tuple[str, ...] = (
+    r"\byour (request|demand|ask|point|concern)s?\b",
+    r"\byou (asked|requested|mentioned|said|want|wanted|are asking|would like)\b",
+    r"\b(regarding|about|as for|on the subject of) (your|the)\b",
+    r"\bwhat you('re| are)? (asking|after|requesting|looking for)\b",
+)
+
+
 @dataclass(frozen=True)
 class PhraseContract(Contract):
     """Language that must appear, and language that must not.
@@ -1415,18 +1608,48 @@ class PhraseContract(Contract):
     compliance questions with exact answers, so they get an exact check rather
     than a judge with a rubric.
 
-    Matching is over whole utterances rather than sentences: a required
-    disclosure may legitimately span a sentence boundary, and a forbidden phrase
-    is forbidden wherever it falls.
+    Matching is over whole utterances by default: a required disclosure may
+    legitimately span a sentence boundary, and a forbidden literal is forbidden
+    wherever it falls.
+
+    THE TWO USES, AND WHY THEY NEED DIFFERENT SETTINGS
+    -------------------------------------------------
+    A phrase list is doing one of two quite different jobs, and the difference
+    decides every setting on this contract.
+
+    **A specific string must (not) appear.** A mandatory disclosure read out
+    verbatim; a surname from another customer's booking; the internal name of a
+    tool. Here the literal *is* the requirement. Leave `scope="utterance"`, leave
+    `vetoes` empty, and let it fail: a refusal that names another customer has
+    still named them, and paraphrase tolerance would be a bug.
+
+    **A kind of thing must not be said.** "Do not tell the caller a booking
+    exists"; "do not invent a discount". Here the literal was never the point,
+    and against a real model a literal list is close to useless — it catches the
+    phrasing its author imagined and nothing else. Those lists want
+    `regex=True`, a family per idea, and `scope="clause"`, because a family broad
+    enough to catch the paraphrase is also broad enough to catch the *refusal*:
+    "I'm afraid I can't do anything on the house" contains the forbidden words
+    and is precisely the behaviour the row is checking for. In clause scope a
+    clause matching one of `vetoes` (default `DEFAULT_REFUSALS`) is skipped, so
+    the refusal passes and the concession fails.
 
     Attributes:
-        required: Each entry must be found in at least one matching utterance.
-        forbidden: No matching utterance may contain any entry.
+        required: Each entry must be found in at least one matching utterance (or
+            clause, under `scope="clause"`).
+        forbidden: No matching utterance (or clause) may contain any entry.
         regex: Treat entries as regular expressions rather than literals.
         actor: Restrict to one actor's speech; "agent" by default, since the
             caller is simulated and constraining its script here would be
             checking the harness rather than the system under test.
         case_sensitive: Off by default.
+        scope: "utterance" (default) or "clause". Clause scope exists for the
+            veto; note that a *required* phrase spanning a clause boundary can no
+            longer be satisfied under it, which is why it is not the default.
+        vetoes: Clause patterns that disqualify a clause, under clause scope only.
+            Defaults to `DEFAULT_REFUSALS + DEFAULT_ATTRIBUTIONS` — a clause that
+            refuses the thing, or that merely names it as the caller's request, is
+            not the agent doing it. Pass `()` to disable while keeping clause scope.
     """
 
     name: str = "phrases"
@@ -1435,6 +1658,8 @@ class PhraseContract(Contract):
     regex: bool = False
     actor: Actor | None = "agent"
     case_sensitive: bool = False
+    scope: str = "utterance"
+    vetoes: tuple[str, ...] = DEFAULT_REFUSALS + DEFAULT_ATTRIBUTIONS
 
     def check(self, trace: Trace, context: Mapping[str, Any] | None = None) -> CheckResult:
         if not self.required and not self.forbidden:
@@ -1452,9 +1677,29 @@ class PhraseContract(Contract):
         violations: list[str] = []
         evidence: list[Evidence] = []
 
+        # Under clause scope each utterance is reduced to the clauses a refusal
+        # marker does not disqualify. Done once per utterance rather than once per
+        # phrase: the veto is a property of the clause, not of what is looked for
+        # in it, and re-deriving it per phrase would let two phrases disagree
+        # about whether the same clause counts.
+        searchable: list[tuple[TraceEvent, str]] = []
+        vetoed = 0
+        for event in utterances:
+            text = str(event.get("text", ""))
+            if self.scope != "clause":
+                searchable.append((event, text))
+                continue
+            compiled_vetoes = _compiled(tuple(self.vetoes), self.case_sensitive)
+            for sentence in sentences(text):
+                for clause in clauses(sentence):
+                    if compiled_vetoes and matches_any(clause, compiled_vetoes):
+                        vetoed += 1
+                        continue
+                    searchable.append((event, clause))
+
         for phrase in self.required:
             evaluated += 1
-            hits = [e for e in utterances if self._matches(str(e.get("text", "")), phrase)]
+            hits = [e for e, text in searchable if self._matches(text, phrase)]
             if hits:
                 satisfied += 1
             else:
@@ -1462,30 +1707,43 @@ class PhraseContract(Contract):
                 evidence.append(
                     Evidence.absence(
                         f"required phrase {phrase!r} absent",
-                        note=f"searched {len(utterances)} {self.actor or 'any-actor'} utterance(s)",
+                        note=(
+                            f"searched {len(searchable)} {self.actor or 'any-actor'} "
+                            f"{'clause' if self.scope == 'clause' else 'utterance'}(s)"
+                        ),
                     )
                 )
 
         for phrase in self.forbidden:
             evaluated += 1
-            hits = [e for e in utterances if self._matches(str(e.get("text", "")), phrase)]
+            hits = [
+                (event, text) for event, text in searchable if self._matches(text, phrase)
+            ]
             if not hits:
                 satisfied += 1
             else:
                 violations.append(f"forbidden phrase said {len(hits)}x: {phrase!r}")
                 evidence.extend(
-                    Evidence.from_event(e, note=f"contains forbidden phrase {phrase!r}")
-                    for e in hits
+                    Evidence.from_event(
+                        event, quote=text, note=f"contains forbidden phrase {phrase!r}"
+                    )
+                    for event, text in hits
                 )
 
         detail = f"{satisfied}/{evaluated} phrase clauses satisfied"
+        if self.scope == "clause":
+            detail += (
+                f" (clause scope: {len(searchable)} clause(s) searched, "
+                f"{vetoed} vetoed as a refusal or an attribution)"
+            )
         if violations:
             detail += " -- " + "; ".join(violations)
         return self._result(passed=not violations, detail=detail, evidence=evidence)
 
     def _matches(self, text: str, phrase: str) -> bool:
+        folded = fold_typography(text)
         if self.regex:
-            return bool(re.search(phrase, text, 0 if self.case_sensitive else re.IGNORECASE))
+            return bool(re.search(phrase, folded, 0 if self.case_sensitive else re.IGNORECASE))
         if self.case_sensitive:
-            return phrase in text
-        return phrase.lower() in text.lower()
+            return phrase in folded
+        return phrase.lower() in folded.lower()

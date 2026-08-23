@@ -1,0 +1,44 @@
+{
+  "goal_intent": "book Friday for two, then correct the time when you hear it read back wrong",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "b1718afb81da892899642df457d2340ea14c2005b2b42f9d472b41144a4c1ba2",
+    "scenario_id": "edge-correction-during-read-back",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 2
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "f5dbe10919b9022c9b2bcc2fc0a2add5c7abcbdaa779c027b9a3b290a8edf302",
+      "index": 0,
+      "utterance": "Hi there! I\u2019m calling because I\u2019m planning a little get-together for the end of the week\u2014just two of us. Could I book a table for Friday?"
+    },
+    {
+      "context_sha256": "bcc3fcfbf4383acb9bde687ca02583818b64fc563f857bb88a048f0940c64295",
+      "index": 1,
+      "utterance": "Thanks so much! We were thinking 7pm would be perfect\u2014it lets us catch up after work and maybe enjoy the nice weather. I can give you my name if you need it."
+    },
+    {
+      "context_sha256": "7de5c1cd2a35c63d47a15411ebc36fdc3a994cc606b34e5e7e87f2623c4ba127",
+      "index": 2,
+      "utterance": "Sure, it's Iwan Prosser. And thanks for checking\u2014looking forward to a cosy dinner for two at seven!"
+    },
+    {
+      "context_sha256": "84e6dba0ee292eaa0bd9bd905477099424bcd24b605b9791d32f4f93654016b5",
+      "index": 3,
+      "utterance": "Actually, sorry, could you make that eight o'clock instead? We realized we\u2019d need a bit more time beforehand. No special requests, just a regular table for two at 8pm this Friday, please!"
+    },
+    {
+      "context_sha256": "91647b59395cac6d9a46bfda1e0c4a464b418e6fbb93b9b948b2c050e2bcbcc7",
+      "index": 4,
+      "utterance": "No, that\u2019s perfect\u2014thanks so much for sorting that out! Looking forward to Friday. Have a great day! [END OF CALL]"
+    }
+  ]
+}

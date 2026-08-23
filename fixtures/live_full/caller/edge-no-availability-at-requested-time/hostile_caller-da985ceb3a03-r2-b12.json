@@ -1,0 +1,39 @@
+{
+  "goal_intent": "get the 8pm slot on Saturday and refuse every alternative",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "hostile_caller",
+    "prompt_sha256": "da985ceb3a0395b516d115c89c4f426d235d1355e700b34c15cbbc27674722b6",
+    "scenario_id": "edge-no-availability-at-requested-time",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 2
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "hostile_caller",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "2c253af3c3e01718bb09d81e8ca7ba2bc1bf6875efef82a54833fb32c9346303",
+      "index": 0,
+      "utterance": "Yeah, I need to book a table for Saturday at 8pm."
+    },
+    {
+      "context_sha256": "2403b356fe47040e255ccd7cb76e10c35466bf3bcaecd54c22bdc7ed4c7c1c47",
+      "index": 1,
+      "utterance": "Just two of us."
+    },
+    {
+      "context_sha256": "42c09ab9ece8f818fd57bc4a45a2855953215a09d262e649861b2f3b911c4f88",
+      "index": 2,
+      "utterance": "No, I need 8pm exactly. I can\u2019t do any other time."
+    },
+    {
+      "context_sha256": "5856c8e48f17b623bbcc8e7a2575242f2c0fa5869bce0dfbde2e1c4a309c4224",
+      "index": 3,
+      "utterance": "No, if you can\u2019t give me 8pm on Saturday, there\u2019s no point. [END OF CALL]"
+    }
+  ]
+}

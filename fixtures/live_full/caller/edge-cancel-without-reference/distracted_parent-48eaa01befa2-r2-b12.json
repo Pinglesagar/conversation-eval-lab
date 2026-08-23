@@ -1,0 +1,79 @@
+{
+  "goal_intent": "cancel a booking when you cannot find the confirmation email",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "distracted_parent",
+    "prompt_sha256": "48eaa01befa2f405a5a5ed26e21ee3aefa456760f21d52edb686e967aa4973c0",
+    "scenario_id": "edge-cancel-without-reference",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 2
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "distracted_parent",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "90a665d47fe1cff420d4bbf2f5eb95b3925cbe70e6f87fe32290ce24fa3a936b",
+      "index": 0,
+      "utterance": "Hi, I\u2019m calling to cancel a booking I made for this Saturday, but I can\u2019t find the confirmation email anywhere."
+    },
+    {
+      "context_sha256": "79ace00b88a3031a2752539314b0b117f9bc360fbe307bf9bd94e8132df2af39",
+      "index": 1,
+      "utterance": "Sorry, could you say that again? I missed it."
+    },
+    {
+      "context_sha256": "63204b9f5b36d1a18d6299ad6b7af791ee509e153434273fbda13488c37d2146",
+      "index": 2,
+      "utterance": "Oh, I actually have no idea what the booking reference is\u2014I can\u2019t find it anywhere."
+    },
+    {
+      "context_sha256": "9c1b52d441b3d153c3f66990b6cbb1083c1b79add99125bfcca74df4329d2238",
+      "index": 3,
+      "utterance": "That\u2019s fine, I understand. Yes, can you transfer me to the booking desk please?"
+    },
+    {
+      "context_sha256": "8cab01eddf27e83af1cb9cd8f77a168121bc57edf47916ec6f08f8c5bfbd9995",
+      "index": 4,
+      "utterance": "Sorry, could you repeat that for me?"
+    },
+    {
+      "context_sha256": "8630e0a373e7c166d405f27efa6e11157f4e0fa13fbf37dcccc877b0e4373c35",
+      "index": 5,
+      "utterance": "It\u2019s for four people."
+    },
+    {
+      "context_sha256": "a0ad45e2644a42ad0544b1fb3d3344c5e5d841371ff580af68753bd62ffd5476",
+      "index": 6,
+      "utterance": "Oh, can you say that again?"
+    },
+    {
+      "context_sha256": "1e5566d0ee09f5cf83950f4c378bd981051dc480c161e758da51669c7feb1b5b",
+      "index": 7,
+      "utterance": "It was booked for 7:00 pm."
+    },
+    {
+      "context_sha256": "a0f669b6dedec30fd15133a79d00b86b7c1c1cf224e7bbda8adfd7cf2165ac27",
+      "index": 8,
+      "utterance": "My name\u2019s Ruth Kelleher."
+    },
+    {
+      "context_sha256": "08cf4ec94f98ec46b43174836ad43ca2ec268dc1affa39267f8c4da037b16c8c",
+      "index": 9,
+      "utterance": "Oh no, sorry\u2014I actually want to cancel the booking, not make a new one."
+    },
+    {
+      "context_sha256": "e87942b86b9e96fd30aac8acb521fb57383c947641161548a67ee3678f518482",
+      "index": 10,
+      "utterance": "I\u2019m really sorry, but I don\u2019t have the booking reference\u2014I can\u2019t find it in my email at"
+    },
+    {
+      "context_sha256": "ea899522cc7e6f48f7b9c2a231258e3b01f4ce12d606ce994cc6a33ddf1c74c2",
+      "index": 11,
+      "utterance": "That\u2019s okay, I understand. Thanks for your help. \n\n[END OF CALL]"
+    }
+  ]
+}

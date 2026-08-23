@@ -1,0 +1,64 @@
+{
+  "goal_intent": "book Sunday lunch for four and check the details were heard correctly",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "distracted_parent",
+    "prompt_sha256": "bc4ab299016a1740f32c2689d4408a43c998bcd36c63510ad01ccd57698f8e1e",
+    "scenario_id": "happy-read-back-confirmation",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 2
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "distracted_parent",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "540233243220e9248be04140b5626ee2d9090490ab96d2a3513ecfd84ec607cc",
+      "index": 0,
+      "utterance": "Hi, I\u2019m calling to book a table for lunch this Sunday\u2014could you help me with that?"
+    },
+    {
+      "context_sha256": "810fa437d974da3efbfc593826be2778d54c0d39c20fe4f27b6254e24342a7e7",
+      "index": 1,
+      "utterance": "Sorry, could you say that again?"
+    },
+    {
+      "context_sha256": "7c787b616cfce695ae942756c6596e7061617c9e06d2c005ea69987fd73ef500",
+      "index": 2,
+      "utterance": "There will be four of us."
+    },
+    {
+      "context_sha256": "b900c2467f8c70a26597635e48eae1fe6c6e7368a1cfe94af56736483d8ae77b",
+      "index": 3,
+      "utterance": "Sorry, could you repeat the question?"
+    },
+    {
+      "context_sha256": "1e683e58f15569a6f137539af4cc751550f7d172206f47aedf2367f11513978c",
+      "index": 4,
+      "utterance": "We\u2019d like the table at 1:30pm."
+    },
+    {
+      "context_sha256": "8991907e3c25c9d53e8b3754e1214c7ca15db84404bb086f53230d1b4d538661",
+      "index": 5,
+      "utterance": "Sorry, could you say that again?"
+    },
+    {
+      "context_sha256": "a1e352d0571c0fe365101932f23e933504ab843b0de682eed5f4d6d9accabc81",
+      "index": 6,
+      "utterance": "It\u2019s Cerys Hopkin."
+    },
+    {
+      "context_sha256": "ab7b1e147df1687557831c788da0e8e73599ae47d0d29475ed2dd0ea6542f4ce",
+      "index": 7,
+      "utterance": "Yes, that\u2019s right\u2014table for four, Sunday at 1:30pm. Thanks for checking!"
+    },
+    {
+      "context_sha256": "c17d41e282f67cf32b4a0ba15c76a978107c0b61ef64c7a58725ceedf2337c1e",
+      "index": 8,
+      "utterance": "No, that\u2019s everything\u2014thank you! [END OF CALL]"
+    }
+  ]
+}

@@ -26,10 +26,13 @@ information-loss failures measurable, because the trace records the exact turn o
 which a fact was released, so a check can ask whether it survived to the tool
 call.
 
-`ask_patterns` is the machinery behind that: per fact, the substrings that count
-as the agent asking for it. Deliberately substring matching and not a model call
-— the caller's behaviour has to be identical on every run, or a flaky caller gets
-reported as a flaky agent.
+`ask_patterns` is the machinery behind that: per fact, the patterns that count as
+the agent asking for it. Deliberately regexes and not a model call — the caller's
+behaviour has to be identical on every run, or a flaky caller gets reported as a
+flaky agent. A row's own patterns are *added to* the shared families in
+`lab.checks.DEFAULT_ASK_PATTERNS` rather than replacing them, so "the agent asked
+for the name" has one definition shared with the contracts; see
+`Goal.is_asked_for` for what the narrow, replace-everything version cost.
 
 WHAT `cooperativeness` ACTUALLY DOES
 -----------------------------------
@@ -67,10 +70,13 @@ trace's `session_start` payload for attribution.
 from __future__ import annotations
 
 import re
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Iterable, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from lab.checks.text import compile_patterns, matches_any
 
 __all__ = [
     "Verbosity",
@@ -107,6 +113,27 @@ RELUCTANT_BELOW: float = 0.5
 #: caller *less* forthcoming, and the two thresholds are the only values where
 #: behaviour changes.
 VOLUNTEERS_AT_OR_ABOVE: float = 0.8
+
+
+@lru_cache(maxsize=None)
+def _compiled_asks(patterns: tuple[str, ...]) -> tuple[re.Pattern[str], ...]:
+    """Compile-and-cache, since one caller asks the same question every turn."""
+    return tuple(compile_patterns(patterns))
+
+
+def _shared_ask_patterns() -> dict[str, tuple[str, ...]]:
+    """The ask-pattern families the contracts use, for the caller to reuse.
+
+    Imported lazily and read through a function so that `lab.checks`'s notion of
+    "the agent is asking for the party size" is the *only* such notion in the
+    library. The caller releasing a gated fact and the no-re-ask contract deciding
+    a question was a repeat are the same judgement about the same sentence, and
+    two copies of it drift apart in exactly the way that leaves a corpus asserting
+    something nobody intended.
+    """
+    from lab.checks.contracts import DEFAULT_ASK_PATTERNS
+
+    return DEFAULT_ASK_PATTERNS
 
 
 def load_yaml_mapping(path: str | Path) -> dict[str, Any]:
@@ -349,15 +376,44 @@ class Goal(BaseModel):
             ) from None
 
     def is_asked_for(self, key: str, text: str) -> bool:
-        """Does `text` ask for fact `key`, by this goal's declared patterns?
+        """Does `text` ask for fact `key`?
 
-        False when the fact has no patterns: silence is the honest answer for an
-        undeclared trigger, and inventing one (matching on the key name, say)
-        would make the caller's behaviour depend on how the fact was spelled.
+        The scenario's own `ask_patterns` for the fact, **plus** the shared family
+        in `lab.checks.DEFAULT_ASK_PATTERNS` when one exists for that key. Both,
+        not either: the scenario's entries stay as the row's own record of the
+        phrasings it was written around, and the shared family supplies the
+        coverage. Matching is by regex rather than substring.
+
+        THE TWO CHANGES HERE, AND WHY THEY MATTER MORE THAN THEY LOOK
+        ------------------------------------------------------------
+        This method used to take the declared substrings and nothing else. That is
+        the correct design against a scripted agent, whose asks are fixed strings a
+        fixture author can copy. Against a model it is a trap, and it fails in the
+        direction that is hardest to see:
+
+            declared:  "your name", "name for the booking", "who is the booking"
+            asked:     "Could I take a name for the reservation?"
+            result:    no match -> the fact is never released -> the caller stalls
+                       -> the contract fails -> the finding is filed against the
+                       agent, which asked a perfectly ordinary question.
+
+        There were 26 rows in this corpus gating a fact behind literals of that
+        kind. The failure is invisible in a report: nothing errors, the transcript
+        just goes nowhere. The same patterns also decide whether `LLMCaller` records
+        a *disclosure leak* — a fact answered in response to an ask it did not
+        recognise is counted as volunteered — so a narrow list manufactures
+        instrument violations as well as agent ones.
+
+        Silence is still the honest answer for a fact with no patterns anywhere:
+        a key like `reason` has no shared family and no declared one, so nothing
+        asks for it, and inventing a trigger from the key's spelling would make the
+        caller's behaviour depend on how a fact was named.
         """
-        patterns = self.ask_patterns.get(key, [])
-        lowered = text.lower()
-        return any(p.lower() in lowered for p in patterns)
+        patterns = list(self.ask_patterns.get(key, []))
+        patterns.extend(_shared_ask_patterns().get(key, ()))
+        if not patterns:
+            return False
+        return matches_any(text, _compiled_asks(tuple(patterns)))
 
     def asked_keys(self, text: str, *, among: Iterable[str] | None = None) -> list[str]:
         """Every fact key `text` asks for, in declaration order.

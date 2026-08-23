@@ -1,0 +1,49 @@
+{
+  "goal_intent": "book Friday for four and ask about the set menu in the same sentence",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "brisk_regular",
+    "prompt_sha256": "10b85c077e424ad45da042eae878d478a81745c9c487231911de5410e77438a2",
+    "scenario_id": "edge-multi-intent-first-turn",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 0
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "brisk_regular",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "6ecb4cbca220bbba40dac129680735d96e068dfe941dc00d15c821b564313516",
+      "index": 0,
+      "utterance": "Hi, I want to book a table for four this Friday and check if you have a set menu for groups."
+    },
+    {
+      "context_sha256": "5cc4ef525aad83f5e12185f2b34dd1f2a506597cb712e543fbc208c4940accc9",
+      "index": 1,
+      "utterance": "7:30pm"
+    },
+    {
+      "context_sha256": "c2fcef80b462041e9e8373c0fe40927c95f4f4236708c010f407c3e3a9eb58b6",
+      "index": 2,
+      "utterance": "Owen Trevithick"
+    },
+    {
+      "context_sha256": "1243bb6a87e83035e0753f66aab5e9a0789789855c19b9fcab758f1334db8f4f",
+      "index": 3,
+      "utterance": "Yes."
+    },
+    {
+      "context_sha256": "b086e10f51111414a07be48ebb099cebe94fb7c8155b4f08060f32f1aad82445",
+      "index": 4,
+      "utterance": "Is there a set menu for groups?"
+    },
+    {
+      "context_sha256": "2d76bf9b44ecb7f32cbe3760537ec98499b12ce6afb5f1a09f24e4923cd80d19",
+      "index": 5,
+      "utterance": "No. [END OF CALL]"
+    }
+  ]
+}

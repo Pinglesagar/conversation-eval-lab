@@ -1,0 +1,39 @@
+{
+  "goal_intent": "book dinner for three and mention it is a birthday",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "5783c546a5f1d30e00811e39ce1b5dc633e578f5af19fffef5e9efda7d5bcc0b",
+    "scenario_id": "happy-birthday-note-reaches-booking",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 2
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "64e4b20708088b99d38b1f072fc8e3e6d3aacf4629fbbdfe5934a2227219b0d3",
+      "index": 0,
+      "utterance": "Hi there, I\u2019m calling because I\u2019d love to book a dinner for a small group\u2014my mom, my sister, and me!"
+    },
+    {
+      "context_sha256": "32656a1fc78beb2a301e414fa9be2e4d3963e78c7e21e7f17fda7dec923cd922",
+      "index": 1,
+      "utterance": "Thank you! We were hoping for this Friday at 8pm. It\u2019s a special occasion, so we\u2019re really looking forward to it."
+    },
+    {
+      "context_sha256": "ecd265add64c68b49527049c8fac4f9f5c06adf1056d234d1e795b56d1dbb6e9",
+      "index": 2,
+      "utterance": "Absolutely, the name for the booking is Priya Raman. Actually, it\u2019s my mom\u2019s birthday\u2014if it\u2019s possible, we\u2019d love to have a candle on her dessert to make it extra special!"
+    },
+    {
+      "context_sha256": "2c3502f351f9533c2a63d2353b171083243af4f051179fcb1a050824866ceb50",
+      "index": 3,
+      "utterance": "That\u2019s perfect, thank you so much! That\u2019s all we needed\u2014I really appreciate your help. \n\n[END OF CALL]"
+    }
+  ]
+}

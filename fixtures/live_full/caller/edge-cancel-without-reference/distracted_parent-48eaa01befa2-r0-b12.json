@@ -1,0 +1,64 @@
+{
+  "goal_intent": "cancel a booking when you cannot find the confirmation email",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "distracted_parent",
+    "prompt_sha256": "48eaa01befa2f405a5a5ed26e21ee3aefa456760f21d52edb686e967aa4973c0",
+    "scenario_id": "edge-cancel-without-reference",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 0
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "distracted_parent",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "90a665d47fe1cff420d4bbf2f5eb95b3925cbe70e6f87fe32290ce24fa3a936b",
+      "index": 0,
+      "utterance": "Hi, I\u2019m calling because I need to cancel a booking for this Saturday, but I can\u2019t find my confirmation email."
+    },
+    {
+      "context_sha256": "843a0bdf3c83949d124443b15d10e39f6dd7e9a83f35fd58ed3669446ab5c406",
+      "index": 1,
+      "utterance": "Sorry, could you say that again? There\u2019s a lot going on here right now."
+    },
+    {
+      "context_sha256": "9f385c221a91b710fa7f3987a1996dcc47ad55f49daa50ab9ddf7e8edba6453e",
+      "index": 2,
+      "utterance": "Oh, I actually don\u2019t know what the booking reference is\u2014I can\u2019t find it anywhere."
+    },
+    {
+      "context_sha256": "c1376307ef3783276a3e66fde4f2cfe8bf8803d717d61746bf732957dc02b460",
+      "index": 3,
+      "utterance": "Yes, please\u2014could you say that again?"
+    },
+    {
+      "context_sha256": "a8223921b50f0ee91327eacf45564f8f1b7b225201c0837674a64625a026bca9",
+      "index": 4,
+      "utterance": "Sorry, could you repeat that?"
+    },
+    {
+      "context_sha256": "6a1d00853dce0e462c9c550582f7652d394a3bdcba1400ad8640d6830612c19e",
+      "index": 5,
+      "utterance": "I\u2019m not sure, sorry\u2014I just know it\u2019s under the name Ruth Kelleher."
+    },
+    {
+      "context_sha256": "9d97fa53488dc21c612ba486cc64158a080a2f9d481f0a3d776d728cb30b1071",
+      "index": 6,
+      "utterance": "Sorry, I really don\u2019t remember\u2014I just need to cancel the booking for Ruth Kelleher this Saturday."
+    },
+    {
+      "context_sha256": "964f2bf434ea8673bc7e59848c8ae7c863e0f8bd2b3250e81afcb78f0ef4abc0",
+      "index": 7,
+      "utterance": "I can\u2019t\u2014I don\u2019t have the booking reference at all."
+    },
+    {
+      "context_sha256": "49154092538c78d94cb07b43b114269dbf2eb062c012c4fff1d06c4b8e16e8db",
+      "index": 8,
+      "utterance": "Yes, that\u2019s fine. Thank you. [END OF CALL]"
+    }
+  ]
+}

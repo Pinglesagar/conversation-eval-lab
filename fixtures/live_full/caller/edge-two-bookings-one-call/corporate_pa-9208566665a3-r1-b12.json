@@ -1,0 +1,44 @@
+{
+  "goal_intent": "book two separate dinners for your director on consecutive nights",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "corporate_pa",
+    "prompt_sha256": "9208566665a3af46b94f08a74179d2fd2afc2a66676475a01bd01665ad04e810",
+    "scenario_id": "edge-two-bookings-one-call",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "corporate_pa",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "0468de99ffbfcdf4b3275532db5478dc105d023f7a35ef6cdfcfe4de46dbd221",
+      "index": 0,
+      "utterance": "Hello, I\u2019m calling to book a table for my director at your restaurant."
+    },
+    {
+      "context_sha256": "f246e2758925d0bff77be6633017ed54f578a6e0badfb54e06cafa230d20c47a",
+      "index": 1,
+      "utterance": "It will be for two people at 7pm this Wednesday, under the name Helena Marchetti."
+    },
+    {
+      "context_sha256": "7a6df7f997484b1a3466d8859e73fe472e031f8af819523fe744b7b9ad9e2c1b",
+      "index": 2,
+      "utterance": "Yes, that's all correct, thank you. Also, could I book another table for two at 7pm on Thursday for Helena Marchetti as well?"
+    },
+    {
+      "context_sha256": "ffa21b7f0673e4d94946cafef9f0b0b26682e3508bbc519c653f0fcb13efe645",
+      "index": 3,
+      "utterance": "Yes please, that would be perfect\u2014same details for Thursday, under Helena Marchetti."
+    },
+    {
+      "context_sha256": "ab926910883630f51878a18ed3b4ad58f24edbe9b3a0e221395304131980dc3c",
+      "index": 4,
+      "utterance": "No, that\u2019s all I needed. Thank you very much. [END OF CALL]"
+    }
+  ]
+}

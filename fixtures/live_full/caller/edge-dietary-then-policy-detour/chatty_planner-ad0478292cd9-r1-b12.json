@@ -1,0 +1,44 @@
+{
+  "goal_intent": "book for two with a severe peanut allergy and ask how the kitchen handles allergens",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "ad0478292cd9639f678146bc74c6a73b6858500a4efae2fdacfbef424f36e70b",
+    "scenario_id": "edge-dietary-then-policy-detour",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "19b4755441476b222b4ef37c936b41ef3d772454f873f8c5d959ff3e49e3acda",
+      "index": 0,
+      "utterance": "Hi there, I'm calling because I'm planning a little get-together for two this Friday evening, and I wanted to ask about allergy safety before I book. One of us has a severe peanut allergy, so I just want to make sure it\u2019s safe before we dive in."
+    },
+    {
+      "context_sha256": "1dda12bfd47c48c78be440faf55ed2dde0f21a36e2e5c2d5d67e9209edf904b4",
+      "index": 1,
+      "utterance": "That would be great, thank you. While you\u2019re at it, could you make a note that it\u2019s a booking for two under Sam Ellery at 7pm? I\u2019ll wait to hear back about the peanut allergy protocol before we finish up."
+    },
+    {
+      "context_sha256": "fc5830ddb3e56f1e79f04e7c6e6698b7499b1d00744bbd12ac88016a55470ea5",
+      "index": 2,
+      "utterance": "Yes, that\u2019s perfect! Thanks for double-checking. As long as the peanut allergy note is on the booking and you let me know about the kitchen\u2019s cross-contamination procedures, I\u2019m all set."
+    },
+    {
+      "context_sha256": "0ab915486ae6128f70d81f4827426ffbc48c31813786b5ae151f43cc2d02abfc",
+      "index": 3,
+      "utterance": "That sounds great\u2014please connect me with the policy desk so I can hear more about how you handle allergens in the kitchen. Thanks for making sure the allergy note is on the booking; I really appreciate it."
+    },
+    {
+      "context_sha256": "e8e74956f86de6889b9a19763c2a126385e01d082ed6c3d6e9698b2da913e5e6",
+      "index": 4,
+      "utterance": "No, that covers everything\u2014thanks for explaining your kitchen\u2019s approach. I\u2019m glad the peanut allergy is flagged and that you can cook around it. I don\u2019t need anything else, so I\u2019m all set! \n\n[END OF CALL]"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "goal_intent": "book a table for four and check whether there is parking",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "a10dae5c4c5d2f27588a1df5d57c7dd91d21029faef5b2a6a9f786d6f1e426a5",
+    "scenario_id": "happy-parking-question-midbooking",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 0
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "6eb440f23078b271b25b0caf49d86f98ffe45f63ab93240e248d78afc73e3078",
+      "index": 0,
+      "utterance": "Hi there! I\u2019m organising a little get-together with some friends and wanted to see about reserving a table."
+    },
+    {
+      "context_sha256": "78ca2a913a7c906b7987e8d9052366e6ebd90fd979b23515c82b6234da69af4d",
+      "index": 1,
+      "utterance": "It\u2019ll be four of us\u2014just a nice-sized group for catching up after a busy week. Would Thursday evening work for you?"
+    },
+    {
+      "context_sha256": "0aa020b65aca49682b5b3307571ca2edcd225e17c78a730eba7e95f16ac48cb1",
+      "index": 2,
+      "utterance": "We were thinking about 7pm, since it\u2019s perfect for unwinding after work and still gives us plenty of time to chat. Should I give you a name for the booking?"
+    },
+    {
+      "context_sha256": "bd339fcb7fdf0d4ddb93e915a3249c57cc98485328e23cdcdb8f1852224267f4",
+      "index": 3,
+      "utterance": "Absolutely, the booking can go under Fiona Cadwell. By the way, before we wrap up, I wanted to check\u2014does the restaurant have its own parking, or should we plan to look elsewhere?"
+    },
+    {
+      "context_sha256": "909676d6ed42a3a9179aa21e3abcd8e81259982c2dabd6a09b569731112d4643",
+      "index": 4,
+      "utterance": "Thank you, that sounds perfect! I just wanted to confirm about the parking\u2014does the restaurant provide its own parking lot, or is it street parking? It would help us plan ahead, since one of us is coming straight from work."
+    },
+    {
+      "context_sha256": "35d07f9a03ebc64c190ae06591a33264f5d627eadcd9ccf086441858cb31777a",
+      "index": 5,
+      "utterance": "That\u2019s really helpful, thank you! We\u2019ll make sure to use the Mercer Street car park. Everything else sounds great, so please go ahead and confirm the booking for Fiona Cadwell, party of four, Thursday at 7pm. \n\n[END OF CALL]"
+    }
+  ]
+}

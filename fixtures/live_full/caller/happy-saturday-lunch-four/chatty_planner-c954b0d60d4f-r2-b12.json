@@ -1,0 +1,44 @@
+{
+  "goal_intent": "book Saturday lunch for four, two of them children",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "c954b0d60d4f8184939a3838179294421c5663904c54dd5b2ce6b0630498fbf7",
+    "scenario_id": "happy-saturday-lunch-four",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 2
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "df8b6a660d95361aa72b732645da60950f52f27f9ad1fceec7d08cb6ba20cc93",
+      "index": 0,
+      "utterance": "Hi there! I\u2019m calling to see if I can book a table for a little family get-together this Saturday \u2014 are you taking bookings for lunch?"
+    },
+    {
+      "context_sha256": "d0c163b12881f6d3c48ecc8d5c5a63dd594a27d529be6ece1f66b34be5615cea",
+      "index": 1,
+      "utterance": "There will be four of us altogether \u2014 two adults and two kids. We\u2019re really looking forward to a relaxed Saturday lunch!"
+    },
+    {
+      "context_sha256": "3e5e52e2bb28e97af17197ecfe8d71a83a2cc88dd9670c473f8b91fa3027fcb4",
+      "index": 2,
+      "utterance": "We\u2019d love to come in at 1pm if you have a table then. The kids are always hungry right on the dot, so that timing would be perfect for us!"
+    },
+    {
+      "context_sha256": "daf2eb4c8844bf8f257abac4fffd33f750ed30ca046953fad23f048c21e1efe0",
+      "index": 3,
+      "utterance": "That\u2019s great, thanks so much! You can put the booking under Dermot Whelan \u2014 and just so you know, the two children will need high chairs if you have them available."
+    },
+    {
+      "context_sha256": "4ab77ffce37c70a0edf62097b489870dacd52c77806282ddcf208c81c876c7a4",
+      "index": 4,
+      "utterance": "That\u2019s perfect, thank you so much for sorting everything \u2014 we really appreciate it! We\u2019re all set, so I don\u2019t need anything else. Looking forward to Saturday! \n\n[END OF CALL]"
+    }
+  ]
+}

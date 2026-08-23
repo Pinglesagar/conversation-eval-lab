@@ -1,0 +1,79 @@
+{
+  "goal_intent": "book Wednesday for four, then ask to move it to half an hour later",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "distracted_parent",
+    "prompt_sha256": "20c51b6ee1b1d0cf31cf48454c89f082f39da7e6f90ccffe5152e968f88291d9",
+    "scenario_id": "edge-modification-after-booking",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 0
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "distracted_parent",
+  "stop_reason": "turn_budget",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "ac501a058121ede6ad0d8135f80fd19b288880c43db147d87ee0a808329247a0",
+      "index": 0,
+      "utterance": "Hi, I\u2019m calling to book a table, and I\u2019ve got a couple little ones running around here\u2014sorry if you hear them!"
+    },
+    {
+      "context_sha256": "e546ba1ef222a52a9b575b01dce6893a9142a0a259c048732623e58a1bbd1bb6",
+      "index": 1,
+      "utterance": "Oh, sorry, could you say that again?"
+    },
+    {
+      "context_sha256": "4a6cbbe01f1792b4db5e6dd2d7daa774f3bbe61512a9ee39e8ee7044aaa134a8",
+      "index": 2,
+      "utterance": "It\u2019ll be four of us altogether."
+    },
+    {
+      "context_sha256": "b1631b5b77660d295483a86d816c3fd681544795d0bd1ed5627bf28118d17706",
+      "index": 3,
+      "utterance": "Sorry, could you repeat that question?"
+    },
+    {
+      "context_sha256": "a0beb2d28c73085003aaaecf3375d84ef399347fb53174e1710b7c0d3f246639",
+      "index": 4,
+      "utterance": "Wednesday, please."
+    },
+    {
+      "context_sha256": "c3bcb374789849effb1a338e4a4992e275310183152781b8ec35f62713a0c82b",
+      "index": 5,
+      "utterance": "Could you say that again?"
+    },
+    {
+      "context_sha256": "0f6411dc4e600fb4b0217f27c73a048715f0003c57c8e99b90bd2d12f9c9d71c",
+      "index": 6,
+      "utterance": "7pm would be perfect."
+    },
+    {
+      "context_sha256": "97266713bb36bdeb9d0f7f2e30fc460433d27d8f5703f83d6fb4a87bc6607179",
+      "index": 7,
+      "utterance": "Could you repeat that?"
+    },
+    {
+      "context_sha256": "7ca98795f39e1bbf45f10c5bb5e437b57b6e076461bbb5de0da24b1225399bf4",
+      "index": 8,
+      "utterance": "Ruth Kelleher."
+    },
+    {
+      "context_sha256": "f8f7635a820f8e2290f90527fd8788c9888cd2e7eb117a21b61eeb8b235f141f",
+      "index": 9,
+      "utterance": "Actually, could we move it to 7:30pm instead?"
+    },
+    {
+      "context_sha256": "76295eff3dc977c0a9c49cff1ff91c3b82de95d88f027b1314f09f6279f9d33d",
+      "index": 10,
+      "utterance": "It\u2019s four people."
+    },
+    {
+      "context_sha256": "2faee9d2697dd34c3ce4231bdb0552a1264938af5abb327291ab77eba1057b3d",
+      "index": 11,
+      "utterance": "Sorry, could you say that again?"
+    }
+  ]
+}

@@ -38,6 +38,17 @@ propagation:
 expected_failure:
   contracts: [propagation:coeliac]
   since: first observed in the 0.1.0 case-study build
+  builds: [scripted]
+  why_not: >-
+    Measured 0/3 on the live build (fixtures/live_full, k=3). The live agent lost
+    the requirement in none of the three repeats, and it failed the precondition
+    two different ways: in one repeat the note reached create_booking.notes intact
+    as "Daughter is coeliac-gluten-free meal required", and in the other two it
+    booked BEFORE asking the policy desk about gluten, so there was no handoff
+    between the caller supplying the fact and the booking being made and the
+    contract was vacuous. Both are worth stating: the defect is a property of how
+    the deterministic build projects a brief across a boundary, and a model that
+    orders the call differently never crosses that boundary at all.
   expectation: >-
     We expect the same shape of loss as the peanut row, with a different word and a
     different caller, so that a passing verdict cannot be an artifact of one token

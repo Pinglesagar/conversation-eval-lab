@@ -1,0 +1,44 @@
+{
+  "goal_intent": "book Thursday for three with a shellfish allergy and find out whether you can bring your own wine, all in the opening turn",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "hurried_commuter",
+    "prompt_sha256": "7bd7f31832cf3335fc9403e2a60e47310cccfb8f1500fffb1c32277d93153f27",
+    "scenario_id": "edge-three-facts-one-turn",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 0
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "hurried_commuter",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "e5337fca51a06bec91789786a2082c756a7363a13b58c7fef41cea180404f0f2",
+      "index": 0,
+      "utterance": "Calling to book for Thursday."
+    },
+    {
+      "context_sha256": "969b567af809197f05a38d302d42c7897c324b2784ec57fe28c91cda31d7c67a",
+      "index": 1,
+      "utterance": "Three. One with a shellfish allergy. Can we bring our own wine?"
+    },
+    {
+      "context_sha256": "82ae479979737576712ed3e153bdbc5f63586a123b3cdd427447f2feed1f50f2",
+      "index": 2,
+      "utterance": "6:45pm. Marek Sobczak. Allergy must be on the kitchen notes. Policy on corkage?"
+    },
+    {
+      "context_sha256": "f52739bcdc5ec403ae5121468e48efc918ef8901fd7d3afebe4b21f039cb20f2",
+      "index": 3,
+      "utterance": "Need confirmation on wine policy before I go."
+    },
+    {
+      "context_sha256": "c4c6584c6a3d9be6a06bbf8ad2e064d45c7f5735351e2e901bc204be8345704a",
+      "index": 4,
+      "utterance": "No need, you've answered. That's all. [END OF CALL]"
+    }
+  ]
+}

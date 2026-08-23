@@ -222,15 +222,30 @@ property the three deterministic defects have, and it is the point.
 
 ## They become probabilistic. Measured, at one temperature, on one model
 
-Ten scenarios, three independent repeats each, `azure/gpt-4.1` at temperature 0.7.
-Evidence in `fixtures/live_run/`; recompute with `python -m tablemate --score
-fixtures/live_run`, which calls no model.
+The whole corpus, three independent repeats each, agent **and caller** live —
+`azure-openai/gpt-4.1` at temperature 0.7, 141 conversations. Evidence in
+`fixtures/live_full/`; recompute with `python -m tablemate --score
+fixtures/live_full`, which calls no model.
 
 | Defect | Fired | Selected | Not applicable | Scripted, for comparison |
 |---|---|---|---|---|
-| BUG-1 | **5/6 (83%)** | 6 | 0 | 6/6 (100%) |
-| BUG-2 | **1/4 (25%)** | 6 | 2 | 6/6 (100%) |
-| BUG-3 | **1/1 (100%)** | 6 | 5 | 6/6 (100%) |
+| BUG-1 | **6/6 (100%)** | 6 | 0 | 6/6 (100%) |
+| BUG-2 | **2/5 (40%)** | 6 | 1 | 6/6 (100%) |
+| BUG-3 | **0/4 (0%)** | 6 | 2 | 6/6 (100%) |
+
+The earlier ten-row run with a *scripted* caller
+(`fixtures/live_run/`, still committed) read 5/6, 1/4 and 1/1. Two draws of the
+same three defects against the same model disagree by that much, which is the size
+of the sampling error at k=3 and the reason no confidence interval is offered.
+
+**BUG-3 is now 0/4, and that is the most interesting cell in the table.** With a
+live caller the agent carried the dietary requirement into `create_booking.notes`
+in every conversation where a booking happened — "One guest has a peanut allergy.",
+"Daughter is coeliac-gluten-free meal required." The defect is a property of how
+the *deterministic* build projects a brief across a handoff; the live model keeps
+its own conversation and has nothing to drop. Three of the four `expected_failure`
+blocks that were narrowed to `builds: [scripted]` are this defect, and each one
+records the measurement in the row's own YAML rather than in a commit message.
 
 **Read the "not applicable" column before the rate.** It is not a rounding note.
 Five of the six BUG-3 conversations never reached a `create_booking` at all — the
@@ -249,9 +264,26 @@ before and has to be drawn now.
 "true" rates. Sample size is three per row. Nothing here supports a confidence
 interval and none is offered.
 
+## A consequence for the machinery, not just for the table
+
+A defect that fires in *two of three* repeats broke an assumption nobody had
+written down. `expected_failure` was classified per repeat: a declared gap that
+came back PASS was a **stale expectation**, which fails the gate. That is right on
+the deterministic build, where all k repeats are identical, and wrong here — the
+same run reported `edge-modification-after-booking`'s `no-re-ask` gap as
+*reproduced* (twice) and *stale* (once), which is not a verdict anybody can act on.
+
+Staleness is now decided across the k repeats: a gap that reproduced at least once
+is not stale, one that reproduced 0/k is, and the reproduction rate goes in the
+report's notes. The bug was invisible for as long as the system under test was
+deterministic, which is the general shape of the thing — **an eval harness written
+against a deterministic build encodes determinism in places nobody chose to.**
+
 ## What the live run found that the deterministic build cannot show
 
-**1. A literal promise detector loses most of its recall to paraphrase.**
+**1. A literal promise detector loses most of its recall to paraphrase.** *(Fixed
+since; the measurement below is what the fix was built from, and
+`tests/test_checks_paraphrase.py` now pins both directions.)*
 On the six large-party conversations, `ToolContract` reported the missing
 `create_booking` **6/6**. `PromiseContract` — the decision-versus-action check that
 is supposed to be BUG-1's headline finding — reported it **1/6**. The scripted agent
@@ -343,6 +375,8 @@ Four honest differences remain, none of them a difference in *shape*:
   does not hold raises `MissingExchangeError` rather than falling back to a scripted
   line.
 - The `pass^k` claim above applies to `ScriptedBackend` only. On the live path a
-  `FLAKY` verdict is the correct answer and not a harness bug — BUG-1 fired in five
-  of six conversations, so a k=3 run of `edge-large-party-of-six` can legitimately
-  come back either way. The two backends must never share a baseline.
+  `FLAKY` verdict is the correct answer and not a harness bug — BUG-2 fired in two
+  of three repeats of one row and none of three of another, so a k=3 run can
+  legitimately come back either way. The two backends must never share a baseline,
+  and they no longer do: `fixtures/replay_run/run_report.json` gates the scripted
+  build and `fixtures/live_full/run_report.json` gates the live one.

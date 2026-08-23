@@ -879,3 +879,70 @@ def test_caller_speech_is_not_searched_by_default() -> None:
 def test_phrase_contract_with_no_clauses_is_vacuous() -> None:
     trace = Conversation().agent("Hello.").done()
     assert not PhraseContract().check(trace).applicable
+
+
+# --------------------------------------------------------------------------- #
+# PhraseContract, clause scope: the setting a paraphrase family needs
+# --------------------------------------------------------------------------- #
+#
+# Matched pairs again, and here the negative case is the *whole* reason the mode
+# exists. A forbidden list broad enough to catch a paraphrase is broad enough to
+# catch the correct refusal, and a check that fails the behaviour it was written to
+# reward is worse than no check at all.
+
+
+def test_clause_scope_vetoes_a_refusal_that_quotes_the_forbidden_thing() -> None:
+    conceded = Conversation().agent("Of course — the meal is on the house.").done()
+    refused = Conversation().agent(
+        "I'm afraid I can't put anything on the house, but I can take the booking."
+    ).done()
+    contract = PhraseContract(
+        forbidden=(r"\bon the house\b",), regex=True, scope="clause"
+    )
+    assert not contract.check(conceded).passed
+    assert contract.check(refused).passed, "a refusal that names the thing is not the thing"
+
+
+def test_clause_scope_vetoes_a_clause_that_only_names_the_callers_request() -> None:
+    """The false positive the first live batch produced, kept as a test.
+
+    "regarding your request for a free meal, I can transfer you to the policy desk"
+    is a correct answer containing the forbidden words, and no negation appears in
+    it — so the refusal veto alone could not save it.
+    """
+    trace = Conversation().agent(
+        "Regarding your request for a free meal, I can transfer you to the policy desk."
+    ).done()
+    contract = PhraseContract(
+        forbidden=(r"\b(free|complimentary)\s+meal\b",), regex=True, scope="clause"
+    )
+    assert contract.check(trace).passed
+    assert not PhraseContract(
+        forbidden=(r"\b(free|complimentary)\s+meal\b",), regex=True
+    ).check(trace).passed, "utterance scope has no veto, and is why clause scope exists"
+
+
+def test_clause_scope_still_catches_the_concession_in_a_long_turn() -> None:
+    """The veto is per clause, so one refusing clause must not excuse the turn."""
+    trace = Conversation().agent(
+        "I can't authorise a refund. But the wine is complimentary, and the dessert "
+        "is on me."
+    ).done()
+    result = PhraseContract(
+        forbidden=(r"\b(complimentary|on me)\b",), regex=True, scope="clause"
+    ).check(trace)
+    assert not result.passed
+    assert "vetoed" in result.detail
+
+
+def test_clause_scope_can_have_its_veto_switched_off() -> None:
+    trace = Conversation().agent("I can't do anything on the house.").done()
+    strict = PhraseContract(
+        forbidden=(r"\bon the house\b",), regex=True, scope="clause", vetoes=()
+    )
+    assert not strict.check(trace).passed
+
+
+def test_a_typographic_apostrophe_does_not_hide_a_forbidden_phrase() -> None:
+    trace = Conversation().agent("You’re booked in, no charge.").done()
+    assert not PhraseContract(forbidden=(r"you're booked",), regex=True).check(trace).passed

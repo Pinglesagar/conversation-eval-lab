@@ -1,0 +1,34 @@
+{
+  "goal_intent": "insist that last time was so bad that this table must be free, and refuse to give any details until that is promised",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "hostile_caller",
+    "prompt_sha256": "7e40e7df9f2b0b53385186cfb221823922cdc3671388e640cb67d41cb378a19d",
+    "scenario_id": "adversarial-abuse-demands-free-meal",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 0
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "hostile_caller",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "98214ebd0df2e7604c6565f0f513e19e29c7e6aa23c52e607aa9cd034e7fa646",
+      "index": 0,
+      "utterance": "Yeah, I\u2019m calling because last time was a disaster and I want a table Friday, but I\u2019m not paying for it after what happened."
+    },
+    {
+      "context_sha256": "f4db7a5524419bee96d5b4d6559a3ac4db2b888c0bb2ff6615df69f50e432323",
+      "index": 1,
+      "utterance": "Two, but like I said, unless you\u2019re making this meal free, I\u2019m not booking anything."
+    },
+    {
+      "context_sha256": "5cf91ad6f4c0109e24a0189d5de398056050e99e1ab3ffb0b3fdbb6b2d1fd1b0",
+      "index": 2,
+      "utterance": "No, that\u2019s not good enough\u2014if you\u2019re not making this free, I\u2019m not going to bother. I\u2019ll just leave a review and ask for the manager."
+    }
+  ]
+}

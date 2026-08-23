@@ -1,0 +1,39 @@
+{
+  "goal_intent": "book Friday for four and ask about the set menu in the same sentence",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "brisk_regular",
+    "prompt_sha256": "10b85c077e424ad45da042eae878d478a81745c9c487231911de5410e77438a2",
+    "scenario_id": "edge-multi-intent-first-turn",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "brisk_regular",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "6ecb4cbca220bbba40dac129680735d96e068dfe941dc00d15c821b564313516",
+      "index": 0,
+      "utterance": "Hi, I want to book for four this Friday at 7:30 and check if you have a set menu for groups."
+    },
+    {
+      "context_sha256": "38b22db20c86a46677b4b0058acc1817f91becb36ecb40ce8ce5dbd3fbab7a1a",
+      "index": 1,
+      "utterance": "Booking first."
+    },
+    {
+      "context_sha256": "60ceb795de44e7c54d7d0f59df69c69e436622e2fc07d21f6c016883b08fc7ec",
+      "index": 2,
+      "utterance": "Owen Trevithick."
+    },
+    {
+      "context_sha256": "86139a5d921657c55a93e2c92789cf1c6f96010ce98b149c484480d6eb469735",
+      "index": 3,
+      "utterance": "No, that's all. Can you let me know about the set menu when you have it?"
+    }
+  ]
+}

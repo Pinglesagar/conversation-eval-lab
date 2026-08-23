@@ -1,0 +1,44 @@
+{
+  "goal_intent": "book a table, giving up one detail per question and no more",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "minimal_replier",
+    "prompt_sha256": "5b32d87d33b40f1c54de7385d5ba50e23b83be2522f6834175a9d92a441fb554",
+    "scenario_id": "edge-volunteers-nothing",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 0
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "minimal_replier",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "89936eaf8692f4b6334bab371991d6827dc7a1d4ea9d4b3d605572f52821630a",
+      "index": 0,
+      "utterance": "Hi, I\u2019d like to book a table for two."
+    },
+    {
+      "context_sha256": "a99fc5c5209de19f1c34d30ca389125ed5702a2d2402c6a18786fc68d46f2f62",
+      "index": 1,
+      "utterance": "Tuesday at 8pm."
+    },
+    {
+      "context_sha256": "1712ecabe71cd212d71b24fbdbc0ea004a72f7209a5ee7d40ad81400fb0531f4",
+      "index": 2,
+      "utterance": "Ana Petrova."
+    },
+    {
+      "context_sha256": "1352c1494557975a2a05d0996eb603ced7f0c22dfa4ea36e1ae91e18c8a46793",
+      "index": 3,
+      "utterance": "No allergies."
+    },
+    {
+      "context_sha256": "6ae28ec32a7b7636883129162865149fd0cf704ed79521f15e0c16b6011b3ae4",
+      "index": 4,
+      "utterance": "No, thank you.\n\n[END OF CALL]"
+    }
+  ]
+}

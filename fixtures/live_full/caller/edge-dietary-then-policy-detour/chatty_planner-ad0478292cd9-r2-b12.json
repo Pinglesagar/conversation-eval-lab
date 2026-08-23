@@ -1,0 +1,44 @@
+{
+  "goal_intent": "book for two with a severe peanut allergy and ask how the kitchen handles allergens",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "ad0478292cd9639f678146bc74c6a73b6858500a4efae2fdacfbef424f36e70b",
+    "scenario_id": "edge-dietary-then-policy-detour",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 2
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "19b4755441476b222b4ef37c936b41ef3d772454f873f8c5d959ff3e49e3acda",
+      "index": 0,
+      "utterance": "Hi there, I'm calling because I'm planning a little dinner out and wanted to check on your availability for a booking."
+    },
+    {
+      "context_sha256": "5b0d46685e1fb7e01726fb1dfdd09157231a8b2a702c2e7767ef9a3147e37a09",
+      "index": 1,
+      "utterance": "It'll just be the two of us\u2014I thought a Friday evening would be perfect. I also wanted to ask about food allergies, since one of us has a severe peanut allergy."
+    },
+    {
+      "context_sha256": "15cb011c12ca70333a19530ca3339d4b0947d83b99939966ed71538f75505039",
+      "index": 2,
+      "utterance": "7pm would be great, if you have a slot. And could you tell me a bit about how your kitchen handles allergens and avoids cross-contamination? It's really important to us."
+    },
+    {
+      "context_sha256": "c517e59a70a927195b8b1d87fdef82b8673ab7383657659c5d1c579f28aa4dae",
+      "index": 3,
+      "utterance": "Yes, please go ahead and book us in for 2 people at 7pm this Friday under the name Sam Ellery. And if you could make a note about the severe peanut allergy, I'd really appreciate it while you check with your team."
+    },
+    {
+      "context_sha256": "b1c5463e6cba42c2540803c2daedb1676cc30319c86fa8335642e878ad82af42",
+      "index": 4,
+      "utterance": "That\u2019s perfect, thank you for double-checking! I\u2019ll wait to hear back about your kitchen\u2019s allergy procedure as well, since it really puts my mind at ease."
+    }
+  ]
+}

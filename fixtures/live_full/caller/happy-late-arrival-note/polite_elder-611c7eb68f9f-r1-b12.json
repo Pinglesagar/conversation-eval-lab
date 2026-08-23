@@ -1,0 +1,54 @@
+{
+  "goal_intent": "book a quiet table for two and warn that you may arrive late",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "polite_elder",
+    "prompt_sha256": "611c7eb68f9ff26c234b581ae019f3cd0ef35214b095bac72cb4400960f1fe48",
+    "scenario_id": "happy-late-arrival-note",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "polite_elder",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "3419695060152f46164bf7fccf88342c85fe9ccaa0cea1943a46296a3fc86a25",
+      "index": 0,
+      "utterance": "Hello there, I\u2019m calling to book a table for a nice quiet dinner, if that\u2019s possible."
+    },
+    {
+      "context_sha256": "d8bdb5aaf118cb8fd0bc70c7eaaf6544880bda6e7dc6eb8095bf4054a50d59d7",
+      "index": 1,
+      "utterance": "Thank you very much, that\u2019s very kind. It will just be two of us for dinner, so a table for two, please."
+    },
+    {
+      "context_sha256": "27f6ce42d4f91b0bf28ed362adafe70fb4b367ec4dc8088d195a1f774ad08f42",
+      "index": 2,
+      "utterance": "Thank you for asking. I\u2019d like to book it for Monday, if that\u2019s available. Monday for two, please."
+    },
+    {
+      "context_sha256": "061fdab317a60947b1457a12cc187d374fe2a284c73c099a8898dde2663cf7af",
+      "index": 3,
+      "utterance": "Thank you for checking. We\u2019d like the table at 6pm, if that\u2019s all right. So, Monday at 6pm for two people."
+    },
+    {
+      "context_sha256": "7b6917ee82e836351c6364621a0e65e96f113884f90406e0e18f48d9be92d354",
+      "index": 4,
+      "utterance": "Thank you so much, I appreciate it. My name is Edward Naylor\u2014that\u2019s Edward, E-D-W-A-R-D, and Naylor, N-A-Y-L-O-R."
+    },
+    {
+      "context_sha256": "864def67fa148a6f63607798db57ffa62909c9629fbff8dc664ff7b3a912d8fd",
+      "index": 5,
+      "utterance": "Thank you, that\u2019s wonderful. Just one small thing\u2014I may be about ten minutes late, as the bus can be a bit unreliable, so if you could make a note of that, I\u2019d be very grateful. Thank you for your patience."
+    },
+    {
+      "context_sha256": "e4b55a26bc3b5a209dff836f0f8608704d2ffa66afc8866fd32c908a60d3882e",
+      "index": 6,
+      "utterance": "Thank you ever so much for your help and kindness, that\u2019s very reassuring. I look forward to Monday evening. Wishing you a pleasant night as well. [END OF CALL]"
+    }
+  ]
+}

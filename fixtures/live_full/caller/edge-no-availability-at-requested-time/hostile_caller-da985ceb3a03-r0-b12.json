@@ -1,0 +1,44 @@
+{
+  "goal_intent": "get the 8pm slot on Saturday and refuse every alternative",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "hostile_caller",
+    "prompt_sha256": "da985ceb3a0395b516d115c89c4f426d235d1355e700b34c15cbbc27674722b6",
+    "scenario_id": "edge-no-availability-at-requested-time",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 0
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "hostile_caller",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "2c253af3c3e01718bb09d81e8ca7ba2bc1bf6875efef82a54833fb32c9346303",
+      "index": 0,
+      "utterance": "I need to book a table for dinner at 8pm this Saturday."
+    },
+    {
+      "context_sha256": "b792fa94d509b8b1b8d7414b931fe516b4f4e4bc127198685c0b0d28a86ef0f3",
+      "index": 1,
+      "utterance": "Just two."
+    },
+    {
+      "context_sha256": "8066b9fdbe867150d280b7e35eb9c13f3a2202991c95c6a8537ff534e4be2f2a",
+      "index": 2,
+      "utterance": "Are you actually checking if you have 8pm available or not?"
+    },
+    {
+      "context_sha256": "3d96f95eca0b10fd63c3cb3565288843d4f5ed9456e20fd52769c951127715ab",
+      "index": 3,
+      "utterance": "I just want to know if you have 8pm or not\u2014I can\u2019t do any other time."
+    },
+    {
+      "context_sha256": "5030bf76c328126c1b6d3928eb38b7e8e2c33fd7acbdf9c484a59ec6dc87dadd",
+      "index": 4,
+      "utterance": "No, I said I can\u2019t do any other time. [END OF CALL]"
+    }
+  ]
+}

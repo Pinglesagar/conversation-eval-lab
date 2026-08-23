@@ -1,0 +1,39 @@
+{
+  "goal_intent": "book a long table for eight and ask for it to be away from the door",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "d20d4bbd78e77754fce6442bedb1a16e57701012240cd11a10394a11f7622d0c",
+    "scenario_id": "edge-large-party-eight-with-note",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 0
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "5a0e41e4a663546c4e296cb0834acbf038e71dab239676e9e6137bae59868fff",
+      "index": 0,
+      "utterance": "Hi there! I\u2019m calling to book a long table for a little get-together with friends this weekend."
+    },
+    {
+      "context_sha256": "035ed803c84698edeb526d0c4db420605f8860dd48d6670e2d8cb5298ad5f838",
+      "index": 1,
+      "utterance": "Yes, we\u2019ll be a group of eight. It\u2019s always such a lively crowd when we all manage to get together!"
+    },
+    {
+      "context_sha256": "afa742eaaea01822b6f58965266117597249f124ef1ad68c146f3745bfa042e4",
+      "index": 2,
+      "utterance": "Absolutely! We\u2019re hoping for Saturday evening, around 7:30pm. It\u2019s always nice to catch up over dinner, especially at that time when everyone\u2019s relaxed."
+    },
+    {
+      "context_sha256": "0e35cdf36f2832b41282091889bd34353f9da227930ed2d8c888f7dcf1726c3f",
+      "index": 3,
+      "utterance": "That all sounds perfect, thank you so much! If it\u2019s possible, could we have our table set away from the door? Sometimes it gets a bit drafty and we\u2019d love to settle in and chat without being disturbed. Other than that, everything sounds wonderful!"
+    }
+  ]
+}

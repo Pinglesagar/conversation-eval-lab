@@ -1,0 +1,15 @@
+{"actor": "system", "engine": null, "kind": "session_start", "payload": {"adapter": "text:live", "caller": "LLMCaller", "goal_fact_keys": ["booking_ref", "name", "reason"], "goal_gated_keys": ["reason"], "goal_intent": "cancel a reservation you can no longer make", "max_turns": 14, "persona": "brisk_regular", "persona_cooperativeness": 1.0, "persona_verbosity": "terse", "scenario_id": "happy-cancel-with-reference", "session_id": "happy-cancel-with-reference#0"}, "ts": 0.0}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "I need to cancel my reservation. Booking reference is TM-4417."}, "ts": 0.0}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "I need to cancel my reservation. Booking reference is TM-4417."}, "ts": 0.0}
+{"actor": "system", "engine": null, "kind": "agent_handoff", "payload": {"from": "GreeterAgent", "reason": "caller needs an existing booking", "to": "ModificationAgent", "ts_estimated": true}, "ts": 0.22125}
+{"actor": "agent", "engine": null, "kind": "tool_call", "payload": {"args": {"booking_ref": "TM-4417"}, "call_id": "cancel_booking-1", "name": "cancel_booking", "ts_estimated": true}, "ts": 0.4425}
+{"actor": "system", "engine": null, "kind": "tool_result", "payload": {"call_id": "cancel_booking-1", "name": "cancel_booking", "ok": true, "result": {"booking_ref": "TM-4417", "date": "tuesday", "name": "Okonkwo", "notes": "", "party_size": 2, "reason": "", "status": "cancelled", "table_id": "T1", "time": "7:30pm"}, "ts_estimated": true}, "ts": 0.6637500000000001}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 1}, "ts": 0.885}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Your reservation under reference TM-4417 has been cancelled. Is there anything else I can help you with today?"}, "ts": 0.885}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "ModificationAgent", "text": "Your reservation under reference TM-4417 has been cancelled. Is there anything else I can help you with today?"}, "ts": 0.885}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "No, that's all."}, "ts": 0.885}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "No, that's all."}, "ts": 0.885}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 2}, "ts": 1.345}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Thank you for calling. Have a great day!"}, "ts": 1.345}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "ModificationAgent", "text": "Thank you for calling. Have a great day!"}, "ts": 1.345}
+{"actor": "system", "engine": null, "kind": "session_end", "payload": {"reason": "agent_ended", "turns": 2}, "ts": 1.345}

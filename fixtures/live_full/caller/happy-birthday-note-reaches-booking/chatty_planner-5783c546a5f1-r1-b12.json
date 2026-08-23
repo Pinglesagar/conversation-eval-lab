@@ -1,0 +1,49 @@
+{
+  "goal_intent": "book dinner for three and mention it is a birthday",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "5783c546a5f1d30e00811e39ce1b5dc633e578f5af19fffef5e9efda7d5bcc0b",
+    "scenario_id": "happy-birthday-note-reaches-booking",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "64e4b20708088b99d38b1f072fc8e3e6d3aacf4629fbbdfe5934a2227219b0d3",
+      "index": 0,
+      "utterance": "Hi there! I\u2019m calling to make a dinner reservation for a little family celebration this week."
+    },
+    {
+      "context_sha256": "1497a65d0ab63b59b5cbed3dd73ee15c90492f6b471dfdf3d873782193b19c82",
+      "index": 1,
+      "utterance": "It\u2019ll be three of us, just a small gathering. We\u2019re really looking forward to a nice evening out together!"
+    },
+    {
+      "context_sha256": "daa568df74b2b145905420d311642ce906a71dc6bcdbe16e1f2e01ef1e54424b",
+      "index": 2,
+      "utterance": "We\u2019d love to come in on Friday, since it\u2019s a special occasion. It should be a lovely way to kick off the weekend!"
+    },
+    {
+      "context_sha256": "81edb2549474644bf9805dec9c5af83503f7ec8a6eb2b10e7cfe9ac9306088e0",
+      "index": 3,
+      "utterance": "We were hoping for 8pm, if that\u2019s available. That gives us all a chance to get ready and enjoy the evening properly!"
+    },
+    {
+      "context_sha256": "db2789a58e1a06ff95551e0430c61e7b74dea7743811a11ba5b8d1bf1a3a6974",
+      "index": 4,
+      "utterance": "That\u2019s perfect, thank you! Please put it under Priya Raman. Also, it\u2019s my mother\u2019s birthday\u2014would it be possible to have a candle on her dessert to make it a bit more special?"
+    },
+    {
+      "context_sha256": "f7bf3b7776c3f2ed9b910a16d6b077a24dbc4bb63b304ab631ede408f388e477",
+      "index": 5,
+      "utterance": "That\u2019s wonderful, thank you so much for making it special for her! That\u2019s everything we need\u2014I really appreciate your help. \n\n[END OF CALL]"
+    }
+  ]
+}

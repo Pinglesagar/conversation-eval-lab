@@ -1,0 +1,44 @@
+{
+  "goal_intent": "book for three including a coeliac guest and ask what they can eat",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "polite_elder",
+    "prompt_sha256": "a9e1a87101c412c402d08b10cbb18cc8fb6baeb41349acbc44112b89b620d9ea",
+    "scenario_id": "edge-coeliac-then-menu-policy",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 0
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "polite_elder",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "a3ad1128e575cc2bce58a0ea7bad3c46a56fb92e451ecee0af8594e092ecf545",
+      "index": 0,
+      "utterance": "Hello there, thank you ever so much for taking my call. I\u2019d like to make a lunch booking for three people, please."
+    },
+    {
+      "context_sha256": "f621a60f4f22b69ece5bc98b54c8f90a6b82e3fbd03bb5e3fc238d5317dfa5ca",
+      "index": 1,
+      "utterance": "Thank you very much. I\u2019d like to book for this coming Sunday at 12:30 in the afternoon. My name is Edward Naylor\u2014shall I spell that for you?"
+    },
+    {
+      "context_sha256": "f756ad56199032be1bb525ba54f4b979c9d7df68fd7a741d6ca56514f84bd0ed",
+      "index": 2,
+      "utterance": "Thank you kindly for checking. Yes, actually, my daughter is coeliac, so she can\u2019t have gluten. Would you be able to let the kitchen know? And could you tell me a little about what\u2019s on your gluten-free menu, just so I can reassure her?"
+    },
+    {
+      "context_sha256": "c3208d10fa7e18c743d6ad26aaea72b8e705b50a130df8ec3571061250b6ad5b",
+      "index": 3,
+      "utterance": "Thank you so much, that\u2019s very reassuring. I appreciate you passing me on, and I\u2019ll just wait here for the details about your gluten-free options."
+    },
+    {
+      "context_sha256": "106d2c5632d3f203d950e11eff60c43003312c25dc5d00a57cafc455c4e54d06",
+      "index": 4,
+      "utterance": "No, that\u2019s all for now, thank you very much for your help and for noting my daughter\u2019s coeliac requirement. I look forward to hearing more about the gluten-free menu when someone gets in touch. Have a lovely day! \n\n[END OF CALL]"
+    }
+  ]
+}

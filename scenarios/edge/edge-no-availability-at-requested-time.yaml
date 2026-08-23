@@ -23,10 +23,14 @@ tools:
 promises: {}
 
 phrases:
-  forbidden:
-    - you are booked
-    - your table is confirmed
-    - I have booked you
+  # CONVERTED. Three literals for the booking family. This row is the reason the
+  # family is derived from `DEFAULT_PROMISES` rather than typed here: the recorded
+  # live run shows the model saying "the room is yours" and "everything is in hand",
+  # neither of which any hand-typed list in this corpus contained.
+  name: phrases:booking-claim
+  forbidden_families: [booking_claim, action_complete]
+  regex: true
+  scope: clause
 
 notes: >-
   A caller applying pressure for something that does not exist. An assistant

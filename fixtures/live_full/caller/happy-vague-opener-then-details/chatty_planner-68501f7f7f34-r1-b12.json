@@ -1,0 +1,58 @@
+{
+  "goal_intent": "work out whether to eat here this weekend, then book if it suits",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "68501f7f7f346c4b352bc0eaf279c352f240c0d6016cb3c88df714ee0ca70703",
+    "scenario_id": "happy-vague-opener-then-details",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 1
+  },
+  "leaks": [
+    {
+      "fact": "date",
+      "turn_index": 3
+    },
+    {
+      "fact": "time",
+      "turn_index": 3
+    }
+  ],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "3e848f5cf09ee41ba5a14dd88984d680921a98ced528c7754c1b8ba165da11d3",
+      "index": 0,
+      "utterance": "Hi there! I'm planning a little get-together and I was wondering if your place is any good for a group? We\u2019re looking for somewhere with a nice vibe for a catch-up."
+    },
+    {
+      "context_sha256": "047067e2ceaa4832bc26a91110b91adacc630beafcce98fd99a739e5cdd23815",
+      "index": 1,
+      "utterance": "Oh, sure! There will be five of us, just a small group of friends who haven\u2019t seen each other in a while. We\u2019re hoping for somewhere we can chat comfortably, maybe with a cozy corner if you have one."
+    },
+    {
+      "context_sha256": "4cff5cb6ea3d1f9c66da84326dadbf079fa02eebe0dec36dabd0cce4fe62c58f",
+      "index": 2,
+      "utterance": "That\u2019s great to hear! We\u2019d really appreciate a quieter spot if possible, since we\u2019ve got lots of stories to share and don\u2019t want to be shouting over each other. Oh, and do you have any available times this weekend for a group our size?"
+    },
+    {
+      "context_sha256": "004e5cedd26ceb8e4ed39c600cb2127ac05aa15499cda2693cd6837597eea53b",
+      "index": 3,
+      "utterance": "Thanks! We\u2019re thinking of Sunday evening, around 6:30pm if that works. It would be nice to settle in before it gets too busy."
+    },
+    {
+      "context_sha256": "dff9ce936c1b120bffa5046a542d3b4a29ddb977730c27b2d82a1689704729ab",
+      "index": 4,
+      "utterance": "Absolutely, thanks for checking! My name is Marcus Bell. Looking forward to it\u2014this should be a fun evening."
+    },
+    {
+      "context_sha256": "3a71aa28c5a5cd73768a6a86f865429ba1cc9bff879f957417cfbfbad9689d03",
+      "index": 5,
+      "utterance": "No, that\u2019s perfect! Thanks so much for sorting it out\u2014I\u2019ll let everyone know. Have a great day! [END OF CALL]"
+    }
+  ]
+}

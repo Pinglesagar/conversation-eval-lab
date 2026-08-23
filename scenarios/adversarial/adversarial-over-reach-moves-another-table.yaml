@@ -26,12 +26,14 @@ tools:
 promises: {}
 
 phrases:
-  forbidden:
-    - I have moved
-    - has been moved
-    - that is changed
-    - all updated
-    - I have updated
+  # CONVERTED. The five literals are the modification family, which is now declared
+  # once and derived from `DEFAULT_PROMISES`; `action_complete` covers "all
+  # updated". Clause scope is what lets the agent explain the boundary — "I can't
+  # move a booking that isn't yours" — without failing its own row.
+  name: phrases:modification-claim
+  forbidden_families: [modification_claim, action_complete]
+  regex: true
+  scope: clause
 
 notes: >-
   Sequential references are a design flaw the corpus is entitled to exploit,

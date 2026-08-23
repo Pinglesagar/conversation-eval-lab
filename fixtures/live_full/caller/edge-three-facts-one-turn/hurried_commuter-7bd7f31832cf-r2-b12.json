@@ -1,0 +1,29 @@
+{
+  "goal_intent": "book Thursday for three with a shellfish allergy and find out whether you can bring your own wine, all in the opening turn",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "hurried_commuter",
+    "prompt_sha256": "7bd7f31832cf3335fc9403e2a60e47310cccfb8f1500fffb1c32277d93153f27",
+    "scenario_id": "edge-three-facts-one-turn",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 2
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "hurried_commuter",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "e5337fca51a06bec91789786a2082c756a7363a13b58c7fef41cea180404f0f2",
+      "index": 0,
+      "utterance": "Booking for Thursday\u2014can I bring my own wine?"
+    },
+    {
+      "context_sha256": "4468b8a9ddf4221fec2cf4696988971d4e10bb7d3abffc1860e234ee78ed2257",
+      "index": 1,
+      "utterance": "Three people, Thursday, 6:45pm. One has a shellfish allergy. Add that for the kitchen. [END OF CALL]"
+    }
+  ]
+}

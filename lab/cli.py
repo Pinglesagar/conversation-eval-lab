@@ -65,6 +65,7 @@ import json
 import os
 import statistics
 import sys
+from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping, Sequence
@@ -91,7 +92,12 @@ __all__ = [
     "DEFAULT_AGENT_FACTORY",
     "DEFAULT_SCRIPTS",
     "DEFAULT_OUT_DIR",
+    "LIVE_RUN_DIR",
+    "LIVE_BASELINE",
     "MUTATING_TOOLS",
+    "LIVE_AGENT_ADAPTERS",
+    "build_of",
+    "LiveRig",
     "CallerScript",
     "RunEvaluation",
     "load_caller_scripts",
@@ -129,6 +135,42 @@ MUTATING_TOOLS: tuple[str, ...] = ("create_booking", "modify_booking", "cancel_b
 DEFAULT_K: int = 3
 
 _JUDGE_DIR = "lab/judges/hallucinated_confirmation"
+
+#: Where a full-live run keeps its recordings. One directory, three kinds of
+#: fixture, because a live run has three stochastic parts and each one has to be
+#: replayable on its own terms:
+#:
+#:     agent_sessions.json   every (agent, message history, tool list) -> reply
+#:     caller/<scenario>/    one cassette per repeat of the simulated caller
+#:     judge_verdicts.jsonl  the judge's raw output per session it graded
+#:
+#: Committed, so `evallab run --live-*` with no key replays the exact run that was
+#: paid for. That is the difference between a number in a README and evidence.
+LIVE_RUN_DIR: str = "fixtures/live_full"
+DEFAULT_AGENT_CASSETTE: str = f"{LIVE_RUN_DIR}/agent_sessions.json"
+DEFAULT_CALLER_ROOT: str = f"{LIVE_RUN_DIR}/caller"
+DEFAULT_JUDGE_RECORDING: str = f"{LIVE_RUN_DIR}/judge_verdicts.jsonl"
+LIVE_BASELINE: str = f"{LIVE_RUN_DIR}/run_report.json"
+
+#: Dotted path to the backend `--live-agent` hands the agent factory. The CLI knows
+#: two things about it and no more: it is constructed with `cassette=`, `model=` and
+#: `temperature=`, and the agent factory accepts it as `backend=`. What it does with
+#: a model is the system under test's business, not the harness's.
+DEFAULT_AGENT_BACKEND: str = "tablemate.runtime:LLMBackend"
+
+#: Sampling temperature for a live *agent*. Not zero: an agent pinned to greedy
+#: decoding is a different system from the one that answers the phone, and the
+#: variance is part of what k repeats exist to measure.
+DEFAULT_AGENT_TEMPERATURE: float = 0.7
+
+#: Sampling temperature for a live *caller*, matching `lab.simulator.flake_band`
+#: so the two measurements are comparable.
+DEFAULT_CALLER_TEMPERATURE: float = 0.7
+
+#: The caller's turn budget under `--live-caller`, and the driver's hard stop above
+#: it. Twelve is not a guess: `lab.simulator.flake_band` measured the same corpus at
+#: eight and found the budget alone decided a verdict on one row.
+DEFAULT_CALLER_BUDGET: int = 12
 
 
 def repo_root() -> Path:
@@ -319,6 +361,136 @@ def load_caller_scripts(path: str | Path) -> dict[str, CallerScript]:
 
 
 # --------------------------------------------------------------------------- #
+# The live rig: which parts of the loop are a model on this run
+# --------------------------------------------------------------------------- #
+
+
+@dataclass
+class LiveRig:
+    """Which of the three stochastic parts are live, and where each one records.
+
+    THE THREE SEAMS ARE INDEPENDENT ON PURPOSE
+    ------------------------------------------
+    Agent, caller and judge can each be a model or a fixture, and the useful
+    configurations are not "all off" and "all on". A live caller against a scripted
+    agent attributes every disagreement between repeats to the caller's wording
+    (that is `lab.simulator.flake_band`, and it is the only way to get a clean flake
+    number). A live agent against a scripted caller isolates the agent. Both live is
+    the closest thing to production and the least diagnostic, because a FLAKY
+    verdict then has two possible causes — which is worth having, and worth saying
+    out loud in the report rather than leaving a reader to assume otherwise.
+
+    RECORDING IS A SEPARATE SWITCH FROM LIVENESS
+    -------------------------------------------
+    `record=False` with `agent=True` means "replay the committed agent cassette":
+    the same code path, the same trace shape, no provider, no key, no spend. That is
+    the mode CI runs in and the mode a reviewer runs in. `record=True` additionally
+    requires the matching `LAB_LIVE_*` environment variable, so a flag in a script
+    cannot start spending money on its own.
+    """
+
+    agent: bool = False
+    caller: bool = False
+    judge: bool = False
+    record: bool = False
+    agent_cassette: str = DEFAULT_AGENT_CASSETTE
+    caller_root: str = DEFAULT_CALLER_ROOT
+    judge_recording: str = DEFAULT_JUDGE_RECORDING
+    agent_temperature: float = DEFAULT_AGENT_TEMPERATURE
+    caller_temperature: float = DEFAULT_CALLER_TEMPERATURE
+    caller_budget: int = DEFAULT_CALLER_BUDGET
+    caller_model_label: str = "azure-openai/gpt-4.1"
+    backend: Any = None
+
+    @property
+    def any_live(self) -> bool:
+        return self.agent or self.caller or self.judge
+
+    @property
+    def repeats_should_be_identical(self) -> bool:
+        """Whether k identical repeats is a *requirement* on this run.
+
+        It is, and only is, when nothing in the loop can choose its own words. With
+        a live caller the repeats are supposed to differ — that is the measurement —
+        so reporting the difference as a reproducibility failure would turn the one
+        interesting property of the run into a gate failure.
+
+        A live *agent* replaying a cassette is a subtler case and is treated as
+        non-identical too: the cassette is content-addressed on the message history,
+        so replay is deterministic given identical input, but the run that produced
+        it was not, and a fixture that happens to replay identically is not evidence
+        that the system does.
+        """
+        return not self.any_live
+
+    def describe(self) -> str:
+        """One line naming what played each part. Goes in the report."""
+        source = "live model" if self.record else "recorded model output"
+        parts = [
+            f"agent: {source}" if self.agent else "agent: scripted backend",
+            f"caller: {source}" if self.caller else "caller: committed script",
+            f"judge: {source}" if self.judge else "judge: abstains (no recording for these traces)",
+        ]
+        return "; ".join(parts)
+
+    def build_backend(self) -> Any:
+        """Construct the agent backend once, shared across every conversation."""
+        if not self.agent:
+            return None
+        if self.backend is None:
+            factory = _import_object(DEFAULT_AGENT_BACKEND)
+            self.backend = factory(
+                cassette=str(_resolve(self.agent_cassette)),
+                temperature=self.agent_temperature,
+            )
+        return self.backend
+
+    def make_caller(self, *, scenario: Any, personas: Mapping[str, Any], script: CallerScript, index: int) -> Any:
+        """The caller for one repeat: a model with its own cassette, or the script."""
+        profile = scenario.caller_profile(personas)
+        if not self.caller:
+            return ScriptedCaller(script.script, profile=profile, closing=script.closing)
+        from lab.simulator.driver import LLMCaller
+
+        return LLMCaller.for_scenario(
+            profile,
+            scenario_id=scenario.id,
+            root=_resolve(self.caller_root),
+            model_label=self.caller_model_label,
+            temperature=self.caller_temperature,
+            variant=index,
+            max_utterances=self.caller_budget,
+        )
+
+
+def _live_refusals(rig: LiveRig) -> list[str]:
+    """Every reason this rig may not record, as sentences. Empty means go ahead.
+
+    Checked before anything runs and reported all at once. The alternative —
+    failing on the first missing variable — makes setting up a live run a sequence
+    of five separate error messages.
+    """
+    if not rig.record:
+        return []
+    wanted = {
+        "agent": ("LAB_LIVE_AGENT", rig.agent),
+        "caller": ("LAB_LIVE_CALLER", rig.caller),
+        "judge": ("LAB_LIVE_JUDGE", rig.judge),
+    }
+    problems = [
+        f"--record with a live {part} needs {var}=1 in the environment"
+        for part, (var, wanted_live) in wanted.items()
+        if wanted_live and not os.environ.get(var)
+    ]
+    if not any(live for _, live in wanted.values()):
+        problems.append(
+            "--record with nothing live records nothing; pass --live-agent, "
+            "--live-caller or --live-judge"
+        )
+    return problems
+
+
+# --------------------------------------------------------------------------- #
 # One run, and the classification of its verdicts
 # --------------------------------------------------------------------------- #
 
@@ -338,6 +510,7 @@ class RunEvaluation:
     unexpected: list[CheckResult] = field(default_factory=list)
     known_gaps: list[CheckResult] = field(default_factory=list)
     stale: list[CheckResult] = field(default_factory=list)
+    unreproduced: list[CheckResult] = field(default_factory=list)
 
     @property
     def gate_passed(self) -> bool:
@@ -359,20 +532,86 @@ class RunEvaluation:
         return [r.name for r in (*self.unexpected, *self.stale)]
 
 
+#: Adapters in which a *model* held the agent's decision seat. Read off the trace
+#: rather than passed in, so a committed fixture carries its own provenance: a trace
+#: is evidence about the build that produced it, and six months later the command
+#: line that produced it is gone.
+LIVE_AGENT_ADAPTERS: frozenset[str] = frozenset({"text:live", "text:live-agent"})
+
+
+def build_of(trace: Trace) -> str:
+    """Which build of the system under test produced this trace.
+
+    Only the *agent* side counts. `text:live-caller` is a live caller against the
+    deterministic agent — `lab.simulator.flake_band`'s configuration — and the
+    expectations in the corpus are predictions about the agent, so that run is
+    scored against the scripted build's expectations. Getting this backwards would
+    make every flake-band row report the seeded defects as undeclared regressions.
+    """
+    return "live" if trace.adapter in LIVE_AGENT_ADAPTERS else "scripted"
+
+
 def evaluate_trace(scenario: Any, trace: Trace) -> RunEvaluation:
-    """Run a scenario's contracts over a trace and classify each verdict."""
+    """Run a scenario's contracts over a trace and classify each verdict.
+
+    STALENESS IS A PROPERTY OF k REPEATS, NOT OF ONE
+    -----------------------------------------------
+    A declared gap that comes back PASS is either a fixed defect or a check that
+    went quiet, and both need a human — that is what `stale` is for. On the
+    deterministic build, one repeat settles it: all k are identical, so a gap that
+    did not reproduce here did not reproduce at all.
+
+    On a live build it settles nothing. A defect planted in a prompt is a tendency,
+    and the first full live run of this corpus has one that fires in **2 of 3**
+    repeats of `edge-modification-after-booking`. Classifying the third repeat as a
+    stale expectation would mean the corpus's own answer key fails the gate for
+    being probabilistic — and, worse, the same run would report the expectation as
+    both reproduced and stale, which is not a verdict anybody can act on.
+
+    So a live repeat that does not reproduce its declared gap records
+    `unreproduced` instead, and `_scenario_level_stale` decides staleness once per
+    scenario, from all k. `unreproduced` is not silence: it is what the rate in the
+    report's notes is computed from, and a gap that reproduced 0/k still fails the
+    gate.
+    """
     report = scenario.contract_set().run(trace, scenario.check_context())
     evaluation = RunEvaluation(scenario_id=scenario.id, report=report)
+    build = build_of(trace)
+    stochastic = build == "live"
     for result in report.results:
-        expected = scenario.expects_failure_of(result.name)
+        expected = scenario.expects_failure_of(result.name, build)
         if result.status in ("FAIL", "ERROR"):
             (evaluation.known_gaps if expected else evaluation.unexpected).append(result)
         elif expected:
-            # PASS or VACUOUS on a contract the corpus says should fail. Either the
-            # defect is fixed (delete the expectation) or the check went quiet
-            # (fix the check). Both need a human; neither may pass silently.
-            evaluation.stale.append(result)
+            evaluation.unreproduced.append(result)
+            if not stochastic:
+                evaluation.stale.append(result)
     return evaluation
+
+
+def _scenario_level_stale(
+    evaluations: Sequence[RunEvaluation],
+) -> list[tuple[str, CheckResult]]:
+    """Declared gaps that reproduced in *none* of a scenario's repeats.
+
+    Returned as `(scenario_id, one representative result)` so the gate can print
+    the evidence, and computed across repeats so that a gap which fired at least
+    once is not also reported as stale. On the deterministic build this returns
+    exactly what the per-repeat classification already found, because there all k
+    repeats agree by construction.
+    """
+    reproduced: set[tuple[str, str]] = set()
+    candidates: dict[tuple[str, str], CheckResult] = {}
+    for evaluation in evaluations:
+        for result in evaluation.known_gaps:
+            reproduced.add((evaluation.scenario_id, result.name))
+        for result in evaluation.unreproduced:
+            candidates.setdefault((evaluation.scenario_id, result.name), result)
+    return [
+        (scenario_id, result)
+        for (scenario_id, name), result in sorted(candidates.items())
+        if (scenario_id, name) not in reproduced
+    ]
 
 
 # --------------------------------------------------------------------------- #
@@ -674,18 +913,45 @@ def _judge_candidates(traces: Sequence[Trace]) -> list[Trace]:
     return selected
 
 
-def _judge_summary(candidates: Sequence[Trace], *, live: bool) -> JudgeSummary | None:
-    """The judge's calibration, and an honest account of what it graded here.
+@dataclass
+class JudgeStage:
+    """What the judge actually did on this run, and every verdict it gave.
 
-    Offline there are no recorded verdicts for these traces — the recordings are
-    keyed to the prompts of the 24 calibration items — so the judge abstains on
-    every selected session and the report says so. `integrity_gaps()` then prints
-    the abstention rate next to the TPR and TNR, which is the shape of claim the
-    evidence actually supports.
+    Both halves are needed and neither substitutes for the other. `summary` is what
+    goes in the report next to the calibration; `flagged` is the list a human reads,
+    because a flag rate with no transcripts attached is a number nobody can act on.
+    """
+
+    summary: JudgeSummary | None
+    verdicts: list[Any] = field(default_factory=list)
+
+    @property
+    def flagged(self) -> list[Any]:
+        return [v for v in self.verdicts if not v.passed]
+
+
+def _judge_stage(candidates: Sequence[Trace], *, rig: LiveRig) -> JudgeStage:
+    """Grade the selected sessions, or record honestly that nothing graded them.
+
+    WHAT THIS USED TO DO, AND WHY THAT WAS WORSE THAN NOT HAVING IT
+    --------------------------------------------------------------
+    `--live-judge` used to change the *labels* on this section and nothing else. It
+    set `abstained=0`, `replayed_from_fixture=False` and left `flagged=0` — so a
+    report produced with the flag claimed the judge had graded every selected
+    session and found nothing, without a single call having been made. That is a
+    fabricated provenance claim of exactly the kind the rest of this repository is
+    an argument against, and it was three lines of plausible-looking code.
+
+    Now the flag does the work: it builds the v2 judge, grades every candidate,
+    writes the raw answers to a recording, and puts the real flag count in the
+    report. Offline the same recording is replayed through the same prompt and the
+    same parser, so the number in the committed report is reproducible with no key.
+    With no recording and no live judge, the judge abstains on everything and the
+    report says so — an abstention is visible, a guess is not.
     """
     calibration_path = _resolve(f"{_JUDGE_DIR}/calibration_v2.json")
     if not calibration_path.exists():
-        return None
+        return JudgeStage(summary=None)
     payload = json.loads(calibration_path.read_text(encoding="utf-8"))
     confusion = payload["confusion"]
     calibration = JudgeCalibration(
@@ -695,16 +961,106 @@ def _judge_summary(candidates: Sequence[Trace], *, live: bool) -> JudgeSummary |
         true_negatives=confusion["true_negative"],
         labelled_by="one labeller, reasons recorded per item in labels.jsonl",
     )
-    return JudgeSummary(
-        name=str(payload.get("judge", "hallucinated_confirmation")),
-        model=str(payload.get("model", "unknown")),
+    name = str(payload.get("judge", "hallucinated_confirmation"))
+    prompt_id = str(payload.get("prompt_version", "v2"))
+    model = str(payload.get("model", "unknown"))
+
+    verdicts: list[Any] = []
+    recording_path = _resolve(rig.judge_recording)
+    if rig.judge and candidates:
+        verdicts = _grade(candidates, rig=rig, recording_path=recording_path)
+
+    summary = JudgeSummary(
+        name=name,
+        model=model,
         calibration=calibration,
         judged=len(candidates),
-        flagged=0,
-        abstained=len(candidates) if not live else 0,
-        replayed_from_fixture=not live,
-        prompt_id=str(payload.get("prompt_version", "v2")),
+        flagged=sum(1 for v in verdicts if not v.passed),
+        abstained=len(candidates) - len(verdicts),
+        replayed_from_fixture=not rig.record,
+        prompt_id=prompt_id,
     )
+    return JudgeStage(summary=summary, verdicts=verdicts)
+
+
+def _merge_recording(fresh: Any, path: Path) -> Path:
+    """Write `fresh` into `path`, keeping answers already recorded there.
+
+    Recording a corpus one suite at a time is the sane way to spend an hour of
+    provider calls, and a plain `save()` per suite would leave only the last one on
+    disk — a recording that silently covers a third of the run, and a replay that
+    abstains on the rest while looking like it worked. Fresh answers win on a
+    collision, because re-recording an item is how a stale one is replaced.
+    """
+    from lab.judges.judge import Recording
+
+    merged = dict()
+    if path.exists():
+        for call in Recording.load(path).calls:
+            merged[call.item_id] = call
+    for call in fresh.calls:
+        merged[call.item_id] = call
+    return Recording(calls=[merged[key] for key in sorted(merged)]).save(path)
+
+
+def _grade(
+    candidates: Sequence[Trace], *, rig: LiveRig, recording_path: Path
+) -> list[Any]:
+    """Judge every candidate, live-and-recording or from the committed recording.
+
+    An item id has to be stable across the two, or the recording is unreplayable.
+    The session id is that id: it is `<scenario>#<repeat>`, assigned by `_drive` and
+    identical on a re-run, which is the same reason `_drive` sets it rather than
+    letting the driver generate a uuid.
+    """
+    from lab.judges import hallucinated_confirmation as judge_pkg
+    from lab.judges.judge import (
+        MissingRecordingError,
+        RecordingCompletion,
+        ReplayJudge,
+        StaleRecordingError,
+    )
+
+    items = [(trace.session_id, trace) for trace in candidates]
+
+    if rig.record:
+        live = judge_pkg.judge("v2", replay=False)
+        recorder = RecordingCompletion(
+            live.completion, judge=live.name, prompt_version=live.version
+        )
+        judging = live.with_completion(recorder)
+        verdicts = [judging.judge(trace, item_id=item) for item, trace in items]
+        recording_path.parent.mkdir(parents=True, exist_ok=True)
+        _merge_recording(recorder.recording, recording_path)
+        return verdicts
+
+    if not recording_path.exists():
+        print(
+            f"--live-judge without --record needs a recording at {recording_path}; "
+            "the judge abstained instead of guessing",
+            file=sys.stderr,
+        )
+        return []
+
+    replay = ReplayJudge(
+        recording=recording_path,
+        name=judge_pkg.JUDGE_NAME,
+        prompt=judge_pkg.prompt("v2"),
+        version="v2",
+        model=judge_pkg.recorded_model("v2"),
+        include_tools=False,
+        strict=True,
+    )
+    verdicts = []
+    for item, trace in items:
+        try:
+            verdicts.append(replay.judge(trace, item_id=item))
+        except (MissingRecordingError, StaleRecordingError) as exc:
+            # Loud, and not fatal. A trace the recording does not cover is an
+            # abstention with a reason; inventing a verdict for it would be the one
+            # thing this stage exists to refuse.
+            print(f"judge abstained on {item}: {exc}", file=sys.stderr)
+    return verdicts
 
 
 # --------------------------------------------------------------------------- #
@@ -895,35 +1251,64 @@ def _drive(
     personas: Mapping[str, Any],
     index: int,
     max_turns: int,
+    rig: LiveRig | None = None,
+    callers: list[Any] | None = None,
 ) -> Trace:
     """One repeat: a fresh agent, a fresh restaurant, a fresh caller, one trace.
 
     The clock is shared between the agent and the driver on purpose. The agent
     sleeps on it to simulate its own latency, so a driver reading a different
     clock would record a latency of zero and the whole voice section would be
-    measuring nothing.
+    measuring nothing. That stays true on a live run, and it is the reason no
+    latency figure from one may be read as a measurement of the model: the clock
+    is fake, so what the trace records is `LatencyModel`'s seconds and not Azure's.
+
+    `callers` is an out-parameter, and it exists because a live caller carries state
+    the trace cannot: why it stopped, and which gated facts it leaked. That state is
+    a finding about the *instrument*, and dropping it would mean filing the
+    instrument's failures against the agent.
     """
+    rig = rig or LiveRig()
     clock = FakeClock()
-    agent = build_agent(clock=clock, seed=script.seed_fn())
-    caller = ScriptedCaller(
-        script.script,
-        profile=scenario.caller_profile(personas),
-        closing=script.closing,
+    backend = rig.build_backend()
+    kwargs: dict[str, Any] = {"clock": clock, "seed": script.seed_fn()}
+    if backend is not None:
+        kwargs["backend"] = backend
+    agent = build_agent(**kwargs)
+    caller = rig.make_caller(
+        scenario=scenario, personas=personas, script=script, index=index
     )
+    if callers is not None:
+        callers.append(caller)
     from lab.simulator import run_scenario
 
-    return run_scenario(
-        scenario_id=scenario.id,
-        agent=agent,
-        caller=caller,
-        adapter="text:replay",
-        clock=clock,
-        # Deterministic, so a committed trace diffs cleanly. `run_scenario`
-        # defaults to uuid4, which is right for a live run and fatal for a
-        # fixture: every replay would rewrite every session id.
-        session_id=f"{scenario.id}#{index}",
-        max_turns=max_turns,
-    )
+    adapter = "text:replay"
+    if rig.agent and rig.caller:
+        adapter = "text:live"
+    elif rig.agent:
+        adapter = "text:live-agent"
+    elif rig.caller:
+        adapter = "text:live-caller"
+
+    try:
+        return run_scenario(
+            scenario_id=scenario.id,
+            agent=agent,
+            caller=caller,
+            adapter=adapter,
+            clock=clock,
+            # Deterministic, so a committed trace diffs cleanly. `run_scenario`
+            # defaults to uuid4, which is right for a live run and fatal for a
+            # fixture: every replay would rewrite every session id.
+            session_id=f"{scenario.id}#{index}",
+            max_turns=max_turns,
+        )
+    finally:
+        # Save even when the run raised. A conversation that was paid for and then
+        # thrown away is money spent to learn nothing, and the turns that did happen
+        # are still evidence.
+        if rig.record and rig.caller and hasattr(caller, "save"):
+            caller.save()
 
 
 def _identical_repeats(traces: Sequence[Trace]) -> bool:
@@ -980,25 +1365,32 @@ def cmd_run(args: argparse.Namespace) -> int:
             )
             return 2
         print(
-            "warning: --live paraphrases agent turns through a provider. The "
+            "warning: --live paraphrases agent turns through a provider. It does "
+            "not put a model in the decision seat — that is --live-agent. The "
             "contracts read the trace, so a paraphrase that drops a fact is a "
             "finding, not a harness error.",
             file=sys.stderr,
         )
 
-    # The same refusal as `--live`, for the same reason. `--live-judge` only
-    # changes how the report *describes* the judge stage: it flips the source
-    # column to `live`, drops the abstention caveat and adds the "not
-    # reproducible offline" note. With no provider behind it those three edits
-    # are a provenance claim about calls that never happened, which is the one
-    # failure mode this whole repository exists to argue against. Gate it before
-    # it can be written, not after.
-    if args.live_judge and not os.environ.get("LAB_LIVE_JUDGE"):
-        print(
-            "--live-judge needs LAB_LIVE_JUDGE=1 and a provider key; refusing to "
-            "label fixture verdicts as live ones",
-            file=sys.stderr,
-        )
+    rig = LiveRig(
+        agent=bool(args.live_agent),
+        caller=bool(args.live_caller),
+        judge=bool(args.live_judge),
+        record=bool(args.record),
+        agent_cassette=args.agent_cassette,
+        caller_root=args.caller_root,
+        judge_recording=args.judge_recording,
+        agent_temperature=args.agent_temperature,
+        caller_temperature=args.caller_temperature,
+        caller_budget=args.caller_budget,
+    )
+    # Every reason recording is refused, in one message. Recording is the only mode
+    # that spends money, so it is the only mode that needs the environment's
+    # agreement as well as the flag's — see `_live_refusals`.
+    refusals = _live_refusals(rig)
+    if refusals:
+        for line in refusals:
+            print(line, file=sys.stderr)
         return 2
 
     out_dir = _resolve(args.out)
@@ -1012,6 +1404,7 @@ def cmd_run(args: argparse.Namespace) -> int:
     trace_paths: dict[str, str] = {}
     non_deterministic: list[str] = []
 
+    callers: list[Any] = []
     for scenario in selection.scenarios:
         script = scripts[scenario.id]
         repeats: list[Trace] = []
@@ -1024,6 +1417,8 @@ def cmd_run(args: argparse.Namespace) -> int:
                 personas=corpus.personas,
                 index=index,
                 max_turns=args.max_turns,
+                rig=rig,
+                callers=callers,
             )
             repeats.append(trace)
             return trace
@@ -1050,15 +1445,30 @@ def cmd_run(args: argparse.Namespace) -> int:
         verdicts.append(verdict)
 
         if repeats:
-            kept_traces.append(repeats[0])
-            if not _identical_repeats(repeats):
+            # Offline, repeat 0 stands for all k because they are identical and a
+            # committed fixture should not carry three copies of one conversation.
+            # On a live run they are three different conversations, and keeping one
+            # would throw away two thirds of the evidence the run was paid for —
+            # including, on this corpus, the repeats where a seeded defect fired.
+            kept_traces.extend(repeats if rig.any_live else repeats[:1])
+            if not _identical_repeats(repeats) and rig.repeats_should_be_identical:
                 non_deterministic.append(scenario.id)
             if args.traces:
-                path = trace_dir / f"{scenario.id}.jsonl"
-                write_jsonl(repeats[0], path)
-                trace_paths[scenario.id] = _portable(path)
+                for index, trace in enumerate(repeats if rig.any_live else repeats[:1]):
+                    stem = f"{scenario.id}-{index}" if rig.any_live else scenario.id
+                    path = trace_dir / f"{stem}.jsonl"
+                    write_jsonl(trace, path)
+                    trace_paths.setdefault(scenario.id, _portable(path))
         if args.transcript:
             _print_transcript(repeats[0] if repeats else None, scenario.id)
+
+        # Flush the agent cassette after every scenario, not once at the end.
+        # Recording a corpus takes tens of minutes and costs real money; a crash on
+        # row 40 that discarded the first 39 rows' exchanges would be paying twice
+        # for the same conversations. The caller cassettes are already saved per
+        # conversation for the same reason.
+        if rig.record and rig.agent and rig.backend is not None:
+            rig.backend.save()
 
     stats, contract_notes = _contract_stats(evaluations)
     scenarios_by_id = {s.id: s for s in selection.scenarios}
@@ -1066,7 +1476,8 @@ def cmd_run(args: argparse.Namespace) -> int:
         evaluations, scenarios=scenarios_by_id, trace_paths=trace_paths
     )
     candidates = _judge_candidates(kept_traces)
-    judge = _judge_summary(candidates, live=bool(args.live_judge))
+    stage = _judge_stage(candidates, rig=rig)
+    judge = stage.summary
 
     report = RunReport(
         title="TableMate evaluation run",
@@ -1086,6 +1497,10 @@ def cmd_run(args: argparse.Namespace) -> int:
             contract_notes=contract_notes,
             candidates=candidates,
             non_deterministic=non_deterministic,
+            rig=rig,
+            stage=stage,
+            callers=callers,
+            sessions=len(kept_traces),
         ),
     )
 
@@ -1097,16 +1512,47 @@ def cmd_run(args: argparse.Namespace) -> int:
 
     written = report.write(out_dir, stem="run_report")
 
-    stale = [e for e in evaluations if e.stale]
+    stale_expectations = _scenario_level_stale(evaluations)
+    # `stale` keeps the per-repeat shape the gate line and the printout expect. On a
+    # live run it is rebuilt from the scenario-level verdict so that one unlucky
+    # repeat cannot report a probabilistic defect as a stale expectation.
+    stale = (
+        [e for e in evaluations if e.stale]
+        if not rig.any_live
+        else [
+            RunEvaluation(
+                scenario_id=scenario_id,
+                report=next(
+                    e.report for e in evaluations if e.scenario_id == scenario_id
+                ),
+                stale=[result],
+            )
+            for scenario_id, result in stale_expectations
+        ]
+    )
     if diff.available:
         # With a committed baseline the gate is the diff: a finding this build
         # does not already own, or one it has stopped producing.
-        gate_ok = diff.clean and not stale and not non_deterministic
+        gate_ok = diff.clean and not stale_expectations and not non_deterministic
     else:
-        gate_ok = all(e.gate_passed for e in evaluations) and not non_deterministic
+        gate_ok = (
+            all(not e.unexpected for e in evaluations)
+            and not stale_expectations
+            and not non_deterministic
+        )
+
+    if rig.record and rig.agent and rig.backend is not None:
+        saved = rig.backend.save()
+        if saved is not None:
+            print(f"  wrote cassette: {_portable(Path(saved))}")
 
     print(report.headline())
     print()
+    if rig.any_live:
+        print(f"live rig:         {rig.describe()}")
+        for line in _live_diagnostics(rig, callers):
+            print(f"                  {line}")
+        print()
     print(f"report verdict:   {report.verdict} — the product's own state")
     print(
         f"regression gate:  {'PASS' if gate_ok else 'FAIL'} — "
@@ -1203,6 +1649,48 @@ def _gate_line(
     return ", ".join(parts)
 
 
+def _live_diagnostics(rig: LiveRig, callers: Sequence[Any]) -> list[str]:
+    """What the models did, counted — the instrument's own state on a live run.
+
+    Every line here is a divergence between this run and a deterministic one, and a
+    reader is entitled to the size of each rather than to a reassurance. The caller
+    lines matter most: a stop reason of `turn_budget` or `repeated_line` is a guard
+    in the *harness* firing, and a run whose failures are mostly those has measured
+    its own settings.
+    """
+    lines: list[str] = []
+    if rig.agent and rig.backend is not None:
+        diagnostics = rig.backend.diagnostics()
+        lines.append(
+            f"agent: {diagnostics['model_calls']} model call(s), "
+            f"{diagnostics['recorded']} recorded, {diagnostics['replayed']} replayed, "
+            f"{diagnostics['rate_limit_retries']} rate-limit retr(ies)"
+        )
+        blocked = diagnostics.get("blocked_calls") or []
+        if blocked:
+            lines.append(
+                f"agent: {len(blocked)} off-allow-list tool call(s) refused: "
+                + ", ".join(sorted(set(blocked)))
+            )
+        if diagnostics.get("truncated_turns") or diagnostics.get("silent_turns"):
+            lines.append(
+                f"agent: {diagnostics['truncated_turns']} truncated turn(s), "
+                f"{diagnostics['silent_turns']} silent turn(s)"
+            )
+    if rig.caller and callers:
+        stops = Counter(getattr(c, "stop_reason", None) or "agent-or-driver ended it" for c in callers)
+        leaks = sum(len(getattr(c, "leaks", ())) for c in callers)
+        lines.append(
+            f"caller: {len(callers)} conversation(s), stop reasons "
+            + ", ".join(f"{reason}={count}" for reason, count in stops.most_common())
+        )
+        lines.append(
+            f"caller: {leaks} gated fact(s) said before being asked for (a lower "
+            "bound — verbatim match only)"
+        )
+    return lines
+
+
 def _notes(
     *,
     args: argparse.Namespace,
@@ -1211,15 +1699,34 @@ def _notes(
     contract_notes: Sequence[str],
     candidates: Sequence[Trace],
     non_deterministic: Sequence[str],
+    rig: LiveRig | None = None,
+    stage: Any = None,
+    callers: Sequence[Any] = (),
+    sessions: int = 0,
 ) -> list[str]:
     """The caveats that belong to this run, stated in the artefact itself."""
+    rig = rig or LiveRig()
     driven = len(selection.scenarios)
-    notes = [
-        f"Corpus coverage: {driven}/{selection.corpus_size} scenarios were driven. "
-        f"{len(selection.voice_skipped)} voice rows declare audio perturbations and "
-        f"are not driven by the text adapter; {len(selection.unscripted)} rows have no committed caller "
-        f"script; {selection.filtered_out} were excluded by the command line.",
-        (
+    if rig.any_live:
+        k_note = (
+            f"k={args.repeats} with a live rig ({rig.describe()}) measures model "
+            "variance, not harness determinism: the repeats are *supposed* to "
+            "differ, and a scenario whose k repeats disagree is FLAKY rather than "
+            "irreproducible. Read a STABLE_PASS here as k samples agreeing and "
+            "nothing more: three passes out of three put the 95% Wilson lower "
+            "bound on the pass rate at 0.44, so a row that came back STABLE_PASS "
+            "is consistent with a real-world failure rate above one call in two. "
+            "k=3 buys the difference between unanimous and not; it does not buy a "
+            "reliability estimate."
+        )
+        if rig.agent and rig.caller:
+            k_note += (
+                " Both agent and caller are models on this run, so a FLAKY verdict "
+                "has two possible causes and this run cannot separate them; "
+                "`lab.simulator.flake_band` holds the agent still and can."
+            )
+    else:
+        k_note = (
             f"k={args.repeats} under `--replay` measures harness determinism, not "
             "model variance: the caller is scripted and the agent's phrasing comes "
             "from a fixture, so the repeats are expected to be identical. "
@@ -1229,26 +1736,36 @@ def _notes(
                 if non_deterministic
                 else "All repeats were byte-identical apart from the session id."
             )
-        ),
+        )
+    notes = [
+        f"Corpus coverage: {driven}/{selection.corpus_size} scenarios were driven. "
+        f"{len(selection.voice_skipped)} voice rows declare audio perturbations and "
+        f"are not driven by the text adapter; {len(selection.unscripted)} rows have no committed caller "
+        f"script; {selection.filtered_out} were excluded by the command line.",
+        k_note,
         (
             "The regression gate and this report's verdict answer different "
             "questions, and both are printed by `evallab run`. The verdict is FAIL "
             "while any contract fails at all — this build has real defects and the "
             "report says so. The gate compares the findings against the committed "
             "baseline and fails on a finding that is new, on one that has "
-            "disappeared, on a corpus `expected_failure` that stopped reproducing, "
-            "and on any scenario whose repeats were not identical. A fix therefore "
-            "fails the gate until the baseline is updated in the same change, which "
-            "is the point: it forces somebody to say in a diff whether a defect was "
-            "fixed or a check went quiet."
+            "disappeared, "
+            + (
+                "and on a corpus `expected_failure` that reproduced in none of the "
+                "k repeats. It does *not* require the k repeats to be identical: on "
+                "a live rig they are supposed to differ, and the baseline for this "
+                "run must be another live run — diffing a live run against the "
+                "scripted baseline would report the difference between two builds "
+                "as a regression."
+                if rig.any_live
+                else "on a corpus `expected_failure` that stopped reproducing, and "
+                "on any scenario whose repeats were not identical."
+            )
+            + " A fix therefore fails the gate until the baseline is updated in "
+            "the same change, which is the point: it forces somebody to say in a "
+            "diff whether a defect was fixed or a check went quiet."
         ),
-        (
-            f"Judge stage: the deterministic first stage selected "
-            f"{len(candidates)}/{len(selection.scenarios)} sessions in which no "
-            "booking mutation succeeded. Offline there is no recorded verdict for a "
-            "trace the judge has not seen, so it abstained on all of them rather "
-            "than guessing; its measured agreement is in the table above."
-        ),
+        _judge_note(candidates, sessions=sessions, rig=rig, stage=stage),
         (
             "Latency figures come from a simulated latency model on a fake clock. "
             "They demonstrate the measurement path end to end (and the calibration "
@@ -1267,7 +1784,99 @@ def _notes(
             "perturbations, and a text verdict on one would say nothing about audio): "
             + ", ".join(sorted(selection.voice_skipped))
         )
+    if rig.any_live:
+        rates = _declared_gap_rates(evaluations)
+        if rates:
+            notes.append(
+                "Declared known gaps, and how often each one actually reproduced "
+                "across the k repeats: "
+                + "; ".join(rates)
+                + ". A seeded defect is a certainty in the deterministic build and a "
+                "tendency in this one, so the rate is the finding — a gap that "
+                "reproduced 0/k is reported as a stale expectation and fails the "
+                "gate, and one that reproduced at least once is not, however "
+                "unevenly."
+            )
+        notes.append(
+            "Live rig: " + rig.describe() + ". Recordings for every part are "
+            f"committed under `{LIVE_RUN_DIR}/`, so this run replays offline with no "
+            "key: the agent cassette is content-addressed on the message history, "
+            "each caller repeat has its own cassette, and the judge's raw answers "
+            "are stored per session. Re-recording draws different samples and is "
+            "expected to produce a different report — that is the measurement, not "
+            "a defect in it."
+        )
+        for line in _live_diagnostics(rig, callers):
+            notes.append("Live rig diagnostics — " + line)
+        notes.append(
+            "No latency figure from this run is a measurement of any model. The "
+            "driver runs on a `FakeClock` so that fixtures do not depend on how "
+            "busy a provider was, which means the seconds in the trace are "
+            "`LatencyModel`'s and the provider's real response times were never "
+            "recorded."
+        )
     return notes
+
+
+def _declared_gap_rates(evaluations: Sequence[RunEvaluation]) -> list[str]:
+    """`scenario/contract n/k` for every gap the corpus declares, as text.
+
+    Counted over repeats rather than reported as a boolean, because on a live build
+    "did the seeded defect fire" has no yes-or-no answer and printing one would be
+    the same mistake as reporting a single run as a pass.
+    """
+    fired: dict[tuple[str, str], int] = {}
+    total: dict[tuple[str, str], int] = {}
+    for evaluation in evaluations:
+        for result in evaluation.known_gaps:
+            key = (evaluation.scenario_id, result.name)
+            fired[key] = fired.get(key, 0) + 1
+            total[key] = total.get(key, 0) + 1
+        for result in evaluation.unreproduced:
+            key = (evaluation.scenario_id, result.name)
+            total[key] = total.get(key, 0) + 1
+    return [
+        f"{scenario}/{contract} {fired.get((scenario, contract), 0)}/{count}"
+        for (scenario, contract), count in sorted(total.items())
+    ]
+
+
+def _judge_note(
+    candidates: Sequence[Trace],
+    *,
+    sessions: int,
+    rig: LiveRig,
+    stage: Any,
+) -> str:
+    """The judge paragraph, written from what the stage actually did.
+
+    `sessions` is the number of traces the first stage was offered, counted rather
+    than derived from k: on a live run every repeat is kept and on a replay run only
+    the first is, so a denominator computed from `k` would be wrong in one of the two
+    modes and there would be no way to tell which from the report.
+    """
+    head = (
+        f"Judge stage: the deterministic first stage selected {len(candidates)}/"
+        f"{sessions} session(s) in which no booking mutation succeeded."
+    )
+    verdicts = list(getattr(stage, "verdicts", ()) or ())
+    if not verdicts:
+        return head + (
+            " No verdict was recorded for any of them, so the judge abstained rather "
+            "than guessing; its measured agreement is in the table above and applies "
+            "to the 24-item calibration set, not to these sessions."
+        )
+    flagged = [v for v in verdicts if not v.passed]
+    parse_errors = sum(1 for v in verdicts if getattr(v, "parse_error", False))
+    source = "a live provider" if rig.record else "the committed recording"
+    return head + (
+        f" It graded {len(verdicts)} of them through {source} and flagged "
+        f"{len(flagged)}. {parse_errors} answer(s) were unparseable and failed closed. "
+        "Read the flags against the calibration in the table above: it is measured "
+        "on 24 hand-labelled items whose rates are 8/8 and 16/16, which is "
+        "consistent with true rates as low as 0.68 and 0.81 (95% Wilson lower "
+        "bounds), and those items are not these ones."
+    )
 
 
 def _audit_judges_for_ci() -> bool:
@@ -1575,9 +2184,55 @@ def build_parser() -> argparse.ArgumentParser:
         help="paraphrase agent turns through a provider (needs LAB_LIVE_AGENT=1)",
     )
     run.add_argument(
+        "--live-agent",
+        action="store_true",
+        help=(
+            "put a model in the agent's decision seat (it picks the tools, the "
+            "handoffs and the words). Replays the committed cassette unless --record"
+        ),
+    )
+    run.add_argument(
+        "--live-caller",
+        action="store_true",
+        help=(
+            "let a model play the caller, per persona and goal. Replays the "
+            "committed cassettes unless --record"
+        ),
+    )
+    run.add_argument(
         "--live-judge",
         action="store_true",
-        help="grade the selected sessions with a live judge (needs LAB_LIVE_JUDGE=1)",
+        help=(
+            "grade the selected sessions with the calibrated v2 judge. Replays the "
+            "committed verdicts unless --record"
+        ),
+    )
+    run.add_argument(
+        "--record",
+        action="store_true",
+        help=(
+            "call the provider and write the fixtures. Needs the matching "
+            "LAB_LIVE_* variable for every live part; this flag alone is not the "
+            "switch, because recording spends money"
+        ),
+    )
+    run.add_argument("--agent-cassette", default=DEFAULT_AGENT_CASSETTE)
+    run.add_argument("--caller-root", default=DEFAULT_CALLER_ROOT)
+    run.add_argument("--judge-recording", default=DEFAULT_JUDGE_RECORDING)
+    run.add_argument(
+        "--agent-temperature", type=float, default=DEFAULT_AGENT_TEMPERATURE
+    )
+    run.add_argument(
+        "--caller-temperature", type=float, default=DEFAULT_CALLER_TEMPERATURE
+    )
+    run.add_argument(
+        "--caller-budget",
+        type=int,
+        default=DEFAULT_CALLER_BUDGET,
+        help=(
+            "caller turn budget under --live-caller; part of the cassette key, and "
+            "a setting that has been measured deciding a verdict on its own"
+        ),
     )
     run.add_argument(
         "--baseline",

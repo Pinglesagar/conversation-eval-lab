@@ -1,0 +1,39 @@
+{
+  "goal_intent": "add two people to an existing Saturday booking, taking it from four to six",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "brisk_regular",
+    "prompt_sha256": "11c0ae13b0363b6a10b308453dd66995159ca8b65b8b94151f98c4cf72ed77a7",
+    "scenario_id": "edge-modify-across-group-threshold",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 2
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "brisk_regular",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "e1346cb612e3bfa791ef388d0bf7dfc372774672531e3b60baa15013d1c65a92",
+      "index": 0,
+      "utterance": "I need to change my Saturday booking from four to six people."
+    },
+    {
+      "context_sha256": "32003080d8bd9355c2715f3dbbb8865d12dce17a90e61fd654cb124f56203e0c",
+      "index": 1,
+      "utterance": "TM-1042"
+    },
+    {
+      "context_sha256": "51d541ad49f47157883feb52464b8c2b5e0ad544a1040fa9693d42284bc365cd",
+      "index": 2,
+      "utterance": "Keep the same time, 8pm."
+    },
+    {
+      "context_sha256": "b6eba37e0174342bcd4ea4e82de46b6dfc5508c0ed42c4ad33424e3017e41920",
+      "index": 3,
+      "utterance": "No. [END OF CALL]"
+    }
+  ]
+}

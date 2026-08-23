@@ -55,6 +55,15 @@ no_re_ask:
 expected_failure:
   contracts: [propagation:shellfish]
   since: first observed in the 0.1.0 case-study build
+  builds: [scripted]
+  why_not: >-
+    Measured 0/3 on the live build (fixtures/live_full, k=3), and for a reason that
+    is worse than the defect this row was written for: the live agent answered the
+    corkage question, searched for a table, and then ended the call without ever
+    calling create_booking, in all three repeats. There was no booking for the
+    allergy to be missing from, so the propagation contract is vacuous rather than
+    passing. The live failure on this row is reported by `tools` as an undeclared
+    finding, which is the correct place for it.
   expectation: >-
     We expect the corkage answer to be correct, the booking to be created for
     three on Thursday, and the shellfish allergy to be absent from the notes the

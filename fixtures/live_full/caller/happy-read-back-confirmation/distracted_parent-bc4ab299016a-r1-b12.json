@@ -1,0 +1,49 @@
+{
+  "goal_intent": "book Sunday lunch for four and check the details were heard correctly",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "distracted_parent",
+    "prompt_sha256": "bc4ab299016a1740f32c2689d4408a43c998bcd36c63510ad01ccd57698f8e1e",
+    "scenario_id": "happy-read-back-confirmation",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "distracted_parent",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "540233243220e9248be04140b5626ee2d9090490ab96d2a3513ecfd84ec607cc",
+      "index": 0,
+      "utterance": "Hi, I\u2019m calling to book a table for Sunday lunch please\u2014do you have space?"
+    },
+    {
+      "context_sha256": "b614815196d3a9f525a1a619e3512d5d359c14c5506d0b8148a6cbad042b01f0",
+      "index": 1,
+      "utterance": "Sorry, can you say that again?"
+    },
+    {
+      "context_sha256": "74fef14e716f6edfbb466d242e347ececda443030c68ac66ed0cd935bedc2d53",
+      "index": 2,
+      "utterance": "There\u2019ll be four of us, and we\u2019d like to come at 1:30pm."
+    },
+    {
+      "context_sha256": "e2caa732af1df9d34b7bfde92613fb4b727addf5bd791e64711fd88050962928",
+      "index": 3,
+      "utterance": "Sorry, could you repeat that?"
+    },
+    {
+      "context_sha256": "7286bfc231e5be5b49750e07254a7f5d1f85bb8eb4552ea172721944c0933eca",
+      "index": 4,
+      "utterance": "Yes, it\u2019s Cerys Hopkin. And just to check, that\u2019s a table for four at 1:30pm this Sunday, right?"
+    },
+    {
+      "context_sha256": "248b20bb8c08a9db024db2bd5db277e23d292783091f558024cf22538bd82267",
+      "index": 5,
+      "utterance": "No, that\u2019s everything\u2014thanks very much! [END OF CALL]"
+    }
+  ]
+}

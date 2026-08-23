@@ -182,6 +182,65 @@ the diff; that diff is the record of what the suite learned.
 
 ---
 
+## 10. A literal in a check is a check that works once
+
+Written after running the whole corpus against a real model for the first time.
+
+Every deterministic check in this repository asks "does this sentence count as an
+instance of the thing I am looking for", and every one of them answers with a
+pattern. Against the scripted build that is exact and free: the agent says *"That
+is all booked in"* every time, so a check written around that string is correct
+forever. Against a model it is close to worthless, and the size of "close to" was
+measured rather than guessed:
+
+| detector | scripted build | recorded live run |
+| --- | --- | --- |
+| `PromiseContract`, before this work | fires on every seeded case | **1 of 7** unbacked confirmations |
+| `PromiseContract`, after | unchanged | **7 of 7**, plus one nobody else found |
+
+The seven were not exotic phrasings. Four were ordinary synonyms — *"the room is
+yours"*, *"everything is in hand"*, *"your booking is all set"*. **Two were not a
+vocabulary problem at all: the pattern was right and the punctuation was wrong.**
+The patterns are written with an ASCII apostrophe and the model types U+2019, so
+`you('re| are)` never matched *"You're all set"*. Nothing about that failure is
+visible in a report: the contract passes, the trace looks clean, and the defect is
+in the character set of the pattern language.
+
+Four rules came out of it, and they are the ones worth transferring:
+
+1.  **Fold at the matching boundary, not in every pattern.** One
+    `fold_typography()` on the haystack fixes every pattern in the package at once.
+    Doubling an alternation in each regex fixes the ones somebody remembered.
+2.  **Declare the idea once and reference it.** Fourteen scenarios each carried a
+    hand-typed list of literals for "told the caller a booking exists" — fourteen
+    separate guesses at one idea. They are now one named family, *derived from*
+    `DEFAULT_PROMISES`, so the check that asks whether a claim was backed and the
+    row that asks whether it should have been made agree by construction.
+3.  **A broad pattern needs a veto, and it needs the right one.** A family broad
+    enough to catch the paraphrase catches the correct *refusal* too — "I'm afraid
+    I can't do anything on the house" — and, as the first live batch showed, the
+    agent merely *naming* the caller's request. Hence clause scope with two veto
+    lists, and hence two of them rather than reusing the promise contract's
+    hedges: "I'll comp your meal" must be vetoed as intent by one check and caught
+    as a concession by the other.
+4.  **Keep the literals that are literal, and say why in the file.** Four blocks
+    in this corpus stay exact: three customers' surnames, their booking
+    references, a PA's surname, and five underscored tool identifiers. A surname
+    has no paraphrase, and a refusal that names another customer has still named
+    them. Each carries a `strict_because` line, and a test fails on a literal list
+    that has neither a reason nor a family.
+
+The same problem has a caller-side face that is worse, because it is silent.
+Twenty-six rows gated a fact behind literals like `"your name"`; a live agent asks
+*"Could I take a name for the reservation?"*; the caller does not recognise the
+question, never releases the fact, the conversation goes nowhere, and the finding
+is filed **against the agent**. Nothing errors. `Goal.is_asked_for` now unions the
+row's patterns with the same shared families the contracts use, which is the same
+rule as (2): one definition of "the agent asked for this", shared by the side that
+answers and the side that scores.
+
+---
+
 ## Two things this design costs
 
 **Committed artefacts are a maintenance burden.** The reference report, 47 traces,
@@ -192,8 +251,11 @@ that the hand-written error analysis agrees with the machine-written report in
 both directions, and that every coded occurrence cites a trace that exists. CI
 regenerates the report and fails if a byte moved.
 
-**The caller is part of the instrument, and it is scripted.** Caller lines live in
-`fixtures/caller_scripts.yaml` rather than being generated per run. A model-driven
+**The caller is part of the instrument, and the default one is scripted.** Caller
+lines live in `fixtures/caller_scripts.yaml` rather than being generated per run,
+and that is still the default because of the argument below. `--live-caller` and
+`--live-agent` put models in those seats when the question needs it, against
+committed cassettes (§10, and `fixtures/live_full/`). A model-driven
 caller is the more realistic instrument and the worse one to measure with: its
 variance lands in the results as agent variance, and the pass^k machinery then
 reports the caller's flakiness as the agent's. The cost is that the corpus

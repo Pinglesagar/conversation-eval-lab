@@ -21,7 +21,7 @@ PY_OK := $(shell $(PYTHON) -c 'import sys; print(1 if sys.version_info[:2] >= (3
 PY_HAVE := $(shell $(PYTHON) -c 'import sys; print("%d.%d" % sys.version_info[:2])' 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help python-ok install test demo calibrate report validate replay errors reference audio-fixtures audio-check audio-setup roleplay-demo roleplay-validate clean
+.PHONY: help python-ok install test demo calibrate report validate replay errors reference live-replay live-score live-record audio-fixtures audio-check audio-setup roleplay-demo roleplay-validate clean
 
 help:  ## Show this help.
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -79,6 +79,27 @@ errors: python-ok  ## Recount the hand-assigned failure modes and redraw error_a
 reference: python-ok  ## Regenerate the committed reference run. Review the diff before committing it.
 	$(PYTHON) -m lab.cli run --out fixtures/replay_run
 	@git --no-pager diff --stat -- fixtures/replay_run
+
+# The live run replays committed recordings: no key, no network, no spend. It is a
+# separate target from `demo` because it is a different *build* of the system under
+# test — a model in the decision seat rather than `tablemate/agents.py` — and it is
+# gated against its own baseline for that reason. A live run diffed against the
+# scripted baseline would report the difference between two builds as a regression.
+live-replay: python-ok  ## Replay the committed live run (agent, caller and judge were models). No key needed.
+	$(PYTHON) -m lab.cli run -k 3 --live-agent --live-caller --live-judge \
+		--out reports/live --no-traces \
+		--baseline fixtures/live_full/run_report.json --ci
+
+live-score: python-ok  ## Recompute the seeded-defect rates from the committed live traces.
+	$(PYTHON) -m tablemate --score fixtures/live_full
+
+# Re-recording spends money and needs LAB_LIVE_AGENT / LAB_LIVE_CALLER /
+# LAB_LIVE_JUDGE plus a provider key. It draws new samples, so it produces a
+# *different* report — review the diff as a new measurement, not as a regression.
+live-record: python-ok  ## Draw a new live run from a provider. Spends money; needs the LAB_LIVE_* variables.
+	$(PYTHON) -m lab.cli run -k 3 --live-agent --live-caller --live-judge --record \
+		--out fixtures/live_full --baseline fixtures/live_full/run_report.json
+	@git --no-pager diff --stat -- fixtures/live_full
 
 # The roleplay pack is a second domain on the same framework: a BFSI sales-coach
 # whose scorer is the system under test. It shares `lab/` and nothing else, which

@@ -36,6 +36,13 @@ tools:
 promises: {}
 
 phrases:
+  # LEFT STRICT. Reviewed and deliberately not converted: the assertion is that one
+  # exact string — the PA's own surname — never reaches the booking or the caller's
+  # ear as the diner's name. There is no paraphrase of a surname.
+  name: phrases:wrong-name
+  strict_because: >-
+    The literal is a person's surname. A name has no paraphrase, and a check that
+    accepted one would be checking something else.
   forbidden:
     - Iredale
 

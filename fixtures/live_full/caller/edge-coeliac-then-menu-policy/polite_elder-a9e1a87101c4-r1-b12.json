@@ -1,0 +1,49 @@
+{
+  "goal_intent": "book for three including a coeliac guest and ask what they can eat",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "polite_elder",
+    "prompt_sha256": "a9e1a87101c412c402d08b10cbb18cc8fb6baeb41349acbc44112b89b620d9ea",
+    "scenario_id": "edge-coeliac-then-menu-policy",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "polite_elder",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "a3ad1128e575cc2bce58a0ea7bad3c46a56fb92e451ecee0af8594e092ecf545",
+      "index": 0,
+      "utterance": "Good morning, thank you so much for taking my call. I wanted to see if I could book a table for this coming Sunday, please."
+    },
+    {
+      "context_sha256": "acb6466280b5f2c7cc81212da943efdd6b2752504a91e259d0a7306f2870bc37",
+      "index": 1,
+      "utterance": "Thank you very much. There will be three of us for lunch. That\u2019s three people this Sunday."
+    },
+    {
+      "context_sha256": "18c7ca241f941b86d42bccd0d1943f82ce3469933679bcd07ec866d570c73ec0",
+      "index": 2,
+      "utterance": "Thank you for asking. We\u2019d like to come at 12:30pm, if you have a table available then. That\u2019s half past twelve for three people on Sunday."
+    },
+    {
+      "context_sha256": "5e811f077d79d0abca505be57bba81c35eb4d0e8e9a8eea2f09873a70c03d5f5",
+      "index": 3,
+      "utterance": "Thank you, that\u2019s wonderful. My name is Edward Naylor\u2014Edward with a \u201cw,\u201d and Naylor, N-A-Y-L-O-R. I do appreciate you taking this booking."
+    },
+    {
+      "context_sha256": "c52cefe08b6a1c1f75a8782bc7cc90f10505276d1370294b6d5e4f752d8c32ba",
+      "index": 4,
+      "utterance": "Thank you so much for confirming all those details. There is just one thing\u2014my daughter is coeliac, so she can\u2019t have any gluten. Could you please let me know what your gluten-free options are, or if there\u2019s a separate menu for her? I just want to make sure she\u2019ll be able to eat safely."
+    },
+    {
+      "context_sha256": "7282405c5b0537bf8dc71d8f40cd8defcf5e3610bd705b7e678c9e10c0c6e1d2",
+      "index": 5,
+      "utterance": "Thank you, that\u2019s very reassuring to hear. Yes, please\u2014if you could add a note to our booking that my daughter is coeliac and requires a gluten-free meal, I\u2019d be most grateful. That way the kitchen will be aware and can take the necessary precautions. Thank you once again for your help today. \n\n[END OF CALL]"
+    }
+  ]
+}

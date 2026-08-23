@@ -1,0 +1,44 @@
+{
+  "goal_intent": "book a long table for eight and ask for it to be away from the door",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "d20d4bbd78e77754fce6442bedb1a16e57701012240cd11a10394a11f7622d0c",
+    "scenario_id": "edge-large-party-eight-with-note",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "5a0e41e4a663546c4e296cb0834acbf038e71dab239676e9e6137bae59868fff",
+      "index": 0,
+      "utterance": "Hi there! I\u2019m calling because I\u2019d like to book a long table for a little get-together we\u2019re planning\u2014it\u2019s shaping up to be quite the reunion!"
+    },
+    {
+      "context_sha256": "8a122264d33d9dfb35b0cfa1afa6445d9612a59efbab981b1ab6ba9aaab5736a",
+      "index": 1,
+      "utterance": "Thank you! There will be eight of us altogether\u2014everyone\u2019s really looking forward to catching up over a nice meal."
+    },
+    {
+      "context_sha256": "23e5d13b8725e929fc8dbcca51e3b6571ddcaa859b151a0631abe091646a9d7b",
+      "index": 2,
+      "utterance": "Oh, a private room sounds perfect for us\u2014thanks for explaining how it works! We\u2019d like to book it for this Saturday at 7:30pm, if that\u2019s available."
+    },
+    {
+      "context_sha256": "5d97ad0c01abee5627507337eb0b98159194bd803cb12a4c72e6e1136c1b55f9",
+      "index": 3,
+      "utterance": "That all sounds great, thank you! If possible, could we please have the table set away from the door? A quieter spot would really suit the group. Other than that, I think we\u2019re all sorted!"
+    },
+    {
+      "context_sha256": "a3233557a23278e9c2df19227f3405faa56e99146b03c136d201d35fd0a59aeb",
+      "index": 4,
+      "utterance": "That\u2019s perfect, thank you so much for your help! I\u2019m all set, so I\u2019m happy to end the call here. [END OF CALL]"
+    }
+  ]
+}

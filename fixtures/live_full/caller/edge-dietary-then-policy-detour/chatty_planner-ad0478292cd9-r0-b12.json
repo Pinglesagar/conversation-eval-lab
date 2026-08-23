@@ -1,0 +1,34 @@
+{
+  "goal_intent": "book for two with a severe peanut allergy and ask how the kitchen handles allergens",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "ad0478292cd9639f678146bc74c6a73b6858500a4efae2fdacfbef424f36e70b",
+    "scenario_id": "edge-dietary-then-policy-detour",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 0
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "19b4755441476b222b4ef37c936b41ef3d772454f873f8c5d959ff3e49e3acda",
+      "index": 0,
+      "utterance": "Hi there! I\u2019m calling to book a table for a little get-together \u2014 just two of us, and we\u2019re really looking forward to a nice meal this Friday. Before we get too far, I wanted to check what steps your kitchen takes to handle severe peanut allergies."
+    },
+    {
+      "context_sha256": "6670f813bca1d1ffff4d9ea8a92039b8ff590a6de37abf4c6f6e1aaf811e0431",
+      "index": 1,
+      "utterance": "Thanks so much for checking on that for me! Let\u2019s go ahead and get the booking started while you\u2019re finding out \u2014 we\u2019re hoping for Friday at 7pm, under the name Sam Ellery. It\u2019ll just be the two of us, and one of us has the peanut allergy, so I\u2019d love for that to be noted on the reservation."
+    },
+    {
+      "context_sha256": "2825ef5b79dac0e8fe8303a9b0d4c7ea40dbee0f71771492e563bea52daf9775",
+      "index": 2,
+      "utterance": "That\u2019s perfect, thank you! I\u2019ll look out for your call about the kitchen\u2019s allergy procedures, and I really appreciate you making sure everything\u2019s safe for us. Looking forward to Friday! \n\n[END OF CALL]"
+    }
+  ]
+}

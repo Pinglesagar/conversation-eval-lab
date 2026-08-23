@@ -66,8 +66,48 @@ the product verdict as an exit code.
 | `--suite`, `--tag`, `--scenario` | subset. All repeatable and comma-separable. The baseline diff is scoped to what actually ran. |
 | `--agent-factory pkg.mod:factory` | point the harness at a different system under test. Nothing about `lab` knows about TableMate. |
 | `--corpus-module`, `--corpus` | point it at a different corpus. |
-| `--live` | paraphrase the agent's turns through a provider. Needs `LAB_LIVE_AGENT=1`; refuses otherwise rather than quietly replaying. |
+| `--live` | paraphrase the agent's turns through a provider. Needs `LAB_LIVE_AGENT=1`; refuses otherwise rather than quietly replaying. Note this is *phrasing only* — the deterministic agent still decides. |
 | `--raise-errors` | let a harness exception propagate instead of being recorded as a failed run. For debugging the harness itself. |
+
+### The live rig
+
+Three seams, independently switchable, and none of them spends money without
+`--record` **and** the matching environment variable.
+
+| flag | what becomes a model |
+| --- | --- |
+| `--live-agent` | the agent's decision seat: it picks the tools, the handoffs and the words (`tablemate.runtime.LLMBackend`) |
+| `--live-caller` | the caller, improvising from its persona and goal (`lab.simulator.LLMCaller`) |
+| `--live-judge` | the judge, grading the sessions the deterministic first stage selected |
+| `--record` | permits provider calls and writes the fixtures. Refuses unless `LAB_LIVE_AGENT` / `LAB_LIVE_CALLER` / `LAB_LIVE_JUDGE` are set for the parts that are live |
+
+Without `--record`, each live seam **replays its committed recording**: same code
+path, same trace shape, no key, no network, no spend. That is the mode CI and a
+reviewer run in.
+
+```bash
+# replay the committed live run — needs nothing
+evallab run --live-agent --live-caller --live-judge   --baseline fixtures/live_full/run_report.json
+
+# draw a new one (spends money; expect a different report)
+LAB_LIVE_AGENT=1 LAB_LIVE_CALLER=1 LAB_LIVE_JUDGE=1 LAB_AGENT_MODEL=azure/<deployment> LAB_CALLER_MODEL=azure/<deployment> LAB_JUDGE_MODEL=azure/<deployment>   evallab run --live-agent --live-caller --live-judge --record -k 3
+```
+
+Which combination to use is a measurement decision, not a preference:
+
+*   **caller live, agent scripted** — every disagreement between repeats is
+    attributable to the caller's wording, because the agent cannot vary. This is
+    `lab.simulator.flake_band`, and it is the only configuration that yields a
+    clean flake number.
+*   **agent live, caller scripted** — isolates the agent against fixed input.
+*   **both live** — closest to a real call and the least diagnostic: a FLAKY
+    verdict now has two possible causes and this run cannot separate them. The
+    report says so in its notes rather than leaving it to be assumed.
+
+Two consequences worth knowing before reading a live report. The gate stops
+requiring k identical repeats, because on a live rig the repeats are *supposed* to
+differ. And a live run keeps all k traces rather than only the first, so the
+evidence directory holds every conversation that was paid for.
 
 ---
 

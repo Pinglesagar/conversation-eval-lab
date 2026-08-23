@@ -1,0 +1,39 @@
+{
+  "goal_intent": "book a table for two, then change your mind and say it is four",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "a7992f45b3ccf52f4e2a6947330f8a7c83ca80c48d0194ca2f90e86dee3340f5",
+    "scenario_id": "edge-correction-of-party-size",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 2
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "46009cba548e92fe94d21ab281ee547ff97b667b68a8b4629091e1084e71f04f",
+      "index": 0,
+      "utterance": "Hi there! I\u2019m calling to book a table for this Saturday\u2014my friends and I are planning a little dinner to catch up. Is there any availability around 7pm?"
+    },
+    {
+      "context_sha256": "0b1563c1ece6a5c4d3eb6014a2478e293218c9ff40494418e51d52f67f7f0072",
+      "index": 1,
+      "utterance": "It\u2019ll just be two of us to start off\u2014my friend Neve Ashworth and myself. The others haven\u2019t confirmed yet, but it\u2019s always nice to have a quiet dinner."
+    },
+    {
+      "context_sha256": "06d0f2c1f3fe3225bea03a455944a27bca8c1786eb1bb606761c4ad7e4f2074b",
+      "index": 2,
+      "utterance": "Oh, actually, I just heard back from our friends\u2014looks like we\u2019ll need a table for four instead! Sorry for the last-minute change. No special requests for the kitchen, just a regular booking for four please."
+    },
+    {
+      "context_sha256": "722c6b188a9c8bca71690cffabaa170b54211f5ca5457da614fa6d2aee336175",
+      "index": 3,
+      "utterance": "Perfect, thanks so much! Neve Ashworth is the correct name for the booking\u2014just wanted to make sure it\u2019s under her. Everything else sounds great, and I appreciate your help with the change. Have a lovely day! \n\n[END OF CALL]"
+    }
+  ]
+}

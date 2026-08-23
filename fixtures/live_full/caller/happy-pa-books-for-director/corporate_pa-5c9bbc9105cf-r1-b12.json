@@ -1,0 +1,49 @@
+{
+  "goal_intent": "book a lunch for your director, whose name goes on the reservation",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "corporate_pa",
+    "prompt_sha256": "5c9bbc9105cf8f148540d0dca1c9f2692530a54f5e898afdcd8b32b855cfb74f",
+    "scenario_id": "happy-pa-books-for-director",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "corporate_pa",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "1486ae5877a0254968e1e5adb946986b43182210a2f95d3d1f9be8f8bd454edd",
+      "index": 0,
+      "utterance": "Hello, I\u2019m calling to book a lunch reservation on behalf of my director."
+    },
+    {
+      "context_sha256": "86696b3816872c67ccd05b999b0dfa7fd1ca814f66183ce38a623900c46f25d7",
+      "index": 1,
+      "utterance": "Yes, there will be two people for lunch."
+    },
+    {
+      "context_sha256": "5b1efa9a3f0696ed1aaef432db169747b632573f2e1209292393fe0a14ef071c",
+      "index": 2,
+      "utterance": "We would like the reservation for this coming Tuesday, please."
+    },
+    {
+      "context_sha256": "4c58427a1282e52b8ad19e96c5c53d0ae9c7d3746c5aa7ce72ff211167124a11",
+      "index": 3,
+      "utterance": "We would like the table for 12:30pm."
+    },
+    {
+      "context_sha256": "7302e2ae63287551d86f1e27c97e01713b9dde658049db57794ae31ae2d5982c",
+      "index": 4,
+      "utterance": "The reservation should be under my director\u2019s name, Helena Marchetti."
+    },
+    {
+      "context_sha256": "6b87f7f7b181298e2056be0adf5ac3cfe5e38d77d801555e33a6d916f2dfff95",
+      "index": 5,
+      "utterance": "No, that\u2019s all I needed. Thank you very much for your help. [END OF CALL]"
+    }
+  ]
+}

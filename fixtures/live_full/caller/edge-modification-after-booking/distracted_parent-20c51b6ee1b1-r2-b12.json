@@ -1,0 +1,74 @@
+{
+  "goal_intent": "book Wednesday for four, then ask to move it to half an hour later",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "distracted_parent",
+    "prompt_sha256": "20c51b6ee1b1d0cf31cf48454c89f082f39da7e6f90ccffe5152e968f88291d9",
+    "scenario_id": "edge-modification-after-booking",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 2
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "distracted_parent",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "ac501a058121ede6ad0d8135f80fd19b288880c43db147d87ee0a808329247a0",
+      "index": 0,
+      "utterance": "Hi, I\u2019d like to make a booking for dinner\u2014can you help me with that?"
+    },
+    {
+      "context_sha256": "1a5f2d2a0c78bc9478e127a0d6893d1f19fc8a48babeeb04255ff850e6a0c6f0",
+      "index": 1,
+      "utterance": "Oh, sorry, can you say that again?"
+    },
+    {
+      "context_sha256": "e3dd47c146b813b8325f4ae4736205f4e371f9260be0858fcdeed76480e4f771",
+      "index": 2,
+      "utterance": "There will be four of us."
+    },
+    {
+      "context_sha256": "555df520b6dade52fe27c8926dc81a4f44e6d1775a512b5da11681eaca09f8f4",
+      "index": 3,
+      "utterance": "Sorry, could you repeat the date question?"
+    },
+    {
+      "context_sha256": "fb162e1fdf14ccd72754b86922f47ec315148e6d989481af6a602aa1aa5fb8d3",
+      "index": 4,
+      "utterance": "Wednesday, please."
+    },
+    {
+      "context_sha256": "930ccae63d2596f67c1b04c6db2900b0ed2182b9b8bf8566156449a1ae0d9bd9",
+      "index": 5,
+      "utterance": "Sorry, can you ask me the time question again?"
+    },
+    {
+      "context_sha256": "10bbfcb6f67f396c8fb26916f60ef71acc03d1108b4c68a6ec386ab015655a81",
+      "index": 6,
+      "utterance": "7pm would be great."
+    },
+    {
+      "context_sha256": "4b5aabdebb1a67e9e1f68522aa7833ab0070bb2420b8cd7db24bb086778a8ac2",
+      "index": 7,
+      "utterance": "Sorry, could you repeat that?"
+    },
+    {
+      "context_sha256": "e8a930f17af40cf52aa74c3ec12efe6c5dce30a1b010a265d53d2f21bb0255a4",
+      "index": 8,
+      "utterance": "Ruth Kelleher."
+    },
+    {
+      "context_sha256": "7b7ba3f7e8206e61c3a1e05b9578d593958cffedb60a45fd1ec3d2571fb4a65f",
+      "index": 9,
+      "utterance": "Yes, that\u2019s right\u2014actually, could we move it to half an hour later instead?"
+    },
+    {
+      "context_sha256": "6bc067b4986a91d1e3ea9b5d1a385796857be53dbf85a665ceac9d06b68c4358",
+      "index": 10,
+      "utterance": "Yes, that\u2019s perfect, thank you. [END OF CALL]"
+    }
+  ]
+}

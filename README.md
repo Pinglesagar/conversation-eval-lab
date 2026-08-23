@@ -15,19 +15,42 @@ fixture that replays deterministically in its place.
 
 ## The headline numbers
 
-From the committed run in [`fixtures/replay_run/`](fixtures/replay_run/), which
-CI regenerates and diffs byte for byte on every commit:
+Two committed runs, because the harness is pointed at the same corpus twice: once
+at the **deterministic** build of the system under test, and once at a build with a
+model in the agent's decision seat, a model playing the caller and a model judging.
+Both replay offline from committed fixtures with no key.
+
+### Live — a model in all three seats
+
+[`fixtures/live_full/`](fixtures/live_full/) — 47 rows × k=3 = **141
+conversations**, agent, caller and judge all `azure-openai/gpt-4.1`, 2,056 recorded
+model calls.
 
 | | |
 | --- | --- |
 | scenarios driven | **47/55** (8 voice rows need the audio path, not the text adapter) |
+| stable-pass / flaky / stable-fail | **34/47 · 6/47 · 7/47** — the flake band is the middle one, 12.8% |
+| contract evaluations that failed | **50/361** (13.9%) |
+| findings, each anchored to trace evidence | **23** — 5 the corpus declares, **18 it did not** |
+| seeded defect BUG-1 (phantom confirmation) | fired **6/6** conversations where it was reachable |
+| seeded defect BUG-2 (head-count re-ask) | fired **2/5**; 1 of 6 conversations never reached the desk |
+| seeded defect BUG-3 (dietary note dropped) | fired **0/4**; the live agent carried the note every time |
+| judge flag rate, against its own calibration | **10/38 (26.3%)** flagged, at TPR 8/8 and TNR 16/16 on 24 hand labels |
+| repeats that were identical | **not required, and not expected** — see below |
+
+### Deterministic — the same corpus, the scripted build
+
+[`fixtures/replay_run/`](fixtures/replay_run/), which CI regenerates and diffs byte
+for byte on every commit:
+
+| | |
+| --- | --- |
 | scenarios with no *undeclared* failure, on every repeat | **44/47** |
-| scenarios where literally every check passed | **37/47** (10 carry a contract failure the corpus declares) |
-| contract evaluations that failed | **36/366** |
-| findings, each anchored to trace evidence | **12** (10 quote an utterance or a tool call, 2 record an absence) |
+| contract evaluations that failed | **36/369** |
+| findings | **12** (9 declared by the corpus, 3 not) |
 | repeats that were byte-identical (k = 3) | **47/47** |
 | response latency, p50 / p95 (175 turn samples) | **717 ms / 1104 ms**, calibration gate PASS |
-| judge agreement with hand labels (prompt v2) | **TPR 8/8, TNR 15/16** on 24 labelled calls |
+| judge agreement with hand labels (prompt v2) | **TPR 8/8, TNR 16/16** on 24 labelled calls |
 | failure modes found by reading the traces by hand | **13** modes, 32 coded occurrences |
 | product occurrences the checks caught | **9/31** |
 
@@ -37,11 +60,35 @@ found. That gap is why
 [`error_analysis/`](error_analysis/) is a committed part of this repository
 rather than a paragraph about methodology.
 
-The report's own verdict is **FAIL**, because the system under test really does
-tell a party of six that their table is booked and then never books it. CI is
-green because the *regression gate* passed: nothing changed since the baseline.
-Both verdicts are printed, always, and neither is derived from the other — see
-[DESIGN.md](DESIGN.md) §9.
+### The three sentences that matter about those two tables
+
+**Every literal in a check is a check that works once.** The single most valuable
+thing the live run produced is a number about the *harness*, not the agent:
+`PromiseContract` — the most reviewed pattern set in this repository — caught **1 of
+7** unbacked confirmations in the previous phase's live output. Two of the six
+misses were not even a vocabulary problem; the pattern was right and the *punctuation*
+was wrong, because the patterns use an ASCII apostrophe and a model types U+2019. It
+now catches 7 of 7, and the same rewrite scores **TPR 8/8, TNR 16/16** on the
+judge's own 24 hand-labelled items — the same score as the judge, from a rule that
+costs nothing and cannot be rate-limited. [DESIGN.md](DESIGN.md) §10 is the whole
+argument.
+
+**A seeded defect is a certainty in one build and a tendency in the other.**
+BUG-1 fired 6/6, BUG-2 2/5, BUG-3 0/4 — against 3/3 each under the scripted build.
+So four `expected_failure` blocks in the corpus now name the build they describe and
+record what the other build was observed to do instead. The machinery had to change
+to allow that: staleness is now decided across k repeats rather than per repeat,
+because a probabilistic defect that fires twice in three was being reported as both
+reproduced *and* a stale expectation in the same run.
+
+**`FAIL` and `PASS` are both correct, and they answer different questions.** Both
+reports' verdicts are **FAIL**, because the system under test really does tell a
+party of six their table is booked and then never book it. CI is green because the
+*regression gate* passed on each: nothing changed since that build's own baseline.
+The live run is diffed against a live baseline and the scripted run against a
+scripted one, because a live run compared to a scripted baseline would report the
+difference between two builds as a regression. Neither verdict is derived from the
+other — see [DESIGN.md](DESIGN.md) §9.
 
 ---
 
@@ -51,7 +98,7 @@ Both verdicts are printed, always, and neither is derived from the other — see
 git clone <this repo> && cd tablemate-evals
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-pytest                      # ~1,000 tests, offline, about ten seconds
+pytest                      # ~1,390 tests, offline, under a minute
 
 make demo                   # the case study end to end, into reports/
 make replay                 # re-check every committed trace, no agent involved
@@ -68,6 +115,14 @@ Then read one conversation and one verdict:
 ```bash
 evallab run --scenario edge-large-party-of-six --transcript -k 1
 evallab replay fixtures/replay_run/traces/edge-large-party-of-six.jsonl
+```
+
+Then read the same row as a model actually played it — still no key, because the
+run is recorded:
+
+```bash
+evallab run --scenario edge-large-party-of-six --live-agent --live-caller \
+  --transcript -k 3 --no-baseline
 ```
 
 Full command reference: [docs/cli.md](docs/cli.md).
@@ -246,25 +301,39 @@ by `evallab calibrate --judges`, not typed:
 
 | metric | v1 | v2 | delta |
 | --- | --- | --- | --- |
-| true positive rate | 1.000 (8/8) | 1.000 (8/8) | +0.000 |
-| true negative rate | 0.625 (10/16) | 0.938 (15/16) | +0.312 |
-| precision | 0.571 (8/14) | 0.889 (8/9) | +0.317 |
-| Cohen's kappa | 0.526 | 0.909 | +0.383 |
-| false positives | 6 | 1 | −5 |
-| false negatives | 0 | 0 | +0 |
+| true positive rate (recall) | 0.250 (2/8) | 1.000 (8/8) | +0.750 |
+| true negative rate | 1.000 (16/16) | 1.000 (16/16) | +0.000 |
+| precision | 1.000 (2/2) | 1.000 (8/8) | +0.000 |
+| raw agreement | 0.750 (18/24) | 1.000 (24/24) | +0.250 |
+| Cohen's kappa | 0.308 | 1.000 | +0.692 |
+| false positives | 0 | 0 | +0 |
+| false negatives (misses) | 6 | 0 | −6 |
+| gate (TPR ≥ 0.85, TNR ≥ 0.85) | **FAILS on TPR** | **PASSES** | — |
 
-v1's failure is the one every naive confirmation judge has: it conflates intention
-with completion, firing on "I'll get that booked for you now" and on "shall I
-confirm?". v2 defines the target, enumerates what does not count, and demands a
-quotable sentence. The surviving false positive is a genuinely ambiguous utterance
-and was left alone rather than tuned away, because a prompt tuned until its own
-calibration set comes back clean has been fitted to that set.
+Every verdict in that table came from `azure/gpt-4.1` at temperature 0, was
+recorded, and is recomputed offline from the recording by `pytest`.
 
-**These verdicts are synthetic**, stamped `synthetic/deterministic-stand-in`, and
-the calibration report says so in its own notes. What is demonstrated is the
-machinery — confusion matrix, chance correction, disagreement listing, gate — on a
-fixture that runs with no API key. Pointing it at a real provider is one call
-through the identical code path.
+**The interesting part is that the prediction was wrong.** An earlier revision of
+this section scored the same two prompts against hand-written stand-in verdicts,
+which encoded a confident guess about how v1 would fail: that it would *over-fire*,
+flagging "I'll get that booked now" as a confirmation — perfect recall, six false
+alarms. The live model did the exact opposite: **zero** false alarms and **six
+misses**. It read "hallucinate a confirmation" as *invent a booking the caller never
+asked for*, so "I've gone ahead and reserved the corner table" came back PASS with
+the critique "confirmed the reservation without inventing any details not
+discussed". The undefined word bound to the model's own prior instead of to the
+rubric's question about tense.
+
+Two things follow. The direction of a judge's errors cannot be guessed — and it
+matters, because false alarms waste an afternoon while misses ship the defect. And
+a plausible story about a prompt is not evidence about that prompt; finding out
+cost about twenty cents.
+
+There is no v3. v2 saturates the set at 1.000 on every rate, which is a fact about
+24 items and not a claim about a judge: 8/8 and 16/16 are consistent with true
+rates as low as 0.68 and 0.81 (95% Wilson lower bounds), and a set a judge never
+fails cannot catch it regressing. The honest next step is harder labels, not a
+prompt tuned against a set it already passes.
 
 ---
 
@@ -346,12 +415,26 @@ Design rationale: [DESIGN.md](DESIGN.md). The capability-to-question mapping:
 
 Read this section as part of every number above.
 
-- **The corpus is synthetic and the caller is scripted.** 55 rows written by one
-  person against a system built by the same person, with one phrasing per row.
-  That under-samples the way people actually talk, and it is exactly how findings
-  4 and 5 stayed invisible until somebody read a transcript and poked the parser
-  by hand. `LLMCaller` exists for that exploration but is not what the committed
-  run uses.
+- **The corpus is synthetic, and it is written by the person it tests.** 55 rows
+  written by one person against a system built by the same person. The scripted
+  run drives one phrasing per row, which under-samples the way people actually
+  talk — exactly how findings 4 and 5 stayed invisible until somebody read a
+  transcript and poked the parser by hand. There is now a committed live run where
+  a model chooses the caller's words as well as the agent's
+  ([`fixtures/live_full/`](fixtures/live_full/)), and it found 18 undeclared
+  findings against the scripted run's 3; but it is still 47 rows chosen by one
+  person, and a defect nobody thought to write a row for is invisible to both.
+- **`k=3` bounds flakiness very loosely.** Three passes out of three put the 95%
+  Wilson lower bound on the pass rate at 0.44. A `STABLE_PASS` in the live run
+  means "three samples agreed", not "reliable", and the report says so in its own
+  notes. The 12.8% flake band is a reading of one model at one temperature on one
+  day; re-recording draws a different one.
+- **Both agent and caller are live in that run, so a FLAKY verdict has two
+  possible causes** and this run cannot separate them.
+  `lab.simulator.flake_band` holds the agent still and can, at k=5 over 8 rows.
+- **No spend figure here is exact.** 2,056 model calls are counted precisely from
+  the fixtures; the cost is estimated from a per-call figure measured in an
+  earlier phase (~$6.60), and is an estimate rather than an invoice.
 - **WER here is harness-relative.** It compares a transcript against the
   reference text the harness itself supplied to synthesis. That is a valid
   measure of what a perturbation did to a recognition path, and it is *not* a
@@ -378,7 +461,13 @@ Read this section as part of every number above.
   They demonstrate the measurement path end to end, and the calibration gate is
   what makes that path trustworthy. They say nothing about how fast any real
   system is.
-- **Judge verdicts are synthetic recordings**, as above.
+- **Judge verdicts are recordings of real calls, and the calibration set is
+  saturated.** Every verdict quoted anywhere in this repository came from
+  `azure/gpt-4.1` and was recorded; none is synthetic. But v2 scores 1.000 on
+  every rate over 24 items, and a set a judge never fails cannot catch that judge
+  regressing. 8/8 and 16/16 are consistent with true rates as low as 0.68 and
+  0.81 (95% Wilson lower bounds), and the sessions the judge graded in the live
+  run are not the sessions it was calibrated on.
 - **The failure coding is one person, one pass, no second rater**, on 47 traces of
   one build. Two of my notes were withdrawn on a second look, which is evidence
   that some of the ones I kept are wrong too. What I would defend is the direction
@@ -399,6 +488,9 @@ Read this section as part of every number above.
 | `make validate` | validate the scenario corpus, with coverage |
 | `make calibrate` | the timing and judge calibration gates |
 | `make report` | re-render the committed report from its own JSON |
+| `make live-replay` | replay the committed live run — agent, caller and judge were models. No key |
+| `make live-score` | recompute the seeded-defect rates from the committed live traces |
+| `make live-record` | draw a *new* live run from a provider. Spends money; needs the `LAB_LIVE_*` variables |
 | `make errors` | recount the coded failure modes and redraw the chart |
 | `make reference` | regenerate the committed baseline and show the diff |
 

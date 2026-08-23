@@ -1,0 +1,34 @@
+{
+  "goal_intent": "book dinner for five on Saturday",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "brisk_regular",
+    "prompt_sha256": "1c2e9e299cecbce87734c4de72f470a2f1da4f8f73de64144b856ba52d9d913d",
+    "scenario_id": "happy-party-of-five-boundary",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 2
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "brisk_regular",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "97088711782d5c0db8835a8e44471845917ee27606c8e88219a74c8165bb7fa1",
+      "index": 0,
+      "utterance": "Hi, I\u2019d like to book a dinner for five this Saturday."
+    },
+    {
+      "context_sha256": "5c5204babd79a8388f2607d0c7ab01781bde68a4ab63c1f5067a9c86dac35691",
+      "index": 1,
+      "utterance": "8pm. Aditi Bose."
+    },
+    {
+      "context_sha256": "3cc40cbf6aa749752ddc25fc7006de2cdbb394103a321215531bd868edf4ce7a",
+      "index": 2,
+      "utterance": "No, that\u2019s all. [END OF CALL]"
+    }
+  ]
+}

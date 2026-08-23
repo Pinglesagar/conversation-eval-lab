@@ -1,0 +1,44 @@
+{
+  "goal_intent": "get a table around eight, some time at the weekend",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "878eb8aea56ddc07a6c4d01c019f2b69cbff17705c30571fa0601ec69aac5daf",
+    "scenario_id": "edge-ambiguous-time-request",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 0
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "79355875899d9ff3cd807eaa5ec8fc3a40a6e0fd8904e9d5a9483d7f31f9e8b5",
+      "index": 0,
+      "utterance": "Hi there! I\u2019m calling to see if I could book a table for a little get-together \u2014 it\u2019s just a couple of us, nothing too rowdy. Do you have anything available around eight-ish?"
+    },
+    {
+      "context_sha256": "0bdfbefd0d4fc959bc138029b4ddc7ec065c0c06924ae68b96c2a3d4fc63abca",
+      "index": 1,
+      "utterance": "It\u2019ll just be two of us \u2014 we like to keep things cosy! I was hoping for sometime over the weekend, but I\u2019m not too fussy about which night if you have space."
+    },
+    {
+      "context_sha256": "b29983d7be5d0d51484b68e2c43e00f31c00c6e4d85cc78af37c62e63b418770",
+      "index": 2,
+      "utterance": "Thanks for checking! Saturday night at 8pm would be perfect for us \u2014 that gives us all of Sunday to recover. Could you book us in for then?"
+    },
+    {
+      "context_sha256": "317d8e2c7bea4baaab783dcf36134f0ffbd907bc8b4cfe86eedbc80e1e79d024",
+      "index": 3,
+      "utterance": "Lovely, thank you! The booking can go under Neve Ashworth. Let me know if you need anything else from me!"
+    },
+    {
+      "context_sha256": "7135f1f70e82c589768f384cef094eaa5ad88dfff60c0cc7fa03ac89072a99bd",
+      "index": 4,
+      "utterance": "That all sounds perfect \u2014 thank you so much for your help! I\u2019m all set. Have a lovely day! \n\n[END OF CALL]"
+    }
+  ]
+}

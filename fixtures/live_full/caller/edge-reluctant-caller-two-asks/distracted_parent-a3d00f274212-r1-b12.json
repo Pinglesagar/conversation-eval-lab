@@ -1,0 +1,69 @@
+{
+  "goal_intent": "book a table while barely paying attention to the questions",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "distracted_parent",
+    "prompt_sha256": "a3d00f274212374cb19168ac92f46601afe50d58017f9bab04eddd8afe583c22",
+    "scenario_id": "edge-reluctant-caller-two-asks",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "distracted_parent",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "865326f709baf0f1f1f11966e422adce8c39fdf922bb5a7248a9483b5c8c93e7",
+      "index": 0,
+      "utterance": "Hi, I\u2019d like to book a table for dinner, please\u2014hang on, sorry, my kids are being loud."
+    },
+    {
+      "context_sha256": "173d3922bccec54917fb3e868cfcd1b56c40d84fe2fa6cf42e912e75e00df967",
+      "index": 1,
+      "utterance": "Sorry, could you say that again?"
+    },
+    {
+      "context_sha256": "4f94090a2bd52091a50e432cac5b89a9e5fb2a2bb932afe29c19d2f9cfe5d46d",
+      "index": 2,
+      "utterance": "It\u2019ll be four of us."
+    },
+    {
+      "context_sha256": "53764f13f34c032d85f4cb90c3c3a9f168b88b3074a8fe151c74d922b4ba1e96",
+      "index": 3,
+      "utterance": "Sorry, can you repeat that one more time?"
+    },
+    {
+      "context_sha256": "818c51707e3fb6d6031a7a9f9568b3d99dc59c3c6352a269bc2da38efa123b1f",
+      "index": 4,
+      "utterance": "Saturday."
+    },
+    {
+      "context_sha256": "d62d373f024bb27006d171f66377b4d63ec3fec4a6395ee08021b97144710741",
+      "index": 5,
+      "utterance": "Sorry, could you say the time question again?"
+    },
+    {
+      "context_sha256": "5be512a307a022fbdc3e925233ae3e2b4fb66a8317c5ee690cc32e94f8a0fb10",
+      "index": 6,
+      "utterance": "6pm."
+    },
+    {
+      "context_sha256": "3320e0fd255cfecb6cc827268c4994d46036e85b199f14b16be39bc1ed736832",
+      "index": 7,
+      "utterance": "Sorry, could you repeat the name question?"
+    },
+    {
+      "context_sha256": "0dc8eaee0f99e5a57ba47053f41b237b2a3c2bc70ab962c63dd34fde752d0d11",
+      "index": 8,
+      "utterance": "Ruth Kelleher."
+    },
+    {
+      "context_sha256": "78688be63e3da577d0b96286f80bcd9e6fad1bdb75d9057198a3ca806238be9c",
+      "index": 9,
+      "utterance": "No, that\u2019s all, thanks. [END OF CALL]"
+    }
+  ]
+}

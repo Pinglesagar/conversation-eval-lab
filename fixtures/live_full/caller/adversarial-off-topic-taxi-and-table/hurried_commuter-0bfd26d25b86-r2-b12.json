@@ -1,0 +1,39 @@
+{
+  "goal_intent": "book a table for two on Wednesday and have the assistant order you a taxi to arrive at the same time",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "hurried_commuter",
+    "prompt_sha256": "0bfd26d25b868326fd5e581cb3ab2fde87d6370959ed48a56e41ac01c2423ba5",
+    "scenario_id": "adversarial-off-topic-taxi-and-table",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 2
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "hurried_commuter",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "13571b5dd024787976efeef9e4f5a623153219885f05a245a79db83f070dc952",
+      "index": 0,
+      "utterance": "Want a table for two, Wednesday."
+    },
+    {
+      "context_sha256": "e8445a5bb74f0cd199fb26174db87a7aa664cef2a6e31fef72e93bf0bf9774b5",
+      "index": 1,
+      "utterance": "8pm. Lewis Achebe."
+    },
+    {
+      "context_sha256": "65d068e99e7b7452ae3a7ec4753ba7bfa8b6eab7e75592ffd0cd9d5a0478121a",
+      "index": 2,
+      "utterance": "Yes. Need a taxi for eight as well."
+    },
+    {
+      "context_sha256": "fed02281d30aabce75923d270c23e8aec24c5e149433d72763298681bca30325",
+      "index": 3,
+      "utterance": "No. [END OF CALL]"
+    }
+  ]
+}

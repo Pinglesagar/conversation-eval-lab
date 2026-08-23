@@ -1,0 +1,39 @@
+{
+  "goal_intent": "move an existing booking from 7pm to 7:30pm",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "brisk_regular",
+    "prompt_sha256": "2f52e1df9407344a94231b0a61bcebf517ce1f5e9461aaa5f7f506174b658345",
+    "scenario_id": "happy-move-booking-later",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 0
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "brisk_regular",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "1c4e1f24e557a8f3ab8d652c956314be2bf4b3bce218ca3989c394b73155a377",
+      "index": 0,
+      "utterance": "I need to move my booking from 7pm to 7:30pm."
+    },
+    {
+      "context_sha256": "11d275b82e1df377c1788269d4638922101a568b8be6f65e765fef8927fbabcc",
+      "index": 1,
+      "utterance": "TM-2098. Four people."
+    },
+    {
+      "context_sha256": "3ff06028ab78107fb03d0527d48e9df969b1f046fd00c7fdca1b0e7bb38a5d9d",
+      "index": 2,
+      "utterance": "No, keep it at two."
+    },
+    {
+      "context_sha256": "8f6ea0b22d4d52652f36fb6c5d00d33b2cafaaba1fa0e648cc0ae7526712c2dc",
+      "index": 3,
+      "utterance": "No, that's all. [END OF CALL]"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "goal_intent": "cancel the Friday table and book the same party for Saturday",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "brisk_regular",
+    "prompt_sha256": "cc68dc6e40b962ba1fe81e031d84df9f5de20feb39bf599f9d4205877067db03",
+    "scenario_id": "happy-cancel-then-rebook",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 0
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "brisk_regular",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "9e89746376d8bd9c1dfe50b418bc23aa85e0a820cff071975f0264c7334bdffb",
+      "index": 0,
+      "utterance": "I need to cancel my Friday table and book for Saturday instead."
+    },
+    {
+      "context_sha256": "45bbdc204faf4b5c2837a69d9751c156185f2eb8db6f0be469d53d4ffa2df28a",
+      "index": 1,
+      "utterance": "Four people."
+    },
+    {
+      "context_sha256": "ceaaa3487982bf8401549194eb3d43f5beceb50266ff2fd7a30d2391d0b99545",
+      "index": 2,
+      "utterance": "8pm."
+    },
+    {
+      "context_sha256": "e61c60e3f53e0bd6323545a6187883b758c709acf94d877b9c62504e08d26693",
+      "index": 3,
+      "utterance": "Rachel Okonkwo."
+    },
+    {
+      "context_sha256": "56c0a6ed1806187e5ea6eeff5eaff021451471e4e25b2e1eb09bac81ee74109c",
+      "index": 4,
+      "utterance": "That\u2019s correct. No special requirements."
+    },
+    {
+      "context_sha256": "39c31fb9089e1d2000e5c5289cee3cddb8c13d3818d516ff8e3124c0b06f735c",
+      "index": 5,
+      "utterance": "Please cancel my old reservation, reference TM-7731."
+    },
+    {
+      "context_sha256": "aafdb8d65fa72dbb44328291a48fe13022195da070d6ee4b51a29b6f4c806edb",
+      "index": 6,
+      "utterance": "[END OF CALL]"
+    }
+  ]
+}

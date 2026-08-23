@@ -1,0 +1,44 @@
+{
+  "goal_intent": "book dinner for three and mention it is a birthday",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "5783c546a5f1d30e00811e39ce1b5dc633e578f5af19fffef5e9efda7d5bcc0b",
+    "scenario_id": "happy-birthday-note-reaches-booking",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 0
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "64e4b20708088b99d38b1f072fc8e3e6d3aacf4629fbbdfe5934a2227219b0d3",
+      "index": 0,
+      "utterance": "Hi there! I\u2019m calling because we\u2019re hoping to book a dinner reservation for this Friday \u2014 my family and I are getting together, and we\u2019re really looking forward to it."
+    },
+    {
+      "context_sha256": "d093300174905bbf236c06063617ec3df195ab754a85023e742b433ca7d6b7e5",
+      "index": 1,
+      "utterance": "Thank you! There will be three of us for dinner. It\u2019s actually my mom\u2019s birthday, so we\u2019re making it a bit special this year."
+    },
+    {
+      "context_sha256": "7a08f7d95951cebd135f7f7d2dfbce937d411cafb51165cb55a8ca47123baa49",
+      "index": 2,
+      "utterance": "Thank you so much! We\u2019d love to book the table for 8pm. And since it\u2019s her birthday, would it be possible to have a candle on her dessert? She would be absolutely delighted."
+    },
+    {
+      "context_sha256": "df1f1e1260f55c9447dab7693b5ed580f4d2e535f115a84f603d003f6fbae505",
+      "index": 3,
+      "utterance": "Absolutely, that\u2019s all correct! My name is Priya Raman\u2014you can put the booking under that. Thank you so much for helping us make this a special evening!"
+    },
+    {
+      "context_sha256": "49c91901760ba74d40cecaa85a173df899a5979f84fa7c96a671c28be267a978",
+      "index": 4,
+      "utterance": "No, that\u2019s perfect\u2014thank you so much for your help and for making a note about the birthday! We\u2019re really looking forward to it. Have a great day! \n\n[END OF CALL]"
+    }
+  ]
+}

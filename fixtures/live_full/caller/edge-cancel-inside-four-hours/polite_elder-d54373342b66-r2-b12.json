@@ -1,0 +1,44 @@
+{
+  "goal_intent": "cancel tonight's booking, which is only a couple of hours away",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "polite_elder",
+    "prompt_sha256": "d54373342b66e0b525b6029ac6a66a747f408804635b2762db433373d130cfbc",
+    "scenario_id": "edge-cancel-inside-four-hours",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 2
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "polite_elder",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "53e55a098866c494f67a857575a29e9154ed199d0bead4d8b4470fec5af7d360",
+      "index": 0,
+      "utterance": "Hello there, thank you ever so much for taking my call. I need to cancel a booking I had for this evening, please."
+    },
+    {
+      "context_sha256": "9e5e127b755a5e6d996b23be44c87a78b1871340385426ae59642c8df1fdf4bd",
+      "index": 1,
+      "utterance": "Thank you very much. Yes, the booking reference is TM-1041. That\u2019s TM-1041 for tonight."
+    },
+    {
+      "context_sha256": "b4dd8379ee11eec39280307e9cae29bdf4b9f58f4711678ecd48cc88ba5f763e",
+      "index": 2,
+      "utterance": "Thank you so much for taking care of that so quickly. I do hope it\u2019s not a problem that I\u2019ve called at such short notice\u2014it\u2019s just that my train home was cancelled unexpectedly. Is there a charge or any issue with cancelling so close to the booking time?"
+    },
+    {
+      "context_sha256": "199148f62251cfb8141fe2e429bf0118df7a9e9bab9f5b379578aff035526273",
+      "index": 3,
+      "utterance": "That\u2019s very kind, thank you for explaining. If you wouldn\u2019t mind transferring me, I\u2019d be grateful\u2014I just want to make sure I\u2019m not causing any trouble for the restaurant. And if you could also let them know my train was cancelled, that would be much appreciated. Thank you ever so much for your help so far."
+    },
+    {
+      "context_sha256": "a893627a560723b0363a4a6fd156215d559c016d986287ea64f8cbdf723dbdee",
+      "index": 4,
+      "utterance": "Thank you very much, I appreciate your help. That\u2019s all I needed for now. Have a lovely evening. \n\n[END OF CALL]"
+    }
+  ]
+}

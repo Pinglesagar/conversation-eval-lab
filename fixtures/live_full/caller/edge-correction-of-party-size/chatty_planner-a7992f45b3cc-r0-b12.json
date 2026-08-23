@@ -1,0 +1,39 @@
+{
+  "goal_intent": "book a table for two, then change your mind and say it is four",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "a7992f45b3ccf52f4e2a6947330f8a7c83ca80c48d0194ca2f90e86dee3340f5",
+    "scenario_id": "edge-correction-of-party-size",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 0
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "46009cba548e92fe94d21ab281ee547ff97b667b68a8b4629091e1084e71f04f",
+      "index": 0,
+      "utterance": "Hi there, I\u2019m ringing because I\u2019d like to book a table for a little get-together, just two of us to start with. It\u2019s been ages since we caught up, and Saturday evening seems perfect."
+    },
+    {
+      "context_sha256": "d748ef71c650ca16a29c2419ebb23ad19c586c735e39c5a81b983b08761348db",
+      "index": 1,
+      "utterance": "Thanks for asking! The name is Neve Ashworth, and we\u2019re thinking 7pm would be ideal. It\u2019s always nice to start the evening a bit earlier, don\u2019t you think?"
+    },
+    {
+      "context_sha256": "781b9586d9a937488247d0aa8d8682da1af9b3ed76b6f87205e1f2450e631004",
+      "index": 2,
+      "utterance": "Oh, actually, I should have mentioned\u2014plans have changed a little bit! Two more friends decided to join in, so could we make it a table for four instead? It\u2019s turning into quite a fun little gathering!"
+    },
+    {
+      "context_sha256": "14150d6e74bb97d1abcd44e449c3b38ee7126a6eb4d686827f9b85e0237d9d19",
+      "index": 3,
+      "utterance": "Yes, that\u2019s absolutely right\u2014table for four at 7pm this Saturday, with Neve Ashworth. Thank you so much for sorting that out, it\u2019s going to be great catching up with everyone! [END OF CALL]"
+    }
+  ]
+}

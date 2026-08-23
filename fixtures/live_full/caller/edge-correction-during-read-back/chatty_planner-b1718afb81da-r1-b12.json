@@ -1,0 +1,39 @@
+{
+  "goal_intent": "book Friday for two, then correct the time when you hear it read back wrong",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "b1718afb81da892899642df457d2340ea14c2005b2b42f9d472b41144a4c1ba2",
+    "scenario_id": "edge-correction-during-read-back",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "f5dbe10919b9022c9b2bcc2fc0a2add5c7abcbdaa779c027b9a3b290a8edf302",
+      "index": 0,
+      "utterance": "Hi there! I'm calling because I wanted to book a table for a little get-together this Friday. The weather looks perfect, so it should be a lovely evening!"
+    },
+    {
+      "context_sha256": "02f91083534ee380a2890d66993fe10799a2db3d3927ac5f28ac6bc66eaf1496",
+      "index": 1,
+      "utterance": "It'll just be two of us\u2014nice and cozy. We'd like to come in around 7pm if that's available."
+    },
+    {
+      "context_sha256": "35910473e79545e615f4e86a5360641253ab8cf008b37a559d3c2e17b3880b92",
+      "index": 2,
+      "utterance": "Actually, could we make that eight o'clock instead? Seven is a bit early for us, and I think we'll enjoy the evening even more at eight."
+    },
+    {
+      "context_sha256": "f8e7aa5e0fc47c02a36160c4697fa3bc96221856d2986175f87cc231888a3051",
+      "index": 3,
+      "utterance": "Yes, that's perfect\u2014Friday at 8pm for two. My name is Iwan Prosser. Thanks so much for helping with this, I'm really looking forward to it! \n\n[END OF CALL]"
+    }
+  ]
+}

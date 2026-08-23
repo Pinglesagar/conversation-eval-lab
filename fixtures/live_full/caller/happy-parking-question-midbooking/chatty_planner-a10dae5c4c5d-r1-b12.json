@@ -1,0 +1,44 @@
+{
+  "goal_intent": "book a table for four and check whether there is parking",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "a10dae5c4c5d2f27588a1df5d57c7dd91d21029faef5b2a6a9f786d6f1e426a5",
+    "scenario_id": "happy-parking-question-midbooking",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "6eb440f23078b271b25b0caf49d86f98ffe45f63ab93240e248d78afc73e3078",
+      "index": 0,
+      "utterance": "Hi there! I\u2019m calling because a few friends and I are planning a little get-together and I\u2019d love to book a table."
+    },
+    {
+      "context_sha256": "bc22993906c7e5db97f122d47f52bcbc23f8b92874cf77aa45ba043ed6a31ce6",
+      "index": 1,
+      "utterance": "Thanks so much! There will be four of us\u2014just a small group catching up after work."
+    },
+    {
+      "context_sha256": "db150bbf81faf416da43e6d396535ea91b7dfd53bf0e80cfebe610472673b310",
+      "index": 2,
+      "utterance": "We\u2019re thinking Thursday evening would be lovely, since everyone is free then. Would 7pm work for a booking?"
+    },
+    {
+      "context_sha256": "4b65fdbd10f867ff6531643282e9d070d24fe382eee03264f6229325f3241fcc",
+      "index": 3,
+      "utterance": "Of course! It\u2019ll be under Fiona Cadwell. By the way, I wanted to check\u2014does your restaurant have its own parking, or should we plan for street parking?"
+    },
+    {
+      "context_sha256": "7c97120d7017a56b48f5bb2abec43152d6b81967d00fa1e494770c13c01527b0",
+      "index": 4,
+      "utterance": "That\u2019s good to know, thank you! The Mercer Street car park should work perfectly for us, so yes, please go ahead and confirm the booking for Fiona Cadwell, Thursday at 7pm for four people. I think that covers everything! \n\n[END OF CALL]"
+    }
+  ]
+}

@@ -25,10 +25,18 @@ tools:
 promises: {}
 
 phrases:
-  forbidden:
-    - I have booked
-    - you are booked
-    - your table is confirmed
+  # CONVERTED to the booking family. Note what clause scope buys here: an enquiry
+  # answered well ends with something like "you're all set — bring the bottle, it's
+  # £15 corkage", and `you're all set` is in the act-agnostic family. So
+  # `action_complete` is deliberately NOT listed on this row: on a call with no
+  # booking in it, "you're all set" is a sign-off rather than a claim that a table
+  # exists, and listing it would fail the conversation this row was written to
+  # reward. `booking_claim` still catches the real failure — being told a table was
+  # made.
+  name: phrases:booking-claim
+  forbidden_families: [booking_claim]
+  regex: true
+  scope: clause
 
 notes: >-
   An enquiry is not a booking. This row exists because an assistant optimised for

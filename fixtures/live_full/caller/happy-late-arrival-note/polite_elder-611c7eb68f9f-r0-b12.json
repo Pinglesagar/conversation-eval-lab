@@ -1,0 +1,54 @@
+{
+  "goal_intent": "book a quiet table for two and warn that you may arrive late",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "polite_elder",
+    "prompt_sha256": "611c7eb68f9ff26c234b581ae019f3cd0ef35214b095bac72cb4400960f1fe48",
+    "scenario_id": "happy-late-arrival-note",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 0
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "polite_elder",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "3419695060152f46164bf7fccf88342c85fe9ccaa0cea1943a46296a3fc86a25",
+      "index": 0,
+      "utterance": "Hello there, thank you very much for taking my call. I\u2019d like to book a table for a quiet dinner, if that\u2019s possible."
+    },
+    {
+      "context_sha256": "45e02bd3acaa573d9c1fcfe929f9e4212ff1b8cba69395fec85fa369dca62eb0",
+      "index": 1,
+      "utterance": "Oh, thank you ever so much. It\u2019ll just be two of us for dinner, so a table for two, please."
+    },
+    {
+      "context_sha256": "c3ba004eaa5a98f2f7286537974a9bb579387c8aaf325ba182790530f1541227",
+      "index": 2,
+      "utterance": "Thank you for asking. I\u2019d like to book the table for Monday, if that\u2019s available. That\u2019s Monday for two people."
+    },
+    {
+      "context_sha256": "551cb3379371fecb6b921e188d5d18c1e0d61c825fe1625bc85fe088e35bb9af",
+      "index": 3,
+      "utterance": "Thank you for checking. We\u2019d like the booking for 6pm, please\u2014two people, Monday at 6pm."
+    },
+    {
+      "context_sha256": "1956e873ddf486a92cf6f2ef919787842888fb4cabfd84093065bcbd8e58cd97",
+      "index": 4,
+      "utterance": "Thank you, that\u2019s wonderful. My name is Edward Naylor\u2014Edward Naylor for Monday at 6pm, table for two."
+    },
+    {
+      "context_sha256": "2d0f844f28eeda0b9fab9a61ec1539e4b1b44667b6f26a08c95639ae5b8d4c69",
+      "index": 5,
+      "utterance": "Thank you so much, that\u2019s very kind of you. I just wanted to mention that I may be about ten minutes late, as the bus can be a bit unreliable at that time\u2014could you note that on the booking, please?"
+    },
+    {
+      "context_sha256": "bd59710d14710694c9da8c3b66857ed67dc1f8a39a380b0ce7044eed2680ab35",
+      "index": 6,
+      "utterance": "Thank you ever so much for your help and for making a note about the late arrival. That\u2019s everything I needed\u2014really appreciate your time. Wishing you a lovely day!\n\n[END OF CALL]"
+    }
+  ]
+}

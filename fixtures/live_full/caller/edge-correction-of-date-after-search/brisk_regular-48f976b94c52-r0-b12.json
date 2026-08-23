@@ -1,0 +1,54 @@
+{
+  "goal_intent": "ask about Thursday, then switch to Friday once you hear the times",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "brisk_regular",
+    "prompt_sha256": "48f976b94c52a507a14124b1c0f249255e59f2c2ffa01fd6956dad79f075aeae",
+    "scenario_id": "edge-correction-of-date-after-search",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 0
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "brisk_regular",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "81e61eb03d1896e887730e6a7ab0ce750418ece20224ad5a4ac5c51ad0538e12",
+      "index": 0,
+      "utterance": "Hi, I want to check if you have a table for three this Thursday night."
+    },
+    {
+      "context_sha256": "296630f31e34bffa4ff2f002efa8c9a2118edd0bcb4ffff6859adb75a2304d7f",
+      "index": 1,
+      "utterance": "8pm. Lucas Fenn."
+    },
+    {
+      "context_sha256": "a278236397f1459fabb974bbd7b10ac39221ff34b4685c5700cfb2c39b4fabd2",
+      "index": 2,
+      "utterance": "Yes. Is there availability?"
+    },
+    {
+      "context_sha256": "12f54176792d715ad12122d99a54faa32f54a8f931f19bb1b569bd4a62ab8c82",
+      "index": 3,
+      "utterance": "Actually, can you change it to Friday instead? Same time."
+    },
+    {
+      "context_sha256": "6434a5f342dcc22639e7dba32d24d7f9ac21e4e180bc21f61fe3550ae374d3c0",
+      "index": 4,
+      "utterance": "Three."
+    },
+    {
+      "context_sha256": "11e1c2c9a3eee7f4202b8cd50268db1895a4f11fc898817446ec91a6dfa3cceb",
+      "index": 5,
+      "utterance": "TM-2001."
+    },
+    {
+      "context_sha256": "3ebd6eb6b8e406d726ecd0675866de307fd46a8813e5664bed03c156ad8b298f",
+      "index": 6,
+      "utterance": "No. Thanks. [END OF CALL]"
+    }
+  ]
+}

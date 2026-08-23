@@ -34,6 +34,26 @@ repeats itself verbatim; it says *"How many people?"* and then *"Sorry, how many
 people will that be?"*. `question_key()` reduces a question to its content tokens
 so that near-repeats collapse to one key, which is what makes loop detection work
 on real transcripts instead of only on synthetic ones.
+
+**4. Typographic punctuation is folded to ASCII before anything is matched.**
+`fold_typography()`, and it is here because of a measurement rather than a
+principle. Every pattern in `lab.checks` is written with an ASCII apostrophe —
+`you('re| are)`, `that('s| is)`, `i('ve| have)` — and a language model writes
+U+2019: *"You're all set for 7:30pm"*. Two of the six unbacked confirmations in
+the committed live run (`fixtures/live_run/traces`) were missed for that reason
+alone, and nothing about the miss was visible in a report: the contract passed,
+the trace looked clean, and the defect was in the punctuation of the pattern
+language. Folding at the matching boundary fixes every pattern at once, which is
+the only fix that stays fixed — the alternative is doubling an alternation in
+every regex in the package and remembering to do it again next time.
+
+Folded: apostrophes and quotation marks (they sit *inside* words and tokens, so
+they break `\\b` boundaries and contractions), non-breaking spaces, and the
+ellipsis. **Not** folded: en and em dashes, because `_CLAUSE_SPLIT` and
+`_SENTENCE_SPLIT` treat them as structure — folding them to hyphens would silently
+re-cut every clause boundary in the package, which is a bigger change than the
+one being made. Evidence quotes keep the original characters: the fold is applied
+to the haystack at match time, never to the text a report shows a human.
 """
 
 from __future__ import annotations
@@ -44,6 +64,8 @@ from typing import Any, Iterable
 __all__ = [
     "NUMBER_WORDS",
     "FILLER_WORDS",
+    "TYPOGRAPHIC_FOLD",
+    "fold_typography",
     "normalize",
     "sentences",
     "clauses",
@@ -177,13 +199,45 @@ _QUESTION_OPENERS = (
 )
 
 
+#: Characters a model types where an ASCII pattern expects something else, and
+#: what they fold to. Deliberately short: every entry is a character that has been
+#: observed in real model or TTS output *inside* a word or token, where it breaks a
+#: `\b` boundary or a contraction. Dashes are absent on purpose — see the module
+#: docstring.
+TYPOGRAPHIC_FOLD: dict[str, str] = {
+    "’": "'",  # right single quotation mark — the apostrophe a model types
+    "‘": "'",  # left single quotation mark
+    "ʼ": "'",  # modifier letter apostrophe
+    "“": '"',
+    "”": '"',
+    " ": " ",  # non-breaking space
+    "…": "...",
+}
+
+_FOLD_TABLE = str.maketrans(
+    {ord(source): target for source, target in TYPOGRAPHIC_FOLD.items()}
+)
+
+
+def fold_typography(text: str) -> str:
+    """Fold typographic punctuation to the ASCII the patterns are written in.
+
+    Applied to the haystack at every match site in this package, never to text
+    that will be shown to a human. See the module docstring for why this exists
+    and what it deliberately leaves alone.
+    """
+    return text.translate(_FOLD_TABLE)
+
+
 def normalize(text: str) -> str:
     """Lowercase, strip punctuation, collapse whitespace.
 
     The canonical form for every comparison in this package. Apostrophes survive
-    so that contractions stay one token and `\\b` boundaries behave.
+    so that contractions stay one token and `\\b` boundaries behave — which is
+    also why the typographic fold runs first: an unfolded U+2019 would be stripped
+    as punctuation and split the contraction into two tokens.
     """
-    return _WS.sub(" ", _PUNCT.sub(" ", text.lower())).strip()
+    return _WS.sub(" ", _PUNCT.sub(" ", fold_typography(text).lower())).strip()
 
 
 def sentences(text: str) -> list[str]:
@@ -347,13 +401,15 @@ def compile_patterns(patterns: Iterable[str], *, case_sensitive: bool = False) -
 
 
 def matches_any(text: str, patterns: Iterable[re.Pattern[str]]) -> bool:
-    """True if any compiled pattern is found in `text`."""
-    return any(p.search(text) for p in patterns)
+    """True if any compiled pattern is found in `text`, after the typographic fold."""
+    folded = fold_typography(text)
+    return any(p.search(folded) for p in patterns)
 
 
 def first_match(text: str, patterns: Iterable[re.Pattern[str]]) -> re.Pattern[str] | None:
     """The first compiled pattern that matches, so evidence can name the rule that fired."""
+    folded = fold_typography(text)
     for pattern in patterns:
-        if pattern.search(text):
+        if pattern.search(folded):
             return pattern
     return None

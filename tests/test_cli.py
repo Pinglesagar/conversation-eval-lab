@@ -36,6 +36,7 @@ from lab import cli
 from lab.report import ContractStat, FailureRecord, RunReport
 from lab.trace.build import TraceBuilder
 from lab.clock import FakeClock
+from scenarios.loader import load_corpus
 
 REPO = cli.repo_root()
 REFERENCE = REPO / cli.REFERENCE_RUN_DIR
@@ -423,38 +424,159 @@ def test_live_needs_an_env_var(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) 
     assert cli.main(["run", "--live", "--out", str(tmp_path), "--no-baseline"]) == 2
 
 
-def test_live_judge_needs_an_env_var(
+def test_recording_a_live_judge_needs_an_env_var(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys
 ) -> None:
-    """`--live-judge` with no provider must refuse, not relabel the fixture.
+    """Spending money needs the environment's agreement, not just a flag.
 
-    The flag does not fetch anything; it changes how the report describes the
-    judge stage — source `live` instead of `fixture`, no abstention caveat, and a
-    note that the run is not reproducible offline. Unguarded, those three edits
-    are a provenance claim about calls that never happened, produced by a command
-    line that needs no key. Refusing is the whole point of the repo, so it is
-    asserted rather than assumed, and the report must not exist afterwards.
+    `--record` is the only mode that calls a provider, so it is the mode the guard
+    belongs on. The report must not exist afterwards: a refusal that still writes an
+    artefact has produced a report whose provenance line is a guess.
     """
     monkeypatch.delenv("LAB_LIVE_JUDGE", raising=False)
     code = cli.main(
-        ["run", "--live-judge", "--out", str(tmp_path), "--no-baseline", "--no-traces"]
+        [
+            "run",
+            "--live-judge",
+            "--record",
+            "--out",
+            str(tmp_path),
+            "--no-baseline",
+            "--no-traces",
+        ]
     )
     assert code == 2
     assert "LAB_LIVE_JUDGE" in capsys.readouterr().err
     assert not (tmp_path / "run_report.json").exists()
 
 
-def test_live_judge_is_honoured_when_the_env_var_is_set(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """The gate is the missing variable, not the flag: with it set, the run goes."""
-    monkeypatch.setenv("LAB_LIVE_JUDGE", "1")
+def test_recording_nothing_live_is_refused(tmp_path: Path, capsys) -> None:
+    """`--record` with no live part records nothing, so it is a mistake, not a mode."""
     code = cli.main(
-        ["run", "--live-judge", "--out", str(tmp_path), "--no-baseline", "--no-traces"]
+        ["run", "--record", "--out", str(tmp_path), "--no-baseline", "--no-traces"]
+    )
+    assert code == 2
+    assert "records nothing" in capsys.readouterr().err
+
+
+def test_live_judge_without_a_recording_abstains_rather_than_guessing(
+    tmp_path: Path, capsys
+) -> None:
+    """No key, no recording, no verdicts — and the report says so in numbers.
+
+    This is the property the old version of this test could not express, because
+    `--live-judge` used to be a *labelling* flag: it set `abstained` to zero and
+    `replayed_from_fixture` to false without a single call being made, which is a
+    fabricated provenance claim. The flag now grades, so the honest outcome when
+    there is nothing to grade from is an abstention on every selected session.
+    """
+    code = cli.main(
+        [
+            "run",
+            "--suite",
+            "happy",
+            "--live-judge",
+            "--judge-recording",
+            str(tmp_path / "nothing-here.jsonl"),
+            "--out",
+            str(tmp_path),
+            "--no-baseline",
+            "--no-traces",
+        ]
     )
     assert code == 0
     payload = json.loads((tmp_path / "run_report.json").read_text(encoding="utf-8"))
-    assert payload["judges"][0]["replayed_from_fixture"] is False
+    judge = payload["judges"][0]
+    assert judge["abstained"] == judge["judged"]
+    assert judge["flagged"] == 0
+    assert judge["replayed_from_fixture"] is True
+    assert "abstained" in capsys.readouterr().err
+
+
+def test_live_judge_replays_a_committed_recording_and_reports_real_flags(
+    tmp_path: Path,
+) -> None:
+    """With a recording, the flag count in the report is the judge's own answer.
+
+    Built by recording the judge against a scripted completion — the same
+    `RecordingCompletion` path a live run uses — so the test exercises the
+    replay code rather than a mock of it.
+    """
+    from lab.judges import hallucinated_confirmation as judge_pkg
+    from lab.judges.judge import RecordingCompletion, ScriptedCompletion
+
+    out = tmp_path / "run"
+    recording_path = tmp_path / "verdicts.jsonl"
+
+    # Drive once with no judge to learn which sessions the first stage selects.
+    assert (
+        cli.main(
+            [
+                "run",
+                "--suite",
+                "happy",
+                "-k",
+                "1",
+                "--out",
+                str(out),
+                "--no-baseline",
+                "--no-traces",
+            ]
+        )
+        == 0
+    )
+    corpus = load_corpus()
+    scripts = cli.load_caller_scripts(cli.DEFAULT_SCRIPTS)
+    traces = []
+    for scenario in corpus.scenarios:
+        if scenario.suite != "happy" or scenario.id not in scripts:
+            continue
+        traces.append(
+            cli._drive(
+                scenario=scenario,
+                script=scripts[scenario.id],
+                build_agent=cli._import_object(cli.DEFAULT_AGENT_FACTORY),
+                personas=corpus.personas,
+                index=0,
+                max_turns=14,
+            )
+        )
+    candidates = cli._judge_candidates(traces)
+    assert candidates, "the happy suite must contain at least one unmutated session"
+
+    answer = 'VERDICT: FAIL\nCRITIQUE: said it was booked.\nEVIDENCE: "all booked in"'
+    judge = judge_pkg.judge("v2", replay=False, model="test/scripted")
+    judge._completion = ScriptedCompletion({t.session_id: answer for t in candidates})
+    recorder = RecordingCompletion(judge.completion, judge=judge.name, prompt_version="v2")
+    recording_judge = judge.with_completion(recorder)
+    for trace in candidates:
+        recording_judge.judge(trace, item_id=trace.session_id)
+    recorder.recording.save(recording_path)
+
+    assert (
+        cli.main(
+            [
+                "run",
+                "--suite",
+                "happy",
+                "-k",
+                "1",
+                "--live-judge",
+                "--judge-recording",
+                str(recording_path),
+                "--out",
+                str(out),
+                "--no-baseline",
+                "--no-traces",
+            ]
+        )
+        == 0
+    )
+    payload = json.loads((out / "run_report.json").read_text(encoding="utf-8"))
+    judge_block = payload["judges"][0]
+    assert judge_block["judged"] == len(candidates)
+    assert judge_block["flagged"] == len(candidates)
+    assert judge_block["abstained"] == 0
 
 
 def test_run_can_draw_the_heatmap_beside_the_report(tmp_path: Path, capsys) -> None:

@@ -1,0 +1,39 @@
+{
+  "goal_intent": "find out whether you can bring your own wine, without booking anything",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "brisk_regular",
+    "prompt_sha256": "9c753592a88dc9a2a06d2cb970d75b96e18b1cf31c93baa94d9f24fba6bc9952",
+    "scenario_id": "happy-corkage-policy-only",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "brisk_regular",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "2f83d43bd0ac9d9f1c03ae0c282f28cf6c278c8cc499dcb19a125346c4f30558",
+      "index": 0,
+      "utterance": "Hi, I\u2019m calling to check if you allow customers to bring their own wine."
+    },
+    {
+      "context_sha256": "50210976a838cc50c371a9b54408e7d7b1602d9bc06d7e8e95703f3b6e6354ac",
+      "index": 1,
+      "utterance": "What\u2019s the corkage fee?"
+    },
+    {
+      "context_sha256": "55a247016e7c95d2133fc84d3e98c5531c30ee0e13c890e06b4bd5f4da772a72",
+      "index": 2,
+      "utterance": "I\u2019m only asking, not booking yet."
+    },
+    {
+      "context_sha256": "2d015d33e3ae7f8c2eb3d322144460f743dbd444439af1c28388f1c793a5892e",
+      "index": 3,
+      "utterance": "No, that\u2019s all. [END OF CALL]"
+    }
+  ]
+}

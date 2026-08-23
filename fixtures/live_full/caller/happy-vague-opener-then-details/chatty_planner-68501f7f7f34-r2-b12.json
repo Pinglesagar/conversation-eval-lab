@@ -1,0 +1,58 @@
+{
+  "goal_intent": "work out whether to eat here this weekend, then book if it suits",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "68501f7f7f346c4b352bc0eaf279c352f240c0d6016cb3c88df714ee0ca70703",
+    "scenario_id": "happy-vague-opener-then-details",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 2
+  },
+  "leaks": [
+    {
+      "fact": "date",
+      "turn_index": 2
+    },
+    {
+      "fact": "date",
+      "turn_index": 5
+    }
+  ],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "3e848f5cf09ee41ba5a14dd88984d680921a98ced528c7754c1b8ba165da11d3",
+      "index": 0,
+      "utterance": "Hi there! I\u2019m planning a little get-together with some friends this weekend and was wondering if your place is any good for a group? We've heard good things but wanted to check before making any plans."
+    },
+    {
+      "context_sha256": "aa220798f37867d8eb84309a142360b10a28d3f4ee5edaf77c95ce8e63c8933c",
+      "index": 1,
+      "utterance": "Thanks! There\u2019ll be five of us\u2014it\u2019s just a small group, but we wanted somewhere comfortable for catching up and sharing a meal. Is that size easy to accommodate?"
+    },
+    {
+      "context_sha256": "11809c863387a2d20a62649b04e81b00a9243234a6d3d1824ba22ee862a2bfc3",
+      "index": 2,
+      "utterance": "That sounds great, thanks! Before you transfer me, could you let me know if you\u2019re open on Sunday evenings? That\u2019s when we\u2019re hoping to come by, since everyone\u2019s free then and it\u2019d be a nice way to wrap up the weekend."
+    },
+    {
+      "context_sha256": "7cdef60a0c46160b1e970f0ac9ff3881b0dce36ff24a710d9daa1f2f950afee5",
+      "index": 3,
+      "utterance": "Sure thing! We were thinking about 6:30pm, since it\u2019s early enough for a relaxed dinner but late enough that everyone can make it after their weekend plans. Is that a good time for your place?"
+    },
+    {
+      "context_sha256": "2229404ca4487a5e6b3cd86bd543a9176bc008e6360364ea229b486f8d417317",
+      "index": 4,
+      "utterance": "Absolutely, thanks for checking! The booking should be under Marcus Bell. I\u2019m really looking forward to this\u2014everyone\u2019s been talking about it all week."
+    },
+    {
+      "context_sha256": "7de526b402bbb121642bddc801d97fc0ab26b52db4a0d4b99d4ad9db073676ef",
+      "index": 5,
+      "utterance": "That\u2019s perfect, thank you so much! I think that covers everything\u2014we\u2019re just excited for a nice evening together. Have a great day and see you Sunday! [END OF CALL]"
+    }
+  ]
+}

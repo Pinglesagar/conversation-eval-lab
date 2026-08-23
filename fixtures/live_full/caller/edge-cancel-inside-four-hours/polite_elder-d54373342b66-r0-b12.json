@@ -1,0 +1,44 @@
+{
+  "goal_intent": "cancel tonight's booking, which is only a couple of hours away",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "polite_elder",
+    "prompt_sha256": "d54373342b66e0b525b6029ac6a66a747f408804635b2762db433373d130cfbc",
+    "scenario_id": "edge-cancel-inside-four-hours",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 0
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "polite_elder",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "53e55a098866c494f67a857575a29e9154ed199d0bead4d8b4470fec5af7d360",
+      "index": 0,
+      "utterance": "Hello there, thank you very much for taking my call. I\u2019m ringing because I need to cancel a booking I have for this evening."
+    },
+    {
+      "context_sha256": "cd079b990b0f7516d4c75071d3fedbd7561a50669231bdc21d724c297c0bb90e",
+      "index": 1,
+      "utterance": "Oh, of course, thank you for asking. The booking reference I have here is TM-1041. That\u2019s TM-1041 for tonight."
+    },
+    {
+      "context_sha256": "8bcc3ccb4111a05f9d04244c1ebe99da8af4bf6817a493e7c2821963b77f58f0",
+      "index": 2,
+      "utterance": "Thank you ever so much for sorting that out for me. I do realise this is quite short notice, as the booking was for 7pm tonight\u2014does that cause any problems or fees I should be aware of? My train home was cancelled, so I wasn\u2019t able to make it."
+    },
+    {
+      "context_sha256": "2e5820fe6a476d88c43def129e295f49a234b0ac7207679915a27b09e2665bee",
+      "index": 3,
+      "utterance": "Thank you very much for letting me know, I appreciate your help. Yes please, I\u2019d be most grateful if you could transfer me to the team that deals with cancellation policies, just so I can check if there\u2019s anything else I need to do or pay. Thank you again."
+    },
+    {
+      "context_sha256": "6fc7a680714d55cda92591b1a7bdb61517d7af4d39da53509ddf33a1de440986",
+      "index": 4,
+      "utterance": "That\u2019s perfectly clear, thank you so much for explaining it to me. I\u2019m glad to hear there\u2019s nothing extra I need to do, and I appreciate your help with the cancellation. No need to transfer me back, you\u2019ve answered all my questions\u2014thank you again for your time.\n\n[END OF CALL]"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "goal_intent": "add one more person to an existing booking for four",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "brisk_regular",
+    "prompt_sha256": "6eae6595784a1d61aef1754310f030f38567908dbbdd0fa083f060f75e8396ae",
+    "scenario_id": "edge-modify-party-size-upward",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "brisk_regular",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "1faf6e5898daf23cb49a620013a31ed9f6f852b5d77514cd8c09bae008900d9b",
+      "index": 0,
+      "utterance": "I need to change my booking to five people for Thursday."
+    },
+    {
+      "context_sha256": "641001d6d0d8e334a62902aa4343fd71dd0b5e93de885e8c7fda9adbc237a33e",
+      "index": 1,
+      "utterance": "TM-3364"
+    },
+    {
+      "context_sha256": "b19f27d596b05f49fadf010489f406e3812a3ad708a38cc349a013fe394802d9",
+      "index": 2,
+      "utterance": "Same time as before."
+    },
+    {
+      "context_sha256": "de0eb0a63e67fc42e19bc2126981e1de5a08c9c14724958cdae17432c812f078",
+      "index": 3,
+      "utterance": "No, that's all. [END OF CALL]"
+    }
+  ]
+}

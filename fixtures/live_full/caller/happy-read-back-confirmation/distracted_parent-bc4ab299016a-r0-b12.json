@@ -1,0 +1,64 @@
+{
+  "goal_intent": "book Sunday lunch for four and check the details were heard correctly",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "distracted_parent",
+    "prompt_sha256": "bc4ab299016a1740f32c2689d4408a43c998bcd36c63510ad01ccd57698f8e1e",
+    "scenario_id": "happy-read-back-confirmation",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 0
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "distracted_parent",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "540233243220e9248be04140b5626ee2d9090490ab96d2a3513ecfd84ec607cc",
+      "index": 0,
+      "utterance": "Hi, I\u2019d like to book a table for lunch this Sunday, please."
+    },
+    {
+      "context_sha256": "0a47e1a12c82a2afe232d12ee4024f2ea878ede72075a20e9ede6f0d5321c35a",
+      "index": 1,
+      "utterance": "Sorry, could you say that again?"
+    },
+    {
+      "context_sha256": "b790b7e4d1a4f1c08b6a16ead8d0fe7761e32cd2e0e1b82e6d5f49c017b27f47",
+      "index": 2,
+      "utterance": "There will be four of us."
+    },
+    {
+      "context_sha256": "e83eb1b3f5acd52e630e164f70c1ecc0ad8c8e7482306b960c161b38d5a936e0",
+      "index": 3,
+      "utterance": "Sorry, can you repeat the question?"
+    },
+    {
+      "context_sha256": "7b0117f39d739c8292b7d6de3bbf6383965dde45f757fc958128e86ff712cb7e",
+      "index": 4,
+      "utterance": "1:30pm, please."
+    },
+    {
+      "context_sha256": "f176f95782e0a47e501f3e1aeefe25f06216da228d268c129866217f10ed844f",
+      "index": 5,
+      "utterance": "Sorry, could you say that again?"
+    },
+    {
+      "context_sha256": "e6509520a7af0a3dbc6fbb37690d53bd3f321e73d04fdebad537dd4f8e251c8e",
+      "index": 6,
+      "utterance": "It\u2019s Cerys Hopkin."
+    },
+    {
+      "context_sha256": "cbc1b697e6375f616a51af1a92840f212e81d3d361cd5728b252c4929cb413f5",
+      "index": 7,
+      "utterance": "Yes, that\u2019s right\u2014thank you!"
+    },
+    {
+      "context_sha256": "37b268e8aac74144777078a2880ee3515f0173177923d1e6e29b4bfbba1d9d64",
+      "index": 8,
+      "utterance": "No, that\u2019s perfect, thanks\u2014sorry, one sec\u2014yes, that\u2019s all! [END OF CALL]"
+    }
+  ]
+}

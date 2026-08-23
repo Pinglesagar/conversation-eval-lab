@@ -1,0 +1,44 @@
+{
+  "goal_intent": "book a table for two, then change your mind and say it is four",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "a7992f45b3ccf52f4e2a6947330f8a7c83ca80c48d0194ca2f90e86dee3340f5",
+    "scenario_id": "edge-correction-of-party-size",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "46009cba548e92fe94d21ab281ee547ff97b667b68a8b4629091e1084e71f04f",
+      "index": 0,
+      "utterance": "Hi there, I'm ringing to book a table for this weekend, as we're planning a little get-together and I'd love to make sure we have a spot."
+    },
+    {
+      "context_sha256": "3573e59fa3b579608c4e7e7e6967a9138a93b3e7449fc041040ff7eee88be362",
+      "index": 1,
+      "utterance": "It\u2019ll just be two of us to start with\u2014my friend and I are catching up after ages. Could you book us in for Saturday evening?"
+    },
+    {
+      "context_sha256": "625846f9c6dd3acf82b6bc926d2fd362c25f2f65bebef91c0db904b1d344fa4e",
+      "index": 2,
+      "utterance": "Let\u2019s go for 7pm, that\u2019s perfect for dinner after a stroll if the weather\u2019s nice. My name\u2019s Neve Ashworth\u2014hopefully that\u2019s enough to hold the reservation!"
+    },
+    {
+      "context_sha256": "a49bb47237190f1b40f915795d48f8a2eb7b15139cfce8ac31c178f96938f16f",
+      "index": 3,
+      "utterance": "Oh wait, I just realised two more friends are joining us\u2014so it\u2019ll actually be four of us in total! Sorry for the mix-up. No special requests, just a table for four under my name, Neve Ashworth, for Saturday at 7pm."
+    },
+    {
+      "context_sha256": "66b19a95f581d8970c6b1c11540403a247e41da171feb4f5613894feec248db6",
+      "index": 4,
+      "utterance": "That sounds absolutely lovely, thank you! We\u2019re all looking forward to it, and the window seat is a nice touch. That\u2019s all for now\u2014have a great day! \n\n[END OF CALL]"
+    }
+  ]
+}

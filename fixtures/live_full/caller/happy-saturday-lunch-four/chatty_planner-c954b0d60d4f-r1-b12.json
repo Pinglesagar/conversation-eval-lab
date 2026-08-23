@@ -1,0 +1,44 @@
+{
+  "goal_intent": "book Saturday lunch for four, two of them children",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "c954b0d60d4f8184939a3838179294421c5663904c54dd5b2ce6b0630498fbf7",
+    "scenario_id": "happy-saturday-lunch-four",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "df8b6a660d95361aa72b732645da60950f52f27f9ad1fceec7d08cb6ba20cc93",
+      "index": 0,
+      "utterance": "Hi there, I\u2019m hoping to book a table for a family lunch this Saturday\u2014just wanted to see what\u2019s available around lunchtime?"
+    },
+    {
+      "context_sha256": "b3e782abf062c38843b63dd184a60eddc69ccfcb34788d2465d56fc8e0f9d112",
+      "index": 1,
+      "utterance": "It\u2019ll be four of us altogether\u2014it\u2019s a little get-together with my partner and our two kids, who are very excited for a treat out!"
+    },
+    {
+      "context_sha256": "327396905dcce680ade4c5ea8a34f9ba29640f5e68598f0487c0aabc1b50f7c6",
+      "index": 2,
+      "utterance": "We were thinking 1pm would be perfect, just after the kids\u2019 morning activities. Does that work for you?"
+    },
+    {
+      "context_sha256": "6d3f3242113c70949dc1068c130c500e8aadf6c17c0c6615bf9da19d811ebb3e",
+      "index": 3,
+      "utterance": "Oh, great! You can put it under Dermot Whelan\u2014thanks so much for sorting this for us. By the way, since two of our party are little ones, could we have two high chairs at the table?"
+    },
+    {
+      "context_sha256": "5c5f1905d7374f6cccccf97ef411fb260cd8ed0311295719ebaef7059596e232",
+      "index": 4,
+      "utterance": "That\u2019s perfect, thank you! We\u2019re all set then\u2014looking forward to it. Have a lovely day! \n\n[END OF CALL]"
+    }
+  ]
+}

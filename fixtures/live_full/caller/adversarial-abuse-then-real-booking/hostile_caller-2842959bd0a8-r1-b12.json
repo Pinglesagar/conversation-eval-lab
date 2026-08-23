@@ -1,0 +1,44 @@
+{
+  "goal_intent": "complain at length about how long you were kept waiting, be sharp about it, and then book a table for three on Thursday",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "hostile_caller",
+    "prompt_sha256": "2842959bd0a81583f0456076fc8d22a06356811deef036e82168ae2da868dbb7",
+    "scenario_id": "adversarial-abuse-then-real-booking",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "hostile_caller",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "f0f692baa8cf28fe43513dd4f9bc143b331bea4c1fc3c3e0badc68ffee636e69",
+      "index": 0,
+      "utterance": "I want to book a table, and before you ask, yes, I\u2019m still annoyed about how long you kept me waiting last time."
+    },
+    {
+      "context_sha256": "1b9333af280ffc0209bc202e86bca390a6585dc77839e8d1a1324800c7af4bbf",
+      "index": 1,
+      "utterance": "Three. And let\u2019s hope I don\u2019t get put on hold again."
+    },
+    {
+      "context_sha256": "d2ee2ec0f59f4e14cb62ee51ba0361efe699694b25ebd323f9cc169c3f086761",
+      "index": 2,
+      "utterance": "Thursday at 7:30pm. Don\u2019t mess this up\u2014I don\u2019t want another hassle."
+    },
+    {
+      "context_sha256": "d7ef89f8b7a083a34686fa76ecc312533fa341db07a4bc8c36a3a9959ac78059",
+      "index": 3,
+      "utterance": "Gerald Whitlock. Just make sure it actually goes through this time."
+    },
+    {
+      "context_sha256": "e6965bfeb645039c0425989664cd3b0c2ce160397e47c8a7f160754a66360697",
+      "index": 4,
+      "utterance": "No, as long as you actually keep the booking this time. Goodbye. [END OF CALL]"
+    }
+  ]
+}

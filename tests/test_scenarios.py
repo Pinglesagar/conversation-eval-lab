@@ -66,12 +66,14 @@ from scenarios.loader import (
     TOOL_NAMES,
     Corpus,
     CorpusError,
+    PhraseSpec,
     Scenario,
     ValidationIssue,
     iter_scenario_paths,
     load_corpus,
     load_scenario,
     main,
+    phrase_families,
     validate_corpus,
 )
 
@@ -542,18 +544,27 @@ def test_voice_latency_budgets_are_plausible(corpus: Corpus) -> None:
 def test_gated_facts_are_askable(corpus: Corpus) -> None:
     """A fact the caller withholds must have a pattern that releases it.
 
-    `on_request_only` without `ask_patterns` is a fact the caller will never say,
-    because no agent utterance can match a pattern that does not exist. The
-    scenario then runs with a value the agent could not have obtained, and any
+    `on_request_only` with nothing that recognises the ask is a fact the caller will
+    never say, because no agent utterance can match a pattern that does not exist.
+    The scenario then runs with a value the agent could not have obtained, and any
     check on it reports a failure the agent had no way to avoid — a false finding,
     which is more expensive than a missing check.
+
+    "Nothing that recognises the ask" now means neither the row's own
+    `ask_patterns` nor a shared family in `DEFAULT_ASK_PATTERNS`: the two are
+    unioned by `Goal.is_asked_for`, so a fact named `party_size` is askable whether
+    or not the row restates the phrasings. The assertion is on the property, not on
+    the field, because it is the property that decides whether the row can work.
     """
+    from lab.checks import DEFAULT_ASK_PATTERNS
+
     for scenario in corpus:
         goal = scenario.goal
         for key in goal.gated_keys():
-            assert goal.ask_patterns.get(key), (
-                f"{scenario.id}: fact {key!r} is withheld until asked but has no ask_patterns, "
-                "so the caller can never release it"
+            assert goal.ask_patterns.get(key) or DEFAULT_ASK_PATTERNS.get(key), (
+                f"{scenario.id}: fact {key!r} is withheld until asked, and neither the "
+                "row nor DEFAULT_ASK_PATTERNS can recognise a request for it, so the "
+                "caller can never release it"
             )
 
 
@@ -1187,3 +1198,112 @@ def test_scenario_summary_line_flags_expected_failures(corpus: Corpus) -> None:
     clean = next(s for s in corpus if s.expected_failure is None)
     assert "expected-failure" not in clean.summary_line()
     assert isinstance(gap, Scenario)
+
+
+# --------------------------------------------------------------------------- #
+# Phrase blocks: paraphrase families, and the literals kept on purpose
+# --------------------------------------------------------------------------- #
+
+
+def test_every_phrase_block_is_either_a_family_or_a_documented_literal(
+    corpus: Corpus,
+) -> None:
+    """No unexplained literal list survives in the corpus.
+
+    The review this asserts the outcome of: every forbidden-phrase list in the
+    corpus was either converted to a regex family (because the literal was never
+    the point) or kept literal *with a written reason*. A third state — a literal
+    list nobody has looked at — is the state the whole exercise was about, so it is
+    a test failure rather than a style preference.
+    """
+    for scenario in corpus:
+        for block in scenario.phrase_blocks():
+            family_shaped = block.regex and block.scope == "clause"
+            assert family_shaped or block.strict_because, (
+                f"{scenario.id}: phrase block {block.name!r} is neither a "
+                "clause-scoped regex family nor a literal list with "
+                "`strict_because` saying why the literal is the requirement"
+            )
+            if block.strict_because:
+                assert len(block.strict_because.split()) >= 8, (
+                    f"{scenario.id}: {block.name!r} — `strict_because` has to be a "
+                    "reason, not a label"
+                )
+
+
+def test_the_strict_blocks_are_the_ones_about_identifiers_and_names(
+    corpus: Corpus,
+) -> None:
+    """Pinned, so a future edit cannot quietly make a paraphrase check strict again.
+
+    Four blocks across three rows stay literal, and all four are the same kind of
+    thing: a string whose exact characters are the requirement — three customers'
+    surnames, their booking references, a PA's surname, and the five underscored
+    tool identifiers. Anything else claiming to need a literal needs an argument
+    first.
+    """
+    strict = {
+        (scenario.id, block.name)
+        for scenario in corpus
+        for block in scenario.phrase_blocks()
+        if block.strict_because
+    }
+    assert strict == {
+        ("adversarial-disclosure-asks-for-instructions", "phrases:leaked-identifiers"),
+        ("adversarial-impersonation-claims-to-be-staff", "phrases:disclosed-diary"),
+        ("adversarial-injection-in-dietary-note", "phrases:disclosed-diary"),
+        ("happy-pa-books-for-director", "phrases:wrong-name"),
+    }
+
+
+def test_a_family_reference_expands_to_the_shared_patterns(corpus: Corpus) -> None:
+    """The corpus references the vocabulary; it does not carry a copy of it."""
+    families = phrase_families()
+    block = next(
+        b
+        for s in corpus
+        for b in s.phrase_blocks()
+        if "booking_claim" in b.forbidden_families
+    )
+    expanded = block.expanded_forbidden()
+    assert set(families["booking_claim"]) <= set(expanded)
+    assert len(expanded) > len(block.forbidden)
+
+
+def test_the_claim_families_are_the_promise_contracts_own_patterns() -> None:
+    """One definition of "told the caller a booking exists", not two.
+
+    If these ever diverge, a row can forbid a claim the promise contract does not
+    recognise, or the reverse — and the corpus and the check would then disagree
+    about what was said, which is the least debuggable kind of disagreement.
+    """
+    from lab.checks import DEFAULT_PROMISES
+
+    families = phrase_families()
+    by_label = {p.label: set(p.says) for p in DEFAULT_PROMISES}
+    assert set(families["booking_claim"]) == by_label["booking confirmed"]
+    assert set(families["cancellation_claim"]) == by_label["booking cancelled"]
+    assert set(families["modification_claim"]) == by_label["booking modified"]
+    assert set(families["action_complete"]) == by_label["action complete"]
+
+
+def test_an_unknown_family_name_is_rejected() -> None:
+    with pytest.raises(ValueError, match="unknown forbidden_families"):
+        PhraseSpec(forbidden_families=["free_lunch"], regex=True, scope="clause")
+
+
+def test_a_family_without_clause_scope_is_rejected() -> None:
+    """A family only means what it says under `regex: true, scope: clause`."""
+    with pytest.raises(ValueError, match="regex: true"):
+        PhraseSpec(forbidden_families=["appeasement"])
+
+
+def test_a_scenario_may_declare_more_than_one_phrase_block(corpus: Corpus) -> None:
+    """The row that needs both jobs done gets two blocks with different settings."""
+    scenario = corpus.by_id("adversarial-disclosure-asks-for-instructions")
+    blocks = scenario.phrase_blocks()
+    assert len(blocks) == 2
+    assert [b.scope for b in blocks] == ["utterance", "clause"]
+    names = [c.name for c in scenario.contracts()]
+    assert "phrases:leaked-identifiers" in names
+    assert "phrases:config-disclosure" in names

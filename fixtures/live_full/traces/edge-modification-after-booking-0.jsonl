@@ -1,0 +1,68 @@
+{"actor": "system", "engine": null, "kind": "session_start", "payload": {"adapter": "text:live", "caller": "LLMCaller", "goal_fact_keys": ["date", "name", "new_time", "party_size", "time"], "goal_gated_keys": ["name"], "goal_intent": "book Wednesday for four, then ask to move it to half an hour later", "max_turns": 14, "persona": "distracted_parent", "persona_cooperativeness": 0.3, "persona_verbosity": "normal", "scenario_id": "edge-modification-after-booking", "session_id": "edge-modification-after-booking#0"}, "ts": 0.0}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "Hi, I\u2019m calling to book a table, and I\u2019ve got a couple little ones running around here\u2014sorry if you hear them!"}, "ts": 0.0}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "Hi, I\u2019m calling to book a table, and I\u2019ve got a couple little ones running around here\u2014sorry if you hear them!"}, "ts": 0.0}
+{"actor": "system", "engine": null, "kind": "agent_handoff", "payload": {"from": "GreeterAgent", "reason": "caller needs a new booking", "to": "BookingAgent", "ts_estimated": true}, "ts": 0.34025}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 1}, "ts": 0.6805}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "No worries at all! I\u2019m happy to help. How many people will be in your party, including the little ones?"}, "ts": 0.6805}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "BookingAgent", "text": "No worries at all! I\u2019m happy to help. How many people will be in your party, including the little ones?"}, "ts": 0.6805}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "Oh, sorry, could you say that again?"}, "ts": 0.6805}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "Oh, sorry, could you say that again?"}, "ts": 0.6805}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 2}, "ts": 1.2665000000000002}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Of course! How many people will be in your party, including the little ones?"}, "ts": 1.2665000000000002}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "BookingAgent", "text": "Of course! How many people will be in your party, including the little ones?"}, "ts": 1.2665000000000002}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "It\u2019ll be four of us altogether."}, "ts": 1.2665000000000002}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "It\u2019ll be four of us altogether."}, "ts": 1.2665000000000002}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 3}, "ts": 1.7895000000000003}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Thank you! What date would you like to book the table for?"}, "ts": 1.7895000000000003}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "BookingAgent", "text": "Thank you! What date would you like to book the table for?"}, "ts": 1.7895000000000003}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "Sorry, could you repeat that question?"}, "ts": 1.7895000000000003}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "Sorry, could you repeat that question?"}, "ts": 1.7895000000000003}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 4}, "ts": 2.3125000000000004}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Of course! What date would you like to book the table for?"}, "ts": 2.3125000000000004}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "BookingAgent", "text": "Of course! What date would you like to book the table for?"}, "ts": 2.3125000000000004}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "Wednesday, please."}, "ts": 2.3125000000000004}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "Wednesday, please."}, "ts": 2.3125000000000004}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 5}, "ts": 2.8775000000000004}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Great, thank you. And what time would you like the table on Wednesday?"}, "ts": 2.8775000000000004}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "BookingAgent", "text": "Great, thank you. And what time would you like the table on Wednesday?"}, "ts": 2.8775000000000004}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "Could you say that again?"}, "ts": 2.8775000000000004}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "Could you say that again?"}, "ts": 2.8775000000000004}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 6}, "ts": 3.3900000000000006}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Sure! What time would you like your table on Wednesday?"}, "ts": 3.3900000000000006}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "BookingAgent", "text": "Sure! What time would you like your table on Wednesday?"}, "ts": 3.3900000000000006}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "7pm would be perfect."}, "ts": 3.3900000000000006}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "7pm would be perfect."}, "ts": 3.3900000000000006}
+{"actor": "agent", "engine": null, "kind": "tool_call", "payload": {"args": {"date": "Wednesday", "party_size": 4, "time": "7pm"}, "call_id": "search_tables-1", "name": "search_tables", "ts_estimated": true}, "ts": 3.690833333333334}
+{"actor": "system", "engine": null, "kind": "tool_result", "payload": {"call_id": "search_tables-1", "name": "search_tables", "ok": true, "result": {"available": true, "date": "wednesday", "max_party_size": 8, "party_size": 4, "tables": [{"area": "window", "seats": 4, "table_id": "T3"}, {"area": "dining room", "seats": 4, "table_id": "T4"}, {"area": "dining room", "seats": 6, "table_id": "T5"}, {"area": "private room", "seats": 8, "table_id": "T6"}], "time": "7pm"}, "ts_estimated": true}, "ts": 3.991666666666667}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 7}, "ts": 4.2925}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Thank you. I have a table available for four people on Wednesday at 7pm. Can I take a name for the booking, please?"}, "ts": 4.2925}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "BookingAgent", "text": "Thank you. I have a table available for four people on Wednesday at 7pm. Can I take a name for the booking, please?"}, "ts": 4.2925}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "Could you repeat that?"}, "ts": 4.2925}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "Could you repeat that?"}, "ts": 4.2925}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 8}, "ts": 4.798}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Of course! Can I take a name for the booking, please?"}, "ts": 4.798}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "BookingAgent", "text": "Of course! Can I take a name for the booking, please?"}, "ts": 4.798}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "Ruth Kelleher."}, "ts": 4.798}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "Ruth Kelleher."}, "ts": 4.798}
+{"actor": "agent", "engine": null, "kind": "tool_call", "payload": {"args": {"date": "Wednesday", "name": "Ruth Kelleher", "party_size": 4, "time": "7pm"}, "call_id": "create_booking-1", "name": "create_booking", "ts_estimated": true}, "ts": 5.1595}
+{"actor": "system", "engine": null, "kind": "tool_result", "payload": {"call_id": "create_booking-1", "name": "create_booking", "ok": true, "result": {"area": "window", "booking_ref": "TM-2001", "date": "wednesday", "name": "Ruth Kelleher", "notes": "", "party_size": 4, "seats": 4, "status": "confirmed", "table_id": "T3", "time": "7pm"}, "ts_estimated": true}, "ts": 5.521}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 9}, "ts": 5.8825}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Your table is now booked for four people on Wednesday at 7pm under the name Ruth Kelleher. Your reference is TM-2001. Is there anything else I can help you with today?"}, "ts": 5.8825}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "BookingAgent", "text": "Your table is now booked for four people on Wednesday at 7pm under the name Ruth Kelleher. Your reference is TM-2001. Is there anything else I can help you with today?"}, "ts": 5.8825}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "Actually, could we move it to 7:30pm instead?"}, "ts": 5.8825}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "Actually, could we move it to 7:30pm instead?"}, "ts": 5.8825}
+{"actor": "system", "engine": null, "kind": "agent_handoff", "payload": {"from": "BookingAgent", "reason": "caller needs an existing booking", "to": "ModificationAgent", "ts_estimated": true}, "ts": 6.298}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 10}, "ts": 6.7135}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "No problem\u2014I just need to confirm how many people are coming for your booking before I make any changes. Could you tell me the party size, please?"}, "ts": 6.7135}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "ModificationAgent", "text": "No problem\u2014I just need to confirm how many people are coming for your booking before I make any changes. Could you tell me the party size, please?"}, "ts": 6.7135}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "It\u2019s four people."}, "ts": 6.7135}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "It\u2019s four people."}, "ts": 6.7135}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 11}, "ts": 7.467499999999999}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Thanks! Could you give me your booking reference number so I can look up your booking and move it to 7:30pm for four people?"}, "ts": 7.467499999999999}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "ModificationAgent", "text": "Thanks! Could you give me your booking reference number so I can look up your booking and move it to 7:30pm for four people?"}, "ts": 7.467499999999999}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "Sorry, could you say that again?"}, "ts": 7.467499999999999}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "Sorry, could you say that again?"}, "ts": 7.467499999999999}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 12}, "ts": 8.337}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Of course! I need your booking reference number to look up your booking and move it to 7:30pm for four people. Could you please provide the reference number?"}, "ts": 8.337}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "ModificationAgent", "text": "Of course! I need your booking reference number to look up your booking and move it to 7:30pm for four people. Could you please provide the reference number?"}, "ts": 8.337}
+{"actor": "system", "engine": null, "kind": "session_end", "payload": {"reason": "caller_hung_up", "turns": 12}, "ts": 8.337}

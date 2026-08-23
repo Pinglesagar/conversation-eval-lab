@@ -1,0 +1,44 @@
+{
+  "goal_intent": "get a table around eight, some time at the weekend",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "878eb8aea56ddc07a6c4d01c019f2b69cbff17705c30571fa0601ec69aac5daf",
+    "scenario_id": "edge-ambiguous-time-request",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "79355875899d9ff3cd807eaa5ec8fc3a40a6e0fd8904e9d5a9483d7f31f9e8b5",
+      "index": 0,
+      "utterance": "Hi there! I'm calling to see if you might have a table available for this weekend \u2014 I'm hoping to get together with a friend around eightish."
+    },
+    {
+      "context_sha256": "373f545ef10d2ab1b9486dc84de4c3e5bf3e82683dce705a006600a329282863",
+      "index": 1,
+      "utterance": "It'll just be the two of us, so a nice cosy table would be perfect. As for the day, I'm pretty flexible \u2014 either Friday or Saturday night would work, whichever is easier on your end."
+    },
+    {
+      "context_sha256": "1567f09b4be4b198dfb4b43051dcdf864ef8273e6bb6759fff46f07d0e6910bb",
+      "index": 2,
+      "utterance": "Thanks for checking! If Saturday at 8:00pm is available, that would be my first choice, but if not, I\u2019m happy to hear about Friday too. It\u2019s always such a nice vibe on the weekend."
+    },
+    {
+      "context_sha256": "8f12bdd7297f5c8c2bef69098aad0fdd731240ef935244490f83053aae1220a2",
+      "index": 3,
+      "utterance": "That\u2019s perfect, thanks so much! The booking can go under Neve Ashworth. Looking forward to a lovely evening out."
+    },
+    {
+      "context_sha256": "413ddeb9fe395c776de573371d5a3d5445a38ccae634378a474a5829eba521fa",
+      "index": 4,
+      "utterance": "That\u2019s everything, thank you! I really appreciate your help \u2014 looking forward to it. Have a great day! \n\n[END OF CALL]"
+    }
+  ]
+}

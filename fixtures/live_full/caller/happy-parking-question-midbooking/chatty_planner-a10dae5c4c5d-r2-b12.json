@@ -1,0 +1,44 @@
+{
+  "goal_intent": "book a table for four and check whether there is parking",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "a10dae5c4c5d2f27588a1df5d57c7dd91d21029faef5b2a6a9f786d6f1e426a5",
+    "scenario_id": "happy-parking-question-midbooking",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 2
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "6eb440f23078b271b25b0caf49d86f98ffe45f63ab93240e248d78afc73e3078",
+      "index": 0,
+      "utterance": "Hi there! I\u2019m planning a little get-together with some friends this week and wanted to check if I could book a table."
+    },
+    {
+      "context_sha256": "0d407ea2b32c3e8491713dfdf605ad3e862e1924155c3334732b78a19cb1bcaa",
+      "index": 1,
+      "utterance": "There will be four of us\u2014everyone\u2019s looking forward to catching up over a nice meal. Could I book the table for Thursday evening?"
+    },
+    {
+      "context_sha256": "bb763e232f0d3e74691402672bd1db767651f6bf899e39fd5131952a1b2d5ab5",
+      "index": 2,
+      "utterance": "7pm would be perfect for us, and the booking should be under Fiona Cadwell. By the way, could you let me know if you have your own parking? It's always easier if we don't have to hunt for spaces."
+    },
+    {
+      "context_sha256": "9b5e0048c41392646cb84143a00ad9982e0d5dbcf99b3a63a1ec9849a05a5222",
+      "index": 3,
+      "utterance": "Yes, everything looks perfect\u2014thanks for double-checking! I appreciate you helping with the parking info, too. I'll wait for the policy details."
+    },
+    {
+      "context_sha256": "62a751aacf241d8b8a1b1d39032e75351f63023d1576cdb4f65a79ef06b762d5",
+      "index": 4,
+      "utterance": "That covers everything for me, thanks! Once I hear about the parking, I\u2019ll be all set for our night out. Looking forward to it! [END OF CALL]"
+    }
+  ]
+}

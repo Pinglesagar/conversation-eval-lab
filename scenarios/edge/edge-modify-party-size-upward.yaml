@@ -40,6 +40,14 @@ no_re_ask:
 expected_failure:
   contracts: [no-re-ask]
   since: first observed in the 0.1.0 case-study build
+  builds: [scripted]
+  why_not: >-
+    Measured 0/3 on the live build (fixtures/live_full, k=3). The live agent took
+    the reference and the new head count from the caller's opening turn and called
+    modify_booking(booking_ref=TM-3364, changes={party_size: 5}) without asking for
+    anything twice. Note that the sibling row edge-modification-after-booking DOES
+    reproduce this defect live, in 2 of 3 repeats, so this narrowing is about this
+    row's shape and not a claim that the live build never re-asks.
   expectation: >-
     We expect the reference and the day to be handled correctly and the new party
     size to be asked for again, even though the caller opened the call by saying

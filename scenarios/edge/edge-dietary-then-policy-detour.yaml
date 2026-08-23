@@ -50,6 +50,13 @@ no_re_ask:
 expected_failure:
   contracts: [propagation:allergy]
   since: first observed in the 0.1.0 case-study build
+  builds: [scripted]
+  why_not: >-
+    Measured 0/3 on the live build (fixtures/live_full, k=3). The allergy reached
+    create_booking.notes in all three repeats — "One guest has a peanut allergy." —
+    across two and three handoffs respectively. The loss is specific to the
+    deterministic build's brief projection at the boundary; the live agent carries
+    its own conversation and has nothing to drop.
   expectation: >-
     We expect the allergy to be stated once, acknowledged in conversation, and then
     absent from the create_booking notes after the call passes through the agent

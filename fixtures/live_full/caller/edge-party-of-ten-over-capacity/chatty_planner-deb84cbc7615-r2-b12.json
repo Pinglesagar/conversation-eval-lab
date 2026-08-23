@@ -1,0 +1,39 @@
+{
+  "goal_intent": "book one table for ten on Saturday evening",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "deb84cbc761550943ae81f2911f453647645e4037d56fd54d0e6b0fe13cf1be7",
+    "scenario_id": "edge-party-of-ten-over-capacity",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 2
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "ca2ee77bd23436191867d1b43bdb4b1f55d2bf80bf3a31a3ba4a48e02c43b02a",
+      "index": 0,
+      "utterance": "Hi there! I\u2019m calling to see if you have any availability for a group get-together this coming Saturday evening. I\u2019m planning a little reunion and hoping to make it special!"
+    },
+    {
+      "context_sha256": "3898ca6483bf1f52e55ef147eeb54a6f05c7b4ac49a18afa203486c460d8c68c",
+      "index": 1,
+      "utterance": "Thanks! There will be ten of us\u2014it's a pretty lively bunch, and we're all really looking forward to catching up."
+    },
+    {
+      "context_sha256": "60c925188833b8914a4249949a40dccbabb2a60a2a4c106c83b7be6852efe55d",
+      "index": 2,
+      "utterance": "Thanks so much for explaining everything! Before we finish up, I just want to make sure\u2014will we all be seated together at one table in the private room? That\u2019s really important to us, as chatting together is half the fun."
+    },
+    {
+      "context_sha256": "dbfe46b388d02a1f7a17975d87dfc4c71aee5400678fec653af455af8ec28df1",
+      "index": 3,
+      "utterance": "That sounds perfect, thank you! I think that covers everything for now\u2014I\u2019ll look out for the follow-up email from your events team. Appreciate your help! \n\n[END OF CALL]"
+    }
+  ]
+}

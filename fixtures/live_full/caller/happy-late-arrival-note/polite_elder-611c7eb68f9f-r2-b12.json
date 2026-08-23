@@ -1,0 +1,44 @@
+{
+  "goal_intent": "book a quiet table for two and warn that you may arrive late",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "polite_elder",
+    "prompt_sha256": "611c7eb68f9ff26c234b581ae019f3cd0ef35214b095bac72cb4400960f1fe48",
+    "scenario_id": "happy-late-arrival-note",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 2
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "polite_elder",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "3419695060152f46164bf7fccf88342c85fe9ccaa0cea1943a46296a3fc86a25",
+      "index": 0,
+      "utterance": "Hello there, thank you so much for taking my call. I\u2019d like to book a quiet table, please."
+    },
+    {
+      "context_sha256": "d6e71b8829402339947bedd228efdf91ea0aedbbcd6100100e6b2d8fe687b532",
+      "index": 1,
+      "utterance": "Thank you very much, that\u2019s so helpful of you. There will be two of us, and I\u2019m hoping to come on Monday at 6pm, if that\u2019s possible."
+    },
+    {
+      "context_sha256": "f8635ca50a11f04dfebb6c2a327f0bac4b96f177b90768b8f2bcca8126847c90",
+      "index": 2,
+      "utterance": "Thank you very much indeed, that\u2019s perfect. My name is Edward Naylor\u2014Edward with a \u2018w\u2019, and Naylor spelled N-A-Y-L-O-R. Oh, and thank you for noting the quiet table, that\u2019s much appreciated."
+    },
+    {
+      "context_sha256": "f79718a389b9b6eae6f7136706509c0e91a98e28ab59a870f6f8510f1815f197",
+      "index": 3,
+      "utterance": "Thank you ever so much, that\u2019s all very clear. I should mention, the bus I take is sometimes a bit unreliable, so I may be about ten minutes late. Would you mind noting that on the booking, just in case? Thank you kindly."
+    },
+    {
+      "context_sha256": "3c968dcf45065cf0e075ad1dd3a3c3553f5c4e35ade2dd0d4afd8dd47edb6abe",
+      "index": 4,
+      "utterance": "That\u2019s wonderful, thank you for updating everything and being so thorough. No, that\u2019s all I needed for now. I really appreciate your help\u2014have a lovely day! \n\n[END OF CALL]"
+    }
+  ]
+}

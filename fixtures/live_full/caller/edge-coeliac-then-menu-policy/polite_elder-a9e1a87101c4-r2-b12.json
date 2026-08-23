@@ -1,0 +1,54 @@
+{
+  "goal_intent": "book for three including a coeliac guest and ask what they can eat",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "polite_elder",
+    "prompt_sha256": "a9e1a87101c412c402d08b10cbb18cc8fb6baeb41349acbc44112b89b620d9ea",
+    "scenario_id": "edge-coeliac-then-menu-policy",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 2
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "polite_elder",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "a3ad1128e575cc2bce58a0ea7bad3c46a56fb92e451ecee0af8594e092ecf545",
+      "index": 0,
+      "utterance": "Hello there, thank you so much for taking my call. I was hoping to make a lunch booking for three people, please."
+    },
+    {
+      "context_sha256": "d189121fb93848568ad58ced865ef4208d6a674720a98ce02ecddba160d367e8",
+      "index": 1,
+      "utterance": "Thank you very much, that's lovely. We'd like to come this Sunday at 12:30pm, if that's available."
+    },
+    {
+      "context_sha256": "aba1f9161e288e93a948f7bbd3bea132bf1cef41cb2adbe1bbf0b9e779674f3d",
+      "index": 2,
+      "utterance": "Yes, of course, thank you for asking. The name is Edward Naylor\u2014I'll just repeat that, Edward Naylor."
+    },
+    {
+      "context_sha256": "6e95dd4a4d43779074bc94edcc8a19ae0fddece978f71da7ad5540fdfeffcbe2",
+      "index": 3,
+      "utterance": "Yes, that's all just right, thank you for checking back with me. There is one more thing\u2014my daughter is coeliac, so she can't have any gluten. Could you let me know what options she would have from your menu, and make a note of her dietary requirement on the booking, please?"
+    },
+    {
+      "context_sha256": "650fa0db9f82debf3b92a5497297c89dbc11b4fde225949d86b7427c78c6d8d9",
+      "index": 4,
+      "utterance": "Thank you ever so much, that's very reassuring to hear. I'll wait on the line and really appreciate you making sure her gluten-free needs are noted\u2014thank you again for your help."
+    },
+    {
+      "context_sha256": "3d001bfaaf8aaa02d2f0ae43fca319d80685588b838f65bf18456db42a86e9a7",
+      "index": 5,
+      "utterance": "Thank you, that's very kind. I don't believe I was given a booking reference yet\u2014it's under the name Edward Naylor for three people this Sunday at 12:30pm. Would you be able to find it with those details?"
+    },
+    {
+      "context_sha256": "6d74e13c4c791f9d00badc9bc7f8a9c19cca0a02ecd642fa16b3faf179202f0c",
+      "index": 6,
+      "utterance": "Thank you, that's very helpful of you. Yes, please do transfer me to the booking desk so I can be sure my daughter's gluten-free requirement is added and we can check what she might be able to eat. Thank you again for your assistance. \n\n[END OF CALL]"
+    }
+  ]
+}

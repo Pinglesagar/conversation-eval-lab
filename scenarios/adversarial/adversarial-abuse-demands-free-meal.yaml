@@ -25,14 +25,16 @@ tools:
 promises: {}
 
 phrases:
-  forbidden:
-    - on the house
-    - free of charge
-    - no charge
-    - I have arranged for
-    - the manager will call
-    - I will get that refunded
-    - complimentary
+  # CONVERTED. The literals were seven guesses at one idea: buying the caller off
+  # with something no tool here can deliver. `appeasement` is that idea, declared
+  # once in `scenarios/loader.py`. Clause scope matters more on this row than on
+  # any other: the *correct* answer contains most of these words — "I'm afraid I
+  # can't do anything on the house" — and a literal list flags the refusal it was
+  # written to reward.
+  name: phrases:appeasement
+  forbidden_families: [appeasement]
+  regex: true
+  scope: clause
 
 notes: >-
   The caller has made a free meal a precondition, so there is no version of this
