@@ -62,13 +62,15 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
+import time
 from pathlib import Path
-from typing import Any, Protocol, Sequence, runtime_checkable
+from typing import Any, Callable, Literal, Protocol, Sequence, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from lab.clock import Clock
-from lab.simulator.persona import END_OF_CALL_RE, CallerProfile
+from lab.simulator.persona import END_OF_CALL_RE, CallerProfile, Verbosity
 from lab.trace.build import TraceBuilder
 from lab.trace.schema import Trace
 
@@ -81,10 +83,19 @@ __all__ = [
     "Caller",
     "ScriptedCaller",
     "LLMCaller",
+    "CassetteKey",
+    "DisclosureLeak",
+    "DisclosureLeakError",
+    "OnLeak",
     "coerce_turn",
     "run_scenario",
     "DEFAULT_MAX_TURNS",
     "LIVE_CALLER_ENV_VAR",
+    "CALLER_MODEL_ENV_VAR",
+    "VERBOSITY_TOKEN_BUDGET",
+    "REPEAT_LIMIT",
+    "RATE_LIMIT_RETRIES",
+    "RATE_LIMIT_BASE_DELAY_S",
     "STT_ENGINE",
     "TTS_ENGINE",
 ]
@@ -99,6 +110,116 @@ DEFAULT_MAX_TURNS: int = 12
 #: Absent, the caller replays from its cassette and raises on a miss. Opt-in, so
 #: a clean clone cannot spend money by accident.
 LIVE_CALLER_ENV_VAR: str = "LAB_LIVE_CALLER"
+
+#: Where `LLMCaller` reads its litellm model route from when none is passed. No
+#: model id is hardcoded anywhere in `lab` — providers, prices and ids move, and a
+#: harness that pins one has an expiry date. Same convention as
+#: `lab.judges.judge.MODEL_ENV_VAR`.
+CALLER_MODEL_ENV_VAR: str = "LAB_CALLER_MODEL"
+
+#: Output token budget per persona verbosity. `verbosity` is a prompt instruction
+#: and prompt instructions are advisory; this is the same instruction expressed as
+#: something the API enforces. A terse caller that writes a paragraph is not a
+#: terse caller, and the resulting trace measures the agent's handling of a
+#: persona that was never in the corpus.
+VERBOSITY_TOKEN_BUDGET: dict[Verbosity, int] = {
+    "terse": 48,
+    "normal": 110,
+    "chatty": 220,
+}
+
+#: How many times one caller line may be said before it counts as a loop. Two,
+#: because a reluctant persona's stall recurs legitimately across a long call and
+#: a limit of one would end the very scenarios that test re-asking.
+REPEAT_LIMIT: int = 2
+
+#: Rate-limit retries and the first backoff delay, doubling from there. A 429 is
+#: an instruction to wait, not a result: retrying it is correct, and *not*
+#: retrying it turns a provider's queue depth into a flaky agent.
+RATE_LIMIT_RETRIES: int = 5
+RATE_LIMIT_BASE_DELAY_S: float = 2.0
+
+#: What to do when the caller volunteers a fact the scenario gated.
+OnLeak = Literal["record", "raise"]
+
+
+class DisclosureLeakError(RuntimeError):
+    """The caller said a gated fact before it was asked for, under `on_leak="raise"`."""
+
+
+_WHITESPACE_RE = re.compile(r"\s+")
+
+
+def _normalise(text: str) -> str:
+    """Case-folded, whitespace-collapsed, punctuation-trimmed — for comparison only.
+
+    Used by the repetition guard and the leak audit. Deliberately crude and
+    deliberately not a model call: a guard whose own verdict varied between runs
+    would report the caller's noise as the agent's.
+    """
+    return _WHITESPACE_RE.sub(" ", text.strip().casefold()).strip(" .!?,;:")
+
+
+def _mentions(utterance: str, *values: str) -> bool:
+    """Does `utterance` say any of `values` verbatim, on word boundaries?
+
+    Word boundaries matter for the short values that make up most of a booking: a
+    plain substring test finds the party size "2" inside "20:00" and reports a
+    leak that did not happen, and a leak detector with false positives gets turned
+    off, which is worse than one that undercounts.
+    """
+    haystack = _normalise(utterance)
+    for value in values:
+        needle = _normalise(value)
+        if not needle:
+            continue
+        if re.search(rf"(?<!\w){re.escape(needle)}(?!\w)", haystack):
+            return True
+    return False
+
+
+def _split_sentinel(text: str) -> tuple[str, bool]:
+    """Separate what the caller *said* from its decision to hang up.
+
+    `CALLER_RULES` asks the model to send the sentinel and nothing else. Two runs
+    in forty ignored that and appended it to the turn carrying their last answer:
+
+        "Yes, please. My name is Ruth Kelleher. No allergies. [END OF CALL]"
+
+    Treating that as "the call is over" ends the conversation on the caller's own
+    turn — so the agent never gets a turn in which to act on the name, no
+    `create_booking` is ever made, and the scenario fails. The failure is real and
+    it is entirely the instrument's: the caller had said everything the agent
+    needed, and the harness hung up on it.
+
+    So the sentinel is *stripped* and the words are delivered normally, with the
+    hang-up deferred to the next turn. The caller says its piece, the agent gets
+    its turn, and only then does the line go dead — which is also what a person
+    does: they answer the last question and wait for the confirmation before
+    putting the phone down. Nothing about the agent's behaviour is hidden by
+    this. If the agent still fails to book, the contract still fails; what goes
+    away is a verdict decided by where the model put a marker.
+
+    Returns `(what to say, whether this was the last thing)`. An empty remainder
+    means the model followed the rule and the call ends immediately.
+    """
+    if not END_OF_CALL_RE.search(text):
+        return text, False
+    return END_OF_CALL_RE.sub("", text).strip(), True
+
+
+def _is_rate_limited(exc: BaseException) -> bool:
+    """Is this exception a provider telling us to slow down?
+
+    Duck-typed across SDKs on purpose: `litellm` normalises most providers to a
+    `RateLimitError`, but not all, and an `isinstance` check against a class
+    imported at module scope would drag the provider SDK into offline collection
+    for no benefit.
+    """
+    if getattr(exc, "status_code", None) == 429:
+        return True
+    name = type(exc).__name__.lower()
+    return "ratelimit" in name or "429" in str(exc)
 
 #: Engine tags for the pseudo-STT/TTS legs of a text run. Named so that a text
 #: trace and a voice trace carry the same shape of attribution and one latency
@@ -362,6 +483,155 @@ class ScriptedCaller:
         )
 
 
+class CassetteKey(BaseModel):
+    """What a recorded caller conversation is *of*. The fixture's identity.
+
+    WHY A KEY AND NOT JUST A PATH
+    -----------------------------
+    A cassette is a recording of one caller playing one scenario under one
+    prompt. Every part of that sentence can change without the file's name
+    changing, and each change makes the recording answer for a conversation that
+    never happened:
+
+    *   a different **scenario** — the caller is answering another call's
+        questions;
+    *   a different **persona** — the words are a different person's;
+    *   a different **prompt** — the caller was told different rules, so its
+        turns are not the turns the current instrument would produce;
+    *   a different **model or temperature** — the variance being replayed is
+        another distribution's.
+
+    So the identity is declared, written into the file, and checked on load. Four
+    of the five fields also go into the filename, which means a prompt edit does
+    not corrupt the old fixture — it *misses* it, and a miss offline is a refusal
+    (see `LLMCaller._next_utterance`) rather than a wrong answer. The old
+    recording stays on disk, still valid for the prompt that produced it.
+
+    `variant` is the field that makes a stability measurement possible. k repeats
+    of one scenario at a non-zero temperature are k *different* conversations, and
+    a single cassette would replay the first of them k times and report a flake
+    rate of zero — the machinery quietly proving the thing it was built to test.
+    One cassette per repeat, keyed by index.
+    """
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    scenario_id: str = Field(min_length=1)
+    persona: str = Field(min_length=1)
+    prompt_sha256: str = Field(min_length=64, max_length=64)
+    model: str = Field(
+        min_length=1,
+        description=(
+            "The model *label* — what a reader of the fixture should be told the "
+            "turns came from. Not necessarily the litellm route: see "
+            "`LLMCaller.model_label`."
+        ),
+    )
+    temperature: float = Field(ge=0.0, le=2.0)
+    variant: int | None = Field(
+        default=None,
+        ge=0,
+        description="Repeat index when k conversations share a scenario. None for a single take.",
+    )
+    turn_budget: int = Field(
+        ge=1,
+        description=(
+            "The caller's `max_utterances` at record time. In the key because it "
+            "decides where a conversation stops, and therefore what the recording "
+            "contains: the same caller under a tighter budget produces a shorter "
+            "call and, demonstrably, a different verdict."
+        ),
+    )
+
+    @classmethod
+    def build(
+        cls,
+        *,
+        scenario_id: str,
+        profile: CallerProfile,
+        model: str,
+        temperature: float,
+        turn_budget: int,
+        variant: int | None = None,
+    ) -> "CassetteKey":
+        """Derive the key from the objects that actually determine the recording."""
+        return cls(
+            scenario_id=scenario_id,
+            persona=profile.persona.name,
+            prompt_sha256=hashlib.sha256(
+                profile.system_prompt().encode("utf-8")
+            ).hexdigest(),
+            model=model,
+            temperature=temperature,
+            turn_budget=turn_budget,
+            variant=variant,
+        )
+
+    @property
+    def prompt_digest12(self) -> str:
+        """The first 12 hex digits of the prompt digest — what appears in a filename."""
+        return self.prompt_sha256[:12]
+
+    def filename(self) -> str:
+        """`<persona>-<prompt12>[-r<variant>]-b<turn_budget>.json`.
+
+        Every varying part of the identity except the model label is in the name,
+        so two readings of the same scenario under different settings sit side by
+        side instead of one silently overwriting the other.
+        """
+        stem = f"{self.persona}-{self.prompt_digest12}"
+        if self.variant is not None:
+            stem = f"{stem}-r{self.variant}"
+        return f"{stem}-b{self.turn_budget}.json"
+
+    def path_in(self, root: str | Path) -> Path:
+        """`<root>/<scenario_id>/<filename>` — one directory per scenario.
+
+        The scenario is a directory rather than a filename prefix so that a
+        scenario's k repeats sit together and `git status` reads as one changed
+        scenario instead of five unrelated files.
+        """
+        return Path(root) / self.scenario_id / self.filename()
+
+    def differences(self, other: "CassetteKey") -> list[str]:
+        """Field-by-field disagreement with another key, as readable lines."""
+        out: list[str] = []
+        for field_name in type(self).model_fields:
+            mine = getattr(self, field_name)
+            theirs = getattr(other, field_name)
+            if mine != theirs:
+                out.append(f"{field_name}: fixture has {theirs!r}, this run wants {mine!r}")
+        return out
+
+    def describe(self) -> str:
+        variant = "" if self.variant is None else f", repeat {self.variant}"
+        return (
+            f"{self.scenario_id} as {self.persona} on {self.model} "
+            f"(T={self.temperature}, prompt {self.prompt_digest12}{variant})"
+        )
+
+
+class DisclosureLeak(BaseModel):
+    """A gated fact the caller said before anyone asked for it.
+
+    The caller is part of the instrument, so this is a fault in the *measurement*,
+    not a finding about the agent — and it is the fault that would most quietly
+    ruin a result. `on_request_only` exists so that "did the agent ask?" is
+    answerable; a caller that blurts the answer makes every check downstream pass
+    for the wrong reason, and nothing in the trace looks unusual.
+
+    A prompt can only *ask* the model not to leak. So the leak is also *measured*,
+    per turn, and the count travels with the fixture. See
+    `LLMCaller.leak_detection_note` for what the detector can and cannot see —
+    the count is a floor, not a total.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    turn_index: int = Field(ge=0, description="Which caller utterance leaked it.")
+    fact: str = Field(min_length=1, description="The gated fact key. The value is not repeated here.")
+
+
 class LLMCaller:
     """A model-driven caller that records to a cassette and replays from it.
 
@@ -372,16 +642,45 @@ class LLMCaller:
     First run (with `LAB_LIVE_CALLER` set) calls the provider and appends each
     generated turn to a JSON cassette. Every run afterwards reads the cassette and
     never touches the network, which is why a clean clone reproduces a
-    model-generated conversation exactly.
+    model-generated conversation exactly — including the flake band in
+    `lab.simulator.flake_band`, whose forty conversations are forty committed
+    fixtures.
 
-    THE CASSETTE VERIFIES ITS CONTEXT
-    ---------------------------------
-    Each entry stores a sha256 of the conversation that preceded it, and replay
-    checks it. Positional replay — turn 3 gets whatever was recorded third —
-    would silently keep working after the agent's behaviour changed, and the
-    caller would answer a question nobody asked while the suite stayed green.
-    On a mismatch this raises, naming the fixture and the env var to re-record
-    with. A fixture that cannot go stale loudly is not a fixture, it is a decoy.
+    THREE THINGS A PROMPT CANNOT GUARANTEE, SO CODE DOES
+    ----------------------------------------------------
+    The persona and goal ask the model to behave like a caller. Asking is the
+    cheap half. An instrument needs the other half:
+
+    1.  **It must not loop.** `CALLER_RULES` says so; `_stop_for_repetition`
+        enforces it. A caller and an agent rephrasing the same exchange at each
+        other exhausts `max_turns`, and a `max_turns` stop is indistinguishable in
+        a report from an agent that could not finish the job. The guard tolerates
+        one repeat (a reluctant persona says "sorry, what?" more than once in a
+        long call) and stops on the second, or on any line said twice in a row.
+    2.  **It must not leak a gated fact.** Audited per turn; see `DisclosureLeak`.
+    3.  **It must not run away with the budget.** `max_utterances` is checked
+        before a completion is requested, not after, because the point of the
+        check is the money.
+
+    Each of the three sets `stop_reason`, which is written into the cassette. A
+    run that ended for an instrument reason and a run that ended because the
+    caller was satisfied are different results, and a report that cannot tell them
+    apart is not reporting.
+
+    THE CASSETTE VERIFIES ITS CONTEXT AND ITS IDENTITY
+    --------------------------------------------------
+    Two independent staleness checks, because they catch different lies:
+
+    *   **Identity** (`CassetteKey`): this file is a recording of this scenario,
+        this persona, this prompt, this model, this repeat. Checked on load.
+    *   **Context** (per turn, sha256 of the conversation so far): turn 3 replays
+        only into the conversation turn 3 was recorded in. Positional replay would
+        silently keep working after the agent's behaviour changed, and the caller
+        would answer a question nobody asked while the suite stayed green.
+
+    On either mismatch this raises, naming the fixture and the env var to
+    re-record with. A fixture that cannot go stale loudly is not a fixture, it is
+    a decoy.
 
     `litellm` is imported inside the request method, so importing this module
     costs nothing and offline test collection never touches a provider SDK.
@@ -392,34 +691,165 @@ class LLMCaller:
         profile: CallerProfile,
         *,
         cassette: str | Path,
-        model: str = "gpt-4o-mini",
+        model: str | None = None,
+        model_label: str | None = None,
         temperature: float = 0.0,
-        max_tokens: int = 120,
+        max_tokens: int | None = None,
         live_env_var: str = LIVE_CALLER_ENV_VAR,
+        key: CassetteKey | None = None,
+        max_utterances: int = DEFAULT_MAX_TURNS,
+        on_leak: OnLeak = "record",
+        max_retries: int = RATE_LIMIT_RETRIES,
+        retry_base_s: float = RATE_LIMIT_BASE_DELAY_S,
+        sleep: Callable[[float], None] | None = None,
+        extra_completion_kwargs: dict[str, Any] | None = None,
     ) -> None:
+        """
+        Args:
+            profile: The persona and goal this caller plays.
+            cassette: Where the recording lives. `for_scenario` derives this from
+                a `CassetteKey` instead, which is the form to prefer.
+            model: The litellm route, e.g. `provider/deployment`. Resolved from
+                `$LAB_CALLER_MODEL` at the moment of the first live call if left
+                None — no model id is hardcoded in `lab`, and a route is not
+                needed at all to replay.
+            model_label: What the fixture should say the turns came from. Defaults
+                to `model`. It exists because a route can name a private
+                deployment inside somebody's cloud account, and a committed
+                fixture is public: the label is the model family a reader needs,
+                the route is infrastructure that has no business in git.
+            temperature: Sampling temperature. Part of the cassette key: replaying
+                a T=0.7 recording as if it were T=0 misdescribes the variance.
+            max_tokens: Output budget. None derives it from the persona's
+                verbosity (`VERBOSITY_TOKEN_BUDGET`), so `terse` is enforced by
+                the API and not only requested in prose.
+            live_env_var: The opt-in switch. Absent, a cassette miss raises.
+            key: The fixture's declared identity, checked against the file on
+                load. Set for you by `for_scenario`.
+            max_utterances: Hard cap on caller turns, checked before spending.
+            on_leak: `"record"` (default) counts a gated-fact leak and carries it
+                in the fixture; `"raise"` stops the run. Recording is the default
+                because a leak rate is a measurement worth having, and a harness
+                that aborts on the first one never produces it.
+            max_retries, retry_base_s, sleep: Rate-limit backoff. `sleep` is
+                injected so a test can prove the backoff without waiting for it.
+            extra_completion_kwargs: Passed through to `litellm.completion` —
+                `api_base`, `api_version` and the like for providers that need
+                them. Never recorded: it is where credentials-adjacent settings
+                live.
+        """
         self.profile = profile
         self.cassette_path = Path(cassette)
         self.model = model
+        self.model_label = model_label or model or "unspecified-model"
         self.temperature = temperature
-        self.max_tokens = max_tokens
+        self.max_tokens = (
+            max_tokens
+            if max_tokens is not None
+            else VERBOSITY_TOKEN_BUDGET[profile.persona.verbosity]
+        )
         self.live_env_var = live_env_var
+        self.key = key
+        self.max_utterances = max_utterances
+        if on_leak not in ("record", "raise"):
+            raise ValueError(f"on_leak must be 'record' or 'raise', got {on_leak!r}")
+        self.on_leak: OnLeak = on_leak
+        self.max_retries = max_retries
+        self.retry_base_s = retry_base_s
+        self._sleep = sleep if sleep is not None else time.sleep
+        self.extra_completion_kwargs = dict(extra_completion_kwargs or {})
+
         self._history: list[dict[str, str]] = []
         self._recorded: list[dict[str, Any]] = []
+        self._said: list[str] = []
+        self._asked: list[str] = []
+        self._released: list[str] = []
+        self._leaks: list[DisclosureLeak] = []
+        self._ending = False
+        self._stop_reason: str | None = None
         self._cassette: dict[str, Any] = self._load_cassette()
         self._dirty = False
+
+    # ----------------------------------------------------------- construction
+
+    @classmethod
+    def for_scenario(
+        cls,
+        profile: CallerProfile,
+        *,
+        scenario_id: str,
+        root: str | Path,
+        model: str | None = None,
+        model_label: str | None = None,
+        temperature: float = 0.0,
+        variant: int | None = None,
+        max_utterances: int = DEFAULT_MAX_TURNS,
+        **kwargs: Any,
+    ) -> "LLMCaller":
+        """Build a caller whose cassette path is derived from its identity.
+
+        The form to use. Choosing a filename by hand is how two scenarios come to
+        share a recording, and the failure that produces is a green suite.
+        """
+        key = CassetteKey.build(
+            scenario_id=scenario_id,
+            profile=profile,
+            model=model_label or model or "unspecified-model",
+            temperature=temperature,
+            turn_budget=max_utterances,
+            variant=variant,
+        )
+        return cls(
+            profile,
+            cassette=key.path_in(root),
+            model=model,
+            model_label=model_label,
+            temperature=temperature,
+            key=key,
+            max_utterances=max_utterances,
+            **kwargs,
+        )
 
     # ---------------------------------------------------------------- cassette
 
     def _load_cassette(self) -> dict[str, Any]:
         if not self.cassette_path.exists():
-            return {"model": self.model, "turns": []}
+            return {"model": self.model_label, "turns": []}
         loaded = json.loads(self.cassette_path.read_text(encoding="utf-8"))
         if not isinstance(loaded, dict) or "turns" not in loaded:
             raise ValueError(
                 f"{self.cassette_path}: not a caller cassette (expected a mapping "
                 "with a 'turns' list)"
             )
+        self._check_identity(loaded)
         return loaded
+
+    def _check_identity(self, loaded: dict[str, Any]) -> None:
+        """Refuse a cassette that is a recording of something else.
+
+        Skipped when this caller declares no key — a hand-written cassette in a
+        unit test is a legitimate thing to have, and demanding provenance from it
+        would make the strict path unreachable in the tests that matter.
+        """
+        if self.key is None:
+            return
+        stored = loaded.get("key")
+        if stored is None:
+            raise ValueError(
+                f"{self.cassette_path}: cassette carries no identity block, so it "
+                f"cannot be shown to be a recording of {self.key.describe()}. "
+                f"Re-record it with {self.live_env_var}=1."
+            )
+        recorded_key = CassetteKey.model_validate(stored)
+        differences = self.key.differences(recorded_key)
+        if differences:
+            joined = "\n  ".join(differences)
+            raise ValueError(
+                f"{self.cassette_path}: this cassette records a different "
+                f"conversation from the one being run.\n  {joined}\n"
+                f"Replaying it would report another instrument's turns as this "
+                f"one's. Re-record with {self.live_env_var}=1."
+            )
 
     @property
     def live_enabled(self) -> bool:
@@ -459,20 +889,128 @@ class LLMCaller:
         if not self._dirty:
             return None
         self.cassette_path.parent.mkdir(parents=True, exist_ok=True)
-        document = {
-            "model": self.model,
+        document: dict[str, Any] = {
+            "model": self.model_label,
+            "temperature": self.temperature,
             "persona": self.profile.persona.name,
             "goal_intent": self.profile.goal.intent,
+            "stop_reason": self._stop_reason,
+            "leaks": [leak.model_dump(mode="json") for leak in self._leaks],
             "turns": self._recorded,
         }
+        if self.key is not None:
+            document["key"] = self.key.model_dump(mode="json")
         self.cassette_path.write_text(
             json.dumps(document, indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )
         return self.cassette_path
 
+    # ------------------------------------------------------------- what it did
+
+    @property
+    def stop_reason(self) -> str | None:
+        """Why the caller stopped: the sentinel, or the guard that fired.
+
+        `"goal_reached"` for the `[END OF CALL]` sentinel — the caller judging its
+        own goal met or refused. The others are the instrument intervening:
+        `"repeated_line"`, `"turn_budget"`.
+        """
+        return self._stop_reason
+
+    @property
+    def utterances(self) -> list[str]:
+        """Everything the caller said, in order, sentinel turn included."""
+        return [entry["utterance"] for entry in self._recorded]
+
+    @property
+    def leaks(self) -> list[DisclosureLeak]:
+        """Gated facts said before they were asked for. A floor, not a total."""
+        return list(self._leaks)
+
+    @property
+    def released_facts(self) -> list[str]:
+        """Gated fact keys the caller has actually spoken, in the order it said them.
+
+        Same contract as `ScriptedCaller.released_facts`, so an information-loss
+        check reads either caller without knowing which it has: a fact that was
+        never released cannot have been dropped by the agent.
+        """
+        return list(self._released)
+
+    @property
+    def asked_facts(self) -> list[str]:
+        """Gated fact keys the agent actually asked for, in first-ask order."""
+        return list(self._asked)
+
+    @property
+    def leak_detection_note(self) -> str:
+        """What the leak audit can and cannot see. Printed next to any leak count.
+
+        Stated as a method rather than a comment because the number is reported,
+        and a reported number with an unstated detection limit invites a stronger
+        reading than it can carry.
+        """
+        return (
+            "Leak detection matches a gated fact's value, or its declared spoken "
+            "form, verbatim and on word boundaries. A paraphrase ('a couple of us' "
+            "for a party size of 2) is not detected, so the count is a lower bound "
+            "on leaks and the zero case is 'none detected', not 'none occurred'."
+        )
+
     # ---------------------------------------------------------------- speaking
 
+    def _note_asks(self, agent_text: str) -> None:
+        """Record which gated facts the agent has now asked for."""
+        goal = self.profile.goal
+        for key in goal.asked_keys(agent_text, among=goal.gated_keys()):
+            if key not in self._asked:
+                self._asked.append(key)
+
+    def _audit_disclosure(self, utterance: str, index: int) -> None:
+        """Note gated facts spoken in this turn, and flag the unasked-for ones."""
+        goal = self.profile.goal
+        for key in goal.gated_keys():
+            if not _mentions(utterance, goal.fact(key), goal.spoken(key)):
+                continue
+            if key not in self._released:
+                self._released.append(key)
+            if key in self._asked:
+                continue
+            leak = DisclosureLeak(turn_index=index, fact=key)
+            self._leaks.append(leak)
+            if self.on_leak == "raise":
+                raise DisclosureLeakError(
+                    f"the caller volunteered the gated fact {key!r} on turn "
+                    f"{index} without being asked for it, which makes 'did the "
+                    "agent ask?' unanswerable for this run. "
+                    f"{self.leak_detection_note}"
+                )
+
+    def _stop_for_repetition(self, normalised: str) -> bool:
+        """Has the caller started looping?
+
+        Two triggers. The same line twice in a row is a loop immediately — there
+        is no reading of a conversation in which that is progress. Otherwise a
+        line is allowed `REPEAT_LIMIT` outings, because a reluctant persona's
+        stall ("sorry, what was that?") legitimately recurs across a long call,
+        and a guard that fired on it would end exactly the scenarios that exist to
+        test re-asking.
+        """
+        if self._said and self._said[-1] == normalised:
+            return True
+        return self._said.count(normalised) >= REPEAT_LIMIT
+
     def _next_utterance(self, user_message: str | None) -> str | None:
+        if self._ending:
+            # The sentinel arrived on the previous turn, alongside the caller's
+            # last words. Those words have been delivered and the agent has had
+            # its turn; now the line goes dead — without buying a completion for
+            # a turn whose content is already decided.
+            self._stop_reason = "goal_reached"
+            return None
+        if len(self._said) >= self.max_utterances:
+            self._stop_reason = "turn_budget"
+            return None
         if user_message is not None:
             self._history.append({"role": "user", "content": user_message})
         index = sum(1 for m in self._history if m["role"] == "assistant")
@@ -488,35 +1026,78 @@ class LLMCaller:
                     "test in this repo does."
                 )
             replayed = self._complete()
-            self._recorded.append(
-                {"index": index, "context_sha256": digest, "utterance": replayed}
-            )
             self._dirty = True
-        else:
-            self._recorded.append(
-                {"index": index, "context_sha256": digest, "utterance": replayed}
-            )
-
+        self._recorded.append(
+            {"index": index, "context_sha256": digest, "utterance": replayed}
+        )
         self._history.append({"role": "assistant", "content": replayed})
-        if END_OF_CALL_RE.search(replayed):
+
+        spoken, ending = _split_sentinel(replayed)
+        self._ending = ending
+        self._audit_disclosure(spoken, index)
+
+        if not spoken:
+            # A bare sentinel is the caller following the rule. An empty response
+            # with no sentinel is the provider returning nothing, which ends the
+            # call just the same but must not be filed as a goal reached — that
+            # would put a satisfied caller and a broken completion in one bucket.
+            self._stop_reason = "goal_reached" if ending else "empty_utterance"
             return None
-        return replayed
+
+        normalised = _normalise(spoken)
+        if self._stop_for_repetition(normalised):
+            self._said.append(normalised)
+            self._stop_reason = "repeated_line"
+            return None
+        self._said.append(normalised)
+        return spoken
 
     def _complete(self) -> str:
-        """One live completion. The only method here that touches the network."""
+        """One live completion, with rate-limit backoff.
+
+        The only method here that touches the network, and the only place a model
+        route is required — which is why it is resolved here rather than in
+        `__init__`: replaying a fixture must not need one.
+        """
         from litellm import completion  # imported lazily, on purpose
 
-        response = completion(
-            model=self.model,
-            temperature=self.temperature,
-            max_tokens=self.max_tokens,
-            messages=[
-                {"role": "system", "content": self.profile.system_prompt()},
-                *self._history,
-            ],
+        route = self.model or os.environ.get(CALLER_MODEL_ENV_VAR) or ""
+        if not route:
+            raise RuntimeError(
+                "no caller model configured: pass model= or set "
+                f"{CALLER_MODEL_ENV_VAR} (e.g. {CALLER_MODEL_ENV_VAR}="
+                "provider/deployment). No model id is hardcoded in this library."
+            )
+        if not self.live_enabled:
+            raise RuntimeError(
+                f"refusing to call a provider with {self.live_env_var} unset"
+            )
+
+        delay = self.retry_base_s
+        last: Exception | None = None
+        for attempt in range(self.max_retries + 1):
+            try:
+                response = completion(
+                    model=route,
+                    temperature=self.temperature,
+                    max_tokens=self.max_tokens,
+                    messages=[
+                        {"role": "system", "content": self.profile.system_prompt()},
+                        *self._history,
+                    ],
+                    **self.extra_completion_kwargs,
+                )
+                text = response["choices"][0]["message"]["content"]
+                return str(text).strip()
+            except Exception as exc:  # noqa: BLE001 - re-raised unless rate-limited
+                if attempt >= self.max_retries or not _is_rate_limited(exc):
+                    raise
+                last = exc
+                self._sleep(delay)
+                delay *= 2
+        raise RuntimeError(  # pragma: no cover - the loop either returns or raises
+            f"rate limited after {self.max_retries} retries: {last}"
         )
-        text = response["choices"][0]["message"]["content"]
-        return str(text).strip()
 
     def opening(self) -> str:
         first = self._next_utterance(
@@ -524,18 +1105,20 @@ class LLMCaller:
         )
         if first is None:
             raise RuntimeError(
-                "the LLM caller ended the call on its opening turn; check the "
-                f"cassette at {self.cassette_path}"
+                "the LLM caller ended the call on its opening turn "
+                f"({self._stop_reason}); check the cassette at {self.cassette_path}"
             )
         return first
 
     def reply(self, agent_turn: AgentTurn) -> str | None:
+        self._note_asks(agent_turn.text or "")
         return self._next_utterance(agent_turn.text or "(the agent said nothing)")
 
     def __repr__(self) -> str:
         return (
-            f"LLMCaller(model={self.model!r}, cassette={str(self.cassette_path)!r}, "
-            f"live={self.live_enabled}, turns_recorded={len(self._recorded)})"
+            f"LLMCaller(model={self.model_label!r}, "
+            f"cassette={str(self.cassette_path)!r}, live={self.live_enabled}, "
+            f"turns_recorded={len(self._recorded)}, stop={self._stop_reason!r})"
         )
 
 

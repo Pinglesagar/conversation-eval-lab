@@ -1,0 +1,59 @@
+{
+  "goal_intent": "book a table while barely paying attention to the questions",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "distracted_parent",
+    "prompt_sha256": "a3d00f274212374cb19168ac92f46601afe50d58017f9bab04eddd8afe583c22",
+    "scenario_id": "edge-reluctant-caller-two-asks",
+    "temperature": 0.7,
+    "turn_budget": 8,
+    "variant": 4
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "distracted_parent",
+  "stop_reason": "turn_budget",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "865326f709baf0f1f1f11966e422adce8c39fdf922bb5a7248a9483b5c8c93e7",
+      "index": 0,
+      "utterance": "Hi, I'm calling to book a table for dinner this weekend."
+    },
+    {
+      "context_sha256": "f68e403d4a6f2531532e0396ffdfa60b85cece1ddf8e3a8206b594538aa1aca5",
+      "index": 1,
+      "utterance": "Sorry, could you say that again?"
+    },
+    {
+      "context_sha256": "e98df0572cc69608c7581b3248bdd74deb8019a652b2ecd4088e87932f0c70a0",
+      "index": 2,
+      "utterance": "Four people."
+    },
+    {
+      "context_sha256": "76328c8df1963f590ac70d77ccc80bf5f2a757b4c64d2a09be492673d507d8db",
+      "index": 3,
+      "utterance": "Sorry, can you repeat that?"
+    },
+    {
+      "context_sha256": "178f6c9471d0e7ce825e396a85dc8059a69174d5542a1c3c963bded9b00218f7",
+      "index": 4,
+      "utterance": "Saturday."
+    },
+    {
+      "context_sha256": "1c322305e35d15de306ce8c2058317379ede3b7892ea3e44e97ac82b306512b8",
+      "index": 5,
+      "utterance": "Could you say that again?"
+    },
+    {
+      "context_sha256": "fba18e669bd079481bde2a6f6ba3ff3e6ef5eaed85f7ccd1afa6147ed82c3f6f",
+      "index": 6,
+      "utterance": "Oh, sorry, what time did you need?"
+    },
+    {
+      "context_sha256": "364846875faf752fd7a0340b1c0050effc8c76c1f657cbb0231730fd6fe92b3f",
+      "index": 7,
+      "utterance": "6pm."
+    }
+  ]
+}

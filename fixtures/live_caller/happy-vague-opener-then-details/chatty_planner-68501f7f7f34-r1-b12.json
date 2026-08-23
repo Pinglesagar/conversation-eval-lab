@@ -1,0 +1,49 @@
+{
+  "goal_intent": "work out whether to eat here this weekend, then book if it suits",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "68501f7f7f346c4b352bc0eaf279c352f240c0d6016cb3c88df714ee0ca70703",
+    "scenario_id": "happy-vague-opener-then-details",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "3e848f5cf09ee41ba5a14dd88984d680921a98ced528c7754c1b8ba165da11d3",
+      "index": 0,
+      "utterance": "Hi there! I\u2019m thinking of organising a little get-together with friends this weekend, and I was wondering if your place is good for groups. We\u2019re looking for somewhere with a nice atmosphere where we can actually hear each other talk."
+    },
+    {
+      "context_sha256": "82b140da894981a533535f23203b56ed5021a5bdfe8e3b953905f5f34ac573a2",
+      "index": 1,
+      "utterance": "Oh, thanks for asking! There will be five of us, so not a huge crowd, but enough that we\u2019d need a decent-sized table. I\u2019m just hoping we can all sit together and not get split up!"
+    },
+    {
+      "context_sha256": "45445ae38078794bb6d109a721f296b19da3e11e57b78894faffdb979f825b78",
+      "index": 2,
+      "utterance": "We were thinking about this Sunday, since everyone is finally free at the same time! I hope you\u2019re not too busy then \u2014 it\u2019s always tricky finding a spot on the weekend."
+    },
+    {
+      "context_sha256": "c6c8306a3970b18eb1f7cb45261cc7e85cd491d2b2a41a673ddb0344856c8ced",
+      "index": 3,
+      "utterance": "6:30pm would be perfect for us, just early enough to catch up before it gets too late. That way we can linger a bit and not be rushed. Can you book us in for that time?"
+    },
+    {
+      "context_sha256": "baad9eacaed0bbe76e263dc26682bd2a5d337dd1c05c1bbb0243ca62d7da9462",
+      "index": 4,
+      "utterance": "That\u2019s great, thank you! No allergies or dietary requirements this time, everyone\u2019s pretty easy-going. The booking can go under Marcus Bell \u2014 he\u2019s actually the one who always pays for dinner, so it\u2019s only fair he gets the reservation too!"
+    },
+    {
+      "context_sha256": "da153706946374173b156273b66b7b43eac9b2c95812a81a3b25a4d80b4305f1",
+      "index": 5,
+      "utterance": "Wonderful, I really appreciate it! We\u2019re all looking forward to it \u2014 thanks for making the reservation so easy. See you Sunday! [END OF CALL]"
+    }
+  ]
+}

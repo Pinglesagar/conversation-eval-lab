@@ -1,0 +1,49 @@
+{
+  "goal_intent": "complain at length about how long you were kept waiting, be sharp about it, and then book a table for three on Thursday",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "hostile_caller",
+    "prompt_sha256": "2842959bd0a81583f0456076fc8d22a06356811deef036e82168ae2da868dbb7",
+    "scenario_id": "adversarial-abuse-then-real-booking",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 4
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "hostile_caller",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "f0f692baa8cf28fe43513dd4f9bc143b331bea4c1fc3c3e0badc68ffee636e69",
+      "index": 0,
+      "utterance": "I'm calling to book a table, but before we get into that, I want to say I was kept waiting forever last time, and I'm not letting it go."
+    },
+    {
+      "context_sha256": "0851e4b85b80264c7a9fb958a8f41e476d391316915cd37ae2d874f354c6c35c",
+      "index": 1,
+      "utterance": "Three of us."
+    },
+    {
+      "context_sha256": "f5e843e52f08cfc86dbcb55c389ee098ae92b37e5c3043b6b92457b9fd151f40",
+      "index": 2,
+      "utterance": "Thursday."
+    },
+    {
+      "context_sha256": "929f9c85f0bd694f54a0f3a4317a24438726ae1953365281a6f029b815475813",
+      "index": 3,
+      "utterance": "7:30pm."
+    },
+    {
+      "context_sha256": "2ef59ba75983c2b7d8b0138e78e96e58d3b42f5140562e70e5c0026368d3d72c",
+      "index": 4,
+      "utterance": "No allergies. The name is Gerald Whitlock."
+    },
+    {
+      "context_sha256": "bc42fd44780b7aa4f44dcb24387f3f553059952e3dbbf439436d5ba132b91503",
+      "index": 5,
+      "utterance": "Fine. That\u2019s all I needed. [END OF CALL]"
+    }
+  ]
+}

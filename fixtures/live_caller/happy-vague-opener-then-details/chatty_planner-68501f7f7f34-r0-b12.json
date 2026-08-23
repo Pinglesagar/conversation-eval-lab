@@ -1,0 +1,49 @@
+{
+  "goal_intent": "work out whether to eat here this weekend, then book if it suits",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "68501f7f7f346c4b352bc0eaf279c352f240c0d6016cb3c88df714ee0ca70703",
+    "scenario_id": "happy-vague-opener-then-details",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 0
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "3e848f5cf09ee41ba5a14dd88984d680921a98ced528c7754c1b8ba165da11d3",
+      "index": 0,
+      "utterance": "Hi there, I\u2019m planning a little get-together with some friends this weekend and was wondering if your place is good for groups?"
+    },
+    {
+      "context_sha256": "ba87c02ac31c83eb46534bf4a2121181cac112936a23461524c299b1d808fc1b",
+      "index": 1,
+      "utterance": "Thanks, that sounds promising! There\u2019s five of us, and we\u2019re all pretty excited to try something new together."
+    },
+    {
+      "context_sha256": "86e35f3bc779337024d1315218dbb7ec39362d4404659af645a43c86d13d5a2c",
+      "index": 2,
+      "utterance": "We were hoping for Sunday, since everyone\u2019s free and it seems like the perfect day to unwind before the week starts."
+    },
+    {
+      "context_sha256": "133e1744a3e817edc1dc5a328ffc18d8dec50b0dfc05d0deade89e01b2e299a9",
+      "index": 3,
+      "utterance": "We were thinking about 6:30pm, so it\u2019s not too late and we can enjoy a nice relaxed evening together."
+    },
+    {
+      "context_sha256": "4880cf5cee057e5c24525024d95175533e554e8c0813c10b6aaf42266f3b056d",
+      "index": 4,
+      "utterance": "That\u2019s great news! None of us have any allergies or special dietary needs, so we\u2019re all good there. My name\u2019s Marcus Bell for the booking."
+    },
+    {
+      "context_sha256": "c2e19c57ad0869228b46a3009311bb9e3e4be799eea5e95f8f7352dc34548252",
+      "index": 5,
+      "utterance": "Perfect, thanks so much for sorting that out for us. We\u2019re looking forward to it! [END OF CALL]"
+    }
+  ]
+}

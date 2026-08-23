@@ -29,7 +29,10 @@ import pytest
 
 from lab.clock import FakeClock
 from lab.simulator.driver import (
+    VERBOSITY_TOKEN_BUDGET,
     AgentTurn,
+    CassetteKey,
+    DisclosureLeakError,
     Handoff,
     LLMCaller,
     ScriptedCaller,
@@ -549,3 +552,417 @@ def test_a_missing_recording_with_live_calls_off_names_the_way_out(
     caller = LLMCaller(_profile(), cassette=tmp_path / "absent.json")
     with pytest.raises(RuntimeError, match="LAB_LIVE_CALLER"):
         caller.opening()
+
+
+# --------------------------------------------------------------------------- #
+# LLMCaller: the guarantees a prompt cannot give
+# --------------------------------------------------------------------------- #
+
+
+def _live(monkeypatch, utterances: list[str]) -> None:
+    """Turn the live switch on and stub the one method that reaches a provider."""
+    monkeypatch.setenv("LAB_LIVE_CALLER", "1")
+    generated = iter(utterances)
+    monkeypatch.setattr(LLMCaller, "_complete", lambda self: next(generated))
+
+
+def _run(caller, agent_replies: list[str], *, max_turns: int = 8):
+    clock = FakeClock()
+    return run_scenario(
+        scenario_id="booking/llm",
+        agent=RecordingAgent(clock, replies=agent_replies),
+        caller=caller,
+        clock=clock,
+        max_turns=max_turns,
+    )
+
+
+def test_the_cassette_key_is_written_into_the_fixture_and_shapes_its_path(
+    tmp_path, monkeypatch
+) -> None:
+    _live(monkeypatch, ["a table for four please", "lovely, thanks [END OF CALL]"])
+    caller = LLMCaller.for_scenario(
+        _profile(),
+        scenario_id="happy-two-covers",
+        root=tmp_path,
+        model="stub/route",
+        model_label="stub-family",
+        temperature=0.7,
+        variant=3,
+        max_utterances=6,
+    )
+    _run(caller, ["for when?", "booked"])
+    written = caller.save()
+
+    # The path is derived from the identity, not chosen by hand: one directory per
+    # scenario, one file per (persona, prompt, repeat).
+    assert written is not None
+    assert written.parent.name == "happy-two-covers"
+    assert written.name.startswith("p-")
+    # The repeat index and the turn budget are both in the name: two readings of
+    # the same scenario under different settings must not overwrite each other.
+    assert written.name.endswith("-r3-b6.json")
+
+    document = json.loads(written.read_text(encoding="utf-8"))
+    assert document["key"]["scenario_id"] == "happy-two-covers"
+    assert document["key"]["variant"] == 3
+    assert document["key"]["temperature"] == 0.7
+    assert document["key"]["turn_budget"] == 6
+    # The label, not the route. A route can name a private deployment; a committed
+    # fixture is public, and the model family is the part a reader needs.
+    assert document["key"]["model"] == "stub-family"
+    assert "stub/route" not in written.read_text(encoding="utf-8")
+
+
+def test_two_repeats_of_one_scenario_get_two_cassettes(tmp_path) -> None:
+    """The property that makes a stability measurement possible at all.
+
+    k repeats at a non-zero temperature are k different conversations. One
+    cassette for all of them would replay the first k times and report a flake
+    rate of zero — pass^k machinery proving the absence of the variance it exists
+    to find.
+    """
+    profile = _profile()
+    paths = {
+        LLMCaller.for_scenario(
+            profile, scenario_id="s", root=tmp_path, model="m", variant=i
+        ).cassette_path
+        for i in range(5)
+    }
+    assert len(paths) == 5
+
+
+def test_a_cassette_recorded_for_another_conversation_is_refused(
+    tmp_path, monkeypatch
+) -> None:
+    _live(monkeypatch, ["a table for four please", "thanks [END OF CALL]"])
+    recorder = LLMCaller.for_scenario(
+        _profile(), scenario_id="s", root=tmp_path, model="m", temperature=0.7
+    )
+    _run(recorder, ["certainly", "booked"])
+    path = recorder.save()
+    assert path is not None
+    monkeypatch.delenv("LAB_LIVE_CALLER", raising=False)
+
+    # Same file, but this run wants a different temperature. Replaying it would
+    # report one distribution's variance as another's. Construction is where the
+    # identity is checked, so the refusal lands before a single turn can be
+    # replayed out of context — and the message names the field that differs.
+    with pytest.raises(ValueError, match="temperature: fixture has 0.7"):
+        LLMCaller(
+            _profile(),
+            cassette=path,
+            model="m",
+            temperature=0.0,
+            key=CassetteKey.build(
+                scenario_id="s",
+                profile=_profile(),
+                model="m",
+                temperature=0.0,
+                turn_budget=12,
+            ),
+        )
+
+
+def test_a_cassette_with_no_identity_block_is_refused_when_one_is_declared(
+    tmp_path,
+) -> None:
+    path = tmp_path / "anonymous.json"
+    path.write_text(json.dumps({"turns": []}), encoding="utf-8")
+    key = CassetteKey.build(
+        scenario_id="s", profile=_profile(), model="m", temperature=0.0, turn_budget=12
+    )
+    with pytest.raises(ValueError, match="carries no identity block"):
+        LLMCaller(_profile(), cassette=path, key=key)
+
+
+def test_a_hand_written_cassette_still_works_when_no_identity_is_claimed(
+    tmp_path,
+) -> None:
+    """Provenance is demanded only of fixtures that claim it.
+
+    A unit test writing three turns by hand is a legitimate cassette. Requiring an
+    identity block from it would make the strict path unreachable in the tests
+    that matter most.
+    """
+    path = tmp_path / "hand.json"
+    path.write_text(json.dumps({"turns": []}), encoding="utf-8")
+    caller = LLMCaller(_profile(), cassette=path)
+    assert caller.key is None
+
+
+def test_a_looping_caller_stops_instead_of_burning_the_turn_budget(
+    tmp_path, monkeypatch
+) -> None:
+    """The guard behind `CALLER_RULES`' anti-loop clause.
+
+    A caller that keeps rephrasing against an agent that keeps declining exhausts
+    max_turns, and a max_turns stop reads in a report exactly like an agent that
+    could not finish the job. Two identical lines in a row is a loop with no
+    reading under which it is progress.
+    """
+    line = "I would like a table for four"
+    _live(monkeypatch, [line, line, line])
+    caller = LLMCaller(_profile(), cassette=tmp_path / "loop.json", model="m")
+    trace = _run(caller, ["nothing available", "still nothing", "still nothing"])
+
+    assert caller.stop_reason == "repeated_line"
+    assert caller.utterances == [line, line]
+    end = trace.first(EventKind.SESSION_END)
+    assert end is not None and end.get("reason") == "caller_hung_up"
+
+
+def test_a_stall_may_recur_before_the_repeat_guard_fires(tmp_path, monkeypatch) -> None:
+    """`REPEAT_LIMIT` is two, and the reason is the reluctant persona.
+
+    "Sorry, what was that?" legitimately recurs across a long call. A guard that
+    fired on the second outing would end exactly the scenarios that exist to test
+    re-asking.
+    """
+    stall = "sorry, what was that?"
+    _live(monkeypatch, [stall, "four", stall, "Friday", stall])
+    caller = LLMCaller(
+        _profile(cooperativeness=0.2), cassette=tmp_path / "stall.json", model="m"
+    )
+    _run(caller, ["how many?", "which day?", "what time?", "and the name?", "ok"])
+    # Said twice and tolerated; the third outing is the loop.
+    assert caller.utterances.count(stall) == 3
+    assert caller.stop_reason == "repeated_line"
+
+
+def test_the_turn_budget_is_checked_before_a_completion_is_paid_for(
+    tmp_path, monkeypatch
+) -> None:
+    monkeypatch.setenv("LAB_LIVE_CALLER", "1")
+    calls = {"n": 0}
+
+    def counted(self):
+        calls["n"] += 1
+        return f"line {calls['n']}"
+
+    monkeypatch.setattr(LLMCaller, "_complete", counted)
+    caller = LLMCaller(
+        _profile(), cassette=tmp_path / "budget.json", model="m", max_utterances=3
+    )
+    _run(caller, ["a", "b", "c", "d", "e", "f"], max_turns=10)
+    # Three utterances bought, and the fourth turn declined without spending —
+    # the point of the check is the money, so it happens before the request.
+    assert calls["n"] == 3
+    assert caller.stop_reason == "turn_budget"
+
+
+def test_a_gated_fact_said_before_it_was_asked_for_is_recorded_as_a_leak(
+    tmp_path, monkeypatch
+) -> None:
+    """The fault that would most quietly ruin a result.
+
+    `on_request_only` is what makes "did the agent ask?" answerable. A caller that
+    volunteers the answer makes every check downstream pass for the wrong reason,
+    and nothing in the trace looks unusual. A prompt can only ask; this measures.
+    """
+    _live(monkeypatch, ["a table for four, and no gluten please", "thanks [END OF CALL]"])
+    caller = LLMCaller(_profile(), cassette=tmp_path / "leak.json", model="m")
+    _run(caller, ["certainly", "booked"])
+
+    assert [leak.fact for leak in caller.leaks] == ["dietary"]
+    assert caller.leaks[0].turn_index == 0
+    # Released, but never asked for: the two lists are what distinguish "the agent
+    # asked and got it" from "the agent was handed it".
+    assert caller.released_facts == ["dietary"]
+    assert caller.asked_facts == []
+    # The fixture carries the leak, so a replayed run reports the same fault.
+    path = caller.save()
+    assert path is not None
+    assert json.loads(path.read_text(encoding="utf-8"))["leaks"] == [
+        {"turn_index": 0, "fact": "dietary"}
+    ]
+
+
+def test_a_gated_fact_given_when_asked_is_not_a_leak(tmp_path, monkeypatch) -> None:
+    _live(monkeypatch, ["a table for four", "no gluten [END OF CALL]"])
+    caller = LLMCaller(_profile(), cassette=tmp_path / "clean.json", model="m")
+    _run(caller, ["any dietary requirements?", "booked"])
+    assert caller.leaks == []
+    assert caller.asked_facts == ["dietary"]
+    assert caller.released_facts == ["dietary"]
+
+
+def test_leak_detection_does_not_fire_on_a_value_inside_another_word(
+    tmp_path, monkeypatch
+) -> None:
+    """A leak detector with false positives gets switched off, which is worse."""
+    profile = CallerProfile(
+        persona=Persona(name="p", style="Plain."),
+        goal=Goal(
+            intent="book",
+            facts={"party_size": "2"},
+            on_request_only=["party_size"],
+            ask_patterns={"party_size": ["how many"]},
+        ),
+    )
+    _live(monkeypatch, ["can I book for 20:00 or thereabouts", "ta [END OF CALL]"])
+    caller = LLMCaller(profile, cassette=tmp_path / "bounded.json", model="m")
+    _run(caller, ["certainly", "booked"])
+    assert caller.leaks == []
+
+
+def test_on_leak_raise_stops_the_run(tmp_path, monkeypatch) -> None:
+    _live(monkeypatch, ["four of us, and no gluten"])
+    caller = LLMCaller(
+        _profile(), cassette=tmp_path / "strict.json", model="m", on_leak="raise"
+    )
+    with pytest.raises(DisclosureLeakError, match="dietary"):
+        _run(caller, ["certainly"])
+
+
+def test_verbosity_becomes_an_enforced_token_budget(tmp_path) -> None:
+    """A prompt instruction the API enforces, not only one the model is asked for."""
+    for verbosity, expected in VERBOSITY_TOKEN_BUDGET.items():
+        profile = CallerProfile(
+            persona=Persona(name="p", style="s", verbosity=verbosity),
+            goal=Goal(intent="book"),
+        )
+        caller = LLMCaller(profile, cassette=tmp_path / f"{verbosity}.json")
+        assert caller.max_tokens == expected
+    # Explicit beats derived.
+    assert (
+        LLMCaller(_profile(), cassette=tmp_path / "x.json", max_tokens=7).max_tokens == 7
+    )
+
+
+def test_a_rate_limit_is_waited_out_rather_than_reported_as_a_failure(
+    tmp_path, monkeypatch
+) -> None:
+    """A 429 is an instruction to wait, not a result.
+
+    Not retrying it turns the provider's queue depth into a flaky agent — a
+    measurement of somebody else's load, reported as this agent's variance.
+    """
+    monkeypatch.setenv("LAB_LIVE_CALLER", "1")
+    monkeypatch.setenv("LAB_CALLER_MODEL", "stub/route")
+    slept: list[float] = []
+    attempts = {"n": 0}
+
+    class RateLimitError(Exception):
+        pass
+
+    def flaky_completion(**kwargs):
+        attempts["n"] += 1
+        if attempts["n"] < 3:
+            raise RateLimitError("429 slow down")
+        return {"choices": [{"message": {"content": "hello there"}}]}
+
+    import litellm
+
+    monkeypatch.setattr(litellm, "completion", flaky_completion)
+    caller = LLMCaller(
+        _profile(),
+        cassette=tmp_path / "retry.json",
+        retry_base_s=1.0,
+        sleep=slept.append,
+    )
+    assert caller._complete() == "hello there"
+    assert attempts["n"] == 3
+    # Exponential, from the declared base.
+    assert slept == [1.0, 2.0]
+
+
+def test_a_non_rate_limit_error_is_not_retried(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("LAB_LIVE_CALLER", "1")
+    monkeypatch.setenv("LAB_CALLER_MODEL", "stub/route")
+    attempts = {"n": 0}
+
+    def broken(**kwargs):
+        attempts["n"] += 1
+        raise ValueError("bad request")
+
+    import litellm
+
+    monkeypatch.setattr(litellm, "completion", broken)
+    caller = LLMCaller(_profile(), cassette=tmp_path / "hard.json", sleep=lambda _: None)
+    with pytest.raises(ValueError, match="bad request"):
+        caller._complete()
+    assert attempts["n"] == 1
+
+
+def test_no_model_id_is_hardcoded_in_the_library(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("LAB_LIVE_CALLER", "1")
+    monkeypatch.delenv("LAB_CALLER_MODEL", raising=False)
+    caller = LLMCaller(_profile(), cassette=tmp_path / "nomodel.json")
+    with pytest.raises(RuntimeError, match="LAB_CALLER_MODEL"):
+        caller._complete()
+
+
+def test_the_live_switch_is_checked_inside_the_request_too(tmp_path, monkeypatch) -> None:
+    """Belt and braces on the one method that can spend money."""
+    monkeypatch.delenv("LAB_LIVE_CALLER", raising=False)
+    caller = LLMCaller(_profile(), cassette=tmp_path / "off.json", model="stub/route")
+    with pytest.raises(RuntimeError, match="LAB_LIVE_CALLER"):
+        caller._complete()
+
+
+def test_a_sentinel_in_the_same_breath_as_the_last_answer_still_gets_the_agent_a_turn(
+    tmp_path, monkeypatch
+) -> None:
+    """The instrument bug the first live flake band found, and its fix.
+
+    Two conversations in forty appended `[END OF CALL]` to the turn carrying the
+    caller's last answer — the name the agent had just asked for. Ending the call
+    there is the harness hanging up on a caller who had said everything the agent
+    needed: no `create_booking` follows, the contract fails, and the finding is
+    filed against the agent. So the sentinel is stripped, the words are delivered,
+    the agent gets its turn, and the line goes dead on the *next* one.
+    """
+    _live(monkeypatch, ["a table for four", "no gluten, and it's Ada Rowe [END OF CALL]"])
+    caller = LLMCaller(_profile(), cassette=tmp_path / "same-breath.json", model="m")
+    trace = _run(caller, ["any dietary requirements, and your name?", "booked, thanks"])
+
+    # The last answer was heard, with the marker removed from what was said.
+    said = trace.texts("caller")
+    assert said[-1] == "no gluten, and it's Ada Rowe"
+    assert "[END OF CALL]" not in " ".join(said)
+    # And the agent got a turn after it — the whole point.
+    assert trace.texts("agent")[-1] == "booked, thanks"
+    assert caller.stop_reason == "goal_reached"
+
+
+def test_the_deferred_hang_up_costs_nothing(tmp_path, monkeypatch) -> None:
+    """The turn after a same-breath sentinel is decided, so it is not bought."""
+    monkeypatch.setenv("LAB_LIVE_CALLER", "1")
+    calls = {"n": 0}
+    lines = iter(["hello there", "that's everything, thanks [END OF CALL]"])
+
+    def counted(self):
+        calls["n"] += 1
+        return next(lines)
+
+    monkeypatch.setattr(LLMCaller, "_complete", counted)
+    caller = LLMCaller(_profile(), cassette=tmp_path / "deferred.json", model="m")
+    _run(caller, ["yes?", "noted", "still here?"])
+    assert calls["n"] == 2
+
+
+def test_a_sentinel_on_its_own_ends_the_call_at_once(tmp_path, monkeypatch) -> None:
+    """The compliant case is unchanged: nothing was said, so nothing is delivered."""
+    _live(monkeypatch, ["a table for four", "[END OF CALL]"])
+    caller = LLMCaller(_profile(), cassette=tmp_path / "clean-end.json", model="m")
+    trace = _run(caller, ["certainly", "anything else?"])
+    assert trace.texts("caller") == ["a table for four"]
+    assert caller.stop_reason == "goal_reached"
+
+
+def test_an_empty_completion_is_not_recorded_as_a_satisfied_caller(
+    tmp_path, monkeypatch
+) -> None:
+    """A provider returning nothing ends the call, but for a different reason.
+
+    Both cases produce no words and both stop the conversation. Filing them under
+    one label would let a broken completion be counted as a caller who got what it
+    came for, which is a silent hole in exactly the column a reader trusts.
+    """
+    # `_complete` strips its result, so an all-whitespace completion arrives here
+    # as the empty string.
+    _live(monkeypatch, ["a table for four", ""])
+    caller = LLMCaller(_profile(), cassette=tmp_path / "empty.json", model="m")
+    _run(caller, ["certainly", "and?"])
+    assert caller.stop_reason == "empty_utterance"

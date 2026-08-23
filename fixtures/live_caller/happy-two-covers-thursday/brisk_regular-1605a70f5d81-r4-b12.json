@@ -1,0 +1,44 @@
+{
+  "goal_intent": "book a table for two on Thursday evening",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "brisk_regular",
+    "prompt_sha256": "1605a70f5d81f7afc43e0cced29f0f944627c7f08721add33cd8ce17e0951535",
+    "scenario_id": "happy-two-covers-thursday",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 4
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "brisk_regular",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "802a6b695ae48d27ac7a9902206661a0138ab82bf8c645d5a2dbf6331f5e2f26",
+      "index": 0,
+      "utterance": "I'd like to book a table for Thursday evening."
+    },
+    {
+      "context_sha256": "ef0d3601deba2b3adc8851cab48bb4c32b573d0d8e421d0d76e21f50b8b738d1",
+      "index": 1,
+      "utterance": "Two."
+    },
+    {
+      "context_sha256": "18a67d1dc453cdf4cb72c23e5f979839986c19352caf6d96f785f2bf5f99a89b",
+      "index": 2,
+      "utterance": "7:30pm."
+    },
+    {
+      "context_sha256": "6b22fb8a0506533a93103ddd3b55a2a80fad3f03d325f2b4c270f2c6f81ccf97",
+      "index": 3,
+      "utterance": "No allergies. Rachel Okonkwo."
+    },
+    {
+      "context_sha256": "82e320b4f9989c7c2f12e41fb2cd2ed0fe46399edbc83f0fc2e17221db00de8a",
+      "index": 4,
+      "utterance": "[END OF CALL]"
+    }
+  ]
+}

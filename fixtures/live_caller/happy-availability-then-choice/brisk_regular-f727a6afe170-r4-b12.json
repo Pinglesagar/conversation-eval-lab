@@ -1,0 +1,49 @@
+{
+  "goal_intent": "find out what is available on Friday evening and then take a slot",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "brisk_regular",
+    "prompt_sha256": "f727a6afe17073cf8c3232724250b1014b1102a5301a86a47c342dc46890a5ee",
+    "scenario_id": "happy-availability-then-choice",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 4
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "brisk_regular",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "0b27e8005b5c55191a0ed510fb46472137af2a0b06ad0b480ef1d1f83cbc5ad2",
+      "index": 0,
+      "utterance": "I\u2019m calling to book a table for Friday evening."
+    },
+    {
+      "context_sha256": "43c7d469524bcd4c88a6ce7fbd587290401b21954e7d5da67d84ae13233b8c28",
+      "index": 1,
+      "utterance": "Four."
+    },
+    {
+      "context_sha256": "bf89a6ba35e317581daa05345b80c8223831f62393ff150cd7c7a7b3cffd7fae",
+      "index": 2,
+      "utterance": "Anything after 7. What do you have?"
+    },
+    {
+      "context_sha256": "756e1526de123eed20e8cfe64bf0bb2a3ddd37d39f7248fefea541651c478ae9",
+      "index": 3,
+      "utterance": "8pm."
+    },
+    {
+      "context_sha256": "7e870358e01edabc5478be2555e9791d66903b5ebe80fd6ffc587a72bb4937dc",
+      "index": 4,
+      "utterance": "No allergies. Jo Vasey."
+    },
+    {
+      "context_sha256": "e525551d77f69f8aa499f91e179a4ce8b6042e8b8a16a40cb85685bd8b242b6e",
+      "index": 5,
+      "utterance": "[END OF CALL]"
+    }
+  ]
+}

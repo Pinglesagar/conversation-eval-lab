@@ -15,28 +15,42 @@ same boundary discipline, in the code path real runs actually take.
                             whose only output is a `Trace`.
     lab.simulator.passk     Run a scenario k times and score it STABLE_PASS /
                             STABLE_FAIL / FLAKY. FLAKY is not a pass.
+    lab.simulator.flake_band
+                            pass^k with a *live* caller against the scripted
+                            agent — the first time the machinery met real
+                            variance. Recorded conversation by conversation, so
+                            the number replays offline with no key.
 
 The one hard rule across all three: no result is reported that cannot be
 recomputed from the trace on disk.
 """
 
 from lab.simulator.driver import (
+    CALLER_MODEL_ENV_VAR,
     DEFAULT_MAX_TURNS,
     LIVE_CALLER_ENV_VAR,
+    REPEAT_LIMIT,
+    VERBOSITY_TOKEN_BUDGET,
     AgentReply,
     AgentTurn,
     AgentUnderTest,
     Caller,
+    CassetteKey,
+    DisclosureLeak,
+    DisclosureLeakError,
     Handoff,
     LLMCaller,
+    OnLeak,
     ScriptedCaller,
     ToolInvocation,
     coerce_turn,
     run_scenario,
 )
 from lab.simulator.persona import (
+    CALLER_RULES,
     END_OF_CALL,
     RELUCTANT_BELOW,
+    VOLUNTEERS_AT_OR_ABOVE,
     CallerProfile,
     Goal,
     Persona,
@@ -59,16 +73,23 @@ __all__ = [
     "AgentReply",
     "AgentTurn",
     "AgentUnderTest",
+    "CALLER_MODEL_ENV_VAR",
+    "CALLER_RULES",
     "Caller",
     "CallerProfile",
+    "CassetteKey",
     "DEFAULT_MAX_TURNS",
+    "DisclosureLeak",
+    "DisclosureLeakError",
     "END_OF_CALL",
     "Goal",
     "Handoff",
     "LIVE_CALLER_ENV_VAR",
     "LLMCaller",
+    "OnLeak",
     "PassKPolicy",
     "Persona",
+    "REPEAT_LIMIT",
     "RELUCTANT_BELOW",
     "RunOutcome",
     "ScriptedCaller",
@@ -76,6 +97,8 @@ __all__ = [
     "StabilitySummary",
     "StabilityVerdict",
     "ToolInvocation",
+    "VERBOSITY_TOKEN_BUDGET",
+    "VOLUNTEERS_AT_OR_ABOVE",
     "Verbosity",
     "coerce_outcome",
     "coerce_turn",

@@ -1,0 +1,59 @@
+{
+  "goal_intent": "book a table while barely paying attention to the questions",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "distracted_parent",
+    "prompt_sha256": "a3d00f274212374cb19168ac92f46601afe50d58017f9bab04eddd8afe583c22",
+    "scenario_id": "edge-reluctant-caller-two-asks",
+    "temperature": 0.7,
+    "turn_budget": 8,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "distracted_parent",
+  "stop_reason": "turn_budget",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "865326f709baf0f1f1f11966e422adce8c39fdf922bb5a7248a9483b5c8c93e7",
+      "index": 0,
+      "utterance": "Hi, I\u2019d like to book a table for dinner, please\u2014hang on, sorry, let me just get these kids settled."
+    },
+    {
+      "context_sha256": "16b187e60847cf58c09388493c5fd3169b9d8c673d7852c9d3de373db7f1432f",
+      "index": 1,
+      "utterance": "Sorry, could you say that again?"
+    },
+    {
+      "context_sha256": "9be4f4b3c8576583c2bdd8fa9f30bad3b740d12e6c92b123649f1eade379fea4",
+      "index": 2,
+      "utterance": "Four people."
+    },
+    {
+      "context_sha256": "879be2148dfee7e979c3052b3d8b10be48259552cecd3d84e59dedeb5d5c88f1",
+      "index": 3,
+      "utterance": "Sorry, can you repeat the question?"
+    },
+    {
+      "context_sha256": "961ec5ad1daa3c19d4f1d9995a0f1c589913925a1c03580db51c609e5c71deb9",
+      "index": 4,
+      "utterance": "Saturday."
+    },
+    {
+      "context_sha256": "5538ea773254c47f3585b58b5714a1b2e4dcdf70928dde7b6cad19ea3cae4beb",
+      "index": 5,
+      "utterance": "Could you say that again?"
+    },
+    {
+      "context_sha256": "63c2df6ec0e0d89dc60dd7644c9e239b0134881788e72f174e252035b449e1ae",
+      "index": 6,
+      "utterance": "Oh\u2014wait, what time did you need? Sorry, lost track."
+    },
+    {
+      "context_sha256": "7b0112ac8692e6e29dcbb471262ed600e5da19ce86944386991b7c1bb5b39f80",
+      "index": 7,
+      "utterance": "6pm."
+    }
+  ]
+}

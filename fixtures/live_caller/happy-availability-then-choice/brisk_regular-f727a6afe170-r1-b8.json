@@ -1,0 +1,44 @@
+{
+  "goal_intent": "find out what is available on Friday evening and then take a slot",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "brisk_regular",
+    "prompt_sha256": "f727a6afe17073cf8c3232724250b1014b1102a5301a86a47c342dc46890a5ee",
+    "scenario_id": "happy-availability-then-choice",
+    "temperature": 0.7,
+    "turn_budget": 8,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "brisk_regular",
+  "stop_reason": "repeated_line",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "0b27e8005b5c55191a0ed510fb46472137af2a0b06ad0b480ef1d1f83cbc5ad2",
+      "index": 0,
+      "utterance": "Calling to book a table for Friday evening."
+    },
+    {
+      "context_sha256": "98088fd10f2ba81848fb0ce7d529145ac4e2de5f405a620265aa58c158dd3265",
+      "index": 1,
+      "utterance": "Four."
+    },
+    {
+      "context_sha256": "2972029fbb8a129540976a319eafdd0aa9c09931ff8abd4256d64dd15fc45090",
+      "index": 2,
+      "utterance": "Anything after 7."
+    },
+    {
+      "context_sha256": "236fec8bd87a5410d1664fc4391bae086742c8f98925ef56991b563c583322ba",
+      "index": 3,
+      "utterance": "8 o\u2019clock."
+    },
+    {
+      "context_sha256": "0871f2b78ed4b30b0a6752c4b21bdd4c41165588da10210561c2c4afaf1cf92b",
+      "index": 4,
+      "utterance": "8 o\u2019clock."
+    }
+  ]
+}

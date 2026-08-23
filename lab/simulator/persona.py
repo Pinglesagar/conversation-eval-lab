@@ -34,11 +34,27 @@ reported as a flaky agent.
 WHAT `cooperativeness` ACTUALLY DOES
 -----------------------------------
 A dial that changes nothing is worse than no dial, so its effect is stated and
-deterministic: below `RELUCTANT_BELOW`, a gated fact is released only on the
-*second* ask (`Goal.asks_required`), modelling the caller who says "sorry, what?"
-before answering. At or above it, the first ask is enough. It additionally shapes
-the `LLMCaller` system prompt, which is opt-in. There is no randomness anywhere
-in this module: `random` is not imported.
+deterministic, in two declared bands rather than one:
+
+    c <  RELUCTANT_BELOW (0.5)        a gated fact is released only on the
+                                      *second* ask (`Goal.asks_required`) — the
+                                      caller who says "sorry, what?" first
+    c >= VOLUNTEERS_AT_OR_ABOVE (0.8) the caller offers the detail that is
+                                      obviously needed next without being asked
+
+Between the two it answers promptly and volunteers nothing. The first band is
+enforced in code by `ScriptedCaller`; the second exists only in the prompt,
+because only a model can judge what "obviously needed next" means, and a
+`ScriptedCaller` whose committed lines were silently reordered by a dial would be
+a fixture that does not say what it does. There is no randomness anywhere in this
+module: `random` is not imported.
+
+WHAT THE CALLER MUST NOT DO
+---------------------------
+Open with everything. `Goal.summary` caps the first line at the intent plus one
+detail, and the reason is measurement rather than realism: an agent handed every
+fact in turn one can never be caught failing to ask for one. See that method's
+docstring — it is the single most consequential sentence of prompt in this file.
 
 OUT OF SCOPE HERE
 -----------------
@@ -59,6 +75,8 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 __all__ = [
     "Verbosity",
     "RELUCTANT_BELOW",
+    "VOLUNTEERS_AT_OR_ABOVE",
+    "CALLER_RULES",
     "Persona",
     "Goal",
     "CallerProfile",
@@ -75,6 +93,20 @@ Verbosity = Literal["terse", "normal", "chatty"]
 #: published part of the caller's contract: a scenario author needs to know that
 #: 0.4 and 0.6 are behaviourally different and 0.6 and 0.9 are not.
 RELUCTANT_BELOW: float = 0.5
+
+#: Cooperativeness at or above this means the caller offers the detail that is
+#: obviously needed next without being asked for it. Below it the caller answers
+#: what it is asked and adds nothing. Together with `RELUCTANT_BELOW` this makes
+#: the dial three declared bands rather than a vibe:
+#:
+#:     c >= 0.8   answers at once, and offers the obvious next detail unprompted
+#:     0.5 <= c   answers at once, volunteers nothing extra
+#:     c < 0.5    stalls on the first ask for anything new, volunteers nothing
+#:
+#: Monotone in `c`, so a scenario author raising the dial can never make the
+#: caller *less* forthcoming, and the two thresholds are the only values where
+#: behaviour changes.
+VOLUNTEERS_AT_OR_ABOVE: float = 0.8
 
 
 def load_yaml_mapping(path: str | Path) -> dict[str, Any]:
@@ -149,6 +181,16 @@ class Persona(BaseModel):
         return self.cooperativeness < RELUCTANT_BELOW
 
     @property
+    def volunteers(self) -> bool:
+        """True when the caller offers the obviously-needed detail unprompted.
+
+        Read by prompt construction only. It deliberately does *not* change
+        `ScriptedCaller`, whose lines are written out in the fixture: a dial that
+        silently rewrote a committed script would make the fixture a lie.
+        """
+        return self.cooperativeness >= VOLUNTEERS_AT_OR_ABOVE
+
+    @property
     def asks_required(self) -> int:
         """How many asks it takes to get a gated fact out of this persona."""
         return 2 if self.is_reluctant else 1
@@ -174,10 +216,21 @@ class Persona(BaseModel):
             lines.append(
                 "You are distracted: the first time you are asked for a detail you "
                 "have not already given, ask them to repeat the question instead of "
-                "answering it."
+                "answering it. You never offer a detail you were not asked for."
             )
-        else:
+        elif self.volunteers:
+            # Deliberately silent about volunteering here. The permission to offer
+            # an unasked-for detail is stated once, in `Goal.summary`, immediately
+            # beside the list of facts it applies to — because it must not apply to
+            # the gated ones, and a persona block that granted it in general would
+            # contradict the goal block that forbids it in particular. A prompt
+            # that argues with itself is a caller whose behaviour is unspecified.
             lines.append("You answer direct questions straight away.")
+        else:
+            lines.append(
+                "You answer direct questions straight away, and you add nothing "
+                "you were not asked for."
+            )
         if self.accent:
             lines.append(f"Accent tag (for voice synthesis only): {self.accent}")
         return "\n".join(lines)
@@ -319,13 +372,53 @@ class Goal(BaseModel):
         """How the caller says fact `key` out loud."""
         return self.reply_templates.get(key, "{value}").format(value=self.fact(key))
 
-    def summary(self) -> str:
-        """The goal as prompt text, with the disclosure rule made explicit."""
+    def summary(self, *, volunteers: bool = True) -> str:
+        """The goal as prompt text, with the disclosure rule made explicit.
+
+        Args:
+            volunteers: The persona's `Persona.volunteers` band. True lets the
+                caller offer the obviously-needed detail before it is asked for;
+                False confines it to answering.
+
+        WHY THE OPENING RULE IS HERE AND NOT IN THE PERSONA
+        --------------------------------------------------
+        An earlier version of this method began "State these up front if they are
+        relevant", and it produced a caller that opened with *every* fact it held:
+        "Hi, table for four, Thursday, eight o'clock, name is Jo Vasey, and one of
+        us is coeliac." That caller is useless as an instrument, for a reason that
+        is easy to miss. It is not merely unrealistic — it makes whole classes of
+        agent defect *unreachable*. An agent that never asks for the party size
+        cannot be caught by a caller who already said it in turn one; a re-ask
+        check has nothing to fire on when there was only ever one turn of content;
+        and a slot-filling order bug is invisible when every slot arrives at once.
+        The disclosure model (`on_request_only`) exists precisely to make those
+        failures reachable, and a prompt that front-loads the ungated facts throws
+        away the same property for everything that is not gated.
+
+        So the opening is capped at the intent plus at most one detail, and the
+        rest of the facts are released turn by turn. Gated facts keep their harder
+        rule: not until asked, ever.
+        """
         lines = [f"Your goal: {self.intent}."]
+        lines.append(
+            "HOW TO OPEN: your first line says why you are calling and at most one "
+            "detail. Do not list everything you know — a real caller does not read "
+            "out a form, and an assistant that is handed every answer at once is "
+            "never tested on whether it would have asked."
+        )
         volunteered = self.volunteered_keys()
         if volunteered:
-            lines.append("State these up front if they are relevant:")
+            lines.append(
+                "These are yours to give as the conversation needs them, one or two "
+                "at a time, never all at once:"
+            )
             lines.extend(f"  - {k}: {self.facts[k]}" for k in volunteered)
+            lines.append(
+                "Offer whichever of those is obviously needed next without waiting "
+                "to be asked."
+                if volunteers
+                else "Give one of those only when you are asked for it."
+            )
         if self.on_request_only:
             lines.append(
                 "You also know the following, but you must NOT mention any of it "
@@ -368,17 +461,19 @@ class CallerProfile(BaseModel):
         return self.persona.asks_required
 
     def system_prompt(self) -> str:
-        """The full LLM-caller system prompt: persona, goal, and the end sentinel."""
+        """The full LLM-caller system prompt: persona, goal, and the closing rules.
+
+        Three blocks, in this order, joined by blank lines. The text is assembled
+        from declared data every time rather than stored, because a recorded
+        cassette is keyed on this string's digest: a prompt that could not be
+        rebuilt from the persona and the goal would make every fixture
+        unfalsifiable.
+        """
         return "\n\n".join(
             [
                 self.persona.prompt_block(),
-                self.goal.summary(),
-                (
-                    "You are the CALLER, never the assistant. Say only what the "
-                    "caller would say — no narration, no stage directions, no "
-                    "quotation marks. When your goal is met or it is clear it "
-                    f"cannot be, reply with exactly {END_OF_CALL}."
-                ),
+                self.goal.summary(volunteers=self.persona.volunteers),
+                CALLER_RULES,
             ]
         )
 
@@ -419,5 +514,24 @@ END_OF_CALL: str = "[END OF CALL]"
 
 #: Matches the sentinel however the model cases or pads it.
 END_OF_CALL_RE = re.compile(r"\[\s*end\s+of\s+call\s*\]", re.IGNORECASE)
+
+#: The rules that are the same for every caller, whatever its persona or goal:
+#: stay in role, do not loop, and say when you are done.
+#:
+#: The anti-loop clause is not politeness. A simulated caller that keeps
+#: rephrasing the same request against an agent that keeps declining is the most
+#: expensive failure mode this instrument has — it burns the turn budget, it ends
+#: every affected scenario on `reason="max_turns"`, and a `max_turns` stop is
+#: indistinguishable in a report from an agent that could not finish. Asking for
+#: the behaviour in the prompt is the cheap half; `LLMCaller` enforces it in code,
+#: because a prompt is a request and an instrument needs a guarantee.
+CALLER_RULES: str = (
+    "You are the CALLER, never the assistant. Say only what the caller would "
+    "say — no narration, no stage directions, no quotation marks.\n"
+    "Never repeat a line you have already said. If you have been told something "
+    "cannot be done, accept it or end the call; do not ask again in other words.\n"
+    "When your goal is met, or when it is clear it cannot be met, reply with "
+    f"exactly {END_OF_CALL} and nothing else."
+)
 
 __all__ += ["END_OF_CALL", "END_OF_CALL_RE"]

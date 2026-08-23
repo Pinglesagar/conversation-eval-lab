@@ -1,0 +1,69 @@
+{
+  "goal_intent": "book a table while barely paying attention to the questions",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "distracted_parent",
+    "prompt_sha256": "a3d00f274212374cb19168ac92f46601afe50d58017f9bab04eddd8afe583c22",
+    "scenario_id": "edge-reluctant-caller-two-asks",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 3
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "distracted_parent",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "865326f709baf0f1f1f11966e422adce8c39fdf922bb5a7248a9483b5c8c93e7",
+      "index": 0,
+      "utterance": "Hi, I\u2019m calling to book a table for dinner this weekend."
+    },
+    {
+      "context_sha256": "9f567d0cef5731249835482a64f2994561acfca47e1c31a44d573ac67c5ca8fb",
+      "index": 1,
+      "utterance": "Sorry, can you say that again?"
+    },
+    {
+      "context_sha256": "a89a33253f2d043e0b8380791ae2e37a6993d64e88e41fe5cd96db0cfad1e859",
+      "index": 2,
+      "utterance": "Four people."
+    },
+    {
+      "context_sha256": "8a3b72fcd3223a1b83e522f4216b328968cba7d8dbb0339e254b91b2c7121a58",
+      "index": 3,
+      "utterance": "Could you repeat that, please?"
+    },
+    {
+      "context_sha256": "11adac506cbd6ee6be6bea6fe73280f201e3219f2c4faf568f8e6ac5312a16e2",
+      "index": 4,
+      "utterance": "Saturday."
+    },
+    {
+      "context_sha256": "3c936ef78000f74ed4f36a593462cdc29f603b54f069a0c4356331fb972047ac",
+      "index": 5,
+      "utterance": "Sorry, could you say that one more time?"
+    },
+    {
+      "context_sha256": "9401d1e97cd346a6f41d5a9442e41b19cc99b343bf4ab45816f77e834a57bc99",
+      "index": 6,
+      "utterance": "6pm."
+    },
+    {
+      "context_sha256": "150417d388e5af312c0d0b73c1e1c8d3a3ee77f93bb25445d63b793b60f03dfb",
+      "index": 7,
+      "utterance": "Could you repeat the last part about the name?"
+    },
+    {
+      "context_sha256": "0f2bc3d4a4982339a023e40257821f75a5f290cc0a87a41b90bebe37f97a9e7d",
+      "index": 8,
+      "utterance": "Ruth Kelleher."
+    },
+    {
+      "context_sha256": "af018cc415183db0cfe7cfd9d229b7cd83cf5d623b1dfd0f753c26a13583c586",
+      "index": 9,
+      "utterance": "Great, thank you so much! [END OF CALL]"
+    }
+  ]
+}

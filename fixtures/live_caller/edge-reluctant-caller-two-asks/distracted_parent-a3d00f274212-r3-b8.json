@@ -1,0 +1,59 @@
+{
+  "goal_intent": "book a table while barely paying attention to the questions",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "distracted_parent",
+    "prompt_sha256": "a3d00f274212374cb19168ac92f46601afe50d58017f9bab04eddd8afe583c22",
+    "scenario_id": "edge-reluctant-caller-two-asks",
+    "temperature": 0.7,
+    "turn_budget": 8,
+    "variant": 3
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "distracted_parent",
+  "stop_reason": "turn_budget",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "865326f709baf0f1f1f11966e422adce8c39fdf922bb5a7248a9483b5c8c93e7",
+      "index": 0,
+      "utterance": "Hi, I\u2019d like to book a table for dinner, please\u2014sorry, hang on, can you repeat that?"
+    },
+    {
+      "context_sha256": "d4eb5ca8c6364bc396b8fb59a1ead0717ddc75dc87cf969f8318f470c76a03d6",
+      "index": 1,
+      "utterance": "Oh, sorry, can you say that again?"
+    },
+    {
+      "context_sha256": "cfa49ce7a145b1576b77d9e32bfebc82f4c8da76152ead483000b3401f3d008c",
+      "index": 2,
+      "utterance": "Four people."
+    },
+    {
+      "context_sha256": "3ba85aed95a1f270348206852fbd3438758f313ab387ecd35930ea7ac4ca9706",
+      "index": 3,
+      "utterance": "Sorry, could you repeat the date question?"
+    },
+    {
+      "context_sha256": "c2096eb24c1e43c50a6086c9b3e9657539827b94ebba32b0b6ec374013997d81",
+      "index": 4,
+      "utterance": "Saturday."
+    },
+    {
+      "context_sha256": "ff8dd52f1b5124adf99d1757adab097e9e1e30e8743ffbefe55d1c07c485590e",
+      "index": 5,
+      "utterance": "Can you repeat the time question, please?"
+    },
+    {
+      "context_sha256": "fd79492787031860378785f112bd2026f071228b163c6842e4bd5aee48ff6f69",
+      "index": 6,
+      "utterance": "6pm."
+    },
+    {
+      "context_sha256": "8ae0c8eb15342305051126c4df20aa12f0dc2fd360df792bba7be61cefe5a821",
+      "index": 7,
+      "utterance": "Sorry, could you just repeat that last bit about the name?"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "goal_intent": "book a table while barely paying attention to the questions",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "distracted_parent",
+    "prompt_sha256": "a3d00f274212374cb19168ac92f46601afe50d58017f9bab04eddd8afe583c22",
+    "scenario_id": "edge-reluctant-caller-two-asks",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 1
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "distracted_parent",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "865326f709baf0f1f1f11966e422adce8c39fdf922bb5a7248a9483b5c8c93e7",
+      "index": 0,
+      "utterance": "Hi, I\u2019m calling to book a table, uh, for dinner this weekend."
+    },
+    {
+      "context_sha256": "733eaacb3e4dcb70d7c5c734d62561368f14720cfd9b9961e3a5d015155c2f77",
+      "index": 1,
+      "utterance": "Sorry, could you say that again?"
+    },
+    {
+      "context_sha256": "8dbbabcdbf89e2dbf183fca43e75bce53e48b41ac881104d3bee333038b37f74",
+      "index": 2,
+      "utterance": "Four people."
+    },
+    {
+      "context_sha256": "6f18c2388657c1651b47c9d83a645d4d06eab8a78511f2fbdd2e393a280a6787",
+      "index": 3,
+      "utterance": "Sorry, can you repeat that?"
+    },
+    {
+      "context_sha256": "ce5b08c1615cee05b485f04ca42fb522c55d17c58a232387857bdc960786ddcf",
+      "index": 4,
+      "utterance": "Saturday."
+    },
+    {
+      "context_sha256": "7819a5b1352c322d423095f627139f989b370503f63675c149721bada3354682",
+      "index": 5,
+      "utterance": "Could you repeat that question?"
+    },
+    {
+      "context_sha256": "3136a37d4d920d6c394c0dce0e04a7d8c43692781e4e63d3c26bf5d2352b06b9",
+      "index": 6,
+      "utterance": "6pm."
+    },
+    {
+      "context_sha256": "e12663faabdffc611fc38062959485d446d7d53d93be610acef1084a1fb22e24",
+      "index": 7,
+      "utterance": "Sorry, could you say that again?"
+    },
+    {
+      "context_sha256": "70c30b1bae98000335cfe586b04bbd790f19c50dba5d2d237928e2baad536ecb",
+      "index": 8,
+      "utterance": "Yes, please go ahead and book it."
+    },
+    {
+      "context_sha256": "0479d2f86a89f9195f51b25bd2407778b20cf96f897b2161062d1c3cce4a4b22",
+      "index": 9,
+      "utterance": "Ruth Kelleher."
+    },
+    {
+      "context_sha256": "64fd91581c0fc983823a4467d6a7943bea5767d230556937aa7864db4f6a297d",
+      "index": 10,
+      "utterance": "Great, thanks so much. [END OF CALL]"
+    }
+  ]
+}

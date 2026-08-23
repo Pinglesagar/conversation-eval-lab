@@ -1,0 +1,44 @@
+{
+  "goal_intent": "book a table for two and flag a severe peanut allergy",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "brisk_regular",
+    "prompt_sha256": "b0af9dacb383f24adfe3588b334ff787526e07979b4e36d1ff052e505272d7c3",
+    "scenario_id": "happy-dietary-note-single-agent",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 4
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "brisk_regular",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "9a7b4599f3f64e91cc9b965d39008082adeefde4aefc9fa777ac5dfcdb3c4bbb",
+      "index": 0,
+      "utterance": "I need to book a table for two."
+    },
+    {
+      "context_sha256": "d490bc52b6307d26b80390048a2f34bee0f70ed86c62b50f06fe70ea872c5a28",
+      "index": 1,
+      "utterance": "Wednesday."
+    },
+    {
+      "context_sha256": "5fd1d225b6f31aefb3dc250e240ac311a22d06f00de05c56e3812982ac4a4104",
+      "index": 2,
+      "utterance": "7pm."
+    },
+    {
+      "context_sha256": "6d971775dd1206647c287da6cf24fa9d8a97890ab489dc769cc5d9d1d41576ba",
+      "index": 3,
+      "utterance": "Sam Ellery. One of us has a severe peanut allergy."
+    },
+    {
+      "context_sha256": "dc78e2878027450712716d116ecd0bc6d715af0497ba0c88cdf56bc7de553f8a",
+      "index": 4,
+      "utterance": "[END OF CALL]"
+    }
+  ]
+}

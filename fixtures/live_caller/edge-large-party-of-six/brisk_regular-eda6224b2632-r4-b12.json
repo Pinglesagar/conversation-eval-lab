@@ -1,0 +1,44 @@
+{
+  "goal_intent": "book a table for six on Friday evening",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "brisk_regular",
+    "prompt_sha256": "eda6224b2632e289ff7aac4f3858ad91a3a23063c84ad04f8915159b267003aa",
+    "scenario_id": "edge-large-party-of-six",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 4
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "brisk_regular",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "8a75e56efaa5b1970b09f44adbe43afcb0a2cce8472d60f119c13833ffaf07d9",
+      "index": 0,
+      "utterance": "I want to book a table for six."
+    },
+    {
+      "context_sha256": "649bd4d7bd7ffb28609da34891d88b6621857aa0f08d50750f2db2759c86909d",
+      "index": 1,
+      "utterance": "Friday."
+    },
+    {
+      "context_sha256": "97dd9bbea4fab8896e92c757d43fa7fd60a9d2ca9a89eba553b4ea08e1badbfa",
+      "index": 2,
+      "utterance": "8pm."
+    },
+    {
+      "context_sha256": "9f62d49485b055749406b2ae07bfc0b54e4c65a671ab7bb58b5bc834dd482e77",
+      "index": 3,
+      "utterance": "No allergies. Rachel Okonkwo."
+    },
+    {
+      "context_sha256": "a32b950c66e5abe6f2c512e89d35a174aa1efce8b57f2254789c027ace032027",
+      "index": 4,
+      "utterance": "[END OF CALL]"
+    }
+  ]
+}

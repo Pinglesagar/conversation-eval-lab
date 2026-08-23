@@ -16,6 +16,7 @@ import pytest
 
 from lab.simulator.persona import (
     RELUCTANT_BELOW,
+    VOLUNTEERS_AT_OR_ABOVE,
     CallerProfile,
     Goal,
     Persona,
@@ -126,8 +127,68 @@ def test_prompt_includes_the_disclosure_rule_and_the_end_sentinel(tmp_path) -> N
     assert "one of us is coeliac" in prompt
     assert "unless you are asked for it directly" in prompt
     assert "[END OF CALL]" in prompt
-    # Volunteered facts are offered up front.
-    assert "State these up front" in prompt
+    # The anti-loop rule is part of the contract, not a nicety: a caller that
+    # rephrases forever ends every scenario on max_turns, and a max_turns stop
+    # reads in a report exactly like an agent that could not finish.
+    assert "Never repeat a line you have already said" in prompt
+
+
+def test_the_caller_is_told_not_to_open_with_everything_it_knows(tmp_path) -> None:
+    """The single most consequential sentence of prompt in the module.
+
+    An earlier version said "State these up front if they are relevant", and the
+    caller it produced opened with every fact it held. That caller cannot catch an
+    agent that never asks for the party size, because the party size was already
+    said — the disclosure model's whole purpose, defeated by four words of prompt.
+    """
+    prompt = _profile(tmp_path).system_prompt()
+    assert "HOW TO OPEN" in prompt
+    assert "at most one detail" in prompt
+    assert "Do not list everything you know" in prompt
+    # The ungated facts are still present — the caller knows them — but they are
+    # released as the conversation needs them, not read out at the start.
+    assert "one or two at a time, never all at once" in prompt
+    assert "State these up front" not in prompt
+
+
+def test_cooperativeness_decides_whether_ungated_facts_are_offered(tmp_path) -> None:
+    """The second band of the dial, and it only ever touches ungated facts."""
+    goal = Goal(
+        intent="book a table",
+        facts={"party_size": "four", "name": "Jo Vasey"},
+        on_request_only=["name"],
+        ask_patterns={"name": ["your name"]},
+    )
+    forthcoming = Persona(name="a", style="s", cooperativeness=1.0)
+    guarded = Persona(name="b", style="s", cooperativeness=0.6)
+    assert forthcoming.volunteers and not guarded.volunteers
+
+    offered = CallerProfile(persona=forthcoming, goal=goal).system_prompt()
+    withheld = CallerProfile(persona=guarded, goal=goal).system_prompt()
+    assert "without waiting to be asked" in offered
+    assert "only when you are asked for it" in withheld
+    # The gated fact is gated in both: the dial can loosen an ungated fact and
+    # never a gated one, or the scenario's probe would depend on the persona.
+    for prompt in (offered, withheld):
+        assert "unless you are asked for it directly" in prompt
+
+    # Monotone, with the threshold published so a scenario author can see which
+    # values differ behaviourally.
+    assert Persona(
+        name="edge", style="s", cooperativeness=VOLUNTEERS_AT_OR_ABOVE
+    ).volunteers
+    assert not Persona(
+        name="under", style="s", cooperativeness=VOLUNTEERS_AT_OR_ABOVE - 0.01
+    ).volunteers
+
+
+def test_a_reluctant_persona_is_never_told_to_volunteer(tmp_path) -> None:
+    """The three bands must not overlap: reluctant implies not volunteering."""
+    reluctant = Persona(name="distracted", style="s", cooperativeness=0.2)
+    assert reluctant.is_reluctant and not reluctant.volunteers
+    prompt = reluctant.prompt_block()
+    assert "ask them to repeat the question" in prompt
+    assert "never offer a detail you were not asked for" in prompt
 
 
 def test_trace_metadata_records_keys_but_not_gated_values(tmp_path) -> None:

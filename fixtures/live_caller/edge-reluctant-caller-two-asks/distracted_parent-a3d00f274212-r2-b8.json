@@ -1,0 +1,64 @@
+{
+  "goal_intent": "book a table while barely paying attention to the questions",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "distracted_parent",
+    "prompt_sha256": "a3d00f274212374cb19168ac92f46601afe50d58017f9bab04eddd8afe583c22",
+    "scenario_id": "edge-reluctant-caller-two-asks",
+    "temperature": 0.7,
+    "turn_budget": 8,
+    "variant": 2
+  },
+  "leaks": [
+    {
+      "fact": "date",
+      "turn_index": 0
+    }
+  ],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "distracted_parent",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "865326f709baf0f1f1f11966e422adce8c39fdf922bb5a7248a9483b5c8c93e7",
+      "index": 0,
+      "utterance": "Hi, I'm calling to book a table for this Saturday, please."
+    },
+    {
+      "context_sha256": "bd7693391520f6e0ceb4956fc6aae4b6694bf5b13c4b12725320c60467f56a10",
+      "index": 1,
+      "utterance": "Sorry, could you say that again?"
+    },
+    {
+      "context_sha256": "66bffaf2b658091d92eec7f359f78da9af7c24b72dc14e24067fa55dc45f42e4",
+      "index": 2,
+      "utterance": "Oh, sorry, it's for four people."
+    },
+    {
+      "context_sha256": "97662074057d9970b8ec982db33c1e1e9aaea0a3faa603eb946159acf1827ea1",
+      "index": 3,
+      "utterance": "Could you repeat the question?"
+    },
+    {
+      "context_sha256": "e96c72007e2d80daf5c767b414f3da0737b97515533ba8c65713c6148dd0ec52",
+      "index": 4,
+      "utterance": "6pm, please."
+    },
+    {
+      "context_sha256": "c73536609d5457eeff796c70807b244aef591c12f9594135f1a186a48ce6a081",
+      "index": 5,
+      "utterance": "Sorry, could you say that again?"
+    },
+    {
+      "context_sha256": "71130a3ee64411e10c37f5e07492f43bacb15ce131fd740664f18f6ccf9b4169",
+      "index": 6,
+      "utterance": "Yes, please book it under Ruth Kelleher. No dietary requirements."
+    },
+    {
+      "context_sha256": "edc1e9fdbb37c8b6e4b293b3ccf7844146cdceb57ead0e558423d8cb3aaf7274",
+      "index": 7,
+      "utterance": "Great, thank you so much! [END OF CALL]"
+    }
+  ]
+}

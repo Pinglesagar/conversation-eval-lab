@@ -14,6 +14,7 @@ from __future__ import annotations
 import pytest
 
 from lab.clock import FakeClock
+from lab.simulator import flake_band
 from lab.simulator.driver import AgentTurn, ScriptedCaller, run_scenario
 from lab.simulator.passk import (
     PassKPolicy,
@@ -311,3 +312,118 @@ def test_rates_always_carry_their_denominator() -> None:
     assert format_rate(3, 5) == "3/5 (60.0%)"
     assert format_rate(0, 0) == "0/0 (no runs)"
     assert format_rate(1, 3) == "1/3 (33.3%)"
+
+
+# --------------------------------------------------------------------------- #
+# The first real flake band, replayed
+# --------------------------------------------------------------------------- #
+
+
+def test_the_committed_flake_band_replays_offline_and_reproduces_exactly(
+    monkeypatch,
+) -> None:
+    """The property that makes a live measurement auditable instead of anecdotal.
+
+    Two bands are committed — the same eight scenarios and the same caller model,
+    at two caller turn budgets — as eighty JSON cassettes plus the summary each
+    one produced. This replays both, with `LAB_LIVE_CALLER` explicitly unset and
+    no key in the environment, and asserts the summaries come back identical field
+    for field.
+
+    That is a stronger claim than "the harness is deterministic". It means a
+    reader who distrusts the headline number can rerun the exact conversations it
+    was computed from, read every transcript, and disagree with a specific
+    verdict. A live figure that cannot be reproduced is a claim; this one is
+    evidence.
+
+    It is also deliberately brittle in one direction: the cassettes hold only the
+    *caller's* turns, so the agent is re-executed on every replay. Change the
+    agent and this test fails, which is correct — the band was measured against a
+    particular build, and silently carrying its number forward onto a different
+    one is exactly the fiction the fixture exists to prevent.
+    """
+    monkeypatch.delenv("LAB_LIVE_CALLER", raising=False)
+    monkeypatch.delenv("LAB_CALLER_MODEL", raising=False)
+
+    for path in (
+        flake_band.DEFAULT_SUMMARY_PATH,
+        flake_band.TIGHT_BUDGET_SUMMARY_PATH,
+    ):
+        resolved = flake_band._resolve(path)
+        assert resolved.exists(), f"missing committed band: {path}"
+        committed = flake_band.FlakeBand.load(resolved)
+
+        replayed = flake_band.run_flake_band(
+            scenario_ids=[row.scenario_id for row in committed.rows],
+            k=committed.k,
+            temperature=committed.temperature,
+            model_label=committed.caller_model,
+            max_utterances=committed.caller_turn_budget,
+            max_turns=committed.driver_max_turns,
+            record=False,
+        )
+        assert replayed.model_dump(mode="json") == committed.model_dump(mode="json"), (
+            f"{path} no longer reproduces. Either the agent's behaviour changed or "
+            "a cassette did; both need a human, and neither may be papered over by "
+            "re-recording without saying so."
+        )
+
+
+def test_the_two_committed_bands_disagree_which_is_the_point(monkeypatch) -> None:
+    """k=5 bounds a flake rate loosely, and here is the demonstration.
+
+    The two committed bands are independent draws of the same eight scenarios
+    against the same agent and the same caller model. They do not agree on how
+    many scenarios are flaky. Anyone quoting a single band as *the* flake rate is
+    quoting one sample of a distribution — which is the argument `passk` makes
+    about scenarios, applied to the band itself.
+    """
+    band = flake_band.FlakeBand.load(flake_band._resolve(flake_band.DEFAULT_SUMMARY_PATH))
+    tight = flake_band.FlakeBand.load(
+        flake_band._resolve(flake_band.TIGHT_BUDGET_SUMMARY_PATH)
+    )
+    assert band.k == tight.k == 5
+    assert band.caller_model == tight.caller_model
+    assert band.caller_turn_budget != tight.caller_turn_budget
+    assert band.flaky != tight.flaky
+    # Both are reported with their denominators, always.
+    assert "/8 (" in band.scenario_flake_rate_str
+    assert "/40 (" in band.run_failure_rate_str
+
+
+def test_the_band_reports_the_instrument_alongside_the_verdict() -> None:
+    """A FLAKY row caused by the caller must not read as a finding about the agent."""
+    band = flake_band.FlakeBand.load(flake_band._resolve(flake_band.DEFAULT_SUMMARY_PATH))
+    for row in band.rows:
+        # Every repeat accounted for by a stop reason, so "why did this call end"
+        # is never a question the reader has to guess at.
+        assert sum(row.stop_reasons.values()) == row.total_runs
+        assert len(row.caller_turns) == row.total_runs
+    text = band.describe()
+    assert "caller turn budget 12" in text
+    assert "lower bound" in text  # the leak count never appears unqualified
+
+
+def test_recording_a_band_needs_two_switches(monkeypatch) -> None:
+    """`record=True` alone must not be able to spend money.
+
+    A flag in a script is easier to set by accident than an environment variable
+    is, so the expensive path needs both. This is the same refusal `lab.cli` makes
+    for `--live` and `--live-judge`, for the same reason.
+    """
+    monkeypatch.delenv("LAB_LIVE_CALLER", raising=False)
+    with pytest.raises(RuntimeError, match="LAB_LIVE_CALLER"):
+        flake_band.run_flake_band(scenario_ids=(), record=True)
+
+
+def test_replaying_a_band_needs_no_model_and_no_key(monkeypatch) -> None:
+    """The cardinal rule, checked on the newest live-shaped code path in the repo."""
+    monkeypatch.delenv("LAB_LIVE_CALLER", raising=False)
+    monkeypatch.delenv("LAB_CALLER_MODEL", raising=False)
+    band = flake_band.run_flake_band(
+        scenario_ids=("happy-two-covers-thursday",),
+        k=flake_band.DEFAULT_K,
+        record=False,
+    )
+    assert band.total_runs == flake_band.DEFAULT_K
+    assert band.rows[0].verdict == "STABLE_PASS"

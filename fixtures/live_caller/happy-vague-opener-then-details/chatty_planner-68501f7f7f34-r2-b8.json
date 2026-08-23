@@ -1,0 +1,29 @@
+{
+  "goal_intent": "work out whether to eat here this weekend, then book if it suits",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "68501f7f7f346c4b352bc0eaf279c352f240c0d6016cb3c88df714ee0ca70703",
+    "scenario_id": "happy-vague-opener-then-details",
+    "temperature": 0.7,
+    "turn_budget": 8,
+    "variant": 2
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": null,
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "3e848f5cf09ee41ba5a14dd88984d680921a98ced528c7754c1b8ba165da11d3",
+      "index": 0,
+      "utterance": "Hi there! I'm calling because we're thinking of having a little get-together this weekend and your place came highly recommended. Are you any good for groups?"
+    },
+    {
+      "context_sha256": "64ea76d4b20c3d1849e2a10868f7cd90e9d6c026b22fac7a9e559977bf37127b",
+      "index": 1,
+      "utterance": "Oh, that's great to hear! There are five of us, and we\u2019re all looking forward to catching up over some good food. Is that a manageable number for you?"
+    }
+  ]
+}

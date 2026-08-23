@@ -1,0 +1,49 @@
+{
+  "goal_intent": "work out whether to eat here this weekend, then book if it suits",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "68501f7f7f346c4b352bc0eaf279c352f240c0d6016cb3c88df714ee0ca70703",
+    "scenario_id": "happy-vague-opener-then-details",
+    "temperature": 0.7,
+    "turn_budget": 8,
+    "variant": 3
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "3e848f5cf09ee41ba5a14dd88984d680921a98ced528c7754c1b8ba165da11d3",
+      "index": 0,
+      "utterance": "Hi there, I'm thinking of organising a little get-together with some friends this weekend and wanted to check if your place is good for groups. Is it a bustling sort of spot, or more relaxed?"
+    },
+    {
+      "context_sha256": "cd23adaf50e8c8b8ce235c22d4172359dcefe419ae16b2192373eb12d3eef269",
+      "index": 1,
+      "utterance": "Glad to hear it! There\u2019ll be five of us, and we\u2019re all looking forward to catching up over some good food. Is this a busy time of year for you, or do you expect it\u2019ll be fairly quiet?"
+    },
+    {
+      "context_sha256": "29eb5ff79a5c94ca3b574498ab797b266ce29faecdb3585e57f0b15cd1447a2a",
+      "index": 2,
+      "utterance": "We were hoping for this coming Sunday\u2014it seems like the perfect day for a meal, especially with the weather being so nice lately. Will you be open then?"
+    },
+    {
+      "context_sha256": "d78a586953896610d9dc5f1344652dad0b88651ddeda7ef835e2fa47e8ca8c25",
+      "index": 3,
+      "utterance": "We were thinking about 6:30pm\u2014it\u2019s a good time for everyone to settle in and enjoy the evening together. Does that work for your schedule?"
+    },
+    {
+      "context_sha256": "c580ca29734a235bc99d54f9c784ae9a4b71361c58fd93d7d4fc8028645456de",
+      "index": 4,
+      "utterance": "That\u2019s great, thanks! No allergies or special requirements this time\u2014everyone\u2019s pretty easygoing about food. The booking will be under Marcus Bell, if you need anything else just let me know."
+    },
+    {
+      "context_sha256": "1e7e610bb7806d52ed34ad6dc43a23c39d19f38b79e01b49f4b746ad3ed0688f",
+      "index": 5,
+      "utterance": "Perfect, thanks so much for booking us in! We\u2019re all looking forward to it. Have a lovely day and see you Sunday. [END OF CALL]"
+    }
+  ]
+}

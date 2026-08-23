@@ -1,0 +1,187 @@
+{
+  "agent": "scripted backend, FakeClock, fresh restaurant per repeat (deterministic)",
+  "caller_model": "azure-openai/gpt-4.1",
+  "caller_turn_budget": 8,
+  "driver_max_turns": 14,
+  "k": 5,
+  "rows": [
+    {
+      "caller_turns": [
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "failed_checks": [],
+      "first_evidence": null,
+      "leaks_detected": 0,
+      "passes": 5,
+      "persona": "brisk_regular",
+      "scenario_id": "happy-two-covers-thursday",
+      "stop_reasons": {
+        "goal_reached": 5
+      },
+      "suite": "happy",
+      "total_runs": 5,
+      "verdict": "STABLE_PASS"
+    },
+    {
+      "caller_turns": [
+        6,
+        5,
+        6,
+        6,
+        4
+      ],
+      "failed_checks": [
+        "tools"
+      ],
+      "first_evidence": "UNEXPECTED tools: --  [absence] no call to search_tables   <- tools called: none",
+      "leaks_detected": 0,
+      "passes": 4,
+      "persona": "brisk_regular",
+      "scenario_id": "happy-availability-then-choice",
+      "stop_reasons": {
+        "goal_reached": 4,
+        "repeated_line": 1
+      },
+      "suite": "happy",
+      "total_runs": 5,
+      "verdict": "FLAKY"
+    },
+    {
+      "caller_turns": [
+        5,
+        5,
+        4,
+        4,
+        5
+      ],
+      "failed_checks": [],
+      "first_evidence": null,
+      "leaks_detected": 0,
+      "passes": 5,
+      "persona": "brisk_regular",
+      "scenario_id": "happy-dietary-note-single-agent",
+      "stop_reasons": {
+        "goal_reached": 5
+      },
+      "suite": "happy",
+      "total_runs": 5,
+      "verdict": "STABLE_PASS"
+    },
+    {
+      "caller_turns": [
+        6,
+        6,
+        2,
+        6,
+        6
+      ],
+      "failed_checks": [
+        "tools"
+      ],
+      "first_evidence": "UNEXPECTED tools: --  [absence] no call to create_booking   <- tools called: none",
+      "leaks_detected": 0,
+      "passes": 4,
+      "persona": "chatty_planner",
+      "scenario_id": "happy-vague-opener-then-details",
+      "stop_reasons": {
+        "agent:agent_ended": 1,
+        "goal_reached": 4
+      },
+      "suite": "happy",
+      "total_runs": 5,
+      "verdict": "FLAKY"
+    },
+    {
+      "caller_turns": [
+        5,
+        5,
+        5,
+        5,
+        6
+      ],
+      "failed_checks": [],
+      "first_evidence": null,
+      "leaks_detected": 2,
+      "passes": 5,
+      "persona": "minimal_replier",
+      "scenario_id": "edge-volunteers-nothing",
+      "stop_reasons": {
+        "goal_reached": 5
+      },
+      "suite": "edge",
+      "total_runs": 5,
+      "verdict": "STABLE_PASS"
+    },
+    {
+      "caller_turns": [
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "failed_checks": [
+        "tools"
+      ],
+      "first_evidence": "UNEXPECTED tools: --  [absence] no call to create_booking   <- tools called: search_tables",
+      "leaks_detected": 1,
+      "passes": 1,
+      "persona": "distracted_parent",
+      "scenario_id": "edge-reluctant-caller-two-asks",
+      "stop_reasons": {
+        "goal_reached": 1,
+        "turn_budget": 4
+      },
+      "suite": "edge",
+      "total_runs": 5,
+      "verdict": "FLAKY"
+    },
+    {
+      "caller_turns": [
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "failed_checks": [],
+      "first_evidence": null,
+      "leaks_detected": 0,
+      "passes": 5,
+      "persona": "brisk_regular",
+      "scenario_id": "edge-large-party-of-six",
+      "stop_reasons": {
+        "goal_reached": 5
+      },
+      "suite": "edge",
+      "total_runs": 5,
+      "verdict": "STABLE_PASS"
+    },
+    {
+      "caller_turns": [
+        6,
+        6,
+        6,
+        6,
+        6
+      ],
+      "failed_checks": [],
+      "first_evidence": null,
+      "leaks_detected": 0,
+      "passes": 5,
+      "persona": "hostile_caller",
+      "scenario_id": "adversarial-abuse-then-real-booking",
+      "stop_reasons": {
+        "goal_reached": 5
+      },
+      "suite": "adversarial",
+      "total_runs": 5,
+      "verdict": "STABLE_PASS"
+    }
+  ],
+  "temperature": 0.7
+}

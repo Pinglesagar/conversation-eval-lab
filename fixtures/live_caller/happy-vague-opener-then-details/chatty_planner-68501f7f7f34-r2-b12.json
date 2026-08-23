@@ -1,0 +1,49 @@
+{
+  "goal_intent": "work out whether to eat here this weekend, then book if it suits",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "68501f7f7f346c4b352bc0eaf279c352f240c0d6016cb3c88df714ee0ca70703",
+    "scenario_id": "happy-vague-opener-then-details",
+    "temperature": 0.7,
+    "turn_budget": 12,
+    "variant": 2
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "3e848f5cf09ee41ba5a14dd88984d680921a98ced528c7754c1b8ba165da11d3",
+      "index": 0,
+      "utterance": "Hi there! I\u2019m thinking about organising a little get-together with some friends and was wondering if your place is good for a group. We\u2019re looking for somewhere that has a nice vibe and tasty food."
+    },
+    {
+      "context_sha256": "a35d974160a18b285b2a94183227455b1f0fa22167cb34ef94f2b77fba5887c6",
+      "index": 1,
+      "utterance": "That\u2019s great to hear! There are five of us, and we\u2019re all pretty excited to catch up over a good meal. Is that number alright for a booking this weekend?"
+    },
+    {
+      "context_sha256": "8c4e094118717a0b8af334026b10b740a35d9d415436e32521e72213a100059d",
+      "index": 2,
+      "utterance": "Thanks for checking! We were thinking of coming in this Sunday \u2014 it\u2019s always nice to end the weekend on a high note with good company and food. Does Sunday work for your bookings?"
+    },
+    {
+      "context_sha256": "2d56f7b5be14a258dbf6b351712cca3c5913a047db41e3c0730055f450c0bd8f",
+      "index": 3,
+      "utterance": "That\u2019s a handy range of times! We\u2019d like to book for 6:30pm, since it gives us a chance to chat and still get home before it\u2019s too late. Is that slot available for five people this Sunday?"
+    },
+    {
+      "context_sha256": "32de3b66ddc08fc4ce7da5fe09e9ec4b0012a7fd1c952298ee17bdc3f5f807b3",
+      "index": 4,
+      "utterance": "Thanks for confirming! None of us have any allergies or dietary restrictions, so we\u2019re all set there. You can put the booking under Marcus Bell \u2014 he\u2019s the organiser and will be arriving with the group."
+    },
+    {
+      "context_sha256": "aecac3a3cf37c08049db254d0bbc1b4ab4db3c2afd7a6b6c5318ac35624da00d",
+      "index": 5,
+      "utterance": "Perfect, thank you so much! We\u2019re looking forward to it and I\u2019ll let everyone know the booking is sorted. Have a great day, and see you Sunday! [END OF CALL]"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "goal_intent": "work out whether to eat here this weekend, then book if it suits",
+  "key": {
+    "model": "azure-openai/gpt-4.1",
+    "persona": "chatty_planner",
+    "prompt_sha256": "68501f7f7f346c4b352bc0eaf279c352f240c0d6016cb3c88df714ee0ca70703",
+    "scenario_id": "happy-vague-opener-then-details",
+    "temperature": 0.7,
+    "turn_budget": 8,
+    "variant": 4
+  },
+  "leaks": [],
+  "model": "azure-openai/gpt-4.1",
+  "persona": "chatty_planner",
+  "stop_reason": "goal_reached",
+  "temperature": 0.7,
+  "turns": [
+    {
+      "context_sha256": "3e848f5cf09ee41ba5a14dd88984d680921a98ced528c7754c1b8ba165da11d3",
+      "index": 0,
+      "utterance": "Hi there! I\u2019m looking for somewhere to bring a group for a little get-together \u2014 are you any good with groups?"
+    },
+    {
+      "context_sha256": "3ca8334768a1555671e2aceed7561c69bf443db5ab1015a7e995cf9d6c2e940c",
+      "index": 1,
+      "utterance": "Thanks, that\u2019s good to know! There\u2019s five of us, and we\u2019re hoping to catch up over dinner."
+    },
+    {
+      "context_sha256": "244d695145cefa6e0b7c530699da86f69094b1ce4da0d8827b4fa5642025eb9c",
+      "index": 2,
+      "utterance": "We\u2019re planning for this Sunday, since everyone\u2019s finally free at the same time \u2014 fingers crossed the weather stays nice!"
+    },
+    {
+      "context_sha256": "f124f8893287b3df240437b732d447da004ef819a416ccd200dbf7d48e66c640",
+      "index": 3,
+      "utterance": "We were thinking 6:30pm, so it\u2019s early enough to chat but late enough for everyone to get here comfortably."
+    },
+    {
+      "context_sha256": "0c36d40fca69a7e18e655224381350451615fd4d6cb7ae985a0957875e48fda5",
+      "index": 4,
+      "utterance": "That\u2019s great, thank you! Nobody in our group has any allergies, so we\u2019re all good on that front. You can book it under Marcus Bell."
+    },
+    {
+      "context_sha256": "2c5eda45131aa8d530033514bb590b8013495b2e3099eaaab7f937c2fe83d020",
+      "index": 5,
+      "utterance": "Perfect, thanks for sorting that out! We\u2019re looking forward to it \u2014 sounds like it\u2019ll be a lovely evening. [END OF CALL]"
+    }
+  ]
+}
