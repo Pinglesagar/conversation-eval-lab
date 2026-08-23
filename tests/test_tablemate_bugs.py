@@ -40,8 +40,22 @@ from lab.checks import (
 )
 from lab.clock import FakeClock
 from lab.simulator import ScriptedCaller, run_pass_k, run_scenario
-from tablemate.agents import LARGE_PARTY_THRESHOLD
-from tablemate.runtime import LLMBackend, ScriptedBackend, build_agent
+from tablemate.agents import (
+    BOOKING,
+    GREETER,
+    LARGE_PARTY_THRESHOLD,
+    MODIFICATION,
+    POLICY,
+    RECORD_FIELDS,
+)
+from tablemate.runtime import (
+    LIVE_BRIEFS,
+    LIVE_PROMPTS,
+    LLMBackend,
+    PhrasingBackend,
+    ScriptedBackend,
+    build_agent,
+)
 
 # --------------------------------------------------------------------------- #
 # Conversations. Each is the shortest script that reaches the behaviour.
@@ -330,7 +344,7 @@ def test_rephrasing_the_turn_changes_no_decision(
     scripted, _ = talk(lines, backend=ScriptedBackend())
     rephrased, _ = talk(
         lines,
-        backend=LLMBackend(cassette=tmp_path / "phrasing.json", completion=_shouty),
+        backend=PhrasingBackend(cassette=tmp_path / "phrasing.json", completion=_shouty),
     )
     assert scripted.tool_names() == expected
     assert rephrased.tool_names() == expected
@@ -342,7 +356,7 @@ def test_rephrasing_the_turn_changes_no_decision(
 def test_the_phantom_confirmation_survives_rephrasing(tmp_path) -> None:
     agent, turns = talk(
         PARTY_OF_SIX,
-        backend=LLMBackend(cassette=tmp_path / "phrasing.json", completion=_shouty),
+        backend=PhrasingBackend(cassette=tmp_path / "phrasing.json", completion=_shouty),
     )
     assert "booked in" in spoken(turns)
     assert "create_booking" not in agent.tool_names()
@@ -474,3 +488,269 @@ def test_a_clean_call_is_reported_clean() -> None:
         ],
     ).run(trace)
     assert report.ok, report.render()
+
+
+# --------------------------------------------------------------------------- #
+# The same three defects, with a model in the decision seat
+# --------------------------------------------------------------------------- #
+#
+# Under `ScriptedBackend` all three defects are code paths and fire on every run.
+# Under `LLMBackend` there is no branch to take: the model reads a prompt and a
+# brief and decides for itself, so each defect becomes *probable* rather than
+# certain. That change is the honest cost of putting a model in the decision seat
+# and it is stated as a measured rate in `tablemate/SEEDED_BUGS.md`.
+#
+# What can still be asserted deterministically, offline, is the two things that
+# make the rate what it is:
+#
+#   1.  **The mechanism is present.** The prompt really does hand a group booking
+#       to the events team without a tool; the amendment desk's brief really does
+#       omit the head count its instructions tell it to establish; the policy
+#       desk's brief really has no field a dietary note could travel in, and the
+#       projection really is destructive.
+#   2.  **The recorded live run really did exhibit it.** `fixtures/live_sessions.json`
+#       is a real conversation with a real model, and replaying it needs no key.
+#
+# The first is a statement about the design. The second is a statement about the
+# world. Neither is a substitute for the other.
+
+LIVE_CASSETTE = "fixtures/live_sessions.json"
+
+
+def _live_asks(lines: list[str], *messages: dict) -> list[dict]:
+    """Drive the live engine over a stand-in and return what the model was told."""
+    from tests.test_tablemate_runtime import Replies
+
+    replies = Replies(*messages)
+    backend = LLMBackend(cassette="/nonexistent-cassette.json", completion=replies)
+    agent = build_agent(clock=FakeClock(), backend=backend)
+    for line in lines:
+        agent(line)
+    return replies.asks
+
+
+def test_the_live_briefs_omit_exactly_the_three_documented_fields() -> None:
+    """The "no fourth bug" clause of the answer key, as an assertion.
+
+    Every narrowing in `LIVE_BRIEFS` is a place information can be lost, so the
+    set of them is the set of reachable information-loss defects. Three
+    omissions, each documented; a fourth appearing here without a line in
+    SEEDED_BUGS.md is an undeclared defect, which is exactly what this repository
+    argues an eval suite must never have.
+    """
+    omissions = {
+        (desk, field)
+        for desk, inbound in LIVE_BRIEFS.items()
+        for field in RECORD_FIELDS
+        if field not in inbound
+    }
+    assert omissions == {
+        # BUG-2: the amendment desk is told to establish a head count and is not
+        # given the one the booking desk already has.
+        (MODIFICATION, "party_size"),
+        # BUG-3: the policy desk has nowhere to put a dietary requirement, and
+        # the projection is destructive, so it is gone for good.
+        (POLICY, "dietary"),
+        (POLICY, "notes"),
+    }
+
+
+def test_the_group_paragraph_hands_the_paperwork_over_and_names_no_tool() -> None:
+    """BUG-1's mechanism: a prompt, not a branch.
+
+    The small-party procedure is numbered and ends in a tool call. The group
+    procedure is a paragraph of things to say, and it accounts for its own
+    absence of a reference — "the events team sends the paperwork out" — which is
+    what makes a model close the call verbally and feel it has finished the job.
+    Reviewing the prompt, the group path reads *fuller* than the one above it.
+    """
+    prompt = LIVE_PROMPTS[BOOKING]
+    small, _, group = prompt.partition("A party of six or more")
+    assert "create_booking" in small
+    assert "never tell a caller a table is booked" in small.lower()
+    assert "create_booking" not in group
+    assert "events team" in group
+    # And the threshold is the same one the deterministic build uses, so the
+    # boundary pair (five books, six does not) means the same thing either way.
+    assert str(LARGE_PARTY_THRESHOLD) not in group  # spelled as a word
+    assert "six or more" in prompt
+
+
+def test_the_amendment_desk_is_told_to_establish_what_it_was_not_given() -> None:
+    """BUG-2's mechanism: two sources of truth for one fact, and the brief is not it."""
+    assert "party_size" not in LIVE_BRIEFS[MODIFICATION]
+    assert "head count" in LIVE_PROMPTS[MODIFICATION]
+
+    asks = _live_asks(
+        ["I need to move my booking TM-1042 to half seven — there are four of us."],
+        {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                {
+                    "id": "c1",
+                    "type": "function",
+                    "function": {
+                        "name": "transfer_to_amendment_desk",
+                        "arguments": "{}",
+                    },
+                }
+            ],
+        },
+        {"role": "assistant", "content": "How many people will be dining?"},
+    )
+    amendment = asks[-1]["system"]
+    assert "amend and cancel existing bookings" in amendment
+    assert "booking reference: TM-1042" in amendment
+    assert "party size" not in amendment, "the brief must not carry the head count"
+
+
+def test_the_policy_desk_narrows_the_record_and_the_note_does_not_come_back() -> None:
+    """BUG-3's mechanism: a destructive projection on the path back to the desk that needs it."""
+    assert "dietary" not in LIVE_BRIEFS[POLICY]
+    assert "notes" not in LIVE_BRIEFS[POLICY]
+
+    def transfer(name: str) -> dict:
+        return {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                {
+                    "id": "c1",
+                    "type": "function",
+                    "function": {"name": name, "arguments": "{}"},
+                }
+            ],
+        }
+    asks = _live_asks(
+        [
+            "A table for two on Friday at 7pm — one of us has a severe peanut allergy.",
+            "Before that, is there parking nearby?",
+        ],
+        transfer("transfer_to_booking_desk"),
+        {"role": "assistant", "content": "Noted. And your name?"},
+        transfer("transfer_to_policy_desk"),
+        {"role": "assistant", "content": "There is a car park two doors down."},
+    )
+    booking_brief = asks[1]["system"]
+    policy_brief = asks[-1]["system"]
+    assert "peanut" in booking_brief, "the booking desk was told, so it can be lost"
+    assert "peanut" not in policy_brief, "the policy desk's brief has no room for it"
+
+
+def test_the_booking_desk_alone_loses_nothing_which_is_why_the_control_is_green() -> None:
+    """`happy-dietary-note-single-agent`'s mechanism: no boundary, no loss."""
+    assert LIVE_BRIEFS[BOOKING] == RECORD_FIELDS
+    assert LIVE_BRIEFS[GREETER] == RECORD_FIELDS
+
+
+# ------------------------------------------- what the recorded live run showed
+#
+# Every test below replays `fixtures/live_sessions.json` — a real conversation
+# with a real model, driven again offline with no key. Two paths, and both are
+# needed: `replay()` re-drives the *engine* (prompts, tool loop, projection,
+# handoff translation) from the recorded model answers, while `--score` reads the
+# committed traces. The first proves the code still behaves as it did; the second
+# is the evidence behind every rate in SEEDED_BUGS.md.
+
+
+def test_the_recorded_live_run_shows_the_phantom_confirmation(monkeypatch) -> None:
+    """BUG-1, from a real model: told the room is theirs, no create_booking."""
+    from tablemate.__main__ import bug_1_signal, replay
+
+    monkeypatch.chdir(_repo_root())
+    trace = replay("edge-large-party-of-six")
+    scenario = _scenario("edge-large-party-of-six")
+    signal = bug_1_signal(trace, scenario)
+    assert signal.applicable and signal.fired, signal
+    assert "create_booking" not in trace.tool_names()
+    # And nothing errored: the transcript reads as a competent, courteous call.
+    assert all(
+        e.payload.get("ok", True) for e in trace.events if e.kind == "tool_result"
+    )
+
+
+def test_the_recorded_live_run_shows_the_dietary_note_lost_at_the_boundary(
+    monkeypatch,
+) -> None:
+    """BUG-3, from a real model: the coeliac note does not reach the booking."""
+    from tablemate.__main__ import bug_3_signal, replay
+
+    monkeypatch.chdir(_repo_root())
+    trace = replay("edge-coeliac-then-menu-policy")
+    signal = bug_3_signal(trace, _scenario("edge-coeliac-then-menu-policy"))
+    assert signal.applicable and signal.fired, signal
+    assert "notes=''" in (signal.evidence or "")
+
+
+def test_the_recorded_live_run_shows_the_amendment_desk_re_asking(monkeypatch) -> None:
+    """BUG-2, from a real model — and only in one of the three repeats.
+
+    The repeat index is load-bearing here in a way it never is under
+    `ScriptedBackend`: repeats 0 and 1 of this row never reached the amendment
+    desk at all, so the defect was not merely absent but *unreachable*. This test
+    asserts the one repeat where it fired; `--score fixtures/live_run` reports the
+    rate over all three, which is the number SEEDED_BUGS.md quotes.
+    """
+    from tablemate.__main__ import bug_2_signal
+    from lab.trace.io import read_jsonl
+
+    root = _repo_root()
+    scenario = _scenario("edge-modification-after-booking")
+    signals = [
+        bug_2_signal(
+            read_jsonl(
+                root / "fixtures/live_run/traces"
+                / f"edge-modification-after-booking-{index}.jsonl"
+            ),
+            scenario,
+        )
+        for index in range(3)
+    ]
+    fired = [s for s in signals if s.fired]
+    assert len(fired) == 1, [s.evidence for s in signals]
+    assert "how many people are coming" in (fired[0].evidence or "")
+    assert sum(1 for s in signals if not s.applicable) == 2
+
+
+def test_the_live_run_committed_its_evidence_and_it_still_scores(monkeypatch) -> None:
+    """The audit path: the quoted rates are recomputable with no model at all."""
+    from tablemate.__main__ import _rates, bugs_for, controls_for, score
+    from lab.cli import evaluate_trace
+    from lab.trace.io import read_jsonl
+
+    root = _repo_root()
+    paths = sorted((root / "fixtures/live_run/traces").glob("*.jsonl"))
+    assert len(paths) == 30, "ten scenarios at k=3"
+    rows = []
+    for path in paths:
+        trace = read_jsonl(path)
+        scenario = _scenario(trace.scenario_id)
+        row = score(scenario, trace, repeat=int(path.stem[-1]), evaluate=evaluate_trace)
+        row["reaches"] = bugs_for(scenario.id)
+        row["controls"] = controls_for(scenario.id)
+        rows.append(row)
+
+    rates = _rates(rows)
+    # The numbers SEEDED_BUGS.md quotes. If a detector is retuned these move, and
+    # the prose has to move with them — which is the reason this is a test.
+    assert (rates["BUG-1"]["fired"], rates["BUG-1"]["applicable"]) == (5, 6)
+    assert (rates["BUG-2"]["fired"], rates["BUG-2"]["applicable"]) == (1, 4)
+    assert (rates["BUG-3"]["fired"], rates["BUG-3"]["applicable"]) == (1, 1)
+    # And the emergent finding: an unbacked promise from a desk BUG-1 does not
+    # cover. Declared here so that it cannot quietly disappear.
+    emergent = [r["emergent"] for r in rows if r["emergent"]]
+    assert len(emergent) == 2
+    assert all("ModificationAgent" in line for line in emergent)
+
+
+def _repo_root():
+    import pathlib
+
+    return pathlib.Path(__file__).resolve().parents[1]
+
+
+def _scenario(scenario_id: str):
+    from scenarios.loader import load_corpus
+
+    return next(s for s in load_corpus().scenarios if s.id == scenario_id)

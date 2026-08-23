@@ -284,11 +284,19 @@ def test_no_agent_module_imports_the_harness() -> None:
         return found
 
     package = pathlib.Path(__file__).resolve().parents[1] / "tablemate"
+    # Two exemptions, and they are different in kind. `runtime.py` is the adapter
+    # — the one module of the system under test that speaks the harness's
+    # language — and `__init__.py` re-exports it. `__main__.py` is not part of
+    # the system at all: it is a runner that drives the harness over this system,
+    # so of course it imports `lab`, in the same way `lab.cli` does. What would
+    # break the claim is the system depending on the runner, and that is asserted
+    # separately below.
     adapters = {"runtime.py", "__init__.py"}
+    runners = {"__main__.py"}
     checked = 0
     offenders: dict[str, set[str]] = {}
     for path in sorted(package.glob("*.py")):
-        if path.name in adapters:
+        if path.name in adapters or path.name in runners:
             continue
         checked += 1
         harness = {
@@ -306,6 +314,13 @@ def test_no_agent_module_imports_the_harness() -> None:
         "lab.simulator",
         "lab.clock",
     }
+    # And nothing in the package imports the runner. A runner that leaked into
+    # the system would make the exemption above a hole rather than a boundary.
+    for path in sorted(package.glob("*.py")):
+        if path.name in runners:
+            continue
+        imported = modules_imported(path.read_text(encoding="utf-8"))
+        assert "tablemate.__main__" not in imported, path.name
 
 
 # --------------------------------------------------------------------------- #

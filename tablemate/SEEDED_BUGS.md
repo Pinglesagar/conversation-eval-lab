@@ -195,3 +195,154 @@ thorough:
 
 The controls are the load-bearing half of that table. A finding without one is a
 description of a symptom; a finding with one names a boundary.
+
+---
+
+# The same three defects under a live model
+
+Everything above describes `ScriptedBackend`, which is the default and the backend
+behind every offline test: three code paths, byte-identical on every machine, three
+`STABLE_FAIL` verdicts. `tablemate.runtime.LLMBackend` is the other configuration.
+It does not run `tablemate/agents.py` at all. Each desk gets its remit as a system
+prompt (`LIVE_PROMPTS`), its allow-list as tool schemas, and its brief
+(`LIVE_BRIEFS`) as the only memory it has, and the **model** decides which tool to
+call, which colleague to hand the caller to, and when the call is over.
+
+**The defects are still not switches.** There is no flag on this path either. What
+there is:
+
+| Defect | How it is induced, honestly |
+|---|---|
+| BUG-1 | The booking prompt's small-party procedure is numbered and ends in `create_booking`. Its group-booking paragraph is a list of things to *say* — room hire, deposit, pre-order — and accounts for its own missing reference: *"the events team picks a group up from there and sends the paperwork out by email."* No tool is named. A model that reads it closes the call verbally. |
+| BUG-2 | `LIVE_BRIEFS[MODIFICATION]` omits `party_size`, while the amendment prompt says re-seating needs a head count and *"establish the head count before you move anything."* The desk is told to get a fact it was not given. |
+| BUG-3 | `LIVE_BRIEFS[POLICY]` has no field a dietary note could travel in, and the projection is destructive exactly as `Orchestrator.turn`'s is. The note is gone from the record for the rest of the call. |
+
+Each of those is a line a reviewer would sign off one at a time. That is the same
+property the three deterministic defects have, and it is the point.
+
+## They become probabilistic. Measured, at one temperature, on one model
+
+Ten scenarios, three independent repeats each, `azure/gpt-4.1` at temperature 0.7.
+Evidence in `fixtures/live_run/`; recompute with `python -m tablemate --score
+fixtures/live_run`, which calls no model.
+
+| Defect | Fired | Selected | Not applicable | Scripted, for comparison |
+|---|---|---|---|---|
+| BUG-1 | **5/6 (83%)** | 6 | 0 | 6/6 (100%) |
+| BUG-2 | **1/4 (25%)** | 6 | 2 | 6/6 (100%) |
+| BUG-3 | **1/1 (100%)** | 6 | 5 | 6/6 (100%) |
+
+**Read the "not applicable" column before the rate.** It is not a rounding note.
+Five of the six BUG-3 conversations never reached a `create_booking` at all — the
+model answered the allergen question and the caller's script ran out — so there was
+no booking for the note to be missing from. Two of the six BUG-2 conversations never
+reached the amendment desk. Scoring those as clean would have reported BUG-3 at
+1/6 (17%) and BUG-2 at 1/6 (17%), which is not a defect rate: it is a measure of how
+often the agent finished the call, wearing a defect rate's clothes.
+
+`fired/applicable` is the rate. `selected − applicable` is the number of times the
+model took a route that put the defect out of reach. Under `ScriptedBackend` that
+column is always zero, which is exactly why the distinction never had to be drawn
+before and has to be drawn now.
+
+**One number, one model, one temperature, one day.** These are not the defect's
+"true" rates. Sample size is three per row. Nothing here supports a confidence
+interval and none is offered.
+
+## What the live run found that the deterministic build cannot show
+
+**1. A literal promise detector loses most of its recall to paraphrase.**
+On the six large-party conversations, `ToolContract` reported the missing
+`create_booking` **6/6**. `PromiseContract` — the decision-versus-action check that
+is supposed to be BUG-1's headline finding — reported it **1/6**. The scripted agent
+says *"That is all booked in"*; the model says *"The room is yours for Friday at 8pm,
+and everything is in hand"*, and the promise patterns were written against the first.
+The defect did not change. The detector's recall collapsed from 100% to 17% because
+its evidence is a literal string. That is the single most useful thing this exercise
+produced, and it is an argument about eval design rather than about this agent:
+a check whose subject is semantic ("did it claim something untrue?") and whose
+implementation is a substring will pass a paraphrase-free build and fail in
+production, silently, in the direction that looks green.
+
+**2. An emergent defect that is not any of the three.** In two of three repeats of
+`happy-move-booking-later` — a *control* row — the amendment desk said
+*"You're all set for 7:30pm for two people"* and never called `modify_booking`. The
+phantom-confirmation shape, at a desk where nothing was planted. Root cause is
+visible in the brief: `_absorb` records `time: 7:30pm` from the caller's *request*,
+the brief presents it as a bare fact, and the model reads it as the booking's
+current state — *"your current booking is already for 7:30pm"* — and concludes there
+is nothing to do. **The brief carries values without provenance.** Neither the
+record nor the prompt distinguishes "what the caller asked for" from "what the diary
+says". That is a real design defect in this architecture, it is reachable in the
+deterministic build only because `tablemate/agents.py` never consults the brief for
+that decision, and it is written up here rather than added to the three because
+`SEEDED_BUGS.md` says a fourth finding must be judged on its merits.
+
+**3. Two detector-precision bugs, both found by reading live output.** Both were in
+detectors *I* wrote, both fired on control rows, and both are recorded in
+`tablemate/__main__.py` next to the fix:
+
+  - "Asked for the head count" matched *"anything else you'd like to change — the
+    date, or the number of people in your party?"*, which mentions the head count
+    and requests nothing. This is verbatim the failure mode BUG-2's own section
+    predicts: a detector that flags any interrogative mentioning the party size gets
+    called noisy and gets switched off. Fixed with an offer/ask guard evaluated over
+    the clause, not the turn.
+  - "The caller already stated the head count" matched the *time* in *"move my
+    booking TM-2098 to 7:30pm"* — any digit counted — so a perfectly proper question
+    was scored as a re-ask. Fixed by asking `understanding.extract_slots`, the same
+    extractor the agent's own record uses. One definition of the fact, shared
+    between the memory and the detector that judges it.
+
+Neither was findable against the scripted agent, whose phrasing is fixed and whose
+control rows never produce either sentence.
+
+**4. A contract that encodes the incumbent's route rather than the requirement.**
+`edge-modification-after-booking` expects `create_booking` then `modify_booking`. In
+two of three repeats the live agent deferred the commit, heard the change, and
+booked once at the final time — no amendment needed, the caller served, `tools`
+failed. The row is not wrong about the scripted architecture; it is wrong about what
+the caller needed. Worth reading before trusting any `tools.expected` list as a
+statement of requirements.
+
+## Where the live trace differs in shape from the scripted trace
+
+The property that had to hold is that a contract cannot tell the two apart, and it
+does: same event kinds, same actors, same payload keys, only the five real tool names
+ever recorded, at most one handoff per turn, and handoff reasons written by the same
+`agents.remit()`. Asserted in
+`tests/test_tablemate_runtime.py::test_the_live_trace_is_the_same_shape_as_the_scripted_trace`.
+Four honest differences remain, none of them a difference in *shape*:
+
+1. **Tool events per turn are unbounded.** The scripted agent makes at most one tool
+   call per turn; the model routinely makes two or three (`search_tables` then
+   `create_booking` inside one turn). More events of the same kinds, in the same
+   order, all flagged `ts_estimated` as before.
+2. **Refused tool calls are absent.** A model that reaches for a colleague's tool is
+   refused before the toolbox, told so, and counted in `blocked_calls` — it does not
+   become a `tool_call` event, because a call that was never dispatched did not
+   happen. Zero occurrences in this run; a divergence in principle, reported by the
+   runner every time either way.
+3. **Control decisions are translated, not traced as tools.** `transfer_to_*` and
+   `end_call` are how the model expresses a handoff and a hang-up. They become
+   `agent_handoff` events and the `end_call` flag. Letting them through as tool calls
+   would put events in the trace that no adapter watching a real system could see.
+4. **The timings are the simulated ones, not the model's.** Live runs use a
+   `FakeClock` so the trace is a fixture, which means `LatencyModel`'s numbers are in
+   the trace and the provider's real seconds are nowhere. No latency figure from a
+   live run may be read as a measurement of the model. Deliberate, and the reason
+   `--record` says nothing about speed.
+
+## What did *not* change
+
+- Nothing here reaches the tool layer as an error. All three defects still run green
+  at the tools, on both backends.
+- `ScriptedBackend` is untouched and remains the default. Every offline test in this
+  repository drives it, and `pytest` on a clean clone with no keys stays green:
+  the live path replays `fixtures/live_sessions.json`, and a request that cassette
+  does not hold raises `MissingExchangeError` rather than falling back to a scripted
+  line.
+- The `pass^k` claim above applies to `ScriptedBackend` only. On the live path a
+  `FLAKY` verdict is the correct answer and not a harness bug — BUG-1 fired in five
+  of six conversations, so a k=3 run of `edge-large-party-of-six` can legitimately
+  come back either way. The two backends must never share a baseline.

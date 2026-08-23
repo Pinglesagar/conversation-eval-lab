@@ -1,0 +1,27 @@
+{"actor": "system", "engine": null, "kind": "session_start", "payload": {"adapter": "text:live-llm", "caller": "ScriptedCaller", "goal_fact_keys": ["date", "dietary", "name", "party_size", "time", "topic"], "goal_gated_keys": [], "goal_intent": "book for three including a coeliac guest and ask what they can eat", "max_turns": 14, "persona": "polite_elder", "persona_accent": "en-GB-south", "persona_cooperativeness": 1.0, "persona_verbosity": "chatty", "scenario_id": "edge-coeliac-then-menu-policy", "session_id": "edge-coeliac-then-menu-policy#live2"}, "ts": 0.0}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "Could I book a table for three on Sunday at 12:30pm? My daughter is coeliac."}, "ts": 0.0}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "Could I book a table for three on Sunday at 12:30pm? My daughter is coeliac."}, "ts": 0.0}
+{"actor": "system", "engine": null, "kind": "agent_handoff", "payload": {"from": "GreeterAgent", "reason": "caller needs a new booking", "to": "BookingAgent", "ts_estimated": true}, "ts": 0.258}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 1}, "ts": 0.516}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Of course. May I take your name for the booking, please?"}, "ts": 0.516}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "BookingAgent", "text": "Of course. May I take your name for the booking, please?"}, "ts": 0.516}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "What is on the gluten-free menu?"}, "ts": 0.516}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "What is on the gluten-free menu?"}, "ts": 0.516}
+{"actor": "system", "engine": null, "kind": "agent_handoff", "payload": {"from": "BookingAgent", "reason": "caller needs a question about the restaurant", "to": "PolicyAgent", "ts_estimated": true}, "ts": 0.7871250000000001}
+{"actor": "agent", "engine": null, "kind": "tool_call", "payload": {"args": {"topic": "allergens"}, "call_id": "check_policy-1", "name": "check_policy", "ts_estimated": true}, "ts": 1.0582500000000001}
+{"actor": "system", "engine": null, "kind": "tool_result", "payload": {"call_id": "check_policy-1", "name": "check_policy", "ok": true, "result": {"answer": "", "found": false, "topic": "allergens", "topics": ["accessibility", "allergies", "cancellation", "children", "corkage", "deposit", "dogs", "dress_code", "large_groups", "menu", "parking"]}, "ts_estimated": true}, "ts": 1.329375}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 2}, "ts": 1.6005}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "I don't have the gluten-free menu details to hand, but I'll find out for you. Would you like me to connect you to the team who can help with menu or allergy questions?"}, "ts": 1.6005}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "PolicyAgent", "text": "I don't have the gluten-free menu details to hand, but I'll find out for you. Would you like me to connect you to the team who can help with menu or allergy questions?"}, "ts": 1.6005}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "Edward Naylor."}, "ts": 1.6005}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "Edward Naylor."}, "ts": 1.6005}
+{"actor": "system", "engine": null, "kind": "agent_handoff", "payload": {"from": "PolicyAgent", "reason": "caller needs an existing booking", "to": "ModificationAgent", "ts_estimated": true}, "ts": 1.9617499999999999}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 3}, "ts": 2.323}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Thanks, Edward. Could you please provide your booking reference number? That will help me look up your reservation."}, "ts": 2.323}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "ModificationAgent", "text": "Thanks, Edward. Could you please provide your booking reference number? That will help me look up your reservation."}, "ts": 2.323}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "That is everything, thanks."}, "ts": 2.323}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "That is everything, thanks."}, "ts": 2.323}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 4}, "ts": 2.8425000000000002}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Thank you for calling, Edward. Have a great day! Goodbye."}, "ts": 2.8425000000000002}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "ModificationAgent", "text": "Thank you for calling, Edward. Have a great day! Goodbye."}, "ts": 2.8425000000000002}
+{"actor": "system", "engine": null, "kind": "session_end", "payload": {"reason": "agent_ended", "turns": 4}, "ts": 2.8425000000000002}

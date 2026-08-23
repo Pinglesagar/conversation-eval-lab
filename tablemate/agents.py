@@ -30,8 +30,10 @@ WHY THE DECISIONS ARE DETERMINISTIC
 -----------------------------------
 Every branch below is taken on the strength of `tablemate.understanding`, never a
 language model: routing, slot extraction, which tool to call, which question to
-ask next. The model — when `tablemate.runtime.LLMBackend` is switched on — only
-ever rephrases a line this module has already decided to say. See
+ask next. The model — when `tablemate.runtime.PhrasingBackend` is switched on —
+only ever rephrases a line this module has already decided to say. The other live
+path, `tablemate.runtime.LLMBackend`, does not run this module at all: it hands
+the same decisions to a model and mirrors this architecture in prompts. See
 `tablemate.understanding` for why that split is load-bearing for the case study.
 
 WHAT THIS DOES NOT DO
@@ -85,6 +87,7 @@ __all__ = [
     "Turn",
     "Session",
     "project",
+    "remit",
     "GreeterAgent",
     "BookingAgent",
     "ModificationAgent",
@@ -125,8 +128,11 @@ class AgentSpec:
     Attributes:
         name: The sub-agent's name, as it appears in the trace.
         system_prompt: The instruction the sub-agent operates under. Used
-            verbatim by `tablemate.runtime.LLMBackend` when a model is doing the
-            phrasing, and readable on its own as a statement of the remit.
+            verbatim by `tablemate.runtime.PhrasingBackend` when a model is
+            doing the phrasing, and readable on its own as a statement of the
+            remit. `tablemate.runtime.LIVE_PROMPTS` holds the longer,
+            operational version of the same remit, for the backend that lets a
+            model make the decisions too.
         tools: The tool allow-list, enforced by `tablemate.tools.Toolbox`.
         inbound: The record fields this sub-agent is briefed with on activation.
     """
@@ -199,6 +205,21 @@ def project(record: Mapping[str, Any], inbound: Sequence[str]) -> dict[str, Any]
     """
     allowed = set(inbound)
     return {k: v for k, v in record.items() if k in allowed}
+
+
+def remit(agent: str) -> str:
+    """What a desk is for, as the clause that goes into a handoff reason.
+
+    One source of truth because the handoff reason is *data*: it lands in the
+    trace, it is grouped on in the transition heatmap, and a second copy of these
+    words elsewhere would split one column into two that mean the same thing.
+    """
+    return {
+        BOOKING: "a new booking",
+        MODIFICATION: "an existing booking",
+        POLICY: "a question about the restaurant",
+        GREETER: "directing",
+    }[agent]
 
 
 # --------------------------------------------------------------------------- #
@@ -1029,9 +1050,4 @@ class Orchestrator:
 
     @staticmethod
     def _remit(agent: str) -> str:
-        return {
-            BOOKING: "a new booking",
-            MODIFICATION: "an existing booking",
-            POLICY: "a question about the restaurant",
-            GREETER: "directing",
-        }[agent]
+        return remit(agent)
