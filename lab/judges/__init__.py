@@ -17,7 +17,9 @@ So this package is arranged around the measurement rather than around the judge:
     lab.judges.calibration   agreement against hand-labelled traces: confusion
                              matrix, TPR, TNR, precision, recall, F1, raw
                              agreement, Cohen's kappa, and every disagreement
-                             listed for a human to read.
+                             listed for a human to read. Plus `self_consistency`,
+                             which asks the separate question of whether repeated
+                             runs of one judge agree with *each other*.
     lab.judges.registry      the gate. `require_calibrated()` raises in CI when a
                              judge has no calibration or falls below thresholds.
                              An uncalibrated judge silently gating a build is the
@@ -25,8 +27,11 @@ So this package is arranged around the measurement rather than around the judge:
 
     lab.judges.hallucinated_confirmation
                              a worked iteration: prompt v1, prompt v2, 24 human
-                             labels, and both calibration reports, so the
-                             improvement is a number rather than a claim.
+                             labels, six recorded live runs and both calibration
+                             reports, so the improvement is a number rather than a
+                             claim — including the part where the author's
+                             prediction about how v1 would fail turned out to be
+                             backwards.
 
 Three conventions run through all of it, and each one is a mistake declined:
 
@@ -43,9 +48,12 @@ Three conventions run through all of it, and each one is a mistake declined:
     sample size has not earned.
 
 Nothing here needs an API key. Live calls are opt-in behind `LAB_LIVE_JUDGE`, and
-every judged path in the repo ships a recorded fixture that replays through the
-identical code — same prompt rendering, same parser, same verdict construction —
-so the offline suite exercises the real path rather than a mock of it.
+every judged path in the repo ships a recorded fixture — captured from a real
+provider — that replays through the identical code: same prompt rendering, same
+parser, same verdict construction. The offline suite therefore exercises the real
+path rather than a mock of it, and the numbers it prints are a model's answers
+rather than a fixture author's expectations. Recording is the only way a verdict
+can enter this package; there is deliberately no code path that manufactures one.
 
 The re-exports below resolve lazily (PEP 562), matching `lab.voice`: importing a
 submodule eagerly from a package `__init__` puts it in `sys.modules` before
@@ -65,17 +73,23 @@ if TYPE_CHECKING:  # pragma: no cover - for type checkers only, never at runtime
         Disagreement,
         LabelledTrace,
         Rate,
+        SelfConsistency,
         calibrate,
         compare_reports,
         load_labels,
+        self_consistency,
         write_labels,
     )
     from lab.judges.judge import (  # noqa: F401
         Judge,
         JudgeParseError,
+        LiteLLMCompletion,
+        MissingCredentialsError,
         PromptTemplate,
+        RateLimitedError,
         Recording,
         ReplayJudge,
+        RetryPolicy,
         ScriptedCompletion,
         Verdict,
         record_verdicts,
@@ -91,9 +105,13 @@ _LAZY: dict[str, str] = {
     # judge.py
     "Judge": "lab.judges.judge",
     "JudgeParseError": "lab.judges.judge",
+    "LiteLLMCompletion": "lab.judges.judge",
+    "MissingCredentialsError": "lab.judges.judge",
     "PromptTemplate": "lab.judges.judge",
+    "RateLimitedError": "lab.judges.judge",
     "Recording": "lab.judges.judge",
     "ReplayJudge": "lab.judges.judge",
+    "RetryPolicy": "lab.judges.judge",
     "ScriptedCompletion": "lab.judges.judge",
     "Verdict": "lab.judges.judge",
     "record_verdicts": "lab.judges.judge",
@@ -104,9 +122,11 @@ _LAZY: dict[str, str] = {
     "Disagreement": "lab.judges.calibration",
     "LabelledTrace": "lab.judges.calibration",
     "Rate": "lab.judges.calibration",
+    "SelfConsistency": "lab.judges.calibration",
     "calibrate": "lab.judges.calibration",
     "compare_reports": "lab.judges.calibration",
     "load_labels": "lab.judges.calibration",
+    "self_consistency": "lab.judges.calibration",
     "write_labels": "lab.judges.calibration",
     # registry.py
     "JudgeBelowThresholdError": "lab.judges.registry",

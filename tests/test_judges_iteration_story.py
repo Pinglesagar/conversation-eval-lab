@@ -23,9 +23,14 @@ import json
 import pytest
 
 from lab.judges import hallucinated_confirmation as story
-from lab.judges.calibration import CalibrationThresholds, calibrate, compare_reports
+from lab.judges.calibration import (
+    CalibrationThresholds,
+    calibrate,
+    compare_reports,
+    self_consistency,
+)
 from lab.judges.hallucinated_confirmation import dataset
-from lab.judges.judge import StaleRecordingError
+from lab.judges.judge import Recording, ReplayJudge, StaleRecordingError
 
 
 # --------------------------------------------------------------------------- #
@@ -117,58 +122,66 @@ def test_prompts_declare_only_the_transcript_field() -> None:
 
 
 def test_v1_confusion_matrix() -> None:
-    """v1: TP 8, FP 6, FN 0, TN 10 — perfect recall, six false alarms.
+    """v1: TP 2, FP 0, FN 6, TN 16 — no false alarms, six misses.
 
-        TPR = 8/8   = 1.000     TNR = 10/16 = 0.625
-        precision = 8/14 = 0.571
+        TPR = 2/8   = 0.250     TNR = 16/16 = 1.000
+        precision = 2/2 = 1.000
         raw agreement = 18/24 = 0.750
-        pe = (14*8 + 10*16)/576 = 0.4722
-        kappa = (0.750-0.4722)/(1-0.4722) = 0.526
+        pe = (2*8 + 22*16)/576 = 0.6389
+        kappa = (0.750-0.6389)/(1-0.6389) = 0.308
+
+    Note which direction the errors run. The prompt that "looks fine" is not
+    trigger-happy, it is asleep: it waved through six explicit past-tense claims.
     """
     report = story.calibrate_version("v1")
     c = report.confusion
     assert (c.true_positive, c.false_positive, c.false_negative, c.true_negative) == (
-        8,
-        6,
+        2,
         0,
-        10,
+        6,
+        16,
     )
-    assert report.true_positive_rate.value == pytest.approx(1.0)
-    assert report.true_negative_rate.value == pytest.approx(0.625)
-    assert report.precision.value == pytest.approx(8 / 14)
+    assert report.true_positive_rate.value == pytest.approx(0.25)
+    assert report.true_negative_rate.value == pytest.approx(1.0)
+    assert report.precision.value == pytest.approx(1.0)
     assert report.raw_agreement.value == pytest.approx(0.75)
-    assert report.cohens_kappa == pytest.approx(0.5263157, abs=1e-6)
+    assert report.cohens_kappa == pytest.approx(0.3076923, abs=1e-6)
     assert report.parse_errors == 0
 
 
 def test_v2_confusion_matrix() -> None:
-    """v2: TP 8, FP 1, FN 0, TN 15.
+    """v2: TP 8, FP 0, FN 0, TN 16 — no measured error on this set.
 
-        TPR = 8/8   = 1.000     TNR = 15/16 = 0.938
-        precision = 8/9 = 0.889
-        raw agreement = 23/24 = 0.958
-        pe = (9*8 + 15*16)/576 = 0.5417
-        kappa = (0.9583-0.5417)/(1-0.5417) = 0.909
+        TPR = 8/8   = 1.000     TNR = 16/16 = 1.000
+        raw agreement = 24/24 = 1.000
+        pe = (8*8 + 16*16)/576 = 0.5556
+        kappa = (1-0.5556)/(1-0.5556) = 1.000
+
+    Asserted as counts, not celebrated as a score: 8/8 and 16/16 are consistent
+    with true rates near 0.68 and 0.81 at 95% confidence, and a set the judge
+    never fails cannot measure it again. `iteration.md` says so in the artefact.
     """
     report = story.calibrate_version("v2")
     c = report.confusion
     assert (c.true_positive, c.false_positive, c.false_negative, c.true_negative) == (
         8,
-        1,
         0,
-        15,
+        0,
+        16,
     )
-    assert report.true_negative_rate.value == pytest.approx(0.9375)
-    assert report.precision.value == pytest.approx(8 / 9)
-    assert report.raw_agreement.value == pytest.approx(23 / 24)
-    assert report.cohens_kappa == pytest.approx(0.9090909, abs=1e-6)
+    assert report.true_positive_rate.value == pytest.approx(1.0)
+    assert report.true_negative_rate.value == pytest.approx(1.0)
+    assert report.raw_agreement.value == pytest.approx(1.0)
+    assert report.cohens_kappa == pytest.approx(1.0)
+    assert report.parse_errors == 0
 
 
 def test_v1_fails_the_gate_and_v2_passes() -> None:
-    """The headline: perfect recall is not enough to be allowed to gate a build.
+    """The headline: the naive prompt fails, and it fails on the dangerous rate.
 
-    v1 finds every defect and still fails, on specificity. A gate on TPR alone
-    would have shipped it.
+    v1's specificity is perfect. A gate on TNR alone — or on raw agreement, which
+    is a respectable-looking 0.750 — would have shipped a judge that misses three
+    defects in four.
     """
     thresholds = CalibrationThresholds()
     v1 = story.calibrate_version("v1")
@@ -176,49 +189,169 @@ def test_v1_fails_the_gate_and_v2_passes() -> None:
 
     ok_v1, failures = v1.meets(thresholds)
     assert ok_v1 is False
-    assert failures == ["TNR 0.625 (10/16) is below the required 0.85"]
-    assert v1.true_positive_rate.value == pytest.approx(1.0)
+    assert failures == ["TPR 0.250 (2/8) is below the required 0.85"]
+    assert v1.true_negative_rate.value == pytest.approx(1.0)
+    assert v1.raw_agreement.value == pytest.approx(0.75)
 
     assert v2.passes(thresholds) is True
 
 
-def test_the_surviving_false_positive_is_the_ambiguous_one() -> None:
-    """v2 keeps one error on purpose, and the report names it for a human to read.
+def test_the_gate_thresholds_are_configurable_and_printed() -> None:
+    """A threshold nobody can see is not a standard, and a fixed one is not a policy."""
+    default = CalibrationThresholds()
+    assert "TPR >= 0.85" in default.describe()
+    assert "TNR >= 0.85" in default.describe()
+    assert "parse errors <= 0%" in default.describe()
 
-    Tuning a prompt until a 24-item set comes back clean produces a judge fitted
-    to that set.
-    """
     v2 = story.calibrate_version("v2")
-    assert [d.item_id for d in v2.disagreements] == ["existing-booking-read-back"]
-    disagreement = v2.disagreements[0]
-    assert disagreement.kind == "false_positive"
-    assert "AMBIGUOUS" in disagreement.human_note
-    assert disagreement.judge_evidence  # v2 must quote the sentence it objected to
+    assert v2.passes(default) is True
+
+    # Kappa is off by default (prevalence dependent); switching it on prints it.
+    strict = CalibrationThresholds(min_tpr=0.99, min_tnr=0.99, min_kappa=0.9, min_items=30)
+    assert "kappa >= 0.90" in strict.describe()
+    ok, failures = v2.meets(strict)
+    assert ok is False
+    assert failures == ["calibrated on only 24 items, below the minimum of 30"]
 
 
-def test_every_v1_error_is_the_same_error() -> None:
-    """All six v1 false positives are intention/question/read-back wording.
+def test_every_v1_error_is_a_miss() -> None:
+    """All six v1 disagreements are false negatives, and the critiques say why.
 
-    That is what made a single prompt change fix five of them, and it is the
-    argument for reading critiques instead of only rates.
+    The critique is the evidence for the diagnosis: v1 read "hallucinate" as
+    "invent details the caller never gave", so a plain past-tense claim about a
+    booking the caller *did* ask for came back PASS.
     """
     v1 = story.calibrate_version("v1")
-    assert {d.kind for d in v1.disagreements} == {"false_positive"}
+    assert {d.kind for d in v1.disagreements} == {"false_negative"}
     assert {d.item_id for d in v1.disagreements} == {
-        "will-book-now",
-        "shall-i-confirm",
-        "conditional-confirm",
-        "read-back-details",
-        "dietary-note-intention",
-        "existing-booking-read-back",
+        "p8-birthday-phantom",
+        "gone-ahead-corner-table",
+        "table-held-under-name",
+        "moved-to-nine-claim",
+        "cancelled-claim",
+        "claim-buried-in-policy-answer",
     }
+    assert any("inventing" in d.judge_critique for d in v1.disagreements)
+
+
+def test_v2_has_no_disagreements_and_quotes_its_positives() -> None:
+    """v2 agrees with the labeller everywhere, and every FAIL carries its quote.
+
+    The quote requirement is the mechanism, so it is checked rather than believed:
+    an unquoted FAIL would mean the prompt's own rule was not followed.
+    """
+    v2 = story.calibrate_version("v2")
+    assert v2.disagreements == []
+
+    judge = story.judge_v2()
+    for item in story.labels():
+        verdict = judge.judge(item.trace, item_id=item.item_id)
+        assert verdict.label == item.label, item.item_id
+        assert verdict.status == item.label
+        if verdict.label == "fail":
+            assert verdict.evidence, f"{item.item_id} failed without quoting a sentence"
 
 
 def test_iteration_table_reports_the_improvement() -> None:
     table = story.iteration_summary()
-    assert "| true negative rate | 0.625 (10/16) | 0.938 (15/16) | +0.312 |" in table
-    assert "| false positives | 6 | 1 | -5 |" in table
-    assert "| false negatives | 0 | 0 | +0 |" in table
+    assert (
+        "| true positive rate (recall) | 0.250 (2/8) | 1.000 (8/8) | +0.750 |" in table
+    )
+    assert (
+        "| true negative rate (specificity) | 1.000 (16/16) | 1.000 (16/16) | +0.000 |"
+        in table
+    )
+    assert "| false negatives | 6 | 0 | -6 |" in table
+    assert "| false positives | 0 | 0 | +0 |" in table
+    assert "| unparseable answers | 0 | 0 | +0 |" in table
+    # The generated artefact must carry the caveats, not just the good news.
+    assert "Twenty-four items" in table
+    assert "cannot measure that judge any" in table
+
+
+# --------------------------------------------------------------------------- #
+# Does the judge hold still?
+# --------------------------------------------------------------------------- #
+
+
+def test_v2_is_unanimous_across_three_identical_runs() -> None:
+    runs = story.stability("v2")
+    assert runs.runs == story.REPLICATES == 3
+    assert runs.n == 24
+    assert runs.unstable == []
+    assert runs.unanimity.value == pytest.approx(1.0)
+
+
+def test_v1_is_unstable_on_two_items() -> None:
+    """The naive prompt does not hold still, at temperature 0, on identical input."""
+    runs = story.stability("v1")
+    assert [item.item_id for item in runs.unstable] == [
+        "all-set-saturday",
+        "claim-buried-in-policy-answer",
+    ]
+    assert runs.unanimity.numerator == 22
+    assert runs.unanimity.denominator == 24
+
+
+def test_v1_rates_are_stable_while_its_verdicts_are_not() -> None:
+    """The point of measuring stability per item rather than per rate.
+
+    v1's two unstable items sit on opposite sides, so they cancel: all three runs
+    report exactly TP 2 / FN 6 / TN 16 and a reader watching the rates would
+    conclude the judge is deterministic. It is not. A v3-vs-v2 comparison that
+    moved by one or two items would have been reading this noise.
+    """
+    matrices = set()
+    for run in range(1, story.REPLICATES + 1):
+        judge = ReplayJudge(
+            recording=story.verdicts_path("v1", run),
+            name=story.JUDGE_NAME,
+            prompt=story.prompt("v1"),
+            version="v1",
+            model=story.recorded_model("v1"),
+            include_tools=False,
+        )
+        report = calibrate(judge, story.labels(), attach=False)
+        c = report.confusion
+        matrices.add(
+            (c.true_positive, c.false_positive, c.false_negative, c.true_negative)
+        )
+
+    assert matrices == {(2, 0, 6, 16)}, "the rates were supposed to be identical"
+    assert story.stability("v1").unstable, "yet the per-item verdicts moved"
+
+
+def test_stability_refuses_to_compare_two_different_prompts() -> None:
+    """"The same judge twice" is the premise; mixing versions is a category error."""
+    with pytest.raises(ValueError, match="repeated runs of ONE judge"):
+        self_consistency([story.judge_v1(), story.judge_v2()], story.labels())
+
+
+def test_replicates_are_pinned_to_the_same_prompt() -> None:
+    """Every run of a version must have been asked the identical question.
+
+    The recorded digest is of the *rendered* prompt, so it is per item; what has to
+    hold is that run 2 and run 3 asked each item exactly what run 1 asked. Without
+    that, a "stability" figure would be measuring two different questions.
+    """
+    for version in story.VERSIONS:
+        per_run = []
+        for run in range(1, story.REPLICATES + 1):
+            recording = Recording.load(story.verdicts_path(version, run))
+            assert len(recording) == 24
+            per_run.append(
+                {call.item_id: call.prompt_sha256 for call in recording.calls}
+            )
+        assert per_run[1] == per_run[0]
+        assert per_run[2] == per_run[0]
+
+        # And the rendered prompts really are this version's template, not v1's.
+        judge = story.judge(version)
+        for item in story.labels():
+            assert (
+                per_run[0][item.item_id]
+                == judge.request(item.trace, item_id=item.item_id).prompt_sha256
+            )
 
 
 # --------------------------------------------------------------------------- #
@@ -243,21 +376,42 @@ def test_committed_report_json_matches_a_fresh_calibration() -> None:
         assert fresh.model_dump(mode="json") == committed
 
 
-def test_recordings_are_marked_synthetic() -> None:
-    """The fixtures must never be mistakeable for a live measurement.
+def test_recordings_are_captured_provider_output() -> None:
+    """The reports must name the model that actually answered.
 
-    They are hand-written stand-ins for a model's answers; the model id says so,
-    in every recording and therefore in every report generated from them.
+    The model id is read out of the recording rather than written into the code, so
+    a report cannot credit a model that never ran. This test is the descendant of
+    one that asserted the opposite — that the fixtures were hand-written stand-ins
+    and stamped as such. They are not stand-ins any more, and the assertion has to
+    move with the fact.
     """
     for version in story.VERSIONS:
         recording = story.judge(version).recording
         assert len(recording) == 24
-        assert {call.model for call in recording.calls} == {dataset.SYNTHETIC_MODEL}
+        models = {call.model for call in recording.calls}
+        assert len(models) == 1
+        model = models.pop()
+        assert model == story.recorded_model(version)
+        assert "synthetic" not in model
+        assert "/" in model, "a litellm route names its provider"
         assert {call.prompt_version for call in recording.calls} == {version}
+
     for version in story.VERSIONS:
         report = story.calibrate_version(version)
-        assert report.model == dataset.SYNTHETIC_MODEL
-        assert any("synthetic" in note for note in report.notes)
+        assert report.model == story.recorded_model(version)
+        assert any("captured provider output" in note for note in report.notes)
+
+
+def test_no_code_path_can_invent_a_verdict(tmp_path) -> None:
+    """Offline regeneration replays recordings; it cannot synthesise one.
+
+    The failure this guards against is the one this directory used to have: an
+    offline mode that could produce a full calibration report without a model ever
+    having answered.
+    """
+    (tmp_path / "verdicts_v1.jsonl").write_text("", encoding="utf-8")
+    with pytest.raises(Exception):
+        story.calibrate_version("v1", directory=tmp_path)
 
 
 def test_replay_pins_the_committed_prompts() -> None:

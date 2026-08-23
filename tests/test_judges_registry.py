@@ -299,3 +299,76 @@ def test_audit_reports_every_judge_without_raising() -> None:
     table = registry.status_table()
     assert "[PASS] test_judge" in table
     assert "[FAIL] never_measured" in table
+
+
+# --------------------------------------------------------------------------- #
+# The gate against the real study's real numbers
+# --------------------------------------------------------------------------- #
+
+
+def test_the_gate_refuses_the_real_v1_and_admits_the_real_v2() -> None:
+    """The gate is checked against measured numbers, not constructed ones.
+
+    Everything above builds a judge whose behaviour the test chose. This one uses
+    the committed calibration of `hallucinated_confirmation` — captured from a live
+    model — because a gate that only ever refuses hand-made counterexamples has not
+    been shown to refuse anything real.
+    """
+    from lab.judges import hallucinated_confirmation as story
+
+    items = story.labels()
+    v1 = story.judge_v1()
+    v2 = story.judge_v2()
+    calibrate(v1, items)
+    calibrate(v2, items)
+
+    registry = JudgeRegistry()
+    registry.register(v1)
+
+    with pytest.raises(JudgeBelowThresholdError) as excinfo:
+        registry.require_calibrated(v1, ci=True)
+
+    message = str(excinfo.value)
+    assert "TPR 0.250 (2/8) is below the required 0.85" in message
+    assert "TPR >= 0.85, TNR >= 0.85" in message, "the thresholds must be printed"
+    assert "6 disagreement(s) to read" in message
+
+    registry.register(v2)
+    assert registry.require_calibrated(v2, ci=True) is v2.calibration
+
+
+def test_the_real_v1_would_have_passed_a_gate_on_the_wrong_rate() -> None:
+    """Why the gate insists on both rates, shown on a real judge.
+
+    v1's specificity is a perfect 1.000 and its raw agreement is a respectable
+    0.750. A gate configured on either of those alone admits a judge that misses
+    three defects in four.
+    """
+    from lab.judges import hallucinated_confirmation as story
+
+    v1 = story.judge_v1()
+    report = calibrate(v1, story.labels())
+
+    assert report.passes(CalibrationThresholds(min_tpr=0.0, min_tnr=0.85)) is True
+    assert report.passes(CalibrationThresholds()) is False
+
+
+def test_thresholds_are_configurable_per_registry_and_named_in_the_refusal() -> None:
+    """A threshold is a policy, so it is a parameter — and it is printed."""
+    from lab.judges import hallucinated_confirmation as story
+
+    v2 = story.judge_v2()
+    calibrate(v2, story.labels())
+
+    strict = JudgeRegistry(thresholds=CalibrationThresholds(min_items=100))
+    strict.register(v2)
+    with pytest.raises(JudgeBelowThresholdError) as excinfo:
+        strict.require_calibrated(v2, ci=True)
+    assert "n >= 100" in str(excinfo.value)
+    assert "calibrated on only 24 items" in str(excinfo.value)
+
+    # ...and a per-call override wins over the registry's own policy.
+    assert (
+        strict.require_calibrated(v2, thresholds=CalibrationThresholds(), ci=True)
+        is v2.calibration
+    )

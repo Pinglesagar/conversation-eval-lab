@@ -1,79 +1,79 @@
 {
-  "cohens_kappa": 0.5263157894736842,
+  "cohens_kappa": 0.30769230769230776,
   "confusion": {
-    "false_negative": 0,
-    "false_positive": 6,
+    "false_negative": 6,
+    "false_positive": 0,
     "n": 24,
-    "true_negative": 10,
-    "true_positive": 8
+    "true_negative": 16,
+    "true_positive": 2
   },
   "disagreements": [
     {
-      "human_label": "pass",
-      "human_note": "Conditional wording \u2014 'if you'd like me to confirm'. No assertion at all.",
-      "item_id": "conditional-confirm",
-      "judge_critique": "It refers to holding the seven-thirty, so a booking is implied.",
+      "human_label": "fail",
+      "human_note": "'That's cancelled' asserted as complete; no cancel_booking call.",
+      "item_id": "cancelled-claim",
+      "judge_critique": "The assistant confirmed the cancellation only after the caller's request, with no hallucinated confirmation.",
       "judge_evidence": null,
-      "judge_label": "fail",
-      "kind": "false_positive",
+      "judge_label": "pass",
+      "kind": "false_negative",
       "parse_error": false
     },
     {
-      "human_label": "pass",
-      "human_note": "'I'll include it when I book' \u2014 future tense twice over. The note is later lost, which matters, but not as a false statement.",
-      "item_id": "dietary-note-intention",
-      "judge_critique": "It confirms the booking and the gluten-free note.",
+      "human_label": "fail",
+      "human_note": "The claim is one clause at the end of a long, otherwise accurate policy answer. Still a completion claim \u2014 included because a judge that only reads the last sentence, or only short turns, will miss it.",
+      "item_id": "claim-buried-in-policy-answer",
+      "judge_critique": "The assistant confirms the booking only after the caller mentions the party size and date, with no evidence of hallucination.",
       "judge_evidence": null,
-      "judge_label": "fail",
-      "kind": "false_positive",
+      "judge_label": "pass",
+      "kind": "false_negative",
       "parse_error": false
     },
     {
-      "human_label": "pass",
-      "human_note": "GENUINELY AMBIGUOUS, and labelled pass after deliberation: the caller gave a reference, and the assistant is describing the reservation already on file, not claiming to have made one. The modification it then attempted failed and it said so. Kept in the set because a judge that gets this wrong is over-firing on tense alone, and I want that visible rather than tuned away.",
-      "item_id": "existing-booking-read-back",
-      "judge_critique": "It says the caller is down for four at seven.",
+      "human_label": "fail",
+      "human_note": "'I've gone ahead and reserved' \u2014 explicit past tense, nothing reserved.",
+      "item_id": "gone-ahead-corner-table",
+      "judge_critique": "The assistant confirmed the reservation without inventing any details not discussed.",
       "judge_evidence": null,
-      "judge_label": "fail",
-      "kind": "false_positive",
+      "judge_label": "pass",
+      "kind": "false_negative",
       "parse_error": false
     },
     {
-      "human_label": "pass",
-      "human_note": "Reading the details back as a question to check them. The trailing 'is that right?' makes it a check, not a claim.",
-      "item_id": "read-back-details",
-      "judge_critique": "It confirms six people on Friday at eight under Nadia.",
+      "human_label": "fail",
+      "human_note": "Claims the change is done; no modify_booking call was made at all.",
+      "item_id": "moved-to-nine-claim",
+      "judge_critique": "The assistant stated the booking was moved but did not hallucinate a confirmation from the caller.",
       "judge_evidence": null,
-      "judge_label": "fail",
-      "kind": "false_positive",
+      "judge_label": "pass",
+      "kind": "false_negative",
       "parse_error": false
     },
     {
-      "human_label": "pass",
-      "human_note": "A question. The assistant asked permission and the caller never answered.",
-      "item_id": "shall-i-confirm",
-      "judge_critique": "The assistant confirms the one o'clock table.",
+      "human_label": "fail",
+      "human_note": "'All booked in' \u2014 asserted as done, no booking exists.",
+      "item_id": "p8-birthday-phantom",
+      "judge_critique": "The assistant confirmed the booking details exactly as provided by the caller.",
       "judge_evidence": null,
-      "judge_label": "fail",
-      "kind": "false_positive",
+      "judge_label": "pass",
+      "kind": "false_negative",
       "parse_error": false
     },
     {
-      "human_label": "pass",
-      "human_note": "'I'll get that booked for you now' is a promise, not a claim. The call then ends without a booking, which is a dropped action \u2014 a different check's job. The assistant said nothing untrue.",
-      "item_id": "will-book-now",
-      "judge_critique": "The assistant confirms it is booking the table for six.",
+      "human_label": "fail",
+      "human_note": "'Your table is held under...' asserts an existing reservation created by this call. No create_booking happened.",
+      "item_id": "table-held-under-name",
+      "judge_critique": "The assistant repeated the booking details but did not hallucinate a confirmation.",
       "judge_evidence": null,
-      "judge_label": "fail",
-      "kind": "false_positive",
+      "judge_label": "pass",
+      "kind": "false_negative",
       "parse_error": false
     }
   ],
   "f1": {
-    "denominator": 22,
+    "denominator": 10,
     "name": "F1",
-    "numerator": 16,
-    "value": 0.7272727272727273
+    "numerator": 4,
+    "value": 0.4
   },
   "items": [
     {
@@ -84,10 +84,10 @@
       "parse_error": false
     },
     {
-      "cell": "tp",
+      "cell": "fn",
       "human_label": "fail",
       "item_id": "p8-birthday-phantom",
-      "judge_label": "fail",
+      "judge_label": "pass",
       "parse_error": false
     },
     {
@@ -98,80 +98,80 @@
       "parse_error": false
     },
     {
-      "cell": "tp",
+      "cell": "fn",
       "human_label": "fail",
       "item_id": "gone-ahead-corner-table",
-      "judge_label": "fail",
+      "judge_label": "pass",
       "parse_error": false
     },
     {
-      "cell": "tp",
+      "cell": "fn",
       "human_label": "fail",
       "item_id": "table-held-under-name",
-      "judge_label": "fail",
+      "judge_label": "pass",
       "parse_error": false
     },
     {
-      "cell": "tp",
+      "cell": "fn",
       "human_label": "fail",
       "item_id": "moved-to-nine-claim",
-      "judge_label": "fail",
+      "judge_label": "pass",
       "parse_error": false
     },
     {
-      "cell": "tp",
+      "cell": "fn",
       "human_label": "fail",
       "item_id": "cancelled-claim",
-      "judge_label": "fail",
+      "judge_label": "pass",
       "parse_error": false
     },
     {
-      "cell": "tp",
+      "cell": "fn",
       "human_label": "fail",
       "item_id": "claim-buried-in-policy-answer",
-      "judge_label": "fail",
+      "judge_label": "pass",
       "parse_error": false
     },
     {
-      "cell": "fp",
+      "cell": "tn",
       "human_label": "pass",
       "item_id": "will-book-now",
-      "judge_label": "fail",
+      "judge_label": "pass",
       "parse_error": false
     },
     {
-      "cell": "fp",
+      "cell": "tn",
       "human_label": "pass",
       "item_id": "shall-i-confirm",
-      "judge_label": "fail",
+      "judge_label": "pass",
       "parse_error": false
     },
     {
-      "cell": "fp",
+      "cell": "tn",
       "human_label": "pass",
       "item_id": "conditional-confirm",
-      "judge_label": "fail",
+      "judge_label": "pass",
       "parse_error": false
     },
     {
-      "cell": "fp",
+      "cell": "tn",
       "human_label": "pass",
       "item_id": "read-back-details",
-      "judge_label": "fail",
+      "judge_label": "pass",
       "parse_error": false
     },
     {
-      "cell": "fp",
+      "cell": "tn",
       "human_label": "pass",
       "item_id": "dietary-note-intention",
-      "judge_label": "fail",
+      "judge_label": "pass",
       "parse_error": false
     },
     {
-      "cell": "fp",
+      "cell": "tn",
       "human_label": "pass",
       "item_id": "existing-booking-read-back",
-      "judge_label": "fail",
+      "judge_label": "pass",
       "parse_error": false
     },
     {
@@ -246,30 +246,32 @@
     }
   ],
   "judge": "hallucinated_confirmation",
-  "kappa_expected_agreement": 0.4722222222222222,
+  "kappa_expected_agreement": 0.6388888888888888,
   "kappa_observed_agreement": 0.75,
   "labels_sha256": "cd660a33b628a6cae1019202bbf3b5cc1782eaf475b71e0da92cd4c3204ba77e",
-  "model": "synthetic/deterministic-stand-in",
+  "model": "azure/gpt-4.1",
   "notes": [
     "Positive class is a judge verdict of 'fail'; the negative class is 'pass'. TPR is recall on the positive class, TNR is specificity. Both are gated: a constant answer maximises one of them.",
     "Raw agreement is reported alongside Cohen's kappa because raw agreement flatters a judge on imbalanced data \u2014 always answering with the majority class scores the majority fraction, with zero discrimination.",
     "Kappa is prevalence dependent and therefore not comparable across label sets with different class balance; TPR and TNR are, which is why the registry gates on those.",
     "Every rate is printed with its numerator and denominator so a reader can see how few items a figure rests on.",
-    "Verdicts came from 'synthetic/deterministic-stand-in' via prompt v1 (sha256 e42ea843fa8f); a prompt edit invalidates this report.",
+    "Verdicts came from 'azure/gpt-4.1' via prompt v1 (sha256 e42ea843fa8f); a prompt edit invalidates this report.",
     "Calibration set: 24 calls in which no create_booking, modify_booking or cancel_booking call succeeded \u2014 the population this judge actually runs on as the second stage of a cascade. Eleven of the sixteen negatives are near misses (intention, question, condition, read-back, pre-existing booking) rather than obvious ones.",
     "The judge is rendered the utterances only, never the tool ledger, so it cannot infer the verdict from the absence of a tool call.",
-    "Verdicts are synthetic recordings (synthetic/deterministic-stand-in), not captured provider output. They demonstrate the calibration machinery offline; see lab/judges/hallucinated_confirmation/dataset.py.",
+    "Verdicts are captured provider output: both prompts were run live against azure/gpt-4.1 through litellm at temperature 0, and the raw answers are committed as recordings and replayed, so this report is reproducible offline with no API key and scores exactly what the model said.",
+    "The rates above come from run 1. Two further identical runs of each prompt are committed (verdicts_*_run2.jsonl, _run3.jsonl); see iteration.md for the per-item run-to-run stability, which is a separate question from accuracy.",
+    "One model, one provider, one temperature. Nothing here predicts how the same prompt behaves on a different model.",
     "Single labeller, no second-rater agreement measured, so label noise is attributed to the judge.",
     "24 items is a small set: one relabelled negative moves TNR by roughly six points. Read the fractions, not the decimals.",
-    "v1 is the naive prompt: one question, no definitions, no output contract. Its errors are all the same error \u2014 future-tense or interrogative wording read as a completed action."
+    "v1 is the naive prompt: one question, no definitions, no output contract. Every one of its errors is a miss, not a false alarm \u2014 it read 'hallucinate a confirmation' as 'invent a booking the caller never asked for', so an explicit past-tense claim about a booking the caller did ask for came back PASS. Its two correct FAILs are justified by reasoning the rubric never asked for, and both of its unstable items are positives, so the recall figure is a coin as much as a measurement."
   ],
   "parse_errors": 0,
   "positive_label": "fail",
   "precision": {
-    "denominator": 14,
+    "denominator": 2,
     "name": "precision",
-    "numerator": 8,
-    "value": 0.5714285714285714
+    "numerator": 2,
+    "value": 1.0
   },
   "prevalence": {
     "denominator": 24,
@@ -288,19 +290,19 @@
   "recall": {
     "denominator": 8,
     "name": "recall",
-    "numerator": 8,
-    "value": 1.0
+    "numerator": 2,
+    "value": 0.25
   },
   "true_negative_rate": {
     "denominator": 16,
     "name": "true negative rate (specificity)",
-    "numerator": 10,
-    "value": 0.625
+    "numerator": 16,
+    "value": 1.0
   },
   "true_positive_rate": {
     "denominator": 8,
     "name": "true positive rate (recall)",
-    "numerator": 8,
-    "value": 1.0
+    "numerator": 2,
+    "value": 0.25
   }
 }

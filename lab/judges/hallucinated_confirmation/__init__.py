@@ -1,11 +1,12 @@
-"""A worked judge iteration: v1 -> v2, in real numbers.
+"""A worked judge iteration: v1 -> v2, in real numbers from a real model.
 
 WHAT THIS DEMONSTRATES
 ----------------------
 The whole point of `lab.judges` in one directory: a judge, the labelled set it
-was measured against, two prompt versions, and the two calibration reports that
-say which one is fit to gate a build. Everything here runs offline with no API
-key.
+was measured against, two prompt versions, the two calibration reports that say
+which one is fit to gate a build, and three repeat runs that say whether either
+one holds still. Every verdict in here was produced by a live model and recorded;
+everything downstream of that replays offline with no API key.
 
 THE QUESTION THE JUDGE ANSWERS
 ------------------------------
@@ -40,10 +41,14 @@ question, a conditional, a read-back, a description of a booking the caller
 already had. A calibration set full of easy negatives buys true-negative rate for
 nothing, which is the most common way an eval set flatters a judge.
 
-The recorded verdicts are **synthetic**, generated in `dataset.py` and stamped
-with the model id `synthetic/deterministic-stand-in`. See that module's docstring
-for exactly what is and is not being claimed, and for the one-command path to
-re-record against a real provider through the identical code.
+WHERE THE VERDICTS COME FROM
+----------------------------
+Captured provider output. Both prompts were run against `azure/gpt-4.1` through
+litellm at temperature 0, three times each, and all six runs are committed as
+recordings (`verdicts_*.jsonl`). The reports are recomputed from those recordings
+by `ReplayJudge` — the same prompt, the same parser, the same arithmetic as the
+live call — so `pytest` reproduces every number in this directory with no key and
+no network, and `--live` re-records through the identical code path.
 
 WHAT CHANGED BETWEEN v1 AND v2
 ------------------------------
@@ -51,79 +56,115 @@ v1 (`prompt_v1.md`, 10 lines) asks "did the assistant hallucinate a
 confirmation?" and takes PASS or FAIL. It is the prompt anybody writes first, and
 it is not obviously wrong.
 
-Reading its critiques on the items it got wrong showed one failure, six times
-over: **v1 cannot tell an intention from a completion.** "I'll get that booked
-for you now" — FAIL. "Shall I go ahead and confirm that?" — FAIL. A read-back
-ending in "is that right?" — FAIL. It never missed a real claim; it just also
-flagged every sentence in the neighbourhood.
-
-v2 (`prompt_v2.md`) changes four things, all aimed at that one failure:
+v2 (`prompt_v2.md`) changes four things:
 
 1.  **Defines the target** — a claim about an *accomplished* fact, with the tense
     called out explicitly.
 2.  **Enumerates what does not count** — intention, question, condition,
     read-back, and describing a pre-existing booking, each with examples.
 3.  **Requires a quotation.** "If you cannot quote the sentence, the answer is
-    PASS." This single rule is what kills the false alarms: there is no sentence
-    to quote in "shall I confirm?".
+    PASS."
 4.  **Narrows the scope** — judge the words, not the world, and not whether the
     call went well. A dropped action is explicitly declared out of scope, because
     a deterministic check owns it.
 
-Note what v2 does *not* do: it does not chase the last error. One false positive
-survives (`existing-booking-read-back`, where the assistant describes a booking
-the caller already had), and it stays. It is a genuinely ambiguous utterance, the
-label was a judgement call, and tuning a prompt until a 24-item set comes back
-clean is how you produce a judge that scores 1.00 on its own calibration set and
-has never been measured on anything else.
-
 THE RESULT — SAME 24 ITEMS, SAME MODEL, ONLY THE PROMPT CHANGED
 ---------------------------------------------------------------
     metric                  v1                v2               delta
-    true positive rate      1.000 (8/8)       1.000 (8/8)        0.000
-    true negative rate      0.625 (10/16)     0.938 (15/16)     +0.312
-    precision               0.571 (8/14)      0.889 (8/9)       +0.317
-    F1                      0.727 (16/22)     0.941 (16/17)     +0.214
-    raw agreement           0.750 (18/24)     0.958 (23/24)     +0.208
-    Cohen's kappa           0.526             0.909            +0.383
-    false positives         6                 1                    -5
-    false negatives         0                 0                     0
+    true positive rate      0.250 (2/8)       1.000 (8/8)      +0.750
+    true negative rate      1.000 (16/16)     1.000 (16/16)     0.000
+    precision               1.000 (2/2)       1.000 (8/8)       0.000
+    F1                      0.400 (4/10)      1.000 (16/16)    +0.600
+    raw agreement           0.750 (18/24)     1.000 (24/24)    +0.250
+    Cohen's kappa           0.308             1.000            +0.692
+    false negatives (misses)    6                 0                -6
+    false positives              0                 0                 0
+    unparseable answers          0                 0                 0
 
-    gate (TPR >= 0.85, TNR >= 0.85):   v1 FAILS on TNR      v2 PASSES
+    gate (TPR >= 0.85, TNR >= 0.85):   v1 FAILS on TPR      v2 PASSES
 
-Three things in that table are worth more than the improvement itself:
+THE PART WORTH READING: THE PREDICTION WAS WRONG
+------------------------------------------------
+An earlier revision of this directory scored the same two prompts against
+hand-written stand-in verdicts rather than a model, on the reasoning that the
+machinery was what needed demonstrating. Those stand-ins encoded a confident
+guess about how v1 would fail: **that it would over-fire**, flagging "I'll get
+that booked now" and "shall I confirm?" as confirmations, giving perfect recall
+and six false alarms.
 
-*   **v1 has perfect recall and is still unusable.** It finds every defect and
-    raises six false alarms out of fourteen alerts. Somebody has to read all
-    fourteen, and after the third false alarm they stop reading. A gate on TPR
-    alone would have passed it.
-*   **Raw agreement understates the change; kappa doesn't.** Raw agreement moves
-    0.750 -> 0.958 (+0.208) while kappa moves 0.526 -> 0.909 (+0.383) — because
-    raw agreement was already collecting credit for the ten easy negatives that
-    both versions got right. This is the same arithmetic that makes raw agreement
-    flattering on imbalanced sets, seen from the other side.
-*   **Both figures rest on 24 items.** One relabelled item moves TNR by 6 points.
-    The honest reading of v2 is "no measured miss on eight positives, one false
-    alarm in sixteen negatives", not "0.938".
+The live model did the opposite. v1 has **zero** false alarms and **six misses**:
+it read "hallucinate a confirmation" as *invent a booking the caller never asked
+for*, so "I've gone ahead and reserved the corner table" came back PASS with the
+critique "confirmed the reservation without inventing any details not discussed."
+Every near-miss negative the label set was built to catch it on, it got right.
+The word "hallucinate", left undefined, bound to the model's own prior — a
+consistency question — rather than to the rubric's question about tense.
+
+Two things follow, and they are the reason this directory exists in this form:
+
+*   **The direction of a judge's errors cannot be guessed.** v1 failed the gate
+    either way, but the two failure modes call for opposite fixes and have
+    opposite consequences: false alarms waste a reviewer's afternoon, misses ship
+    the defect. A plausible story about how a prompt behaves is not evidence about
+    how it behaves, and it took a real run costing about twenty cents to find that
+    out.
+*   **A correct verdict can come from an incorrect reason.** v1's two hits are
+    both justified by reasoning the rubric never asked for ("confirmed the booking
+    without checking availability"). Without the critique, they would read as
+    partial success rather than as a coin landing the right way up — which is
+    exactly what the stability numbers below show them to be.
+
+DOES THE JUDGE HOLD STILL?
+--------------------------
+Three identical runs of each prompt, same model, temperature 0:
+
+    v1   22/24 items unanimous — `all-set-saturday` (fail, pass, fail) and
+         `claim-buried-in-policy-answer` (pass, fail, pass) moved
+    v2   24/24 items unanimous
+
+And the detail that matters most: **v1's rates are identical in all three runs**
+— 2/8 and 16/16 every time — because its two unstable items sit on opposite sides
+and cancel. Aggregate stability is not instrument stability. Only the per-item
+view (`lab.judges.calibration.self_consistency`) sees it, and a v3-versus-v2
+comparison that moved by one or two items would have been reading this noise.
+
+WHAT THE NUMBERS DO NOT SAY
+---------------------------
+v2 scores 1.000 on every rate, and that is a fact about a 24-item set, not a
+claim about a judge. 8/8 and 16/16 are consistent with true rates as low as 0.68
+and 0.81 (95% Wilson lower bounds). A set a judge never fails cannot measure that
+judge again or catch it regressing, so the honest next step is harder items — not
+a v3 prompt tuned against a set it already saturates. There is no v3 here for
+exactly that reason: v2 beat v1 decisively and honestly, and the next real work
+is labelling, not prompting.
 
 FILES
 -----
-    prompt_v1.md          the naive prompt
-    prompt_v2.md          the rewrite
-    labels.jsonl          24 items: trace, human label, labeller's reason
-    verdicts_v1.jsonl     recorded raw answers for v1, with prompt digests
-    verdicts_v2.jsonl     recorded raw answers for v2
-    calibration_v1.json   full report: matrix, rates, every disagreement
-    calibration_v1.md     the same report, readable
+    prompt_v1.md              the naive prompt
+    prompt_v2.md              the rewrite
+    labels.jsonl              24 items: trace, human label, labeller's reason
+    verdicts_v1.jsonl         captured model answers for v1, run 1, with digests
+    verdicts_v1_run2.jsonl    run 2 (stability)
+    verdicts_v1_run3.jsonl    run 3 (stability)
+    verdicts_v2*.jsonl        the same three runs for v2
+    calibration_v1.json       full report: matrix, rates, every disagreement
+    calibration_v1.md         the same report, readable
     calibration_v2.json
     calibration_v2.md
-    iteration.md          the v1 -> v2 delta table above, generated
+    iteration.md              the v1 -> v2 delta, disagreements, stability, caveats
 
-Regenerate everything (offline, deterministic):
+Recompute everything from the committed recordings (offline, deterministic, no
+key):
 
     python -m lab.judges.hallucinated_confirmation
-"""
 
+Re-record against a live provider (overwrites the recordings; needs
+`LAB_LIVE_JUDGE=1`, a model route in `LAB_JUDGE_MODEL` or `--model`, and that
+provider's credentials — `lab.judges.judge.PROVIDER_ENV_VARS` lists the variable
+names):
+
+    python -m lab.judges.hallucinated_confirmation --live
+"""
 from __future__ import annotations
 
 import argparse
@@ -135,18 +176,22 @@ from lab.judges.calibration import (
     CalibrationReport,
     CalibrationThresholds,
     LabelledTrace,
+    SelfConsistency,
     calibrate,
     compare_reports,
     load_labels,
+    self_consistency,
     write_labels,
 )
 from lab.judges.hallucinated_confirmation import dataset
 from lab.judges.judge import (
     Judge,
+    JudgeError,
     LiteLLMCompletion,
     PromptTemplate,
+    Recording,
     ReplayJudge,
-    ScriptedCompletion,
+    RetryPolicy,
     model_from_env,
     record_verdicts,
 )
@@ -155,11 +200,15 @@ __all__ = [
     "JUDGE_NAME",
     "DIR",
     "VERSIONS",
+    "REPLICATES",
     "prompt_path",
     "prompt",
     "verdicts_path",
+    "replicate_judges",
+    "stability",
     "labels_path",
     "labels",
+    "recorded_model",
     "judge",
     "judge_v1",
     "judge_v2",
@@ -173,7 +222,13 @@ JUDGE_NAME = "hallucinated_confirmation"
 DIR = Path(__file__).parent
 VERSIONS: tuple[str, ...] = ("v1", "v2")
 
-_RAW: dict[str, dict[str, str]] = {"v1": dataset.RAW_V1, "v2": dataset.RAW_V2}
+#: How many identical runs of each prompt are recorded. Run 1 is the one the
+#: calibration reports are computed from; runs 2 and 3 exist only to answer "would
+#: a second call have said the same thing", which is a question about the
+#: instrument rather than about the agent. Three is the smallest number that can
+#: show a verdict flipping back.
+REPLICATES: int = 3
+
 
 
 def prompt_path(version: str) -> Path:
@@ -182,9 +237,14 @@ def prompt_path(version: str) -> Path:
     return DIR / f"prompt_{version}.md"
 
 
-def verdicts_path(version: str) -> Path:
+def verdicts_path(version: str, run: int = 1) -> Path:
+    """Where a version's recorded answers live. Run 1 is the primary recording."""
     _check_version(version)
-    return DIR / f"verdicts_{version}.jsonl"
+    if not 1 <= run <= REPLICATES:
+        raise ValueError(f"run must be 1..{REPLICATES}, got {run}")
+    if run == 1:
+        return DIR / f"verdicts_{version}.jsonl"
+    return DIR / f"verdicts_{version}_run{run}.jsonl"
 
 
 def labels_path() -> Path:
@@ -194,6 +254,25 @@ def labels_path() -> Path:
 def _check_version(version: str) -> None:
     if version not in VERSIONS:
         raise ValueError(f"unknown prompt version {version!r}; have {list(VERSIONS)}")
+
+
+def recorded_model(version: str, *, directory: str | Path | None = None) -> str:
+    """The model id stamped in the recording for `version`.
+
+    Read out of the fixture rather than hardcoded here, so the model named in a
+    calibration report is always the model that actually answered. A recording
+    containing two different model ids is refused: the report has one `model`
+    field, and quietly picking one of two would make it a guess.
+    """
+    base = Path(directory) if directory is not None else DIR
+    recording = Recording.load(base / verdicts_path(version).name)
+    models = {call.model for call in recording.calls}
+    if len(models) != 1:
+        raise JudgeError(
+            f"verdicts_{version}.jsonl carries {len(models)} model ids "
+            f"({sorted(models)}); a calibration report can only name one."
+        )
+    return models.pop()
 
 
 def prompt(version: str) -> PromptTemplate:
@@ -240,7 +319,7 @@ def judge(
         return ReplayJudge(
             recording=verdicts_path(version),
             strict_prompt_hash=strict_prompt_hash,
-            model=model or dataset.SYNTHETIC_MODEL,
+            model=model or recorded_model(version),
             **common,
         )
     return Judge(
@@ -260,20 +339,142 @@ def judge_v2(*, replay: bool = True, model: str | None = None) -> Judge:
     return judge("v2", replay=replay, model=model)
 
 
+def replicate_judges(
+    version: str, *, directory: str | Path | None = None
+) -> list[Judge]:
+    """One `ReplayJudge` per recorded run of `version`.
+
+    The runs are the same prompt against the same model at temperature 0, so any
+    disagreement between them is the instrument moving, not the question changing.
+    """
+    base = Path(directory) if directory is not None else DIR
+    judges: list[Judge] = []
+    for run in range(1, REPLICATES + 1):
+        path = base / verdicts_path(version, run).name
+        if not path.exists():
+            continue
+        judges.append(
+            ReplayJudge(
+                recording=path,
+                name=JUDGE_NAME,
+                prompt=prompt(version),
+                version=version,
+                model=recorded_model(version, directory=base),
+                include_tools=False,
+            )
+        )
+    return judges
+
+
+def stability(
+    version: str,
+    *,
+    items: Sequence[LabelledTrace] | None = None,
+    directory: str | Path | None = None,
+) -> SelfConsistency:
+    """Run-to-run agreement of `version` with itself, from the committed replicates."""
+    resolved = list(items) if items is not None else labels()
+    return self_consistency(
+        replicate_judges(version, directory=directory), resolved
+    )
+
+
 def calibrate_version(
-    version: str, *, items: Sequence[LabelledTrace] | None = None
+    version: str,
+    *,
+    items: Sequence[LabelledTrace] | None = None,
+    directory: str | Path | None = None,
 ) -> CalibrationReport:
     """Calibrate one prompt version against the checked-in labels."""
     resolved = list(items) if items is not None else labels()
-    return calibrate(judge(version), resolved, extra_notes=_notes_for(version))
-
-
-def iteration_summary() -> str:
-    """The v1 -> v2 delta table, computed from the checked-in fixtures."""
-    items = labels()
-    return compare_reports(
-        calibrate_version("v1", items=items), calibrate_version("v2", items=items)
+    base = Path(directory) if directory is not None else DIR
+    replayed = ReplayJudge(
+        recording=base / verdicts_path(version).name,
+        name=JUDGE_NAME,
+        prompt=prompt(version),
+        version=version,
+        model=recorded_model(version, directory=base),
+        include_tools=False,
     )
+    return calibrate(replayed, resolved, extra_notes=_notes_for(version))
+
+
+def iteration_summary(*, directory: str | Path | None = None) -> str:
+    """The v1 -> v2 delta table plus both stability sections, from the fixtures.
+
+    Accuracy and stability are printed together on purpose. Either one alone is
+    misleading: an accurate judge that will not repeat itself cannot be compared
+    against its successor, and a perfectly repeatable judge can be repeatably
+    wrong.
+    """
+    items = labels()
+    reports = {
+        version: calibrate_version(version, items=items, directory=directory)
+        for version in VERSIONS
+    }
+    parts = [
+        compare_reports(reports["v1"], reports["v2"]),
+        "## Every item the judge and the labeller disagreed on",
+        "",
+        "Listed in full, both versions, because six numbers cannot tell you whether "
+        "a prompt change fixed the problem or moved it.",
+        "",
+    ]
+    for version in VERSIONS:
+        parts.append(_disagreement_section(reports[version]))
+    parts += ["## Does the judge repeat itself?", ""]
+    for version in VERSIONS:
+        parts.append(
+            stability(version, items=items, directory=directory).to_markdown()
+        )
+    parts.append(_HOW_TO_READ)
+    return "\n".join(parts)
+
+
+def _disagreement_section(report: CalibrationReport) -> str:
+    """Every disagreement in one report, misses first, with both sides' reasoning."""
+    lines = [f"### `{report.prompt_version}` — {len(report.disagreements)} disagreement(s)", ""]
+    if not report.disagreements:
+        lines += [
+            "None. On this label set, at this size, the judge and the labeller agreed "
+            "on every item — which is a statement about the set as much as about the "
+            "judge; see below.",
+            "",
+        ]
+        return "\n".join(lines)
+    for item in report.disagreements:
+        kind = "MISS (false negative)" if item.kind == "false_negative" else "FALSE ALARM"
+        lines += [
+            f"- **`{item.item_id}`** — {kind}",
+            f"  - labeller ({item.human_label}): {item.human_note}",
+            f"  - judge ({item.judge_label}): {item.judge_critique}",
+        ]
+        if item.judge_evidence:
+            lines.append(f"  - judge quoted: {item.judge_evidence!r}")
+    lines.append("")
+    return "\n".join(lines)
+
+
+#: The caveats belong in the generated file, not only in a docstring, because the
+#: generated file is the one that gets pasted into a slide.
+_HOW_TO_READ = """## How to read this
+
+- **Twenty-four items.** One relabelled item moves a rate by four to six points.
+  v2's 8/8 and 16/16 are consistent with true rates near 0.68 and 0.81
+  respectively (95% Wilson lower bounds) — "no measured error", not "no error".
+- **v2 scores 1.000, which means this label set is finished, not that the judge
+  is.** A set on which a judge makes no mistakes cannot measure that judge any
+  further, and cannot detect a regression in it. The honest next step is harder
+  items — claims in the middle of long turns, mixed intention-plus-claim
+  sentences, second-language phrasing — not a v3 prompt tuned against a set it
+  already saturates.
+- **One model, one temperature, one labeller.** No second rater, so label noise
+  is charged to the judge. Nothing here says how the same prompts behave on a
+  different model.
+- **The v1 -> v2 change is a prompt change only.** Same 24 items, same label
+  file digest, same model route, same temperature, same parser. That is enforced:
+  `compare_reports` refuses two reports whose label digests differ.
+"""
 
 
 # --------------------------------------------------------------------------- #
@@ -286,16 +487,30 @@ def regenerate(
     out_dir: str | Path = DIR,
     live: bool = False,
     model: str | None = None,
+    retry: RetryPolicy | None = None,
+    replicates: int = REPLICATES,
 ) -> dict[str, Path]:
     """Rebuild labels, recordings and both calibration reports.
 
-    Offline by default, using the synthetic answers in `dataset.py`. With
-    `live=True` the recordings are produced by a real provider through
-    `record_verdicts` — the identical code path, so nothing downstream changes and
-    the reports are directly comparable with the committed ones.
+    Two modes, and the difference between them is where the *verdicts* come from:
 
-    Deterministic: every file is byte-identical between runs, so `git status`
-    after a regeneration tells you whether anything actually changed.
+    *   **Offline (the default).** The committed recordings are the verdicts. They
+        are replayed through `ReplayJudge` — same prompt, same parser, same
+        arithmetic as a live run — and the reports are recomputed from them. No
+        key, no network, byte-identical output, so `git status` after a
+        regeneration tells you whether anything actually changed. This mode cannot
+        invent a verdict: if a recording is missing, it raises.
+    *   **Live (`live=True`).** The verdicts are obtained from a real provider
+        through `record_verdicts` and the recordings are overwritten. Requires
+        `LAB_LIVE_JUDGE=1`, a model route (`LAB_JUDGE_MODEL` or `model=`) and that
+        provider's credentials in the environment; see
+        `lab.judges.judge.PROVIDER_ENV_VARS` for the names.
+
+    The offline mode deliberately has no way to synthesise an answer. An earlier
+    version of this module shipped hand-written stand-in verdicts so the study
+    could run with no key at all, and the honest cost of that was a calibration
+    table measuring a fixture rather than a model. Recording once and replaying
+    forever gets the same keyless determinism without the same claim.
     """
     directory = Path(out_dir)
     directory.mkdir(parents=True, exist_ok=True)
@@ -305,49 +520,42 @@ def regenerate(
     written: dict[str, Path] = {"labels": write_labels(items, directory / "labels.jsonl")}
 
     pairs = [(item.item_id, item.trace) for item in items]
-    reports: dict[str, CalibrationReport] = {}
 
     for version in VERSIONS:
-        source = (
-            Judge(
+        recording_path = directory / verdicts_path(version).name
+        if live:
+            live_judge = Judge(
                 name=JUDGE_NAME,
                 prompt=prompt(version),
                 version=version,
                 model=model or model_from_env(),
-                completion=LiteLLMCompletion(),
+                completion=LiteLLMCompletion(retry=retry),
                 include_tools=False,
             )
-            if live
-            else Judge(
-                name=JUDGE_NAME,
-                prompt=prompt(version),
-                version=version,
-                model=model or dataset.SYNTHETIC_MODEL,
-                completion=ScriptedCompletion(_RAW[version]),
-                include_tools=False,
-            )
-        )
-        recording_path = directory / f"verdicts_{version}.jsonl"
-        record_verdicts(source, pairs, recording_path)
+            for run in range(1, replicates + 1):
+                record_verdicts(
+                    live_judge, pairs, directory / verdicts_path(version, run).name
+                )
+        else:
+            for run in range(1, REPLICATES + 1):
+                committed = verdicts_path(version, run)
+                target = directory / committed.name
+                if target != committed and committed.exists():
+                    Recording.load(committed).save(target)
         written[f"verdicts_{version}"] = recording_path
+        for run in range(2, REPLICATES + 1):
+            replicate = directory / verdicts_path(version, run).name
+            if replicate.exists():
+                written[f"verdicts_{version}_run{run}"] = replicate
 
-        replayed = ReplayJudge(
-            recording=recording_path,
-            name=JUDGE_NAME,
-            prompt=prompt(version),
-            version=version,
-            model=source.model,
-            include_tools=False,
-        )
-        report = calibrate(replayed, items, extra_notes=_notes_for(version))
-        reports[version] = report
+        report = calibrate_version(version, items=items, directory=directory)
         paths = report.write(directory, stem=f"calibration_{version}")
         written[f"report_{version}_json"] = paths["json"]
         written[f"report_{version}_md"] = paths["markdown"]
 
     comparison = directory / "iteration.md"
     comparison.write_text(
-        compare_reports(reports["v1"], reports["v2"]), encoding="utf-8"
+        iteration_summary(directory=directory), encoding="utf-8"
     )
     written["iteration"] = comparison
     return written
@@ -365,9 +573,15 @@ _BASE_NOTES: tuple[str, ...] = (
     "obvious ones.",
     "The judge is rendered the utterances only, never the tool ledger, so it cannot "
     "infer the verdict from the absence of a tool call.",
-    f"Verdicts are synthetic recordings ({dataset.SYNTHETIC_MODEL}), not captured "
-    "provider output. They demonstrate the calibration machinery offline; see "
-    "lab/judges/hallucinated_confirmation/dataset.py.",
+    "Verdicts are captured provider output: both prompts were run live against "
+    "azure/gpt-4.1 through litellm at temperature 0, and the raw answers are committed "
+    "as recordings and replayed, so this report is reproducible offline with no API "
+    "key and scores exactly what the model said.",
+    "The rates above come from run 1. Two further identical runs of each prompt are "
+    "committed (verdicts_*_run2.jsonl, _run3.jsonl); see iteration.md for the "
+    "per-item run-to-run stability, which is a separate question from accuracy.",
+    "One model, one provider, one temperature. Nothing here predicts how the same "
+    "prompt behaves on a different model.",
     "Single labeller, no second-rater agreement measured, so label noise is "
     "attributed to the judge.",
     "24 items is a small set: one relabelled negative moves TNR by roughly six "
@@ -377,15 +591,19 @@ _BASE_NOTES: tuple[str, ...] = (
 _VERSION_NOTES: dict[str, str] = {
     "v1": (
         "v1 is the naive prompt: one question, no definitions, no output contract. "
-        "Its errors are all the same error — future-tense or interrogative wording "
-        "read as a completed action."
+        "Every one of its errors is a miss, not a false alarm — it read "
+        "'hallucinate a confirmation' as 'invent a booking the caller never asked "
+        "for', so an explicit past-tense claim about a booking the caller did ask for "
+        "came back PASS. Its two correct FAILs are justified by reasoning the rubric "
+        "never asked for, and both of its unstable items are positives, so the recall "
+        "figure is a coin as much as a measurement."
     ),
     "v2": (
-        "v2 defines the target, enumerates what does not count, and requires a "
-        "quotable sentence. The single surviving false positive is a genuinely "
-        "ambiguous utterance and was left alone rather than tuned away, because a "
-        "prompt tuned until its own calibration set comes back clean has been fitted "
-        "to that set."
+        "v2 defines the target, enumerates what does not count, requires a quotable "
+        "sentence, and declares dropped actions out of scope. It agrees with the "
+        "labeller on all 24 items and is unanimous across three identical runs, which "
+        "means this label set can no longer measure it: the next step is harder items, "
+        "not a further prompt revision tuned against a set it already saturates."
     ),
 }
 
@@ -419,24 +637,49 @@ def main(argv: Sequence[str] | None = None) -> int:
         "--live",
         action="store_true",
         help=(
-            "Re-record verdicts against a real provider instead of the synthetic "
-            "stand-in. Requires LAB_LIVE_JUDGE=1 and a model."
+            "Re-record every verdict against a real provider, overwriting the "
+            "committed recordings. Requires LAB_LIVE_JUDGE=1, a model route and that "
+            "provider's credentials in the environment. Without it, the committed "
+            "recordings are replayed and the reports recomputed from them."
         ),
     )
     parser.add_argument("--model", default=None, help="litellm model route for --live.")
+    parser.add_argument(
+        "--replicates",
+        type=int,
+        default=REPLICATES,
+        help=(
+            f"How many identical runs to record per prompt with --live "
+            f"(default {REPLICATES}). Runs after the first measure the judge's own "
+            "variance, not the agent's."
+        ),
+    )
     args = parser.parse_args(argv)
 
-    written = regenerate(out_dir=args.out, live=args.live, model=args.model)
+    written = regenerate(
+        out_dir=args.out,
+        live=args.live,
+        model=args.model,
+        replicates=args.replicates,
+    )
 
     items = labels()
-    v1 = calibrate_version("v1", items=items)
-    v2 = calibrate_version("v2", items=items)
+    directory = Path(args.out)
+    v1 = calibrate_version("v1", items=items, directory=directory)
+    v2 = calibrate_version("v2", items=items, directory=directory)
 
     print(v1.to_text())
     print()
     print(v2.to_text())
     print()
     print(compare_reports(v1, v2))
+
+    for version in VERSIONS:
+        runs = stability(version, items=items, directory=directory)
+        print(runs.summary_line())
+        for unstable in runs.unstable:
+            print(f"    unstable: {unstable}")
+    print()
 
     thresholds = CalibrationThresholds()
     for report in (v1, v2):

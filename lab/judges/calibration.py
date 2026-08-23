@@ -116,6 +116,9 @@ __all__ = [
     "write_labels",
     "labels_digest",
     "compare_reports",
+    "SelfConsistency",
+    "ItemVerdictRuns",
+    "self_consistency",
     "traces_of",
 ]
 
@@ -890,22 +893,194 @@ def compare_reports(before: CalibrationReport, after: CalibrationReport) -> str:
         "",
         f"| metric | {before.prompt_version} | {after.prompt_version} | delta |",
         "|---|---|---|---|",
-        row("true positive rate", before.true_positive_rate, after.true_positive_rate),
-        row("true negative rate", before.true_negative_rate, after.true_negative_rate),
+        row(
+            "true positive rate (recall)",
+            before.true_positive_rate,
+            after.true_positive_rate,
+        ),
+        row(
+            "true negative rate (specificity)",
+            before.true_negative_rate,
+            after.true_negative_rate,
+        ),
         row("precision", before.precision, after.precision),
         row("F1", before.f1, after.f1),
         row("raw agreement", before.raw_agreement, after.raw_agreement),
         f"| Cohen's kappa | {_fmt_kappa(before.cohens_kappa)} | "
         f"{_fmt_kappa(after.cohens_kappa)} | {kappa_delta} |",
+        f"| true positives | {before.confusion.true_positive} | "
+        f"{after.confusion.true_positive} | "
+        f"{after.confusion.true_positive - before.confusion.true_positive:+d} |",
+        f"| true negatives | {before.confusion.true_negative} | "
+        f"{after.confusion.true_negative} | "
+        f"{after.confusion.true_negative - before.confusion.true_negative:+d} |",
         f"| false positives | {before.confusion.false_positive} | "
         f"{after.confusion.false_positive} | "
         f"{after.confusion.false_positive - before.confusion.false_positive:+d} |",
         f"| false negatives | {before.confusion.false_negative} | "
         f"{after.confusion.false_negative} | "
         f"{after.confusion.false_negative - before.confusion.false_negative:+d} |",
+        f"| unparseable answers | {before.parse_errors} | {after.parse_errors} | "
+        f"{after.parse_errors - before.parse_errors:+d} |",
+        "",
+        "All four confusion cells are printed, not just the two rates. A rate hides "
+        "which direction the errors ran, and the direction is the whole story here: a "
+        "judge that misses defects and a judge that invents them fail the same "
+        "threshold and require opposite fixes.",
         "",
     ]
     return "\n".join(lines)
+
+
+# --------------------------------------------------------------------------- #
+# Self-consistency: is the instrument stable at all?
+# --------------------------------------------------------------------------- #
+
+
+class ItemVerdictRuns(BaseModel):
+    """One item's verdict from each of several identical runs."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    item_id: str
+    human_label: Label
+    verdicts: list[Label]
+
+    @property
+    def unanimous(self) -> bool:
+        return len(set(self.verdicts)) <= 1
+
+    def __str__(self) -> str:
+        return f"{self.item_id}: {' -> '.join(self.verdicts)}"
+
+
+class SelfConsistency(BaseModel):
+    """How often a judge gives one item the same verdict twice.
+
+    The measurement that makes an agreement figure interpretable. TPR and TNR
+    describe a judge's *accuracy* against human labels on one sample per item; they
+    say nothing about whether a second sample would have produced the same table.
+    A judge that is 0.95 accurate and flips one verdict in ten is not a 0.95
+    instrument — it is an instrument whose reading changes when nothing changed,
+    and every downstream comparison ("v3 beat v2 by two items") is then partly
+    reading its own noise.
+
+    The counted unit is deliberately the **item**, not the rate. Aggregate rates
+    can be perfectly stable while individual verdicts move, because errors in
+    opposite directions cancel: two items swapping places leaves TPR and TNR
+    untouched and the judge's per-item output different. Only the per-item view
+    sees that, and the per-item view is the one a human debugging a disagreement
+    actually needs.
+
+    Not a substitute for calibration, and not a licence to average several samples
+    into a verdict: this repository measures variance rather than voting it away,
+    because voting raises cost per item threefold and hides the instability rather
+    than reporting it.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    judge: str
+    prompt_version: str
+    model: str
+    runs: int
+    items: list[ItemVerdictRuns] = Field(default_factory=list)
+
+    @property
+    def n(self) -> int:
+        return len(self.items)
+
+    @property
+    def unstable(self) -> list[ItemVerdictRuns]:
+        """The items whose verdict was not the same every time."""
+        return [item for item in self.items if not item.unanimous]
+
+    @property
+    def unanimity(self) -> Rate:
+        return Rate(
+            name="unanimous items",
+            numerator=self.n - len(self.unstable),
+            denominator=self.n,
+        )
+
+    def summary_line(self) -> str:
+        return (
+            f"{self.judge} {self.prompt_version}: {self.unanimity} items unanimous "
+            f"across {self.runs} identical runs of {self.model}"
+        )
+
+    def to_markdown(self) -> str:
+        lines = [
+            f"### Run-to-run stability — `{self.prompt_version}`",
+            "",
+            f"{self.runs} identical runs, same prompt, same model (`{self.model}`), "
+            f"temperature 0. Unanimous on {self.unanimity}.",
+            "",
+        ]
+        if not self.unstable:
+            lines.append(
+                "No item changed verdict between runs. Stability on this set is not a "
+                "guarantee for unseen items, but an unstable judge would have shown it "
+                "here."
+            )
+        else:
+            lines.append("Items that did not hold still:")
+            lines.append("")
+            for item in self.unstable:
+                lines.append(
+                    f"- `{item.item_id}` (human: **{item.human_label}**) — "
+                    + ", ".join(item.verdicts)
+                )
+        lines.append("")
+        return "\n".join(lines)
+
+
+def self_consistency(
+    judges: Sequence[Judge], labelled: Sequence[LabelledTrace]
+) -> SelfConsistency:
+    """Score several runs of the same judge over the same labelled set.
+
+    Each element of `judges` is one run — in practice a `ReplayJudge` over one
+    replicate recording, so the measurement is reproducible offline from committed
+    fixtures rather than being a number somebody once saw.
+
+    Refuses a mixture of judges, prompt versions or models, because "the same
+    judge twice" is the entire premise: comparing two different prompts and calling
+    the difference instability would be a category error.
+    """
+    if len(judges) < 2:
+        raise ValueError(
+            "self-consistency needs at least two runs; one run cannot disagree "
+            "with itself"
+        )
+    if not labelled:
+        raise ValueError("cannot measure self-consistency on an empty set")
+
+    names = {(j.name, j.version, j.model, j.prompt_sha256) for j in judges}
+    if len(names) != 1:
+        raise ValueError(
+            "self-consistency compares repeated runs of ONE judge; these runs differ "
+            f"in name, prompt version, model or prompt digest: {sorted(names)}"
+        )
+
+    first = judges[0]
+    rows: list[ItemVerdictRuns] = []
+    for item in labelled:
+        verdicts = [
+            judge.judge(item.trace, item_id=item.item_id).label for judge in judges
+        ]
+        rows.append(
+            ItemVerdictRuns(
+                item_id=item.item_id, human_label=item.label, verdicts=verdicts
+            )
+        )
+    return SelfConsistency(
+        judge=first.name,
+        prompt_version=first.version,
+        model=first.model,
+        runs=len(judges),
+        items=rows,
+    )
 
 
 def traces_of(labelled: Sequence[LabelledTrace]) -> list[Trace]:

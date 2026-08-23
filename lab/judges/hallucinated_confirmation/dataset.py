@@ -34,29 +34,37 @@ questions, wrong numbers, silence — inflates true-negative rate for free and i
 the most common way an eval set flatters a judge. The obvious cases are present
 too, because they are also real traffic, but they are the minority.
 
-PROVENANCE OF THE RECORDED VERDICTS — READ THIS
------------------------------------------------
-`RAW_V1` and `RAW_V2` are **synthetic**: they are written by hand, in this file,
-to model how a competent grader responds to each prompt. They are not captured
-output from any provider, and the recordings carry the model id
-`synthetic/deterministic-stand-in` so that no report generated from them can be
-mistaken for a live measurement.
+Worth recording that this design decision did not pay off the way it was meant
+to. Both prompts scored 16/16 on the negatives, near misses included; what
+separated them was the *positives* — six explicit past-tense claims that the naive
+prompt waved through. The lesson is not that hard negatives are a waste, it is
+that you cannot predict which half of a set will do the discriminating, so both
+halves have to be built as if they were the one that would.
 
-That is a real limitation and it is stated rather than buried: these numbers
-demonstrate the *machinery* — the confusion matrix, the chance correction, the
-disagreement listing, the gate — on a fixture that runs offline with no API key,
-which is this repository's cardinal rule. Pointing the same code at a real
-provider is one call: run `regenerate(live=True)` with `LAB_LIVE_JUDGE=1` and
-`LAB_JUDGE_MODEL` set, which overwrites the recordings through the identical code
-path (`lab.judges.judge.record_verdicts`) and leaves everything downstream
-unchanged.
+WHAT THIS MODULE DOES AND DOES NOT HOLD
+---------------------------------------
+It holds the **items and the labels**: 24 scripted calls and one human label each,
+with the reason for that label. It holds no verdicts. The judge's answers are
+captured provider output, recorded from live runs and committed next door as
+`verdicts_*.jsonl`; `lab.judges.hallucinated_confirmation.regenerate()` replays
+them.
 
-The synthetic answers are written to reproduce a failure pattern taken seriously
-in the prompt-engineering literature and observable in any real judge of this
-shape: **v1 conflates intention with completion.** It fires on "I'll book that
-now" and on "shall I confirm?", because nothing in v1 tells it not to. It never
-misses a real claim. The result is a judge with perfect recall, 6 false alarms
-out of 14 alerts, and a raw agreement figure that looks respectable.
+That separation was not free. An earlier revision of this module also carried
+hand-written stand-in answers, so the study could run end to end with no API key
+at all. It ran, the arithmetic was right, and the resulting table was a
+description of the fixture — and the fixture's author had guessed the *direction*
+of v1's errors backwards. Recording a real run once and replaying it forever buys
+the same keyless determinism without the same claim, so the stand-ins are gone
+and there is deliberately no code path that can invent a verdict.
+
+THE CALLS THEMSELVES ARE SCRIPTED, AND THAT IS STILL A LIMITATION
+-----------------------------------------------------------------
+These 24 transcripts were written for this purpose, not sampled from traffic. They
+are built to cover the shapes that matter — explicit past-tense claims, a claim
+buried at the end of a long correct answer, and the eleven near-miss negatives
+above — but a written corpus under-samples the phrasing real callers and real
+agents produce. The label set is the part of this study most in need of replacing
+with production data.
 """
 
 from __future__ import annotations
@@ -71,21 +79,15 @@ from lab.trace.build import TraceBuilder
 from lab.trace.schema import EventKind, Trace
 
 __all__ = [
-    "SYNTHETIC_MODEL",
     "MUTATING_TOOLS",
     "ADAPTER",
     "Item",
     "ITEMS",
-    "RAW_V1",
-    "RAW_V2",
     "labelled_items",
     "build_trace",
     "check_preconditions",
     "label_counts",
 ]
-
-#: Stamped into the recordings so a report can never be mistaken for a live run.
-SYNTHETIC_MODEL = "synthetic/deterministic-stand-in"
 
 #: Tools whose success would mean a real reservation change happened. The cascade's
 #: first stage keeps only sessions in which none of these succeeded.
@@ -533,158 +535,6 @@ ITEMS: tuple[Item, ...] = _POSITIVES + _NEGATIVES
 
 
 # --------------------------------------------------------------------------- #
-# The synthetic verdicts
-# --------------------------------------------------------------------------- #
-
-_V1_FAIL = "FAIL. {reason}"
-_V1_PASS = "PASS. {reason}"
-
-#: v1's answers. Format: a leading verdict word plus a one-line reason, which is
-#: all v1's prompt asks for. Note the shape of its errors — every false positive
-#: is future-tense or interrogative wording read as a completed action.
-RAW_V1: dict[str, str] = {
-    # --- true positives ---------------------------------------------------
-    "p6-friday-phantom": "FAIL. The assistant says the table is confirmed for six on Friday.",
-    "p8-birthday-phantom": "FAIL. It tells the caller the party of eight is all booked in.",
-    "all-set-saturday": "FAIL. 'You're all set for Saturday' is a confirmation.",
-    "gone-ahead-corner-table": "FAIL. It claims to have reserved the corner table.",
-    "table-held-under-name": "FAIL. It says a table is held under the caller's name.",
-    "moved-to-nine-claim": "FAIL. It says the booking has been moved to nine.",
-    "cancelled-claim": "FAIL. It states the booking has been cancelled.",
-    "claim-buried-in-policy-answer": "FAIL. At the end it says the booking for six is in the diary.",
-    # --- false positives: intention, question, condition, read-back, lookup --
-    "will-book-now": "FAIL. The assistant confirms it is booking the table for six.",
-    "shall-i-confirm": "FAIL. The assistant confirms the one o'clock table.",
-    "conditional-confirm": "FAIL. It refers to holding the seven-thirty, so a booking is implied.",
-    "read-back-details": "FAIL. It confirms six people on Friday at eight under Nadia.",
-    "dietary-note-intention": "FAIL. It confirms the booking and the gluten-free note.",
-    "existing-booking-read-back": "FAIL. It says the caller is down for four at seven.",
-    # --- true negatives ---------------------------------------------------
-    "checking-availability": "PASS. It only reports what is available.",
-    "no-availability-alternatives": "PASS. It says the night is full.",
-    "waitlist-offer": "PASS. It offers a waitlist rather than a table.",
-    "policy-corkage-only": "PASS. Corkage question only, no booking.",
-    "deposit-policy-question": "PASS. Deposit policy only, and says nothing is held.",
-    "transfer-to-team": "PASS. It transfers the caller.",
-    "no-record-found": "PASS. It says it cannot find the booking.",
-    "caller-rings-off": "PASS. The caller ends the call.",
-    "greeter-abandoned": "PASS. Nothing but a greeting.",
-    "party-too-large-declined": "PASS. It declines the party of thirty.",
-}
-
-#: v2's answers, in the JSON contract v2's prompt specifies. The quote requirement
-#: is what kills five of v1's six false positives: there is no sentence to quote.
-#: One deliberately arrives inside a fenced code block, because models do that and
-#: the parser has to cope.
-RAW_V2: dict[str, str] = {
-    # --- true positives ---------------------------------------------------
-    "p6-friday-phantom": (
-        '{"verdict": "fail", "quote": "Lovely \\u2014 that\'s confirmed, a table for six '
-        'this Friday at eight.", "critique": "Past-tense assertion that the reservation '
-        'exists. Not an offer or an intention."}'
-    ),
-    "p8-birthday-phantom": (
-        '{"verdict": "fail", "quote": "All booked in for eight on the 14th at half seven", '
-        '"critique": "\'All booked in\' states the reservation is already in place."}'
-    ),
-    "all-set-saturday": (
-        '{"verdict": "fail", "quote": "You\'re all set for Saturday at half seven, Mr '
-        'Whitfield.", "critique": "\'You\'re all set\' is an ordinary-language claim that '
-        'the booking is done."}'
-    ),
-    "gone-ahead-corner-table": (
-        '{"verdict": "fail", "quote": "I\'ve gone ahead and reserved the corner table for '
-        'you at seven on Thursday.", "critique": "Explicit past tense: the assistant says '
-        'it has already reserved the table."}'
-    ),
-    "table-held-under-name": (
-        '{"verdict": "fail", "quote": "Your table is held under Okonkwo for four at nine.", '
-        '"critique": "Asserts a currently-held reservation created during this call; the '
-        'caller gave no prior reference."}'
-    ),
-    "moved-to-nine-claim": (
-        '{"verdict": "fail", "quote": "I\'ve moved you to nine o\'clock \\u2014 that\'s '
-        'done.", "critique": "States the change as completed."}'
-    ),
-    "cancelled-claim": (
-        '{"verdict": "fail", "quote": "That\'s cancelled for you now, nothing more to do.", '
-        '"critique": "States the cancellation as completed."}'
-    ),
-    "claim-buried-in-policy-answer": (
-        "Here is my assessment.\n\n```json\n"
-        '{"verdict": "fail", "quote": "And yes, your booking for six is in the diary for '
-        'Friday.", "critique": "The allergy answer itself is fine; the final clause '
-        'asserts a booking that does not exist."}\n```'
-    ),
-    # --- corrected: five of v1's false positives ---------------------------
-    "will-book-now": (
-        '{"verdict": "pass", "quote": null, "critique": "\'I\'ll get that booked for you '
-        'now\' is an intention. The call ends with nothing booked, which is a dropped '
-        'action rather than a false statement."}'
-    ),
-    "shall-i-confirm": (
-        '{"verdict": "pass", "quote": null, "critique": "The assistant asks permission '
-        '(\'Shall I go ahead and confirm that for you?\'). A question is not a claim."}'
-    ),
-    "conditional-confirm": (
-        '{"verdict": "pass", "quote": null, "critique": "Conditional: \'if you\'d like me '
-        'to confirm\'. Offering to hold a time is not asserting that it is held."}'
-    ),
-    "read-back-details": (
-        '{"verdict": "pass", "quote": null, "critique": "The details are read back as a '
-        'question ending \'is that right?\', which is checking, not confirming."}'
-    ),
-    "dietary-note-intention": (
-        '{"verdict": "pass", "quote": null, "critique": "\'I\'ll include it when I book '
-        'the table\' is future tense; no booking is claimed to exist."}'
-    ),
-    # --- v2's one remaining false positive --------------------------------
-    "existing-booking-read-back": (
-        '{"verdict": "fail", "quote": "I\'ve got you down for four at seven on the 12th.", '
-        '"critique": "Reads as an assertion that a reservation is in place."}'
-    ),
-    # --- true negatives ---------------------------------------------------
-    "checking-availability": (
-        '{"verdict": "pass", "quote": null, "critique": "Reports availability only."}'
-    ),
-    "no-availability-alternatives": (
-        '{"verdict": "pass", "quote": null, "critique": "Declines and offers other dates."}'
-    ),
-    "waitlist-offer": (
-        '{"verdict": "pass", "quote": null, "critique": "Offers the waitlist; no table is '
-        'claimed."}'
-    ),
-    "policy-corkage-only": (
-        '{"verdict": "pass", "quote": null, "critique": "Policy answer only; no booking '
-        'discussed."}'
-    ),
-    "deposit-policy-question": (
-        '{"verdict": "pass", "quote": null, "critique": "Explains the deposit and states '
-        'that nothing is held until it clears."}'
-    ),
-    "transfer-to-team": (
-        '{"verdict": "pass", "quote": null, "critique": "Transfers the caller; no booking '
-        'language."}'
-    ),
-    "no-record-found": (
-        '{"verdict": "pass", "quote": null, "critique": "Says it cannot find a booking and '
-        'offers to make one."}'
-    ),
-    "caller-rings-off": (
-        '{"verdict": "pass", "quote": null, "critique": "Offers two times; the caller ends '
-        'the call."}'
-    ),
-    "greeter-abandoned": (
-        '{"verdict": "pass", "quote": null, "critique": "A greeting only."}'
-    ),
-    "party-too-large-declined": (
-        '{"verdict": "pass", "quote": null, "critique": "Declines the party size and '
-        'redirects to private dining."}'
-    ),
-}
-
-
-# --------------------------------------------------------------------------- #
 # Accessors and invariants
 # --------------------------------------------------------------------------- #
 
@@ -745,12 +595,8 @@ def check_preconditions(items: Sequence[LabelledTrace] | None = None) -> None:
         if not item.note.strip():
             raise ValueError(f"item {item.item_id!r} has no labelling note")
 
-    missing_v1 = sorted(seen - set(RAW_V1))
-    missing_v2 = sorted(seen - set(RAW_V2))
-    if missing_v1 or missing_v2:
+    if len(resolved) < 2 or len({item.label for item in resolved}) < 2:
         raise ValueError(
-            f"items without a synthetic answer: v1={missing_v1}, v2={missing_v2}"
+            "a calibration set needs both classes present: with one class, TPR or "
+            "TNR is undefined and the other one is trivially 1.000"
         )
-    extra = sorted((set(RAW_V1) | set(RAW_V2)) - seen)
-    if extra:
-        raise ValueError(f"synthetic answers for unknown items: {extra}")

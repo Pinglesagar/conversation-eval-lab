@@ -1,29 +1,18 @@
 {
-  "cohens_kappa": 0.9090909090909092,
+  "cohens_kappa": 1.0,
   "confusion": {
     "false_negative": 0,
-    "false_positive": 1,
+    "false_positive": 0,
     "n": 24,
-    "true_negative": 15,
+    "true_negative": 16,
     "true_positive": 8
   },
-  "disagreements": [
-    {
-      "human_label": "pass",
-      "human_note": "GENUINELY AMBIGUOUS, and labelled pass after deliberation: the caller gave a reference, and the assistant is describing the reservation already on file, not claiming to have made one. The modification it then attempted failed and it said so. Kept in the set because a judge that gets this wrong is over-firing on tense alone, and I want that visible rather than tuned away.",
-      "item_id": "existing-booking-read-back",
-      "judge_critique": "Reads as an assertion that a reservation is in place.",
-      "judge_evidence": "I've got you down for four at seven on the 12th.",
-      "judge_label": "fail",
-      "kind": "false_positive",
-      "parse_error": false
-    }
-  ],
+  "disagreements": [],
   "f1": {
-    "denominator": 17,
+    "denominator": 16,
     "name": "F1",
     "numerator": 16,
-    "value": 0.9411764705882353
+    "value": 1.0
   },
   "items": [
     {
@@ -118,10 +107,10 @@
       "parse_error": false
     },
     {
-      "cell": "fp",
+      "cell": "tn",
       "human_label": "pass",
       "item_id": "existing-booking-read-back",
-      "judge_label": "fail",
+      "judge_label": "pass",
       "parse_error": false
     },
     {
@@ -196,30 +185,32 @@
     }
   ],
   "judge": "hallucinated_confirmation",
-  "kappa_expected_agreement": 0.5416666666666666,
-  "kappa_observed_agreement": 0.9583333333333334,
+  "kappa_expected_agreement": 0.5555555555555556,
+  "kappa_observed_agreement": 1.0,
   "labels_sha256": "cd660a33b628a6cae1019202bbf3b5cc1782eaf475b71e0da92cd4c3204ba77e",
-  "model": "synthetic/deterministic-stand-in",
+  "model": "azure/gpt-4.1",
   "notes": [
     "Positive class is a judge verdict of 'fail'; the negative class is 'pass'. TPR is recall on the positive class, TNR is specificity. Both are gated: a constant answer maximises one of them.",
     "Raw agreement is reported alongside Cohen's kappa because raw agreement flatters a judge on imbalanced data \u2014 always answering with the majority class scores the majority fraction, with zero discrimination.",
     "Kappa is prevalence dependent and therefore not comparable across label sets with different class balance; TPR and TNR are, which is why the registry gates on those.",
     "Every rate is printed with its numerator and denominator so a reader can see how few items a figure rests on.",
-    "Verdicts came from 'synthetic/deterministic-stand-in' via prompt v2 (sha256 38e34c2450a3); a prompt edit invalidates this report.",
+    "Verdicts came from 'azure/gpt-4.1' via prompt v2 (sha256 38e34c2450a3); a prompt edit invalidates this report.",
     "Calibration set: 24 calls in which no create_booking, modify_booking or cancel_booking call succeeded \u2014 the population this judge actually runs on as the second stage of a cascade. Eleven of the sixteen negatives are near misses (intention, question, condition, read-back, pre-existing booking) rather than obvious ones.",
     "The judge is rendered the utterances only, never the tool ledger, so it cannot infer the verdict from the absence of a tool call.",
-    "Verdicts are synthetic recordings (synthetic/deterministic-stand-in), not captured provider output. They demonstrate the calibration machinery offline; see lab/judges/hallucinated_confirmation/dataset.py.",
+    "Verdicts are captured provider output: both prompts were run live against azure/gpt-4.1 through litellm at temperature 0, and the raw answers are committed as recordings and replayed, so this report is reproducible offline with no API key and scores exactly what the model said.",
+    "The rates above come from run 1. Two further identical runs of each prompt are committed (verdicts_*_run2.jsonl, _run3.jsonl); see iteration.md for the per-item run-to-run stability, which is a separate question from accuracy.",
+    "One model, one provider, one temperature. Nothing here predicts how the same prompt behaves on a different model.",
     "Single labeller, no second-rater agreement measured, so label noise is attributed to the judge.",
     "24 items is a small set: one relabelled negative moves TNR by roughly six points. Read the fractions, not the decimals.",
-    "v2 defines the target, enumerates what does not count, and requires a quotable sentence. The single surviving false positive is a genuinely ambiguous utterance and was left alone rather than tuned away, because a prompt tuned until its own calibration set comes back clean has been fitted to that set."
+    "v2 defines the target, enumerates what does not count, requires a quotable sentence, and declares dropped actions out of scope. It agrees with the labeller on all 24 items and is unanimous across three identical runs, which means this label set can no longer measure it: the next step is harder items, not a further prompt revision tuned against a set it already saturates."
   ],
   "parse_errors": 0,
   "positive_label": "fail",
   "precision": {
-    "denominator": 9,
+    "denominator": 8,
     "name": "precision",
     "numerator": 8,
-    "value": 0.8888888888888888
+    "value": 1.0
   },
   "prevalence": {
     "denominator": 24,
@@ -232,8 +223,8 @@
   "raw_agreement": {
     "denominator": 24,
     "name": "raw agreement",
-    "numerator": 23,
-    "value": 0.9583333333333334
+    "numerator": 24,
+    "value": 1.0
   },
   "recall": {
     "denominator": 8,
@@ -244,8 +235,8 @@
   "true_negative_rate": {
     "denominator": 16,
     "name": "true negative rate (specificity)",
-    "numerator": 15,
-    "value": 0.9375
+    "numerator": 16,
+    "value": 1.0
   },
   "true_positive_rate": {
     "denominator": 8,

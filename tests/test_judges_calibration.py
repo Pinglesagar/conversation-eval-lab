@@ -32,6 +32,7 @@ from lab.judges.calibration import (
     compare_reports,
     labels_digest,
     load_labels,
+    self_consistency,
     write_labels,
 )
 from lab.judges.judge import Judge, Label, ScriptedCompletion
@@ -403,3 +404,77 @@ def test_compare_reports_shows_the_delta() -> None:
     assert "0.500 (1/2)" in table  # v1 true negative rate
     assert "1.000 (2/2)" in table  # v2 true negative rate
     assert "| false positives | 1 | 0 | -1 |" in table
+
+
+# --------------------------------------------------------------------------- #
+# Self-consistency: accuracy's missing half
+# --------------------------------------------------------------------------- #
+
+
+def test_self_consistency_counts_items_not_rates() -> None:
+    """Two errors in opposite directions cancel in the rates and not in the items.
+
+    Runs A and B both score TP 1 / FN 1 on the same two positives — identical
+    confusion matrices, identical TPR — while disagreeing about *which* item was
+    missed. A summary that only watched the rates would call this judge
+    deterministic. It is not, and a later "v3 beat v2 by one item" comparison would
+    have been reading exactly this noise.
+    """
+    items = [_item("a", "fail"), _item("b", "fail"), _item("c", "pass")]
+    run_a = _judge_answering({"a": "fail", "b": "pass", "c": "pass"})
+    run_b = _judge_answering({"a": "pass", "b": "fail", "c": "pass"})
+
+    report_a = calibrate(run_a, items, attach=False)
+    report_b = calibrate(run_b, items, attach=False)
+    assert report_a.true_positive_rate.value == report_b.true_positive_rate.value
+    assert report_a.confusion.model_dump() == report_b.confusion.model_dump()
+
+    runs = self_consistency([run_a, run_b], items)
+    assert runs.n == 3
+    assert runs.runs == 2
+    assert [row.item_id for row in runs.unstable] == ["a", "b"]
+    assert runs.unanimity.numerator == 1
+    assert str(runs.unanimity) == "0.333 (1/3)"
+    assert "0.333 (1/3)" in runs.summary_line()
+
+    markdown = runs.to_markdown()
+    assert "`a` (human: **fail**) — fail, pass" in markdown
+    assert "`b` (human: **fail**) — pass, fail" in markdown
+
+
+def test_self_consistency_reports_a_stable_judge_as_stable() -> None:
+    items = [_item("a", "fail"), _item("b", "pass")]
+    answers = {"a": "fail", "b": "pass"}
+    runs = self_consistency(
+        [_judge_answering(answers), _judge_answering(answers)], items
+    )
+    assert runs.unstable == []
+    assert runs.unanimity.value == pytest.approx(1.0)
+    assert "No item changed verdict between runs." in runs.to_markdown()
+    assert "not a guarantee for unseen items" in runs.to_markdown()
+
+
+def test_self_consistency_needs_more_than_one_run() -> None:
+    items = [_item("a", "fail")]
+    with pytest.raises(ValueError, match="at least two runs"):
+        self_consistency([_judge_answering({"a": "fail"})], items)
+
+
+def test_self_consistency_refuses_two_different_prompt_versions() -> None:
+    """Repeat runs of one judge; anything else is a prompt comparison in disguise."""
+    items = [_item("a", "fail")]
+    with pytest.raises(ValueError, match="repeated runs of ONE judge"):
+        self_consistency(
+            [
+                _judge_answering({"a": "fail"}, version="v1"),
+                _judge_answering({"a": "fail"}, version="v2"),
+            ],
+            items,
+        )
+
+
+def test_self_consistency_refuses_an_empty_set() -> None:
+    with pytest.raises(ValueError, match="empty set"):
+        self_consistency(
+            [_judge_answering({}), _judge_answering({})], []
+        )

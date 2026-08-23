@@ -75,22 +75,38 @@ through litellm is that the caller chooses (`anthropic/claude-sonnet-5`,
 
 WHAT THIS DOES NOT DO
 ---------------------
-No ensembling, no self-consistency voting, no chain-of-thought scaffolding, no
+No ensembling, no self-consistency **voting**, no chain-of-thought scaffolding, no
 few-shot example selection. All of them can raise agreement; none of them can be
 believed before the single-call case has a measured true-positive and
-true-negative rate, and each multiplies cost per item. The calibration machinery
-in `lab.judges.calibration` is deliberately the sophisticated part of this
-package and the judge itself is deliberately dull.
+true-negative rate, and each multiplies cost per item. Note the distinction on
+voting: `lab.judges.calibration.self_consistency` *measures* how often repeated
+runs of one judge agree with each other, and reports the items that moved.
+Averaging those runs into a verdict instead would spend three calls per item to
+make the instability invisible, which is the opposite of what an evaluation
+harness is for. The calibration machinery in `lab.judges.calibration` is
+deliberately the sophisticated part of this package and the judge itself is
+deliberately dull.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import os
 import re
+import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterable, Literal, Mapping, Protocol, Sequence
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Iterable,
+    Literal,
+    Mapping,
+    Protocol,
+    Sequence,
+)
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -113,6 +129,10 @@ __all__ = [
     "ReplayCompletion",
     "RecordingCompletion",
     "LiteLLMCompletion",
+    "RetryPolicy",
+    "RateLimitedError",
+    "RETRYABLE_STATUS",
+    "is_retryable",
     "Recording",
     "RecordedCall",
     "JudgeError",
@@ -121,13 +141,18 @@ __all__ = [
     "MissingRecordingError",
     "StaleRecordingError",
     "PromptTemplateError",
+    "MissingCredentialsError",
     "model_from_env",
     "prompt_digest",
+    "PROVIDER_ENV_VARS",
+    "Status",
     "render_transcript",
     "render_tool_ledger",
     "parse_raw_verdict",
     "record_verdicts",
 ]
+
+LOGGER = logging.getLogger("lab.judges.judge")
 
 #: Opt-in switch for live provider calls. Absent or falsey means "offline".
 LIVE_ENV_VAR = "LAB_LIVE_JUDGE"
@@ -141,6 +166,38 @@ _TRUTHY = frozenset({"1", "true", "yes", "on"})
 #: two strings for both sides is not cosmetic: the commonest bug in agreement
 #: code is an inverted boolean, and it cannot happen if nothing is ever inverted.
 Label = Literal["pass", "fail"]
+
+#: A verdict's *state*, which is not the same thing as its label. `Label` has two
+#: values because the question has two answers; `Status` has three because a call
+#: can also fail to produce an answer at all. Keeping them as separate types is
+#: what stops "the model returned junk" from being quietly rounded to one of the
+#: two real answers: agreement arithmetic reads `Label`, and an operator reads
+#: `Status` to see that an item never got graded.
+Status = Literal["pass", "fail", "error"]
+
+#: The environment variables litellm itself reads for provider credentials. Listed
+#: here as *names only*, because that is all a repository should ever contain, and
+#: because "which variables do I need to set to go live" is otherwise answered by
+#: reading a stack trace.
+#:
+#:     provider              variables
+#:     openai                OPENAI_API_KEY
+#:     anthropic             ANTHROPIC_API_KEY
+#:     azure openai          AZURE_API_KEY, AZURE_API_BASE, AZURE_API_VERSION
+#:     bedrock               AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION_NAME
+#:
+#: The model route in `LAB_JUDGE_MODEL` picks the provider — `openai/gpt-4.1`,
+#: `anthropic/claude-sonnet-5`, `azure/<deployment-name>`. Nothing in `lab` reads
+#: these variables directly; they are documented, passed through, and never
+#: printed. `LiteLLMCompletion.missing_credentials()` checks presence only, so a
+#: misconfigured run fails before it is billed rather than after.
+PROVIDER_ENV_VARS: dict[str, tuple[str, ...]] = {
+    "openai": ("OPENAI_API_KEY",),
+    "anthropic": ("ANTHROPIC_API_KEY",),
+    "azure": ("AZURE_API_KEY", "AZURE_API_BASE", "AZURE_API_VERSION"),
+    "gemini": ("GEMINI_API_KEY",),
+    "bedrock": ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION_NAME"),
+}
 
 
 # --------------------------------------------------------------------------- #
@@ -182,6 +239,24 @@ class StaleRecordingError(JudgeError):
 
 class PromptTemplateError(JudgeError):
     """The prompt template references a field the judge cannot supply."""
+
+
+class MissingCredentialsError(JudgeError):
+    """A live call was requested but the provider's environment variables are unset.
+
+    Raised *before* the request, naming the variables by name and never by value.
+    A run that is going to fail on authentication should fail in the first second,
+    not twenty items in.
+    """
+
+
+class RateLimitedError(JudgeError):
+    """The provider kept rate-limiting or failing after the retry budget ran out.
+
+    Deliberately not swallowed into an unparseable answer. A 429 is a fact about
+    the harness's throughput, not a fact about the agent under test, and letting
+    it become a FAIL verdict would put the provider's load into the measurement.
+    """
 
 
 # --------------------------------------------------------------------------- #
@@ -380,11 +455,38 @@ class Verdict(BaseModel):
 
     @property
     def label(self) -> Label:
-        """The verdict in the same vocabulary human labels use."""
+        """The verdict in the same vocabulary human labels use.
+
+        Always one of two values, including for an errored item: agreement
+        arithmetic needs a cell to put every item in, and an errored item is
+        counted as a FAIL so that it can never be mistaken for a clean pass. Read
+        `status` to find out whether the FAIL was a judgement or a breakage.
+        """
         return "pass" if self.passed else "fail"
 
+    @property
+    def status(self) -> Status:
+        """`"pass"`, `"fail"`, or `"error"` — the three states a call can end in.
+
+        `"error"` is the state this module refuses to let disappear. An
+        unreadable answer is not a lenient pass and not a genuine fail; it is a
+        broken output contract, and `CalibrationThresholds.max_parse_error_rate`
+        defaults to zero so a report containing any of them cannot clear a gate.
+        """
+        if self.parse_error:
+            return "error"
+        return self.label
+
+    @property
+    def errored(self) -> bool:
+        """True when no verdict could be read out of the model's answer."""
+        return self.parse_error
+
     def __repr__(self) -> str:
-        return f"Verdict(item_id={self.item_id!r}, label={self.label!r})"
+        return (
+            f"Verdict(item_id={self.item_id!r}, label={self.label!r}, "
+            f"status={self.status!r})"
+        )
 
 
 class Completion(Protocol):
@@ -559,10 +661,125 @@ class RecordingCompletion:
         return raw
 
 
+#: HTTP statuses worth trying again. 429 is the rate limit; 5xx and 408 are the
+#: transient server-side failures. 400/401/403/404 are deliberately absent: a bad
+#: request, a bad key or a wrong deployment name will fail identically on every
+#: retry, and retrying them turns a five-second configuration error into a
+#: two-minute one.
+RETRYABLE_STATUS: frozenset[int] = frozenset({408, 409, 429, 500, 502, 503, 504})
+
+#: Exception class names treated as transient when the exception carries no status
+#: code. Matched by name rather than by class so that this module still does not
+#: import litellm until a live call is actually made.
+RETRYABLE_EXCEPTION_NAMES: frozenset[str] = frozenset(
+    {
+        "RateLimitError",
+        "Timeout",
+        "APITimeoutError",
+        "APIConnectionError",
+        "APIError",
+        "InternalServerError",
+        "ServiceUnavailableError",
+        "OverloadedError",
+    }
+)
+
+
+class RetryPolicy(BaseModel):
+    """Exponential backoff for rate limits and transient provider failures.
+
+    Three properties are the reason this is a declared object rather than a
+    `for attempt in range(3)` inside the call:
+
+    *   **The schedule is inspectable and testable.** `delays()` returns the exact
+        sequence of waits, so a test can assert the backoff without waiting for
+        it, and a run can print what it is about to do.
+    *   **`Retry-After` wins.** When the provider says how long to wait, that
+        number is used instead of the computed one (clamped by `max_delay`).
+        Guessing shorter than the server asked is how a rate-limited run becomes
+        a rate-limited run that also gets throttled harder.
+    *   **A rate limit pauses everything, not just the failing item.** A 429 is a
+        statement about the account, so `LiteLLMCompletion` holds *every*
+        subsequent request until the pause expires. Backing off only the item that
+        happened to be unlucky just re-hits the limit with the next one.
+
+    Retries are also why a judge must be a measuring instrument with temperature
+    0: a retried call is a second sample, and if sampling were noisy the retry
+    would silently change the verdict rather than recover it.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    max_attempts: int = Field(default=5, ge=1)
+    base_delay: float = Field(default=2.0, ge=0.0)
+    multiplier: float = Field(default=2.0, ge=1.0)
+    max_delay: float = Field(default=60.0, ge=0.0)
+
+    def delays(self) -> list[float]:
+        """The wait before each retry, in order. `max_attempts=5` -> four waits."""
+        return [self.delay_for(attempt) for attempt in range(1, self.max_attempts)]
+
+    def delay_for(self, attempt: int) -> float:
+        """Wait before retry number `attempt` (1-based)."""
+        if attempt < 1:
+            raise ValueError("attempt is 1-based")
+        return min(self.base_delay * (self.multiplier ** (attempt - 1)), self.max_delay)
+
+    def clamp(self, seconds: float) -> float:
+        """A server-supplied delay, bounded by `max_delay`."""
+        return max(0.0, min(float(seconds), self.max_delay))
+
+
+def _status_code_of(exc: BaseException) -> int | None:
+    for attribute in ("status_code", "http_status", "code"):
+        value = getattr(exc, attribute, None)
+        if isinstance(value, bool):
+            continue
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str) and value.isdigit():
+            return int(value)
+    response = getattr(exc, "response", None)
+    status = getattr(response, "status_code", None)
+    return status if isinstance(status, int) else None
+
+
+def _retry_after_of(exc: BaseException) -> float | None:
+    """A provider-supplied `Retry-After`, in seconds, if there is one."""
+    direct = getattr(exc, "retry_after", None)
+    if isinstance(direct, (int, float)) and not isinstance(direct, bool):
+        return float(direct)
+    headers = getattr(exc, "headers", None) or getattr(
+        getattr(exc, "response", None), "headers", None
+    )
+    if headers is None:
+        return None
+    try:
+        raw = headers.get("retry-after") or headers.get("Retry-After")
+    except Exception:  # noqa: BLE001 - a header mapping that will not map
+        return None
+    try:
+        return float(raw)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return None
+
+
+def is_retryable(exc: BaseException) -> bool:
+    """Whether `exc` is worth another attempt.
+
+    Status code first, class name second. Anything else is treated as permanent,
+    because a retry loop over a permanent error is indistinguishable from a hang.
+    """
+    status = _status_code_of(exc)
+    if status is not None:
+        return status in RETRYABLE_STATUS
+    return type(exc).__name__ in RETRYABLE_EXCEPTION_NAMES
+
+
 class LiteLLMCompletion:
     """A live provider call through litellm, gated behind an env var.
 
-    Two properties matter more than the call itself:
+    Three properties matter more than the call itself:
 
     *   **It refuses by default.** Without `LAB_LIVE_JUDGE` set to a truthy
         value it raises `LiveCallBlockedError`. The cardinal rule of this repo is
@@ -570,6 +787,20 @@ class LiteLLMCompletion:
         "not usually taken" breaks that rule the first time someone forgets.
     *   **`litellm` is imported after the gate.** Import cost and import-time
         side effects are only paid by runs that really are going live.
+    *   **Rate limits are absorbed, never graded.** A 429 is retried with
+        exponential backoff (`RetryPolicy`), honouring `Retry-After`, and it pauses
+        every subsequent request rather than only the unlucky one. When the budget
+        runs out it raises `RateLimitedError` — never a verdict. Provider load must
+        not be able to leak into a calibration number.
+
+    Credentials are read by litellm from its own environment variables; see
+    `PROVIDER_ENV_VARS` for the names. This class checks that they are *present*
+    and never looks at their values, so a misconfigured run fails immediately and
+    no log line can carry a secret.
+
+    `sleep` and `monotonic` are injected so the backoff is unit-testable without
+    a test suite that actually sleeps — the same seam `lab.clock` gives the trace
+    builder, for the same reason.
     """
 
     def __init__(
@@ -577,12 +808,39 @@ class LiteLLMCompletion:
         *,
         env_var: str = LIVE_ENV_VAR,
         extra: Mapping[str, Any] | None = None,
+        retry: RetryPolicy | None = None,
+        require_credentials: bool = True,
+        sleep: Callable[[float], None] = time.sleep,
+        monotonic: Callable[[], float] = time.monotonic,
     ) -> None:
         self.env_var = env_var
         self.extra = dict(extra or {})
+        self.retry = retry if retry is not None else RetryPolicy()
+        self.require_credentials = require_credentials
+        self._sleep = sleep
+        self._monotonic = monotonic
+        #: Set after a rate limit; every request waits for it. Shared across items
+        #: because the limit is a property of the account, not of the item.
+        self._pause_until: float = 0.0
+        #: Attempt counters, for a run to report what the provider cost it.
+        self.attempts = 0
+        self.retries = 0
 
     def enabled(self) -> bool:
         return os.environ.get(self.env_var, "").strip().lower() in _TRUTHY
+
+    @staticmethod
+    def provider_of(model: str) -> str | None:
+        """The provider prefix of a litellm route, if it has one."""
+        prefix, _, rest = model.partition("/")
+        return prefix if rest else None
+
+    @classmethod
+    def missing_credentials(cls, model: str) -> list[str]:
+        """Which of this provider's environment variables are unset. Names only."""
+        provider = cls.provider_of(model)
+        required = PROVIDER_ENV_VARS.get(provider or "", ())
+        return [name for name in required if not os.environ.get(name, "").strip()]
 
     def __call__(self, request: JudgeRequest) -> str:
         if not self.enabled():
@@ -591,6 +849,15 @@ class LiteLLMCompletion:
                 f"provider call for model {request.model!r}. Offline runs should use "
                 "ReplayJudge against a recording."
             )
+        if self.require_credentials:
+            missing = self.missing_credentials(request.model)
+            if missing:
+                raise MissingCredentialsError(
+                    f"model route {request.model!r} needs these environment variables "
+                    f"set, and they are not: {', '.join(missing)}. (Names only — this "
+                    "harness never reads or prints a credential's value.)"
+                )
+
         from litellm import completion  # noqa: PLC0415 - lazy on purpose
 
         messages: list[dict[str, str]] = []
@@ -598,14 +865,57 @@ class LiteLLMCompletion:
             messages.append({"role": "system", "content": request.system})
         messages.append({"role": "user", "content": request.prompt})
 
-        response = completion(
-            model=request.model,
-            messages=messages,
-            temperature=request.temperature,
-            max_tokens=request.max_tokens,
-            **self.extra,
-        )
-        return response.choices[0].message.content or ""
+        last: BaseException | None = None
+        for attempt in range(1, self.retry.max_attempts + 1):
+            self._wait_for_pause()
+            self.attempts += 1
+            try:
+                response = completion(
+                    model=request.model,
+                    messages=messages,
+                    temperature=request.temperature,
+                    max_tokens=request.max_tokens,
+                    **self.extra,
+                )
+            except Exception as exc:  # noqa: BLE001 - re-raised or retried below
+                if not is_retryable(exc):
+                    raise
+                last = exc
+                if attempt == self.retry.max_attempts:
+                    break
+                delay = self._delay_after(exc, attempt)
+                self.retries += 1
+                LOGGER.warning(
+                    "judge call for item %r hit %s (attempt %d/%d); backing off %.1fs",
+                    request.item_id,
+                    type(exc).__name__,
+                    attempt,
+                    self.retry.max_attempts,
+                    delay,
+                )
+                self._pause_until = self._monotonic() + delay
+                continue
+            return response.choices[0].message.content or ""
+
+        raise RateLimitedError(
+            f"gave up on item {request.item_id!r} after {self.retry.max_attempts} "
+            f"attempts against {request.model!r}; last error was "
+            f"{type(last).__name__ if last else 'unknown'}: {last}. This is a harness "
+            "throughput problem, not a verdict — nothing was recorded for this item."
+        ) from last
+
+    # ---------------------------------------------------------------- backoff
+
+    def _delay_after(self, exc: BaseException, attempt: int) -> float:
+        supplied = _retry_after_of(exc)
+        if supplied is not None:
+            return self.retry.clamp(supplied)
+        return self.retry.delay_for(attempt)
+
+    def _wait_for_pause(self) -> None:
+        remaining = self._pause_until - self._monotonic()
+        if remaining > 0:
+            self._sleep(remaining)
 
 
 # --------------------------------------------------------------------------- #
@@ -640,7 +950,44 @@ _LEADING_VERDICT = re.compile(
     re.IGNORECASE | re.VERBOSE,
 )
 
-_JSON_BLOCK = re.compile(r"\{.*\}", re.DOTALL)
+def _json_candidates(text: str) -> Iterable[str]:
+    """Every balanced `{...}` span in `text`, outermost first, left to right.
+
+    A single greedy brace-to-brace regex is not enough in practice. Models wrap the object in
+    a fenced block, or add a sentence afterwards that happens to contain a brace,
+    and then the greedy span spans from the first brace to the last one and parses
+    as nothing. Scanning for balanced spans instead means the judge tolerates the
+    formatting models actually produce, without the parser ever *guessing* a
+    verdict: a candidate still has to parse as JSON and still has to carry a
+    verdict key.
+
+    Braces inside string literals are skipped, so a critique that mentions `{}`
+    does not unbalance the scan.
+    """
+    depth = 0
+    start = -1
+    in_string = False
+    escaped = False
+    for index, char in enumerate(text):
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            continue
+        if char == '"':
+            in_string = True
+        elif char == "{":
+            if depth == 0:
+                start = index
+            depth += 1
+        elif char == "}":
+            if depth:
+                depth -= 1
+                if depth == 0 and start >= 0:
+                    yield text[start : index + 1]
 
 
 def parse_raw_verdict(raw: str) -> tuple[bool, str, str | None]:
@@ -667,22 +1014,22 @@ def parse_raw_verdict(raw: str) -> tuple[bool, str, str | None]:
     if not text:
         raise JudgeParseError("model returned an empty response")
 
-    match = _JSON_BLOCK.search(text)
-    if match is not None:
+    for candidate in _json_candidates(text):
         try:
-            data = json.loads(match.group(0))
+            data = json.loads(candidate)
         except json.JSONDecodeError:
-            data = None
-        if isinstance(data, dict):
-            verdict_value = next(
-                (data[key] for key in ("verdict", "pass", "passed", "label") if key in data),
-                None,
-            )
-            passed = _coerce_verdict(verdict_value)
-            if passed is not None:
-                critique = _first_str(data, ("critique", "reason", "explanation", "rationale"))
-                evidence = _first_str(data, ("evidence", "quote", "span"))
-                return passed, critique or "(no critique supplied)", evidence
+            continue
+        if not isinstance(data, dict):
+            continue
+        verdict_value = next(
+            (data[key] for key in ("verdict", "pass", "passed", "label") if key in data),
+            None,
+        )
+        passed = _coerce_verdict(verdict_value)
+        if passed is not None:
+            critique = _first_str(data, ("critique", "reason", "explanation", "rationale"))
+            evidence = _first_str(data, ("evidence", "quote", "span"))
+            return passed, critique or "(no critique supplied)", evidence
 
     leading = _LEADING_VERDICT.match(text)
     if leading is not None:
