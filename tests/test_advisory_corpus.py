@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import pytest
 
+from lab.trace.build import TraceBuilder
 from roleplay.advisory import (
     ADVISORY_ROOT,
     ADVISORY_SUITE_MINIMUMS,
@@ -268,3 +269,124 @@ def test_the_survival_suite_can_pass_a_call_that_ends(advisory: Corpus) -> None:
     exit_row = advisory.by_id("survival-graceful-exit-is-the-pass")
     assert exit_row.expectation.human_verdict == "pass"
     assert "CS" in exit_row.kpis
+
+
+# --------------------------------------------------------------------------- #
+# Can the declared checks actually fail? A check that cannot fail is worse than
+# no check, because it reports green forever and nobody looks at it again.
+#
+# Everything above this line is reference integrity: the row says what it means
+# to say. These tests are the other half — that what it says is *executable*, and
+# that it discriminates. For each row we build the exact behaviour the row's own
+# `expected_failure` predicts a naive product will produce (the disclosure is
+# present, so nothing a presence-based check looks for is missing; no compliance
+# flag is raised and the session is scored a pass) and require the row's declared
+# contract to go red on it. Then we build the compliant behaviour and require the
+# same contract to go green, because a contract that fails everything discriminates
+# no better than one that passes everything.
+# --------------------------------------------------------------------------- #
+
+
+def _run(scenario, *, disclosures: int, flag: bool, verdict: str, extra_turns=()):
+    """A trace carrying only the events these contracts read."""
+    builder = TraceBuilder(scenario_id=scenario.id, adapter="advisory-discrimination")
+    builder.session_start()
+    for text in tuple(scenario.trainee.turns) + tuple(extra_turns):
+        builder.caller_utterance(text)
+    for i in range(disclosures):
+        builder.tool_call("record_disclosure", {"code": f"c{i}"}, call_id=f"rd{i}")
+        builder.tool_result("record_disclosure", None, call_id=f"rd{i}", ok=True)
+    # Any other tool the row expects, so the only thing under test is the
+    # compliance flag and the verdict rather than an unrelated missing clause.
+    for name in scenario.tools.expected:
+        if name in {"record_disclosure", "flag_compliance_risk", "score_session"}:
+            continue
+        builder.tool_call(name, {"key": "not_now"}, call_id=name)
+        builder.tool_result(name, None, call_id=name, ok=True)
+    if flag:
+        builder.tool_call("flag_compliance_risk", {"reason": "understated"}, call_id="fl")
+        builder.tool_result("flag_compliance_risk", None, call_id="fl", ok=True)
+    builder.tool_call("score_session", {"verdict": verdict, "closing": 4}, call_id="ss")
+    builder.tool_result("score_session", None, call_id="ss", ok=True)
+    builder.session_end(reason="scored")
+    return builder.build()
+
+
+def _tool_contract(scenario):
+    for contract in scenario.contracts():
+        if getattr(contract, "name", "") == "tools":
+            return contract
+    raise AssertionError(f"{scenario.id} declares no tool contract")
+
+
+def _named(scenario, name):
+    for contract in scenario.contracts():
+        if getattr(contract, "name", "") == name:
+            return contract
+    raise AssertionError(f"{scenario.id} declares no {name!r} contract")
+
+
+#: The three near-miss rows plus the understated clause: the four rows in the pack
+#: whose whole point is that a keyword matcher passes them.
+FALSE_PASS_ROWS = (
+    "nearmiss-charges-disclosed-after-the-ask",
+    "nearmiss-restricted-advice-buried-in-a-long-turn",
+    "nearmiss-warning-addressed-to-the-partner",
+    "clause-surrender-value-understated",
+)
+
+
+@pytest.mark.parametrize("scenario_id", FALSE_PASS_ROWS)
+def test_the_declared_check_goes_red_on_the_false_pass(scenario_id: str, advisory: Corpus) -> None:
+    """The bad run is the one the row predicts: disclosed, unflagged, scored pass."""
+    scenario = advisory.by_id(scenario_id)
+    result = _tool_contract(scenario).check(
+        _run(scenario, disclosures=3, flag=False, verdict="pass")
+    )
+    assert not result.passed, f"{scenario_id}: the false pass was not caught -- {result.detail}"
+    assert result.applicable
+    # And it must fail for the stated reason rather than incidentally.
+    assert "flag_compliance_risk" in result.detail, result.detail
+
+
+@pytest.mark.parametrize("scenario_id", FALSE_PASS_ROWS)
+def test_the_same_check_goes_green_on_the_compliant_run(
+    scenario_id: str, advisory: Corpus
+) -> None:
+    """Otherwise the row above proves only that the contract fails everything."""
+    scenario = advisory.by_id(scenario_id)
+    result = _tool_contract(scenario).check(
+        _run(scenario, disclosures=3, flag=True, verdict="fail")
+    )
+    assert result.passed, f"{scenario_id}: the compliant run was refused -- {result.detail}"
+
+
+def test_the_graceful_exit_passes_and_still_discriminates(advisory: Corpus) -> None:
+    """The row that must pass, and the two ways it must still be able to fail.
+
+    A suite of failures teaches a scorer that severity is the answer, so this row
+    exists to pass. But a row that *only* passes is not a check, so both forbidden
+    behaviours are exercised: the fourth attempt after a decline, and a compliance
+    flag raised on a clean call.
+    """
+    scenario = advisory.by_id("survival-graceful-exit-is-the-pass")
+    clean = _run(scenario, disclosures=0, flag=False, verdict="pass")
+    for name in ("tools", "trainee-phrases"):
+        result = _named(scenario, name).check(clean)
+        assert result.passed, f"the graceful exit must pass {name} -- {result.detail}"
+
+    # The fourth attempt the row forbids, in the adviser's own words.
+    pushy = _run(
+        scenario,
+        disclosures=0,
+        flag=False,
+        verdict="pass",
+        extra_turns=("Before you go, one last thing - can I send the illustration anyway?",),
+    )
+    phrases = _named(scenario, "trainee-phrases").check(pushy)
+    assert not phrases.passed, "a fourth attempt after a decline must not pass"
+
+    # A compliance flag on a call where nothing went wrong is also a defect.
+    flagged = _run(scenario, disclosures=0, flag=True, verdict="pass")
+    tools = _named(scenario, "tools").check(flagged)
+    assert not tools.passed, "a forbidden compliance flag must not pass"

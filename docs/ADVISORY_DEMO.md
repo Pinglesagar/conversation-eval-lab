@@ -107,16 +107,16 @@ the four rules — see §3.
 
 ---
 
-## 3. The corpus: 15 rows, a schema, and a human column
+## 3. The corpus: 70 rows, a schema, and a human column
 
 ```
-15/15 scenario files loaded; 0 error(s), 0 warning(s)
+70/70 scenario files loaded; 0 error(s), 0 warning(s)
   suites:
-    pitch: 4          compliance: 4      objection: 3
-    consistency: 2    locale: 2
-  tags: 15/15 exercised
-  human verdicts: 9 pass, 6 fail (15 rows)
-  rows with a declared expected failure: 8
+    pitch: 21         compliance: 13     objection: 13
+    consistency: 2    locale: 21
+  tags: 20/20 exercised
+  human verdicts: 38 pass, 32 fail (70 rows)
+  rows with a declared expected failure: 38
 ```
 
 Same four rules as the booking corpus: closed vocabularies; every assertion must
@@ -247,35 +247,42 @@ rubric, verdict parsing, the confusion matrix, the gate: all the same code.
 ```
 Judge calibration: roleplay_pass_verdict v1
   model            : local:rubric-scorer
-  prompt sha256    : e22d22743042
-  labels sha256    : 30b93d0fc5f8
+  prompt sha256    : 9dff621e69ee
+  labels sha256    : 0516d042c68c
   positive class   : judge says 'fail'
 
                      human: fail     human: pass
-     judge: fail            TP 3            FP 1
-     judge: pass            FN 3            TN 8
+     judge: fail            TP 9            FP 2
+     judge: pass           FN 23           TN 36
 
-  true positive rate (recall)      : 0.500 (3/6)
-  true negative rate (specificity) : 0.889 (8/9)
-  precision                        : 0.750 (3/4)
-  F1                               : 0.600 (6/10)
-  raw agreement                    : 0.733 (11/15)
-  prevalence of 'fail'             : 0.400 (6/15)
-  Cohen kappa                      : 0.412
-                                     (observed 0.733, expected by chance 0.547)
+  true positive rate (recall)      : 0.281 (9/32)
+  true negative rate (specificity) : 0.947 (36/38)
+  precision                        : 0.818 (9/11)
+  F1                               : 0.419 (18/43)
+  raw agreement                    : 0.643 (45/70)
+  prevalence of 'fail'             : 0.457 (32/70)
+  Cohen kappa                      : 0.241
+                                     (observed 0.643, expected by chance 0.529)
 
 calibration gate (TPR >= 0.85, TNR >= 0.85, n >= 10, parse errors <= 0%): REFUSED
-  - TPR 0.500 (3/6) is below the required 0.85
+  - TPR 0.281 (9/32) is below the required 0.85
   - registry refused the judge in CI mode: JudgeBelowThresholdError
 ```
 
 **The product's own scorer does not clear the gate this repo applies to its own
-LLM judges.** Recall on the sessions a competent reviewer would stop is 0.500, so
-it certifies half of them. The refusal is a real refusal — `JudgeRegistry.require_calibrated`
-raises in CI, and a test asserts that it does.
+LLM judges.** Recall on the sessions a competent reviewer would stop is 0.281
+(9/32), so it certifies just under seven in ten of them. Note which way the two
+rates point: specificity is 0.947 (36/38) and precision 0.818 (9/11), so the
+scorer is *reluctant to fail anybody* — a grader biased towards certification is
+the worst available bias for a product that certifies. The refusal is a real
+refusal — `JudgeRegistry.require_calibrated` raises in CI, and a test asserts
+that it does.
 
-**The composition of the errors is the finding, not the rate.** All three misses
-are compliance misses:
+**The composition of the errors is the finding, not the rate.** The 23 misses are
+concentrated rather than scattered — 9 in the compliance suite and 12 in the
+locale suite, against 1 each in pitch and objection. Compliance and localisation
+are exactly the two things a regulated-advice grader exists to check. Four of
+them, three misses and the one false alarm:
 
 ```
 FALSE_NEGATIVE  compliance-explicit-unlicensed-advice
@@ -409,6 +416,10 @@ Three details that keep this contract honest:
 
 ## 7. Per-row results, and the two verdicts
 
+Fifteen of the seventy rows, chosen to show one of each shape — agreement, both
+directions of disagreement, and a vacuous check. The aggregate under them is over
+all seventy.
+
 ```
   pitch-cold-scorer-single-run-control     human=pass scorer=pass (16/20) agrees  3/3 pass
   pitch-exemplary-eu-retail-run            human=pass scorer=pass (20/20) agrees  4/4 pass
@@ -426,17 +437,21 @@ Three details that keep this contract honest:
   locale-apac-suitability-disclosure       human=pass scorer=pass (16/20) agrees  4/4 pass
   locale-es-mx-registered-spanish-disclosure human=pass scorer=fail ( 8/20) DIFFERS 2/3, 1 fail, 1 vacuous
 
-suite 'roleplay': 7/15 traces passed every applicable check
-  tools:               11/15 applicable traces passed
-  score-claims-backed: 12/15 applicable traces passed
-  feedback-grounded:   10/14 applicable traces passed, 1/15 vacuous
-  trainee-phrases:     11/11 applicable traces passed
+suite 'roleplay': 32/70 traces passed every applicable check
+  tools:               43/70 applicable traces passed
+  score-claims-backed: 58/70 applicable traces passed
+  feedback-grounded:   56/68 applicable traces passed, 2/70 vacuous
+  trainee-phrases:     49/49 applicable traces passed
 ```
 
-Every rate has a numerator and a denominator, and the one vacuous result is
-counted separately rather than folded into the green — `locale-es-mx` produces
-feedback that quotes nothing and presupposes none of the declared topics, so the
-groundedness contract had nothing to assert there and says so.
+Every rate has a numerator and a denominator, and the vacuous results are counted
+separately rather than folded into the green — `locale-es-mx` produces feedback
+that quotes nothing and presupposes none of the declared topics, so the
+groundedness contract had nothing to assert there and says so. Note the three
+different denominators: 70, 68 and 49. `feedback-grounded` loses the two vacuous
+rows, and `trainee-phrases` is declared on 49 rows rather than all 70. A single
+"pass rate" over this suite would have to pick one of those denominators and be
+wrong about the other two.
 
 **The findings are red. The exit code is green.** Those are two different
 verdicts and the demo prints both:
@@ -527,7 +542,7 @@ roleplay/
 
 scenarios/roleplay/
   customers/            4 customer profiles
-  pitch/ compliance/ objection/ consistency/ locale/     15 rows
+  pitch/ compliance/ objection/ consistency/ locale/     70 rows
 
 tests/
   roleplay_fixtures.py       scripts read from the corpus, never duplicated
@@ -537,11 +552,12 @@ tests/
 ```
 
 113 tests, all offline, all deterministic, no API keys, added to a suite that
-was already green:
+was already green — the three files above still total exactly that:
 
 ```
 1130 passed          # before this pack
 1243 passed          # after it
+1576 passed          # the whole suite today, after the later phases
 ```
 
 Only `runtime.py`, `contracts.py`, `corpus.py`, `consistency.py` and

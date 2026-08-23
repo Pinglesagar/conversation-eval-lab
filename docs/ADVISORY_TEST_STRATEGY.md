@@ -67,7 +67,9 @@ an unreachable source). Two of its most quotable sentences are not V1 and are fl
 everywhere they are used: FCA PRIN 2A.5.9R, the "ask whether they understand" rule
 that KPI CE-1 rests on, and HK IA GL28, the non-guaranteed-highlighting rule behind
 CE-3. Four MAS claims are V4 because MAS's own site returned service-unavailable on
-every attempt. `regulators.md` carries five explicit `[retrieval: secondary]` flags.
+every attempt. Five of `regulators.md`'s sources are flagged `[retrieval: secondary]`
+and carry that flag at every point of use — [HK-2], [HK-3], [US-3], [US-4]/[US-5]
+and [FCA-13].
 Nothing here should reach a compliance function before those are re-fetched.
 
 **One widely-quoted industry statistic in this space is fabricated, and I can show
