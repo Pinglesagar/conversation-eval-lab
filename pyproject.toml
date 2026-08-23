@@ -94,6 +94,17 @@ Source = "https://github.com/OWNER/tablemate-evals"
 include = ["lab*", "tablemate*"]
 exclude = ["tests*", "fixtures*", "scenarios*", "error_analysis*"]
 
+# The judge's prompts, labels and calibration reports are part of the library,
+# not of the case study: `lab.judges.hallucinated_confirmation` reads its prompt
+# text and its 24 labelled items off disk at run time. Only Python files land in
+# a wheel by default, so without this the installed package was missing its own
+# data and `evallab calibrate` died on a FileNotFoundError for prompt_v1.md.
+# Editable installs never noticed, which is exactly why it went unseen. `lab` is
+# meant to be extractable into its own distribution, and a distribution that
+# cannot find its own prompts is not extractable.
+[tool.setuptools.package-data]
+lab = ["judges/**/*.md", "judges/**/*.json", "judges/**/*.jsonl"]
+
 [tool.pytest.ini_options]
 minversion = "8.0"
 testpaths = ["tests"]
