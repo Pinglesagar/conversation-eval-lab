@@ -1,70 +1,385 @@
 # tablemate-evals
 
-An evaluation harness for conversational AI agents — voice and text — plus an
-applied case study that points it at a deliberately imperfect restaurant-booking
-agent. The reusable half is the `lab` package: a typed trace schema that every
-check, judge and timing metric reads from, so results are reproducible, auditable
-and attributable to a component rather than to a vibe. The case study half is
-`tablemate`, a multi-agent booking assistant carrying documented defects, because
-a harness demonstrated against a working agent proves nothing — green results are
-equally consistent with a good agent and a blind test suite.
+An evaluation harness for conversational AI agents — voice and text — built
+around a single auditable trace, plus an applied case study that points it at a
+deliberately imperfect restaurant-booking assistant. The harness is the `lab`
+package; the case study is what it found, and how much of that a suite of checks
+was able to catch on its own.
 
-**Status: under construction.** The foundation is in place — the trace schema and
-the timing calibration gate. The system under test, the checks, the judges and the
-report renderer land in subsequent steps.
+**Runs with zero API keys.** A clean clone installs and goes green in under two
+minutes with no credentials of any kind. Everything that talks to a live provider
+is opt-in behind an environment variable, and every live path has a recorded
+fixture that replays deterministically in its place.
 
-## Runs with zero API keys
+---
 
-That is the cardinal rule, not an aspiration. A clean clone installs and goes
-green in under two minutes with no credentials of any kind. Everything that talks
-to a live provider is opt-in behind an environment variable, and every live path
-has a recorded fixture that replays deterministically in its place.
+## The headline numbers
+
+From the committed run in [`fixtures/replay_run/`](fixtures/replay_run/), which
+CI regenerates and diffs byte for byte on every commit:
+
+| | |
+| --- | --- |
+| scenarios driven | **47/55** (8 voice rows need the audio path, not the text adapter) |
+| scenarios where every check passed, on every repeat | **44/47** |
+| contract evaluations that failed | **36/366** |
+| findings, each with a quote from the trace | **12** |
+| repeats that were byte-identical (k = 3) | **47/47** |
+| response latency, p50 / p95 (175 turn samples) | **717 ms / 1104 ms**, calibration gate PASS |
+| judge agreement with hand labels (prompt v2) | **TPR 8/8, TNR 15/16** on 24 labelled calls |
+| failure modes found by reading the traces by hand | **13** modes, 32 coded occurrences |
+| product occurrences the checks caught | **9/31** |
+
+The last two lines are the ones I would ask about: the suite is good at what it
+was told to look for, and blind to 22 of the 31 product occurrences a human
+found. That gap is why
+[`error_analysis/`](error_analysis/) is a committed part of this repository
+rather than a paragraph about methodology.
+
+The report's own verdict is **FAIL**, because the system under test really does
+tell a party of six that their table is booked and then never books it. CI is
+green because the *regression gate* passed: nothing changed since the baseline.
+Both verdicts are printed, always, and neither is derived from the other — see
+[DESIGN.md](DESIGN.md) §9.
+
+---
+
+## Quickstart
 
 ```bash
+git clone <this repo> && cd tablemate-evals
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-pytest
+pytest                      # ~1,000 tests, offline, about ten seconds
+
+make demo                   # the case study end to end, into reports/
+make replay                 # re-check every committed trace, no agent involved
+make calibrate              # the timing and judge gates
+make errors                 # recount the hand-coded failure modes, redraw the chart
 ```
 
-Optional extras: `[audio]` for word-error-rate scoring, `[charts]` for plots.
-Neither is needed to run the test suite.
+No keys, no network at test time, no fixture generation step. `[charts]` adds
+matplotlib for the plots; `[audio]` adds the audio dependencies. Neither is needed
+for the suite.
 
-## The calibration gate
-
-An uncalibrated latency number is decoration. Before any timing figure in this
-repo is believed, the harness has to prove it can recover a delay it does not
-know about, reading the answer back out of a trace through the same code path a
-real evaluation uses:
+Then read one conversation and one verdict:
 
 ```bash
-make calibrate
+evallab run --scenario edge-large-party-of-six --transcript -k 1
+evallab replay fixtures/replay_run/traces/edge-large-party-of-six.jsonl
 ```
 
-It drives an agent whose latency is known by construction across delays from
-100 ms to 2 s, and reports what it recovered against a stated tolerance — plus a
-deliberately naive control that shows what including the harness's own compute
-in the measurement would have cost. Output lands in
-[`fixtures/calibration_report.md`](fixtures/calibration_report.md), with every
-individual sample kept in the JSON so the aggregates can be recomputed. Exit code
-is non-zero on failure, so an untrustworthy stopwatch stops a pipeline instead of
-quietly publishing decoration.
+Full command reference: [docs/cli.md](docs/cli.md).
+
+---
+
+## Architecture
+
+```mermaid
+flowchart LR
+  subgraph adapters["adapters — interchangeable"]
+    A1["text<br/>scripted caller + agent"]
+    A2["audio<br/>TTS → perturb → STT"]
+    A3["recorded<br/>cassette / committed JSONL"]
+  end
+
+  A1 --> T
+  A2 --> T
+  A3 --> T
+
+  T["<b>Trace</b><br/>JSONL, one event per line<br/>utterances · tool calls · handoffs<br/>transcripts · audio boundaries"]
+
+  T --> C["contracts<br/><i>deterministic</i>"]
+  T --> J["judges<br/><i>model-graded, calibrated</i>"]
+  T --> V["voice metrics<br/><i>latency · WER · silence</i>"]
+
+  C --> R
+  J --> R
+  V --> R
+
+  R["<b>RunReport</b><br/>markdown + JSON<br/>every rate with its denominator"]
+  R --> G{"regression gate<br/>vs committed baseline"}
+  R --> E["error analysis<br/><i>read traces, code failures</i>"]
+  E -.->|"new contracts, new rows"| C
+
+  CAL["calibration gates<br/>timing · judge agreement"] -.->|"gate before quoting"| V
+  CAL -.-> J
+```
+
+Two properties of that picture are the whole design. Everything downstream of the
+trace consumes **only** the trace, so a verdict can be recomputed from a file on
+disk months later (`evallab replay`). And everything upstream of it is an adapter,
+so the same checks, judges, metrics and reports apply to a text run, an audio run
+or a replayed recording without knowing which they are looking at.
+
+The audio adapter is the one box in that diagram the committed run does not
+exercise: `evallab run` drives the text path, and the voice rows are reported as
+not driven rather than run as text. See [Limitations](#limitations).
+
+---
+
+## What it does, and what comparable tools do
+
+Five capabilities, each with an honest note on what I found in the open-source
+landscape when I looked. Star counts are GitHub stars, rounded, at the time of
+writing; they move, and so do the tools.
+
+| capability | here | what I found elsewhere |
+| --- | --- | --- |
+| **1.** one trace schema for voice and text; every figure derives from it | JSONL events; `transcript_in` (heard) distinct from `caller_utterance` (said); first-audio-byte boundary | tracing is the mature part — langfuse (~33.6k★), Phoenix, Inspect AI — with the voice boundary events not usually first-class |
+| **2.** said-versus-done checks across a handoff | promise ↔ tool call, value survives a handoff, no re-ask; vacuous ≠ pass | rich assertions per prompt/turn in promptfoo (~24.5k★), DeepEval (~17.8k★), Ragas (~15.4k★); whole-conversation agent evaluation in tau2-bench, as a benchmark rather than a library |
+| **3.** a judge you are allowed to believe | TPR *and* TNR vs hand labels, required to render a verdict; CI refuses an uncalibrated judge | model-graded metrics and annotation everywhere; the *refusal* is a policy few tools default to |
+| **4.** timing you are allowed to quote | a calibration gate that recovers a known delay before any p95 is published; WER, silence attribution, perturbation chains | thinnest area: ServiceNow's `eva` (~197★) is voice-specific and small; latency elsewhere is wall-clock around a call |
+| **5.** stability as a verdict, and a gate on change | pass^k where FLAKY is not a pass; baseline diff that fails when a finding *vanishes* | pass^k in tau2-bench; snapshot-baseline gating is common in general testing, less so in eval tooling |
+
+The detail, capability by capability:
+
+### 1. One trace schema for voice and text, and every figure derives from it
+
+JSONL, one event per line, monotonic timestamps, engine attribution per event
+(`lab/trace/`, reference in [docs/trace_schema.md](docs/trace_schema.md)).
+`transcript_in` (what the agent heard) is a different event from
+`caller_utterance` (what the caller said), which is what lets a failure be
+attributed to speech recognition instead of to the model.
+
+> **Elsewhere:** production tracing is the most mature part of this landscape —
+> **langfuse** (~33.6k★) and **Phoenix** both give you spans, datasets and
+> evaluators over real traffic, and **Inspect AI** has a first-class eval log with
+> a viewer. What I did not find was a schema that treats the *voice* boundary
+> events — first audio byte, transcript in versus utterance said — as first-class
+> alongside tool calls and handoffs, which is the pair of facts a voice latency
+> or attribution claim rests on. `lab/report/interop.py` converts to and from a
+> langfuse ingestion batch, because the point is to fit into that ecosystem, not
+> to replace it.
+
+### 2. Checks that compare what was said with what was done, across a handoff
+
+`lab/checks/` is six declarative contract types over a trace. The three that earn
+their place are cross-agent: a spoken commitment must be backed by the tool call
+that would make it true (`PromiseContract`), a value the caller supplied once must
+survive every handoff into the tool call (`FieldPropagationContract`), and a fact
+already given must never be asked for again (`NoReAskContract`). Vacuous is a
+distinct result from pass, so a check that stopped applying is a reported gap
+rather than a green row.
+
+> **Elsewhere:** **promptfoo** (~24.5k★) and **DeepEval** (~17.8k★) both give you
+> rich assertion vocabularies — deterministic and model-graded — and promptfoo in
+> particular is excellent at declarative cases in CI; **Ragas** (~15.4k★) is
+> focused on retrieval-augmented pipelines. Their natural unit is a prompt or a
+> turn and its output. **tau2-bench** is the closest published thing to what this
+> does, and its unit *is* a whole tool-using conversation with a simulated user
+> and pass^k reporting — as a benchmark of agents in fixed domains rather than a
+> library you point at your own agent. The gap I was aiming at is the
+> decision-versus-action comparison inside one session: it needs the tool ledger
+> and the utterances in the same object, and it is where the two most expensive
+> defects in this case study live.
+
+### 3. A judge you are allowed to believe, or a build that stops
+
+TPR and TNR against hand labels, reported separately with their counts; a
+`JudgeSummary` cannot be constructed without its calibration; the registry raises
+in CI on an uncalibrated or below-threshold judge, and the only override is ugly
+on purpose (`lab/judges/`).
+
+> **Elsewhere:** LLM-as-judge is everywhere and calibration is the part usually
+> left to the user. **DeepEval**, **Ragas**, **promptfoo**, **langfuse** and
+> **Phoenix** all let you attach a model-graded metric and several support human
+> annotation or golden datasets you *can* use to measure agreement. What I did not
+> find was a gate that *refuses* an uncalibrated judge by default, which is a
+> policy choice more than a feature, and cheap to add to any of them. It is here
+> because the failure mode is quiet: nothing goes wrong loudly when a judge with a
+> 40% miss rate starts turning builds green.
+
+### 4. Timing you are allowed to quote, and a voice suite that is stratified
+
+`lab/voice/` measures time to first byte from the trace, and
+`lab/voice/calibration.py` proves the measurement first: it recovers injected
+delays from 100 ms to 2 s and prints a deliberately naive control that charges the
+harness's own compute to the agent. The control passes at 2 s (+1.5%) and fails at
+100 ms (+30.3%) — a fixed additive bias vanishes in relative terms, which is why
+the sweep spans two orders of magnitude instead of checking one delay. Plus WER
+with normalisation accounting, silence attribution, and five audio perturbations
+composed into chains.
+
+> **Elsewhere:** this is the thinnest part of the open landscape. **ServiceNow's
+> `eva`** (~197★) is the only voice-agent-specific evaluation project I came
+> across with any traction, and it is small and new; I may well have missed
+> others. Latency in the general-purpose tools is
+> wall-clock around a call. The thing I have not seen anywhere is a *calibration
+> gate on the stopwatch itself* — a harness proving it can recover a delay it does
+> not know about before it is allowed to publish a p95.
+
+### 5. Stability as a verdict, and a gate that fails when a finding disappears
+
+`pass^k` where `FLAKY` is not a pass and no aggregation can round it into one
+(`lab/simulator/passk.py`), and a regression gate that diffs findings against a
+committed baseline in both directions (`lab/cli.py`).
+
+> **Elsewhere:** **tau2-bench** reports pass^k, which is the same instinct.
+> Snapshot-baseline gating is standard practice in general software testing and
+> less common in eval tooling, where the usual shape is a threshold on an
+> aggregate score. The specific thing here is failing the build when a finding
+> *vanishes*: a fixed defect and a check that quietly stopped applying are
+> indistinguishable from outside, so both have to stop the build until somebody
+> says which in a diff.
+
+**A fairness note.** Every project above is bigger, older and more used than this
+one, several are backed by teams, and all of them are moving — some are certainly
+adding the things I have listed as gaps. This table is a statement about what I
+found when I looked and about what I chose to build, not a ranking and not a
+claim to be better at anything. If you are choosing tooling for a team, start with
+one of those.
+
+---
+
+## The judge, v1 → v2
+
+The same 24 hand-labelled calls, the same model, one prompt rewritten. Generated
+by `evallab calibrate --judges`, not typed:
+
+| metric | v1 | v2 | delta |
+| --- | --- | --- | --- |
+| true positive rate | 1.000 (8/8) | 1.000 (8/8) | +0.000 |
+| true negative rate | 0.625 (10/16) | 0.938 (15/16) | +0.312 |
+| precision | 0.571 (8/14) | 0.889 (8/9) | +0.317 |
+| Cohen's kappa | 0.526 | 0.909 | +0.383 |
+| false positives | 6 | 1 | −5 |
+| false negatives | 0 | 0 | +0 |
+
+v1's failure is the one every naive confirmation judge has: it conflates intention
+with completion, firing on "I'll get that booked for you now" and on "shall I
+confirm?". v2 defines the target, enumerates what does not count, and demands a
+quotable sentence. The surviving false positive is a genuinely ambiguous utterance
+and was left alone rather than tuned away, because a prompt tuned until its own
+calibration set comes back clean has been fitted to that set.
+
+**These verdicts are synthetic**, stamped `synthetic/deterministic-stand-in`, and
+the calibration report says so in its own notes. What is demonstrated is the
+machinery — confusion matrix, chance correction, disagreement listing, gate — on a
+fixture that runs with no API key. Pointing it at a real provider is one call
+through the identical code path.
+
+---
+
+## What it found
+
+Full write-ups with reproductions and controls in
+[`error_analysis/FINDINGS.md`](error_analysis/FINDINGS.md), which is written the
+way it was found rather than the way it was set up.
+
+Setting it up, plainly: the first three were **planted** when the system under
+test was built, and the answer key is
+[`tablemate/SEEDED_BUGS.md`](tablemate/SEEDED_BUGS.md) — a harness demonstrated
+against a working agent proves nothing, because green results are equally
+consistent with a good agent and a blind test suite. That key also promises there
+is no fourth planted bug. Findings 4 and 5 are the ones nobody put there.
+
+1. **A party of six is told the table is booked, and it is not.** No
+   `create_booking` anywhere in the trace; the transcript alone reads as the most
+   competent call in the corpus. Caught from two directions — the tool contract
+   sees an absence, the promise contract sees a claim with nothing behind it — and
+   neither channel alone would have found it. The party of five books correctly,
+   which locates the defect at the threshold rather than in group bookings.
+2. **A dietary requirement is lost when the call passes through the policy
+   desk.** Stated, discussed correctly, and absent from `create_booking.notes` —
+   after the policy answer has told the caller that the kitchen accommodates
+   allergies "if it is noted on the booking". Three allergens, three callers,
+   three routes; the control with no detour carries the note fine.
+3. **The amendment desk re-asks the party size the caller already gave**, and the
+   caller's "That is everything, thanks" is then consumed as the answer, so the
+   call ends with no closing turn. The re-ask does not just annoy; it creates a
+   pending slot for whatever the caller says next to fall into.
+
+And two that were not on anybody's list, both found by reading a transcript and
+then probing the parser directly:
+
+4. **"No dairy for one of us" reaches nobody** — a real requirement phrased in the
+   negative is discarded by the heuristic that exists to ignore "no allergies,
+   thanks".
+5. **A change the parser does not understand is reported as "nothing to
+   change".** The caller asks to go from four covers to six, and is told the diary
+   already says what they asked for. **No check in the suite fails this row**: the
+   contract requires `modify_booking` to be called with a `changes` argument, and
+   it was — just without the change. A green row, a happy caller and a wrong
+   diary is the most useful thing in this repository.
+
+The taxonomy behind all of it, with counts and a Pareto chart:
+[`error_analysis/axial_coding.md`](error_analysis/axial_coding.md),
+[`pareto.png`](error_analysis/pareto.png). The honest note on where reading
+stopped teaching me things — spoiler: it had not —
+[`error_analysis/saturation.md`](error_analysis/saturation.md).
+
+---
 
 ## Layout
 
 ```
-lab/          the reusable harness (destined for its own repo)
-  clock.py    injectable monotonic clocks — why timing here is testable
-  trace/      the trace schema, its JSONL codec, and the builder
-  voice/      latency and audio measurement, incl. the calibration gate
-  checks/     deterministic assertions over a trace
-  judges/     model-graded assertions, for what code cannot check
-  simulator/  drives a scenario against an adapter
-  report/     rendering results for humans
-tablemate/    the system under test: a multi-agent booking assistant
-scenarios/    what the simulated caller wants and how they behave
-fixtures/     recordings — the reason this runs with no API keys
-error_analysis/  hand-read failures behind the aggregate numbers
+lab/                    the reusable harness (destined for its own repository)
+  clock.py              injectable monotonic clocks — why timing here is testable
+  trace/                the schema, its JSONL codec, and the builder
+  checks/               deterministic contracts over a trace
+  judges/               model-graded checks, with calibration as a gate
+  voice/                latency, WER, silence, perturbations, calibration gate
+  simulator/            personas, goals, the driver, pass^k
+  report/               markdown + JSON rendering, heatmaps, interop
+  cli.py                `evallab` — the one entry point
+tablemate/              the system under test: a multi-agent booking assistant
+scenarios/              55 rows of validated YAML, four suites, nine personas
+fixtures/               recordings, the calibration report, the reference run
+error_analysis/         the traces read by hand, coded, counted and written up
+docs/                   trace schema, CLI reference, how to add a scenario
 ```
+
+Design rationale: [DESIGN.md](DESIGN.md). The capability-to-question mapping:
+[INTERVIEW_NOTES.md](INTERVIEW_NOTES.md).
+
+---
+
+## Limitations
+
+Read this section as part of every number above.
+
+- **The corpus is synthetic and the caller is scripted.** 55 rows written by one
+  person against a system built by the same person, with one phrasing per row.
+  That under-samples the way people actually talk, and it is exactly how findings
+  4 and 5 stayed invisible until somebody read a transcript and poked the parser
+  by hand. `LLMCaller` exists for that exploration but is not what the committed
+  run uses.
+- **WER here is harness-relative.** It compares a transcript against the
+  reference text the harness itself supplied to synthesis. That is a valid
+  measure of what a perturbation did to a recognition path, and it is *not* a
+  benchmark number for any speech-to-text engine, because the reference is not
+  independent ground truth. The degenerate case is the one to watch for: score a
+  transcript against the very text that produced it and you get exactly 0.0% for
+  every clip at every noise level, which is a fabricated number rather than a
+  good result. The committed replay run reports no WER at all — it drives the
+  text adapter, where there is no recognition step to score.
+- **Silence attribution is attribution, not per-operation timing.** Given a gap
+  that encloses a tool call and a handoff, `lab/voice/silence.py` reports the gap
+  and what was inside it — plus the part it can measure honestly, the interval
+  between a `tool_call` and its matching `tool_result`, as a union rather than a
+  sum. The remainder (model think-time, prompt assembly, TTS startup) is reported
+  as unaccounted rather than apportioned, because the trace does not contain the
+  evidence for the split and inventing one produces a number more precise than
+  the data.
+- **Barge-in is declared in the schema and not implemented.**
+  `interruption_started` and `interruption_acknowledged` are in the event
+  vocabulary and nothing emits them. Interruption handling is a first-class voice
+  failure mode and this repository measures none of it. The events are named so
+  that the gap is visible rather than forgotten.
+- **The latency figures come from a simulated latency model on a fake clock.**
+  They demonstrate the measurement path end to end, and the calibration gate is
+  what makes that path trustworthy. They say nothing about how fast any real
+  system is.
+- **Judge verdicts are synthetic recordings**, as above.
+- **The failure coding is one person, one pass, no second rater**, on 47 traces of
+  one build. Two of my notes were withdrawn on a second look, which is evidence
+  that some of the ones I kept are wrong too. What I would defend is the direction
+  of the argument — 9 of 31 product occurrences caught — not the third significant
+  figure.
+- **The voice suite has not been driven end to end here.** Eight rows are
+  declared, validated and counted, and the committed run reports them as not
+  driven rather than running them as text and calling the verdict an audio result.
 
 ## Make targets
 
@@ -72,9 +387,13 @@ error_analysis/  hand-read failures behind the aggregate numbers
 | --- | --- |
 | `make install` | editable install with dev extras |
 | `make test` | the full offline suite |
-| `make calibrate` | run the timing calibration gate and write its report |
-| `make demo` | the case study end to end (arrives with `tablemate/`) |
-| `make report` | render the evaluation report (arrives with `lab/report/`) |
+| `make demo` | the case study end to end, into `reports/` |
+| `make replay` | re-check every committed trace, no agent involved |
+| `make validate` | validate the scenario corpus, with coverage |
+| `make calibrate` | the timing and judge calibration gates |
+| `make report` | re-render the committed report from its own JSON |
+| `make errors` | recount the coded failure modes and redraw the chart |
+| `make reference` | regenerate the committed baseline and show the diff |
 
 ## License
 

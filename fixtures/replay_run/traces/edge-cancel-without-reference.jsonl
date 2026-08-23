@@ -1,0 +1,23 @@
+{"actor": "system", "engine": null, "kind": "session_start", "payload": {"adapter": "text:replay", "caller": "ScriptedCaller", "goal_fact_keys": ["date", "name", "problem"], "goal_gated_keys": [], "goal_intent": "cancel a booking when you cannot find the confirmation email", "max_turns": 14, "persona": "distracted_parent", "persona_cooperativeness": 0.3, "persona_verbosity": "normal", "scenario_id": "edge-cancel-without-reference", "session_id": "edge-cancel-without-reference#0"}, "ts": 0.0}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "I need to cancel my booking on Saturday, please."}, "ts": 0.0}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "I need to cancel my booking on Saturday, please."}, "ts": 0.0}
+{"actor": "system", "engine": null, "kind": "agent_handoff", "payload": {"from": "GreeterAgent", "reason": "caller needs an existing booking", "to": "ModificationAgent", "ts_estimated": true}, "ts": 0.3805}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 1}, "ts": 0.761}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Certainly \u2014 do you have the booking reference? It is on your confirmation email, and it looks like TM followed by four digits."}, "ts": 0.761}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "ModificationAgent", "text": "Certainly \u2014 do you have the booking reference? It is on your confirmation email, and it looks like TM followed by four digits."}, "ts": 0.761}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "I have no idea what the reference is \u2014 I cannot find the confirmation email."}, "ts": 0.761}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "I have no idea what the reference is \u2014 I cannot find the confirmation email."}, "ts": 0.761}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 2}, "ts": 1.7705000000000002}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Without the booking reference I cannot be sure which table I would be changing, so I will not touch it. It is on your confirmation email, and the front desk can look it up by name when you find it."}, "ts": 1.7705000000000002}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "ModificationAgent", "text": "Without the booking reference I cannot be sure which table I would be changing, so I will not touch it. It is on your confirmation email, and the front desk can look it up by name when you find it."}, "ts": 1.7705000000000002}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "Kelleher. Ruth Kelleher."}, "ts": 1.7705000000000002}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "Kelleher. Ruth Kelleher."}, "ts": 1.7705000000000002}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 3}, "ts": 2.2830000000000004}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Is there anything else I can help with in the meantime?"}, "ts": 2.2830000000000004}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "ModificationAgent", "text": "Is there anything else I can help with in the meantime?"}, "ts": 2.2830000000000004}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "That is all, thank you."}, "ts": 2.2830000000000004}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "That is all, thank you."}, "ts": 2.2830000000000004}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 4}, "ts": 2.7990000000000004}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Lovely \u2014 we will see you then. Thanks for calling Lumen."}, "ts": 2.7990000000000004}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "ModificationAgent", "text": "Lovely \u2014 we will see you then. Thanks for calling Lumen."}, "ts": 2.7990000000000004}
+{"actor": "system", "engine": null, "kind": "session_end", "payload": {"reason": "agent_ended", "turns": 4}, "ts": 2.7990000000000004}

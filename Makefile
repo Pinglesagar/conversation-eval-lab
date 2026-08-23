@@ -8,7 +8,7 @@ PYTHON ?= python3
 PIP    ?= $(PYTHON) -m pip
 
 .DEFAULT_GOAL := help
-.PHONY: help install test demo calibrate report clean
+.PHONY: help install test demo calibrate report validate replay errors reference clean
 
 help:  ## Show this help.
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -20,19 +20,27 @@ install:  ## Install the package plus dev extras in editable mode.
 test:  ## Run the full offline test suite.
 	$(PYTHON) -m pytest
 
-calibrate:  ## Run the timing calibration gate; writes fixtures/calibration_report.{json,md}.
-	$(PYTHON) -m lab.voice.calibration --out fixtures
+calibrate:  ## Run the timing and judge calibration gates; non-zero if either fails.
+	$(PYTHON) -m lab.cli calibrate
 
-demo:  ## Run the TableMate case study end to end against recorded fixtures.
-	@echo "demo: the TableMate system under test and the scenario runner are not part of"
-	@echo "      the foundation commit. This target is wired up in the step that adds"
-	@echo "      tablemate/ and lab/simulator/."
-	@exit 1
+validate:  ## Validate the scenario corpus against its schema, with coverage.
+	$(PYTHON) -m lab.cli validate --coverage
 
-report:  ## Build the evaluation report from the latest run.
-	@echo "report: lab/report/ is a placeholder package in the foundation commit."
-	@echo "        This target is wired up in the step that adds report rendering."
-	@exit 1
+demo:  ## Run the case study end to end against the recorded fixtures, into reports/.
+	$(PYTHON) -m lab.cli run --out reports
+
+report:  ## Re-render the committed reference report from its own JSON.
+	$(PYTHON) -m lab.cli report
+
+replay:  ## Re-check every committed trace with no agent and no runner involved.
+	$(PYTHON) -m lab.cli replay --failures-only
+
+errors:  ## Recount the hand-assigned failure modes and redraw error_analysis/pareto.png.
+	$(PYTHON) -m error_analysis.pareto --check
+
+reference:  ## Regenerate the committed reference run. Review the diff before committing it.
+	$(PYTHON) -m lab.cli run --out fixtures/replay_run
+	@git --no-pager diff --stat -- fixtures/replay_run
 
 clean:  ## Remove caches and build output.
 	rm -rf build dist .pytest_cache .coverage htmlcov *.egg-info

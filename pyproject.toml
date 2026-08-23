@@ -61,6 +61,11 @@ charts = [
   "matplotlib>=3.8",
 ]
 
+[project.scripts]
+# One entry point. `evallab --help` is the first thing a reviewer runs, and every
+# subcommand works offline with no API keys.
+evallab = "lab.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/OWNER/tablemate-evals"
 Source = "https://github.com/OWNER/tablemate-evals"

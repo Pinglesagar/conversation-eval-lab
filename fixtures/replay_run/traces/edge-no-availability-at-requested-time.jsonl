@@ -1,0 +1,30 @@
+{"actor": "system", "engine": null, "kind": "session_start", "payload": {"adapter": "text:replay", "caller": "ScriptedCaller", "goal_fact_keys": ["date", "inflexible", "party_size", "time"], "goal_gated_keys": [], "goal_intent": "get the 8pm slot on Saturday and refuse every alternative", "max_turns": 14, "persona": "hostile_caller", "persona_cooperativeness": 0.6, "persona_verbosity": "normal", "scenario_id": "edge-no-availability-at-requested-time", "session_id": "edge-no-availability-at-requested-time#0"}, "ts": 0.0}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "Could I book a table for two on Saturday at 8pm?"}, "ts": 0.0}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "Could I book a table for two on Saturday at 8pm?"}, "ts": 0.0}
+{"actor": "system", "engine": null, "kind": "agent_handoff", "payload": {"from": "GreeterAgent", "reason": "caller needs a new booking", "to": "BookingAgent", "ts_estimated": true}, "ts": 0.21425}
+{"actor": "agent", "engine": null, "kind": "tool_call", "payload": {"args": {"date": "saturday", "party_size": 2, "time": "8pm"}, "call_id": "search_tables-1", "name": "search_tables", "ts_estimated": true}, "ts": 0.4285}
+{"actor": "system", "engine": null, "kind": "tool_result", "payload": {"call_id": "search_tables-1", "name": "search_tables", "ok": true, "result": {"alternatives": ["7:30pm", "8:30pm", "7pm"], "available": false, "date": "saturday", "max_party_size": 8, "party_size": 2, "reason": "slot_full", "tables": [], "time": "8pm"}, "ts_estimated": true}, "ts": 0.6427499999999999}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 1}, "ts": 0.857}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "I am sorry \u2014 8pm on Saturday is full for two. I could do 7:30pm or 8:30pm. Would either of those work?"}, "ts": 0.857}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "BookingAgent", "text": "I am sorry \u2014 8pm on Saturday is full for two. I could do 7:30pm or 8:30pm. Would either of those work?"}, "ts": 0.857}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "No, I cannot do any other time."}, "ts": 0.857}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "No, I cannot do any other time."}, "ts": 0.857}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 2}, "ts": 1.541}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Understood. I can put you on the list for that sitting in case something frees up. Would you like me to?"}, "ts": 1.541}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "BookingAgent", "text": "Understood. I can put you on the list for that sitting in case something frees up. Would you like me to?"}, "ts": 1.541}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "No, it has to be that sitting."}, "ts": 1.541}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "No, it has to be that sitting."}, "ts": 1.541}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 3}, "ts": 2.211}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Then I am afraid that sitting is beyond me today. Do ring nearer the time in case of a cancellation."}, "ts": 2.211}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "BookingAgent", "text": "Then I am afraid that sitting is beyond me today. Do ring nearer the time in case of a cancellation."}, "ts": 2.211}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "No, nothing else works."}, "ts": 2.211}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "No, nothing else works."}, "ts": 2.211}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 4}, "ts": 2.881}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Then I am afraid that sitting is beyond me today. Do ring nearer the time in case of a cancellation."}, "ts": 2.881}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "BookingAgent", "text": "Then I am afraid that sitting is beyond me today. Do ring nearer the time in case of a cancellation."}, "ts": 2.881}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "That is all, thank you."}, "ts": 2.881}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "That is all, thank you."}, "ts": 2.881}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 5}, "ts": 3.5509999999999997}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Then I am afraid that sitting is beyond me today. Do ring nearer the time in case of a cancellation."}, "ts": 3.5509999999999997}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "BookingAgent", "text": "Then I am afraid that sitting is beyond me today. Do ring nearer the time in case of a cancellation."}, "ts": 3.5509999999999997}
+{"actor": "system", "engine": null, "kind": "session_end", "payload": {"reason": "caller_hung_up", "turns": 5}, "ts": 3.5509999999999997}

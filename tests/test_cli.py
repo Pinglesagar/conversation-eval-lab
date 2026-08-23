@@ -1,0 +1,440 @@
+"""The CLI, and the invariants that keep the committed artefacts honest.
+
+WHAT THIS DEMONSTRATES
+----------------------
+Two kinds of test live here, and the second kind is the interesting one.
+
+The ordinary kind covers `lab.cli` itself: the caller fixture is validated rather
+than trusted, the baseline diff is scoped to the scenarios that actually ran, a
+written report can be read back and re-derives its own verdict, and the
+subcommands return the exit codes their documentation claims.
+
+The second kind tests the *case study's own paperwork* against the artefacts it
+describes. `error_analysis/codes.csv` says which failure modes a contract caught;
+`fixtures/replay_run/run_report.json` says which contracts failed. Those two files
+are written by hand and by machine respectively, and nothing but a test keeps them
+in agreement. Without it, the first fix to the system under test turns the error
+analysis into confident fiction — the prose still says "caught by
+`propagation:dairy`" long after that row went green. So:
+
+    every codes.csv row marked caught=yes must be a failure in the report
+    every row marked caught=no must not be
+
+That pair of assertions is the reason a reader can believe the number this
+project leads with (9/31 product occurrences caught): it is checked, in CI, on
+every commit.
+"""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pytest
+
+from lab import cli
+from lab.report import ContractStat, FailureRecord, RunReport
+from lab.trace.build import TraceBuilder
+from lab.clock import FakeClock
+
+REPO = cli.repo_root()
+REFERENCE = REPO / cli.REFERENCE_RUN_DIR
+REPORT_JSON = REFERENCE / "run_report.json"
+
+
+# --------------------------------------------------------------------------- #
+# The caller fixture is data, and data gets validated
+# --------------------------------------------------------------------------- #
+
+
+def test_the_committed_caller_fixture_loads() -> None:
+    scripts = cli.load_caller_scripts(cli.DEFAULT_SCRIPTS)
+    assert scripts, "the fixture is what makes the run reproducible; it cannot be empty"
+    for script in scripts.values():
+        assert script.script, script.scenario_id
+
+
+def test_every_non_voice_scenario_has_a_committed_script() -> None:
+    """A row with no script is silently not run, which is the worst kind of gap.
+
+    The run report prints the coverage fraction, but a fraction nobody reads is
+    not a guard. This is the guard: adding a text scenario without a caller
+    script fails the suite instead of quietly shrinking the denominator.
+    """
+    from scenarios.loader import load_corpus
+
+    corpus = load_corpus()
+    text_rows = [
+        s.id for s in corpus.scenarios if not (s.voice and s.voice.perturbations)
+    ]
+    scripts = cli.load_caller_scripts(cli.DEFAULT_SCRIPTS)
+    missing = sorted(set(text_rows) - set(scripts))
+    assert not missing, f"no caller script for {missing}"
+
+
+def test_scripts_do_not_name_scenarios_that_do_not_exist() -> None:
+    from scenarios.loader import load_corpus
+
+    known = set(load_corpus().ids())
+    scripts = cli.load_caller_scripts(cli.DEFAULT_SCRIPTS)
+    assert not sorted(set(scripts) - known)
+
+
+@pytest.mark.parametrize(
+    "block, expected",
+    [
+        ("{}", "non-empty `scripts:` mapping"),
+        ("scripts:\n  a: {script: []}", "non-empty list of lines"),
+        ("scripts:\n  a: {script: ['hi'], nonsense: 1}", "unknown key"),
+        ("scripts:\n  a: {script: ['  ']}", "non-empty string"),
+        ("scripts:\n  a: {script: ['hi'], seed: [{teleport: {}}]}", "unknown seed action"),
+        ("scripts:\n  a: {script: ['hi'], seed: {}}", "list of single-action mappings"),
+    ],
+)
+def test_a_malformed_caller_fixture_is_an_error_not_a_short_conversation(
+    tmp_path: Path, block: str, expected: str
+) -> None:
+    path = tmp_path / "scripts.yaml"
+    path.write_text(block, encoding="utf-8")
+    with pytest.raises((ValueError, FileNotFoundError)) as caught:
+        cli.load_caller_scripts(path)
+    assert expected in str(caught.value)
+
+
+def test_a_missing_fixture_says_how_to_fix_it(tmp_path: Path) -> None:
+    with pytest.raises(FileNotFoundError) as caught:
+        cli.load_caller_scripts(tmp_path / "nope.yaml")
+    assert "--scripts" in str(caught.value)
+
+
+def test_seed_steps_become_a_callable_that_touches_the_real_store() -> None:
+    script = cli.CallerScript(
+        scenario_id="x",
+        script=("hello",),
+        seed=({"book_out": {"date": "Saturday", "time": "8pm"}},),
+    )
+    from tablemate.store import default_restaurant
+
+    store = default_restaurant()
+    assert store.free_tables("saturday", "8pm", 2)
+    seed = script.seed_fn()
+    assert seed is not None
+    seed(store)
+    assert not store.free_tables("saturday", "8pm", 2), "the sitting must really be full"
+
+
+def test_no_seed_means_no_callable() -> None:
+    assert cli.CallerScript(scenario_id="x", script=("hi",)).seed_fn() is None
+
+
+# --------------------------------------------------------------------------- #
+# Classification: expected, unexpected, stale
+# --------------------------------------------------------------------------- #
+
+
+def _trace(scenario_id: str):
+    builder = TraceBuilder(scenario_id=scenario_id, adapter="text:test", clock=FakeClock())
+    builder.session_start()
+    builder.caller_utterance("Table for six on Friday at 8pm please.")
+    builder.agent_utterance("That is all booked in.", agent="BookingAgent")
+    builder.session_end(reason="caller_hung_up", turns=1)
+    return builder.build()
+
+
+def test_a_declared_gap_that_reproduces_is_a_known_gap_not_a_gate_failure() -> None:
+    from scenarios.loader import load_corpus
+
+    scenario = load_corpus().by_id("edge-large-party-of-six")
+    evaluation = cli.evaluate_trace(scenario, _trace(scenario.id))
+    assert [r.name for r in evaluation.known_gaps] == ["tools", "promise-kept"]
+    assert not evaluation.unexpected
+    assert evaluation.gate_passed
+
+
+def test_a_declared_gap_that_stops_reproducing_fails_the_gate() -> None:
+    """The half of a regression gate that people leave out.
+
+    A fixed defect and a check that quietly stopped applying look identical from
+    the outside — one fewer failure — so both have to stop the build until
+    somebody says which it was.
+    """
+    from scenarios.loader import load_corpus
+
+    scenario = load_corpus().by_id("edge-large-party-of-six")
+    builder = TraceBuilder(scenario_id=scenario.id, adapter="text:test", clock=FakeClock())
+    builder.session_start()
+    builder.caller_utterance("Table for six on Friday at 8pm please.")
+    builder.tool_call(
+        "create_booking",
+        {"name": "Okonkwo", "date": "friday", "time": "8pm", "party_size": "6", "notes": ""},
+        call_id="c1",
+    )
+    builder.tool_result("create_booking", {"booking_ref": "TM-2001"}, call_id="c1", ok=True)
+    builder.agent_utterance("That is all booked in.", agent="BookingAgent")
+    builder.session_end(reason="caller_hung_up", turns=1)
+
+    evaluation = cli.evaluate_trace(scenario, builder.build())
+    assert [r.name for r in evaluation.stale] == ["tools", "promise-kept"]
+    assert not evaluation.gate_passed
+    assert "STALE EXPECTATION" in (evaluation.gate_evidence() or "")
+
+
+def test_an_undeclared_failure_is_unexpected() -> None:
+    from scenarios.loader import load_corpus
+
+    scenario = load_corpus().by_id("happy-party-of-five-boundary")
+    evaluation = cli.evaluate_trace(scenario, _trace(scenario.id))
+    assert evaluation.unexpected
+    assert not evaluation.gate_passed
+    assert (evaluation.gate_evidence() or "").startswith("UNEXPECTED")
+
+
+# --------------------------------------------------------------------------- #
+# Determinism
+# --------------------------------------------------------------------------- #
+
+
+def test_identical_repeats_ignores_the_session_id_and_nothing_else() -> None:
+    first, second = _trace("a"), _trace("a")
+    assert cli._identical_repeats([first, second])
+
+    third = _trace("a")
+    third.events[1].payload["text"] = "something else"
+    assert not cli._identical_repeats([first, third])
+
+
+def test_one_repeat_is_trivially_identical() -> None:
+    assert cli._identical_repeats([_trace("a")])
+
+
+# --------------------------------------------------------------------------- #
+# The baseline
+# --------------------------------------------------------------------------- #
+
+
+def _report(*findings: tuple[str, str]) -> RunReport:
+    return RunReport(
+        contracts=[ContractStat(name="tools", failures=len(findings), runs=len(findings) + 1)],
+        failures=[
+            FailureRecord(scenario_id=scenario, contract=contract, evidence="quoted")
+            for scenario, contract in findings
+        ],
+    )
+
+
+def test_baseline_diff_reports_both_directions(tmp_path: Path) -> None:
+    path = tmp_path / "baseline.json"
+    path.write_text(_report(("a", "tools"), ("b", "tools")).to_json(), encoding="utf-8")
+
+    diff = cli.compare_to_baseline(_report(("a", "tools"), ("c", "tools")), path)
+    assert diff.added == [("c", "tools")]
+    assert diff.removed == [("b", "tools")]
+    assert not diff.clean
+
+
+def test_baseline_diff_is_scoped_to_the_scenarios_that_ran(tmp_path: Path) -> None:
+    """`--suite happy` must not report the other three suites as fixed."""
+    path = tmp_path / "baseline.json"
+    path.write_text(_report(("a", "tools"), ("b", "tools")).to_json(), encoding="utf-8")
+
+    diff = cli.compare_to_baseline(_report(("a", "tools")), path, scope=["a"])
+    assert diff.clean
+    assert diff.baseline_size == 1
+
+
+def test_no_baseline_is_reported_rather_than_assumed_clean() -> None:
+    diff = cli.compare_to_baseline(_report(), None)
+    assert not diff.available
+    assert "no baseline" in diff.describe()
+
+
+# --------------------------------------------------------------------------- #
+# The committed report round-trips, and re-derives its own verdict
+# --------------------------------------------------------------------------- #
+
+
+def test_the_committed_report_reloads_and_rerenders() -> None:
+    report = cli.load_run_report(REPORT_JSON)
+    assert report.verdict == json.loads(REPORT_JSON.read_text(encoding="utf-8"))["verdict"]
+    assert report.to_markdown() == (REFERENCE / "run_report.md").read_text(encoding="utf-8")
+
+
+def test_a_hand_edited_verdict_is_rejected(tmp_path: Path) -> None:
+    payload = json.loads(REPORT_JSON.read_text(encoding="utf-8"))
+    payload["verdict"] = "PASS"
+    path = tmp_path / "tampered.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="recomputed"):
+        cli.load_run_report(path)
+
+
+def test_the_committed_report_holds_no_absolute_paths() -> None:
+    """A machine-specific path in a committed artefact breaks reproducibility."""
+    text = REPORT_JSON.read_text(encoding="utf-8")
+    assert str(REPO) not in text
+    assert '"/Users' not in text and '"/home' not in text
+
+
+# --------------------------------------------------------------------------- #
+# The error analysis and the report have to agree
+# --------------------------------------------------------------------------- #
+
+
+def _committed_findings() -> set[tuple[str, str]]:
+    report = cli.load_run_report(REPORT_JSON)
+    return {(f.scenario_id, f.contract) for f in report.failures}
+
+
+def test_codes_marked_caught_are_failures_in_the_committed_report() -> None:
+    from error_analysis.pareto import load_codes
+
+    findings = {scenario for scenario, _ in _committed_findings()}
+    for coded in load_codes():
+        if coded.caught:
+            assert coded.scenario_id in findings, (
+                f"{coded.code} on {coded.scenario_id} is coded as caught, but that "
+                "scenario has no finding in the committed report"
+            )
+
+
+def test_codes_marked_uncaught_have_no_finding_of_their_own() -> None:
+    """The other direction, which is the one that rots.
+
+    A mode coded `caught=no` on a scenario that now reports a failure means
+    either the suite improved or the coding was wrong. Both need a human, so the
+    test fails rather than letting the prose drift.
+
+    Scenarios carrying more than one code are exempt from this direction: a trace
+    can hold one mode a contract caught and another it did not, and the report
+    records the failure per contract rather than per mode.
+    """
+    from collections import Counter
+
+    from error_analysis.pareto import load_codes
+
+    codes = load_codes()
+    per_scenario = Counter(c.scenario_id for c in codes)
+    findings = {scenario for scenario, _ in _committed_findings()}
+    for coded in codes:
+        if not coded.caught and per_scenario[coded.scenario_id] == 1:
+            assert coded.scenario_id not in findings, (
+                f"{coded.code} on {coded.scenario_id} is coded as uncaught, but the "
+                "committed report has a finding there"
+            )
+
+
+def test_the_pareto_arithmetic_matches_the_prose() -> None:
+    """The numbers FINDINGS.md and axial_coding.md lead with."""
+    from error_analysis.pareto import load_codes, pareto
+
+    codes = load_codes()
+    product = [c for c in codes if c.is_product]
+    caught = [c for c in product if c.caught]
+    assert (len(codes), len(product), len(caught)) == (32, 31, 9)
+
+    rows = pareto(codes)
+    assert rows[0].cumulative == rows[0].count
+    assert rows[-1].cumulative == len(codes), "the cumulative column must reach n"
+    assert [r.count for r in rows] == sorted((r.count for r in rows), reverse=True)
+
+
+def test_every_coded_scenario_has_a_committed_trace() -> None:
+    from error_analysis.pareto import load_codes
+
+    for coded in load_codes():
+        path = REFERENCE / "traces" / f"{coded.scenario_id}.jsonl"
+        assert path.exists(), f"{coded.code} cites {coded.scenario_id} with no trace"
+
+
+# --------------------------------------------------------------------------- #
+# Subcommands and exit codes
+# --------------------------------------------------------------------------- #
+
+
+def test_validate_passes_on_the_committed_corpus(capsys: pytest.CaptureFixture[str]) -> None:
+    assert cli.main(["validate"]) == 0
+    assert "55/55" in capsys.readouterr().out
+
+
+def test_replay_recomputes_a_verdict_from_a_committed_trace(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """The auditability claim, executed: no agent, no runner, same verdict."""
+    trace = str(REFERENCE / "traces" / "edge-large-party-of-six.jsonl")
+    assert cli.main(["replay", trace]) == 0
+    out = capsys.readouterr().out
+    assert "declared known gap(s): tools, promise-kept" in out
+
+
+def test_replay_of_a_clean_trace_reports_no_findings(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    trace = str(REFERENCE / "traces" / "happy-two-covers-thursday.jsonl")
+    assert cli.main(["replay", trace, "--ci"]) == 0
+    assert "0 with unexpected findings" in capsys.readouterr().out
+
+
+def test_run_one_scenario_end_to_end(tmp_path: Path) -> None:
+    code = cli.main(
+        [
+            "run",
+            "--scenario",
+            "happy-two-covers-thursday",
+            "-k",
+            "2",
+            "--out",
+            str(tmp_path),
+            "--no-baseline",
+            "--ci",
+        ]
+    )
+    assert code == 0
+    report = cli.load_run_report(tmp_path / "run_report.json")
+    assert report.summary.stable_pass == 1
+    assert (tmp_path / "traces" / "happy-two-covers-thursday.jsonl").exists()
+
+
+def test_run_reports_a_gate_failure_on_an_undeclared_failure(tmp_path: Path) -> None:
+    """The row where my own check is wrong is also the row that proves the gate."""
+    code = cli.main(
+        [
+            "run",
+            "--scenario",
+            "happy-saturday-lunch-four",
+            "-k",
+            "1",
+            "--out",
+            str(tmp_path),
+            "--no-baseline",
+            "--ci",
+        ]
+    )
+    assert code == 1
+
+
+def test_run_refuses_an_empty_selection(tmp_path: Path) -> None:
+    assert (
+        cli.main(["run", "--suite", "voice", "--out", str(tmp_path), "--no-baseline"]) == 2
+    )
+
+
+def test_live_needs_an_env_var(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("LAB_LIVE_AGENT", raising=False)
+    assert cli.main(["run", "--live", "--out", str(tmp_path), "--no-baseline"]) == 2
+
+
+def test_the_judge_gate_accepts_the_reported_judge() -> None:
+    """`--ci` refuses an uncalibrated judge; the one this run reports clears it."""
+    assert cli._audit_judges_for_ci() is True
+
+
+def test_the_parser_documents_every_subcommand() -> None:
+    parser = cli.build_parser()
+    actions = [a for a in parser._actions if a.dest == "command"]
+    assert set(actions[0].choices) == {"run", "validate", "report", "calibrate", "replay"}
+
+
+def test_import_object_accepts_both_spellings() -> None:
+    assert cli._import_object("tablemate.runtime:build_agent") is cli._import_object(
+        "tablemate.runtime.build_agent"
+    )

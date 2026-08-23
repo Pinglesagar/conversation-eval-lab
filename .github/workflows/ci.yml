@@ -1,0 +1,106 @@
+# CI, with no secrets and no network calls at test time.
+#
+# The cardinal rule of this repository is that everything runs with zero API
+# keys, and this file is where that stops being a claim. There is no secrets
+# block, no provider credential, and no step that would work differently if one
+# existed: the live paths are opt-in behind environment variables that are never
+# set here, and every one of them has a recorded fixture that replays instead.
+#
+# Four things are gated, in this order, because each one makes the next
+# believable:
+#
+#   1. the suite installs and passes offline
+#   2. the corpus validates against its schema
+#   3. the timing and judge calibration gates pass — an uncalibrated judge and an
+#      unproven stopwatch are refused before any number they produce is read
+#   4. the case study runs, and its findings match the committed baseline
+#      byte for byte
+#
+# Step 4 is the interesting one. `evallab run --ci` writes the report into
+# `fixtures/replay_run/` — the same directory that is committed — and then
+# `git diff --exit-code` fails if a single byte moved. That is a stronger claim
+# than "the tests pass": it says this run of this code reproduces the artefact a
+# reviewer read, on a different machine, to the byte.
+#
+# Note that the committed report says FAIL. The system under test has real
+# defects and the report is not allowed to hide them. The build is green because
+# the *regression gate* passed: nothing changed since the baseline. Both verdicts
+# are printed by the run step; see DESIGN.md for why they are separate.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  offline:
+    name: offline suite, gates and case study
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          # [charts] as well as [dev]: the Pareto chart in error_analysis/ is
+          # regenerated below, and a chart that only builds on the author's
+          # laptop is not a committed artefact.
+          pip install -e ".[dev,charts]"
+
+      - name: Lint
+        run: |
+          pip install ruff
+          # Real errors only — syntax and undefined names. Deliberately not a
+          # style gate: this repository has not adopted a formatter, and a lint
+          # that argues about line length in files owned by other people gets
+          # switched off within a week and then guards nothing.
+          ruff check --select E9,F63,F7,F82 --exclude .venv .
+
+      - name: Tests
+        run: pytest -q
+
+      - name: Validate the scenario corpus
+        run: evallab validate --coverage
+
+      - name: Calibration gates (timing and judge)
+        run: evallab calibrate --ci
+
+      - name: Calibration artefacts are unchanged
+        run: git diff --exit-code -- fixtures lab/judges
+
+      - name: Run the case study against the recorded fixtures
+        run: evallab run --replay --ci --out fixtures/replay_run
+
+      - name: The run reproduces the committed report byte for byte
+        run: git diff --exit-code -- fixtures/replay_run
+
+      - name: Error analysis still agrees with the artefacts
+        run: python -m error_analysis.pareto --check --no-chart
+        # Counts and scenario ids are checked; the PNG is not regenerated here.
+        # A matplotlib raster is not byte-stable across platforms and font
+        # stacks, so diffing it would fail for reasons that say nothing about
+        # the analysis. The numbers behind the chart are asserted in
+        # tests/test_cli.py instead.
+
+      - name: Report
+        if: always()
+        run: |
+          echo '### Committed run report' >> "$GITHUB_STEP_SUMMARY"
+          head -n 8 fixtures/replay_run/run_report.md >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,20 @@
+{"actor": "system", "engine": null, "kind": "session_start", "payload": {"adapter": "text:replay", "caller": "ScriptedCaller", "goal_fact_keys": ["booking_ref", "old_time", "time"], "goal_gated_keys": [], "goal_intent": "move an existing booking from 7pm to 7:30pm", "max_turns": 14, "persona": "brisk_regular", "persona_cooperativeness": 1.0, "persona_verbosity": "terse", "scenario_id": "happy-move-booking-later", "session_id": "happy-move-booking-later#0"}, "ts": 0.0}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "I would like to move my booking TM-2098 to 7:30pm, please."}, "ts": 0.0}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "I would like to move my booking TM-2098 to 7:30pm, please."}, "ts": 0.0}
+{"actor": "system", "engine": null, "kind": "agent_handoff", "payload": {"from": "GreeterAgent", "reason": "caller needs an existing booking", "to": "ModificationAgent", "ts_estimated": true}, "ts": 0.26675}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 1}, "ts": 0.5335}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "I can change TM-2098 for you. How many people will be dining?"}, "ts": 0.5335}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "ModificationAgent", "text": "I can change TM-2098 for you. How many people will be dining?"}, "ts": 0.5335}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "Two of us."}, "ts": 0.5335}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "Two of us."}, "ts": 0.5335}
+{"actor": "agent", "engine": null, "kind": "tool_call", "payload": {"args": {"booking_ref": "TM-2098", "changes": {"party_size": 2, "time": "7:30pm"}}, "call_id": "modify_booking-1", "name": "modify_booking", "ts_estimated": true}, "ts": 0.7725}
+{"actor": "system", "engine": null, "kind": "tool_result", "payload": {"call_id": "modify_booking-1", "name": "modify_booking", "ok": true, "result": {"area": "bar", "booking_ref": "TM-2098", "changed": {"time": {"from": "7pm", "to": "7:30pm"}}, "date": "friday", "name": "Bhattacharya", "notes": "", "party_size": 2, "seats": 2, "status": "confirmed", "table_id": "T2", "time": "7:30pm", "unchanged": false}, "ts_estimated": true}, "ts": 1.0114999999999998}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 2}, "ts": 1.2505}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "I have changed time to 7:30pm. TM-2098 is otherwise as it was."}, "ts": 1.2505}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "ModificationAgent", "text": "I have changed time to 7:30pm. TM-2098 is otherwise as it was."}, "ts": 1.2505}
+{"actor": "caller", "engine": "harness:passthrough-stt", "kind": "transcript_in", "payload": {"confidence": 1.0, "text": "Thank you, that is everything."}, "ts": 1.2505}
+{"actor": "caller", "engine": null, "kind": "caller_utterance", "payload": {"text": "Thank you, that is everything."}, "ts": 1.2505}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "agent_audio_first_byte", "payload": {"turn": 3}, "ts": 1.7665}
+{"actor": "agent", "engine": "harness:passthrough-tts", "kind": "transcript_out", "payload": {"text": "Lovely \u2014 we will see you then. Thanks for calling Lumen."}, "ts": 1.7665}
+{"actor": "agent", "engine": null, "kind": "agent_utterance", "payload": {"agent": "ModificationAgent", "text": "Lovely \u2014 we will see you then. Thanks for calling Lumen."}, "ts": 1.7665}
+{"actor": "system", "engine": null, "kind": "session_end", "payload": {"reason": "agent_ended", "turns": 3}, "ts": 1.7665}
