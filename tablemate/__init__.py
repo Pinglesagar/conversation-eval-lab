@@ -14,7 +14,24 @@ The defects are real code paths rather than feature flags, so they reproduce
 deterministically in recorded fixtures, and they are documented in exactly one
 place: `tablemate/SEEDED_BUGS.md`. Nothing in `lab` knows they exist.
 
-Empty in the foundation commit: the agents, their tools and the seeded defects
-are built in the next step. Nothing in `lab` imports from this package, and
-nothing here imports a check.
+WHAT IS WHERE
+-------------
+    tablemate.store           tables, the booking diary, the policy sheet
+    tablemate.tools           the five tools, and the toolbox that records them
+    tablemate.understanding   routing and slot extraction — every decision
+    tablemate.agents          the four agents, their briefs and the router
+    tablemate.runtime         the adapter: one callable turn, two phrasing backends
+
+Nothing in `lab` imports from this package. In the other direction, exactly one
+module here — `tablemate.runtime`, the adapter — imports `lab`, and it imports
+three type names to build a reply with. Everything that decides, acts or
+remembers is `lab`-free, which is what makes the harness's central claim (an
+instrument pointed at a system, not a framework the system must adopt) checkable
+rather than aspirational.
+
+Nothing here imports a check, and no module here mentions a defect.
 """
+
+from tablemate.runtime import TableMate, build_agent
+
+__all__ = ["TableMate", "build_agent"]
