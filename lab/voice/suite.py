@@ -78,7 +78,7 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
 
 from lab.voice.engines.base import DEFAULT_SAMPLE_RATE, Audio, audio_digest
-from lab.voice.engines.clipcache import ClipCache
+from lab.voice.engines.clipcache import ClipCache, clip_cache_key
 from lab.voice.engines.elevenlabs_tts import (
     DEFAULT_AGENT_VOICE,
     DEFAULT_CALLER_VOICE,
@@ -102,10 +102,13 @@ __all__ = [
     "capture_outcome",
     "clip_for",
     "corpus_cost",
+    "is_cross_script",
     "ladder_result",
     "new_clips",
     "parse_magnitude",
     "run_row",
+    "scripts_of",
+    "spoken_reference",
 ]
 
 #: The tier's own transcript cassette, kept separate from the previous phase's
@@ -307,6 +310,103 @@ def clip_for(clip_id: str) -> Clip:
 def new_clips() -> list[Clip]:
     """Clips this tier had to synthesise, in registry order."""
     return [clip for clip in CLIPS.values() if clip.is_new]
+
+
+def spoken_reference(
+    clip_ids: Sequence[str], *, cache: ClipCache
+) -> tuple[str | None, str]:
+    """The ground truth for a row's clips, or `None` and the reason there is none.
+
+    Returns `(reference, reason)`. The reference is the **vendor's own spoken
+    form** — the `normalized_alignment` string recorded beside each clip in the
+    cache — concatenated in clip order. It is never the caller's input string.
+
+    That distinction is the whole subject of
+    `lab/voice/engines/WER_NORMALISATION.md`, and it is not a theoretical risk: a
+    reconciliation of this tier built on the input strings reported **416.7 silent
+    corrections per 100 turns**, because it was comparing `"SW1A 1AA"` against
+    `"s w one a one a a"` and scoring every spoken letter as an insertion. The
+    same audio, reconciled against the spoken form, yields 1.
+
+    Two clips in the registry have no usable reference, for two different reasons,
+    and both are **named rather than dropped** — a reconciliation whose
+    denominator silently absorbs the rows it could not check has the same defect
+    as a naked percentage:
+
+    * `confusable-forced` is synthesised on `eleven_flash_v2`, the only model that
+      accepts SSML `<phoneme>` and not one of the two measured to honour
+      `apply_text_normalization`. It has no spoken form at all, and its input
+      string is *markup*, so reconciling against it manufactures deletions out of
+      `alphabet`, `cmu-arpabet` and the phoneme string itself.
+    * `mandarin-portfolio` has a spoken form and it is pinyin: the vendor
+      romanised the Mandarin while the audio stayed correct. `_is_romanised`
+      declines it structurally — CJK in, no CJK out — rather than by language, and
+      the same guard is applied here so a reconciliation cannot inherit a
+      reference the synthesis engine already refused.
+    """
+    from lab.voice.engines.elevenlabs_tts import _is_romanised  # noqa: PLC0415
+
+    parts: list[str] = []
+    for clip_id in clip_ids:
+        clip = clip_for(clip_id)
+        entry = cache.get(
+            clip_cache_key(
+                text=clip.text,
+                voice=clip.voice,
+                model=clip.model,
+                output_format="pcm_16000",
+            )
+        )
+        spoken = None if entry is None else entry.spoken_text
+        if spoken is None:
+            return None, (
+                f"{clip_id}: no spoken form — {clip.model} does not honour "
+                "apply_text_normalization, so the only available reference is the "
+                "input string, which here is SSML markup"
+            )
+        if _is_romanised(clip.text, spoken):
+            return None, (
+                f"{clip_id}: the vendor romanised the spoken form, so it describes "
+                "a different alphabet from the audio and is not a reference"
+            )
+        parts.append(spoken)
+    if not parts:
+        return None, "no clips"
+    return " ".join(parts), "spoken-form"
+
+
+def scripts_of(token: str) -> frozenset[str]:
+    """The Unicode script families a token draws on, coarsely.
+
+    Used to separate a *cross-script* difference from a mishearing. When the
+    synthesiser writes `पोर्टफोलियो` and the recogniser writes `portfolio`, both
+    are correct about the word and disagree only about the alphabet; counting that
+    as a recognition error would attribute a transliteration policy to the
+    acoustic model. Coarse on purpose — the question is "same alphabet or not",
+    which does not need a full script property table.
+    """
+    families: set[str] = set()
+    for char in token:
+        if not char.isalpha():
+            continue
+        code = ord(char)
+        if code < 0x0250:
+            families.add("latin")
+        elif 0x0900 <= code <= 0x097F:
+            families.add("devanagari")
+        elif 0x0600 <= code <= 0x06FF:
+            families.add("arabic")
+        elif code >= 0x2E80:
+            families.add("cjk")
+        else:
+            families.add("other")
+    return frozenset(families)
+
+
+def is_cross_script(spoken: str, heard: str) -> bool:
+    """True when two tokens share no alphabet, so their difference is not acoustic."""
+    left, right = scripts_of(spoken), scripts_of(heard)
+    return bool(left) and bool(right) and not (left & right)
 
 
 def corpus_cost() -> dict[str, int]:

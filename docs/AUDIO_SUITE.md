@@ -979,3 +979,464 @@ python -m scripts.make_audio_suite_fixtures --evidence-only  # replay, no keys
 | `fixtures/audio/tts_cache/` | 7 new clips, 16 kHz mono WAV, digest-keyed |
 | `fixtures/audio/cloud/audio_suite_transcripts.json` | 33 recorded transcripts, keyed by the digest of the *perturbed* audio |
 | `fixtures/audio/cloud/audio_suite_evidence.json` | 18 row results, produced by replay so they are reproducible with every key unset |
+
+---
+
+# Part two: the live run
+
+Everything above was built and measured on 23 Aug 2026. This section is a
+**separate live execution** of the whole thing — the gate, all eighteen
+in-process rows, and the three transport rows — run to answer one question the
+first pass could not: *are these numbers measurements, or are they one HTTP
+response each?*
+
+It cost **0 ElevenLabs characters**, and that is a property of the program rather
+than a result: `scripts/run_audio_live.py` never imports the synthesiser.
+
+## 15. The gate, first, because nothing downstream is reportable without it
+
+`python -m lab.voice.calibration` — **PASS.**
+
+| nominal | n | mean | p50 | stdev | rel err | verdict |
+|---|---|---|---|---|---|---|
+| 100 ms | 20 | 100.266 ms | 100.689 ms | 4.100 ms | **+0.266%** | PASS |
+| 250 ms | 20 | 249.903 ms | 250.167 ms | 4.644 ms | −0.039% | PASS |
+| 500 ms | 20 | 501.180 ms | 501.639 ms | 3.435 ms | +0.236% | PASS |
+| 1000 ms | 20 | 999.531 ms | 999.288 ms | 3.708 ms | −0.047% | PASS |
+| 2000 ms | 20 | 2000.184 ms | 2001.902 ms | 5.016 ms | +0.009% | PASS |
+
+Tolerance is 5% and the worst row uses 5% of it. The naive whole-turn control
+**FAILS**, as designed, and the shape of its failure is the part worth reading:
+
+| nominal | naive control mean | naive error |
+|---|---|---|
+| 100 ms | 130.27 ms | **+30.3%** |
+| 250 ms | 279.90 ms | +12.0% |
+| 500 ms | 531.18 ms | +6.2% |
+
+The naive reading is wrong by a near-constant **~30 ms** — the harness's own
+injected compute — so its *relative* error is worst exactly where the budget is
+tightest. For a product whose value proposition is a suggestion arriving before
+the moment passes, the regime where the naive instrument overstates by a third is
+the only regime that matters. A control that failed by a constant percentage would
+have been much less informative than one that fails by a constant *offset*.
+
+### The real-clock arm fails at 100 ms, and it is reported rather than dropped
+
+`--clock real` additionally exercises OS scheduling:
+
+| nominal | mean | rel err | verdict |
+|---|---|---|---|
+| 100 ms | 105.855 ms | **+5.855%** | **FAIL** |
+| 250 ms | 256.328 ms | +2.531% | PASS |
+| 500 ms | 506.896 ms | +1.379% | PASS |
+| 1000 ms | 1006.209 ms | +0.621% | PASS |
+| 2000 ms | 2006.753 ms | +0.338% | PASS |
+
+A ~6 ms scheduling floor is 6% of 100 ms and 0.3% of 2 s. So the honest statement
+of this harness's resolution is: **it can certify a 250 ms figure to 5% on a real
+clock and it cannot certify a 100 ms one.** The gate that admits latency figures
+is the deterministic arm, which is correct — it is measuring the *attribution*
+logic, not the OS — but a report that quoted only the passing arm would be
+claiming a resolution the machine does not have.
+
+## 16. The in-process tier, live
+
+`scripts/run_audio_live.py --live` re-transcribes **every** variant of every
+runnable row against the live API, discarding the committed cassette on the way
+in, then diffs the two passes digest by digest. The generator deliberately will
+not do this — it skips any digest it already holds, which is right for a recorder
+and means a re-run of it makes no live calls at all. "I ran it live" would
+otherwise be a claim about a replay.
+
+**33 of 33 paired variants reproduced byte-identically.** 66 live Deepgram
+requests over 227.7 s of audio. Zero ElevenLabs characters.
+
+That is the result that licenses every other number in this document. Two
+independent live observations of the same audio returned the same string every
+time, so the cassette is a measurement of the recogniser rather than a snapshot of
+one response, and the offline tier is a regression test rather than a recording.
+
+(33 rather than 36: three rows declare a perturbation that *is* one of their
+ladder's rungs, so the row variant and that rung are the same audio and the same
+digest. Deduplicated by digest, not by label.)
+
+### The tier's verdict
+
+**16 of 16 runnable rows passed.** 18 rows total: 16 runnable, 1 blocked, 1
+untestable. The untestable row is `passed=None`, never `True` and never `False`.
+
+| category | result | rows in tier |
+|---|---|---|
+| digits-and-names | 5/5 runnable | 5 |
+| multilingual | 4/4 runnable | 4 |
+| silence | 3/3 runnable | 3 |
+| line-quality | 3/3 runnable | 3 |
+| barge-in | 1/1 runnable | 2 (one blocked) |
+| untestable | 0/0 runnable | 1 |
+
+### Field-level results, because a WER would have hidden every one of these
+
+**14 of 16 declared field checks captured.** Both misses were *predicted* by their
+rows, which is why the tier reads 16/16 while the field count reads 14/16 — the
+two figures measure different things and both are printed.
+
+| row | conf | fields |
+|---|---|---|
+| `audio-capture-postcode` | 0.998 | postcode ✓ |
+| `audio-capture-date-of-birth` | 1.000 | dob_day ✓ dob_month ✓ dob_year ✓ |
+| `audio-capture-spelled-surname` | 0.999 | surname ✓ |
+| `audio-capture-money-amount` | 1.000 | premium_gbp ✓ |
+| `audio-capture-confusable-names` | 0.848 | surname ✗ *(predicted)* |
+| `audio-bilingual-es-us-disclosure` | 1.000 | english_half ✓ spanish_half ✓ |
+| `audio-bilingual-es-us-regulator-verbatim` | 1.000 | FINRA ✓ |
+| `audio-hinglish-lakh-magnitude` | 0.996 | portfolio_inr ✓ |
+| `audio-sg-constructed-code-switch` | 1.000 | english_half ✓ mandarin_half ✗ *(predicted)* |
+
+`SW1A 1AA` was heard as `s w one a one a a` and scored **captured**, at 0.998.
+A word error rate against the written form would have called that row a failure.
+
+## 17. The silent-correction rate, and the mistake I made computing it
+
+**1 correction over 10 reconciled turns = 10.0 per 100 turns, 100% attributable,
+0 unattributable.** Production's equivalent reconciliation attributed 31.3%.
+
+And the single correction is not a mishearing:
+
+```
+turn 7: substitution 'पोर्टफोलियो' -> 'portfolio' (conf 0.996)  [cross-script]
+```
+
+The synthesiser's spoken form transliterates the English loanword into Devanagari;
+the recogniser writes it in Latin. Both are right about the word. Classified as
+**cross-script** and counted separately, so the honest headline is **0 recognition
+corrections over 10 turns** with the alphabet disagreement stated rather than
+buried.
+
+### The first version of this number was 416.7 per 100 turns
+
+I walked into the trap this repository has a document about. My first
+reconciliation used the clips' **input strings** as ground truth, so it compared
+`"SW1A 1AA"` against `"s w one a one a a"` and scored every spoken letter as an
+insertion — 50 corrections over 12 turns.
+
+It was absurd enough to catch. The point of writing it down is that a subtler
+version would not have been, and the fix is now a library function with the
+failure in its docstring rather than a habit:
+
+`lab.voice.suite.spoken_reference` takes the vendor's own `normalized_alignment`
+per clip and **declines, by name, the two clips that have no usable reference**:
+
+| clip | why it is declined |
+|---|---|
+| `confusable-forced` | `eleven_flash_v2` is the SSML model and not a spoken-form model. It has no spoken form at all, and its input string is *markup* — reconciling against it manufactured ten deletions out of `alphabet`, `cmu-arpabet` and the phoneme string. |
+| `mandarin-portfolio` | Its spoken form is **pinyin**: the vendor romanised the Mandarin while the audio stayed correct. `_is_romanised` declines it structurally — CJK in, no CJK out — and the guard now applies on the reconciliation path too, not just inside the synthesis engine. |
+
+Both rows are **listed as declined**, never counted as zero. A reconciliation
+whose denominator silently absorbs the rows it could not check has the same defect
+as a naked percentage. 10 rows reconciled, 2 declined, and the reasons are in the
+artefact.
+
+## 18. The line-quality ladder: where capture actually broke
+
+| axis | parameter | held to | broke at |
+|---|---|---|---|
+| `add_noise` | SNR | **0 dB** | **−5 dB** |
+| `packet_loss` | loss rate | **70%** | **90%** |
+| `telephone_band` | 300–3400 Hz | captured at the only rung | — |
+
+Rung by rung, `add_noise`: 20 ✓ 15 ✓ 10 ✓ 6 ✓ 3 ✓ 0 ✓ **−5 ✗** −10 ✗ −15 ✗.
+`packet_loss`: 1% ✓ 2% ✓ 5% ✓ 10% ✓ 20% ✓ 30% ✓ 50% ✓ 70% ✓ **90% ✗**.
+
+**The dangerous rung is the milder one.** At −5 dB the postcode comes back as
+`SW1A 1AF` — a *plausible wrong address*, confidently delivered. At −10 dB the
+transcript is empty and the failure is obvious. A pass/fail ladder loses that
+distinction entirely; the actionable output is the pair (held-to, broke-at) and
+the *content* of the break.
+
+## 19. Silence: the timeout fired at the right threshold, and one label is false
+
+Reference bug 1, and the reason this tier exists. All three rows PASS, and each
+asserts `declared_matches_measured` **before** its verdict — without that, a
+verdict is a test of the harness's padding arithmetic rather than of the timeout.
+
+| row | declared | measured | threshold | fires | verdict | reason accurate? |
+|---|---|---|---|---|---|---|
+| `audio-silence-under-threshold` | 5.9 s | **5.900 s** | 6.0 s | no | `would_not_fire` | n/a |
+| `audio-silence-over-threshold` | 6.1 s | **6.100 s** | 6.0 s | yes | `caller_silent` | **true** |
+| `audio-silence-boundary-misattributed` | 2.0 s | **2.000 s** | 6.0 s | yes | `vad_false_silence` | **FALSE** |
+
+Two separate results. **The threshold resolves to the millisecond**: 5.900 s does
+not fire, 6.100 s does. And **the end reason can be wrong while the timeout is
+right** — the third row has a caller *talking through* a 2.000 s pause, the
+timeout fires anyway, and the label `caller_silent` would be a lie. The row
+reports `vad_false_silence` and marks the accuracy of the label FALSE.
+
+That second column is the whole bug. A production system labelled calls
+`silence-timed-out` for weeks when the cause was VAD driving `user_state`; a
+harness that only asserted "did the timeout fire" would have passed every one of
+those calls. Firing correctly and *attributing* correctly are two assertions, and
+only the second one catches this.
+
+## 20. The control-arm reading — the most important paragraph here
+
+Three failures, three different owners, and the only reason each is attributable
+is that a control arm ran beside it.
+
+**es-US versus en-SG: the vendor.** The Spanish row captured both halves at
+confidence 1.000, including `FINRA` surviving untranslated inside a Spanish
+sentence. The Singapore row, on the same voice, the same model, the same
+recogniser configuration and the same `multi` code-switching setting, **lost the
+Mandarin clause entirely** — and returned confidence 1.000 on the English that
+remained. One arm works and one does not, with only the language pair varying.
+That is a **vendor capability boundary**, not an agent defect and not a harness
+defect: `zh` is outside Deepgram nova-3's ten-language `multi` set, and the
+control arm is what turns "Singapore failed" into "Singapore is outside the
+supported set". Without es-US, the same observation supports "our pipeline is
+broken", which is a week of debugging pointed at the wrong component.
+
+The confidence figure is the sharp end. **1.000 on a transcript with a clause
+missing** is worse than a low score, because a downstream consumer reading
+confidence would promote it.
+
+**The confusable-name row: the harness's own hypothesis was wrong.** This row
+plants a mispronunciation with SSML `<phoneme>` and predicts a capture failure. It
+got one — `Beattie`/`Beatty` both collapse to `beeti` at 0.848. But the
+**unforced control clip**, with no phoneme tag at all, collapses them too, into
+`bt`, at *higher* confidence. So the SSML proved nothing about that name: the
+recogniser cannot separate the pair regardless. Without the control, this suite
+would have published a planted cause for a failure that had a different one. The
+row still passes — it predicted a capture failure and got one — but the *reason* in
+the report is now the recogniser, not the plant.
+
+**The Hinglish row: the harness.** Devanagari transcribed perfectly; the row
+failed because `parse_magnitude` was ASCII-only and read a Devanagari numeral as
+containing no number. Same class as `wer.normalise` reducing Hindi to `""`. A
+harness defect masquerading as a product failure, and the thing that separated
+them was that the *transcript was correct* — visible only because ground truth
+was an input.
+
+**So: one vendor boundary, one recogniser limitation the harness had
+mis-attributed to itself, one harness bug.** Not one of the three is an agent
+defect, and no amount of staring at the failing row alone would have sorted them.
+
+## 21. yue-HK: untestable, and counted as neither
+
+`audio-hk-cantonese-untestable` — `passed=None`, `status="untestable"`,
+`language="yue"`. Not a pass, not a failure, not in any pass-rate denominator.
+
+Zero of the nine ElevenLabs models synthesise Cantonese, verified live. Deepgram
+*does* transcribe `zh-HK` and distinguishes it from Mandarin, so **recognition is
+ahead of synthesis and the gap is structural**, not a configuration miss.
+Remediation is committed with the row: Azure AI Speech or Google Cloud TTS both
+offer `yue-HK` neural voices behind the existing `TTSEngine` protocol — and
+neither moves Hong Kong past *monolingual*, because `zh-HK` is outside Deepgram's
+`multi` set, so an English/Cantonese switching row stays out of reach.
+
+The refusal **expires by itself**: it validates only while `yue` is absent from
+the synthesisable set. When a vendor ships it, the row fails and demands to be
+rewritten rather than sitting there as a permanent excuse.
+
+## 22. Word error rate: two named numbers, and neither is an agent's
+
+**This number is not an agent WER, and in this suite it structurally cannot be.**
+The audio is synthesised by this harness and transcribed by this harness. There is
+no system under test in the loop. Every figure below is the **TTS-intelligibility
+probe** — the instrument's own noise floor, the error a caller-side row inherits
+before the product has done anything.
+
+Scored on the only legitimate cell of the 2×2: spoken-form reference,
+`smart_format=false`.
+
+| | figure |
+|---|---|
+| **raw** error rate, mean over 14 rows | **0.4344** |
+| **normalised** error rate | **7 / 125 words = 0.0560** |
+
+Same audio. Same transcripts. **One canonicalisation step apart, and a factor of
+7.8.** That gap is the entire subject of
+`lab/voice/engines/WER_NORMALISATION.md`, now measured over the whole corpus
+rather than one sentence: the raw figure would have reported this pipeline as
+43% wrong while both vendors were working nearly perfectly.
+
+Per row, the worst raw offenders are exactly the rows whose content is digits:
+`readback-account-number` raw **0.900** / normalised **0.000**;
+`readback-postcode` raw 0.600 / normalised 0.000; `readback-name-spelled` raw
+0.727 / normalised 0.000. Every one of those is a *perfect* transcript. Which is
+why the digit and name rows assert **fields**, never a rate.
+
+The rows with genuine residual error are visible only in the normalised column:
+`readback-irish-name` 0.400 (2/5), `readback-sort-code` 0.200 (3/15),
+`switch-hi` 0.200 (1/5), `mono-ar-uae` 0.167 (1/6). Reporting one number would
+have hidden both facts — that the digit rows are clean, and that the Irish name is
+not.
+
+## 23. The transport tier, live — and two claims my own run falsified
+
+All three rows ran against a live LiveKit room. 0 characters; this tier publishes a
+committed clip and synthesises nothing.
+
+### Row 1 — the delivery gap, and the statistic that actually reproduces
+
+Reference bug 2. `e2e_latency` is agent-side and excludes network delivery, so the
+agent-side figure for these twelve turns is **0.0 ms by construction**.
+
+| session | n | mean | p50 | net mean | net p50 | stdev | queue corr | verdict |
+|---|---|---|---|---|---|---|---|---|
+| primary | 12 | 89.0 ms | 89.6 ms | 86.0 ms | 88.7 ms | 7.1 ms | 0.72 | PASS |
+| second | 12 | 137.6 ms | 90.1 ms | 104.7 ms | 90.1 ms | 72.2 ms | 0.99 | **FAIL** |
+| **live run (this one)** | 12 | 128.3 ms | **158.2 ms** | 87.9 ms | **84.7 ms** | 42.5 ms | 0.99 | PASS |
+
+Spreads over all three: means **48.6 ms**, medians **68.6 ms**, net means
+**18.7 ms**, **net medians 5.4 ms**.
+
+**The suite used to say "quote the median". My third session falsified it.** On two
+sessions the raw medians agreed to half a millisecond, which made the median look
+like the stable statistic. The third put them 68.6 ms apart and made the raw median
+the *least* stable of the four. What reproduces across all three is the **median
+net of the local send queue** — 88.7, 90.1, 84.7 ms, a **5.4 ms** spread, inside
+one 10 ms frame.
+
+The mechanism is a correction the row already had, for a different reason. That
+158.2 ms raw median sits beside a send-queue correlation of **0.99** and a net
+median of 84.7 ms: roughly **70 ms of it was this harness's own buffer filling**,
+not a network delivering late. Without the send-queue column, that session reads as
+a transport degrading by 76% and would have been the headline.
+
+Two things were wrong with how the old claim was defended, and both are now fixed:
+
+- The report **asserted** the interpretation in a fixed sentence beneath a computed
+  table. It now **computes** which of the four statistics has the tightest spread
+  and names that one, so the sentence cannot outlive the data above it.
+- The test that existed to catch exactly this **named two files**, so a
+  counterexample could land in the directory it was reading from without it
+  noticing. It now globs every committed session and fails if the tightest
+  statistic is not the one the document quotes.
+
+What does not vary, on any statistic in any session: the gap is nowhere near the
+0 ms an agent-side figure implies. For live in-call coaching, a suggestion arriving
+after the moment has passed is a failure and not a slow success — so the number the
+dashboard does not contain is the number that is the product risk.
+
+### Row 2 — the file ladder does not agree, and the naive comparison says it does
+
+| fill | injected | realised in file | transport adds | file adds | per unit (transport) | per unit (file) | ratio |
+|---|---|---|---|---|---|---|---|
+| `zero` | 18/71 (25.4%) | 16.7% | 13.6% | 14.1% | 0.54 | 0.85 | **1.57×** |
+| `hold` | 18/71 (25.4%) | 16.7% | 13.6% | 2.8% | 0.54 | 0.17 | **0.31×** |
+
+The two fill modes **bracket** reality — one 1.57× harsher, one 0.31× — so neither
+is the loss rate a real transport produces. Both DISAGREE, in both sessions
+(committed: 1.45× and 0.29×). The conclusion reproduces.
+
+The naive comparison — loaded silent fractions, no baseline, no dose correction —
+reads 31.7% against 23.5% and would have concluded disagreement *for the wrong
+reason*; correcting for each channel's own silence floor and for the dose each
+actually applied is what makes the numbers mean anything.
+
+### The 101 ms jitter claim was not causal, and my session proves it
+
+The document previously read: *"injected loss quadrupled the longest inter-arrival
+interval"* — 101.3 ms under injection against 24.7 ms in the loss-free session.
+
+| session | injected loss | mean abs dev | longest interval |
+|---|---|---|---|
+| `degradation.json` | 18/71 (25.4%) | 1.02 ms | **101.3 ms** |
+| `degradation-live-run.json` | 18/71 (25.4%) | 0.60 ms | **21.2 ms** |
+| loss-free (row 1's session) | none | 0.60 ms | 24.7 ms |
+
+**Same dose, 4.8× difference, and my session comes in *below* the loss-free
+control.** So the 101 ms hole was a network event during that session, not a
+consequence of the injection — and the original comparison was uncontrolled,
+because the two rows it compared came from *different sessions*, so treatment and
+session varied together.
+
+This is the third time a control arm has reversed a conclusion in this suite,
+after the confusable name and es-US, and the first time it did so to a claim that
+had already been written down. The measurement was right both times; the causal
+reading was available only because n was 1. A test now pins the corrected reading.
+
+What survives without a causal claim, and is the row's real finding: **jitter has
+no column for the file ladder at all.** A perturbed file has no time axis, so
+pacing is inexpressible in it at any rate. Structural gap, not a missing feature.
+
+### Row 3 — the transport recovers, the turn does not
+
+Reproduced closely across both sessions:
+
+| figure | committed | live run |
+|---|---|---|
+| frames pushed before the drop | 40 of 71 | 40 of 71 |
+| frames that arrived *after* the sender had gone | 4 | 4 |
+| drop → publisher reconnected | 910 ms | 867 ms |
+| drop → far side re-subscribed | 1092 ms | 1025 ms |
+| **listener heard nothing for** | **1800 ms** | **1711 ms** |
+| verdict | `recovered-turn-lost` | `recovered-turn-lost` |
+
+The remaining 31 frames were never sent and nothing retransmits them. The
+transport-level figure (1025 ms) **understates the hole in the conversation**
+(1711 ms) by two thirds of a second. A reconnect metric that stops at "the
+participant came back" scores a lost sentence as a success.
+
+Four frames arriving after the sender departed is why the analysis needs three
+buckets rather than two — jitter-buffer audio briefly outlives the connection that
+filled it. It reproduced exactly, in both sessions, which is what makes it a
+property rather than a quirk.
+
+## 24. Cost, and the counter that settled the unit question
+
+**This live run: 0 ElevenLabs characters, 0 credits.** Not a budget outcome — the
+live-run script has no code path to the synthesiser, and it refuses before its
+first API call if any clip is missing from the committed cache. A guard can be
+wrong about a price; code with no path to the vendor cannot be charged by it.
+Deepgram: 66 requests over 227.7 s, against a signup credit.
+
+| phase | characters | credits (local ledger) |
+|---|---|---|
+| Probe | 108 | 82 |
+| Engine corpus | 655 | 345 |
+| Suite corpus | 371 | 188 |
+| **This live run** | **0** | **0** |
+| **Total** | **1,134** | **615** |
+
+The vendor counter now reads **860 of 10,000**, and it rose from 705 to 860
+**during a session that made zero synthesis requests**. That is a cleaner proof of
+the lag than the original observation was: a counter that moves while nothing is
+being spent cannot be polled as a cost control, and the local credit ledger is the
+only thing that can refuse a request before it is made.
+
+Reconciled against the pre-work baseline of 284, the work's own contribution is
+**860 − 284 = 576 credits** measured, against **615** ledgered locally — the
+ledger is **6.8% over**, because it rounds every line up. That is the direction a
+cost guard should err in, and it revises the earlier 1.5% figure, which was taken
+before the counter had finished settling.
+
+**Remaining: ~9,140 of the 10,000 allowance**, resetting 2026-09-23. Nothing was
+cut for budget, in this phase or any earlier one.
+
+## 25. Running the live pass
+
+```
+# the gate — must pass before any latency figure is reportable
+python -m lab.voice.calibration
+python -m lab.voice.calibration --clock real     # the scheduling arm; fails at 100 ms
+
+# the report, from committed fixtures, no keys, no network
+python -m scripts.run_audio_live
+
+# the live second pass: re-transcribes every variant, 0 synthesis characters
+LAB_LIVE_STT=1 DEEPGRAM_API_KEY=… python -m scripts.run_audio_live --live
+
+# the transport tier
+python -m lab.voice.transport.report
+LAB_LIVE_TRANSPORT=1 python -m scripts.make_transport_fixtures --suffix="-my-session"
+```
+
+| artefact | what |
+|---|---|
+| `fixtures/audio/cloud/audio_suite_live_pass.json` | the second live transcription of all 33 variants, with the digest-by-digest diff |
+| `fixtures/audio/cloud/audio_suite_report.json` | every figure in §16–§22, derived by replay |
+| `fixtures/audio/transport/{delivery-gap,degradation,lifecycle}-live-run.json` | the three live transport sessions, plus their traces |
+
+Variable **names** only, everywhere. No key value is logged, committed, or written
+into a trace or a fixture.

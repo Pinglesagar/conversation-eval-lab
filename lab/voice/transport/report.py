@@ -87,6 +87,23 @@ SETTLE_S: float = 0.6
 FILL_MODES: tuple[str, ...] = ("zero", "hold")
 
 
+def _display_path(path: Path) -> str:
+    """A repo-relative path where possible, the full path otherwise.
+
+    `build_report(fixture_dir=...)` exists so a caller can score recordings that
+    live somewhere else — a scratch directory holding one session, say, to compare
+    it against the committed set. It could not: both call sites used a bare
+    `relative_to(REPO_ROOT)`, which raises `ValueError` for any path outside the
+    tree, so the parameter worked only for the one directory it defaulted to. A
+    configurable input that rejects every value but its default is not
+    configurable; this makes the display fall back instead of raising.
+    """
+    try:
+        return str(path.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(path)
+
+
 def ladder_side(
     recording: TransportRecording, *, fill: str, seed: int = 20260822
 ) -> tuple[list[float] | None, list[float] | None, float | None, str | None]:
@@ -355,7 +372,8 @@ class TransportReport(BaseModel):
         if report.other_sessions:
             block.append(
                 "Run-to-run spread. A live figure from one session is one session, so "
-                "the same row was recorded again and both recordings are committed:"
+                "the same row was recorded again on separate occasions and every "
+                "recording is committed — including the one that fails:"
             )
             block.append("")
             block.append(
@@ -366,6 +384,8 @@ class TransportReport(BaseModel):
             sessions.extend(report.other_sessions)
             means: list[float] = []
             medians: list[float] = []
+            net_means: list[float] = []
+            net_medians: list[float] = []
             failures = 0
             for label, other in sessions:
                 verdict = evaluate_delivery_gap(report.row, other).verdict
@@ -379,6 +399,12 @@ class TransportReport(BaseModel):
                 p50 = other.distribution.quantile(0.50).value_s
                 if p50 is not None:
                     medians.append(p50 * 1000.0)
+                if other.net_mean_ms is not None:
+                    net_means.append(other.net_mean_ms)
+                if other.net_distribution is not None:
+                    net_p50 = other.net_distribution.quantile(0.50).value_s
+                    if net_p50 is not None:
+                        net_medians.append(net_p50 * 1000.0)
                 block.append(
                     f"| {label} | {other.distribution.n} | {other.mean_ms:.1f} ms | "
                     + (f"{p50 * 1000:.1f} ms | " if p50 is not None else "n/a | ")
@@ -391,21 +417,52 @@ class TransportReport(BaseModel):
                 )
             block.append("")
             if len(means) > 1:
-                spread = max(means) - min(means)
-                block.append(
-                    f"The session **means** differ by {spread:.1f} ms "
-                    f"({spread / min(means):.0%} of the smaller)."
-                )
-                if len(medians) > 1:
-                    median_spread = max(medians) - min(medians)
+                # Which statistic to quote is *computed*, over every committed
+                # session, and not asserted. It was asserted once — "quote the
+                # median" — on the strength of two sessions whose medians happened
+                # to agree to half a millisecond. A third live session put the raw
+                # medians 68.6 ms apart and turned that sentence into a claim the
+                # table beneath it contradicted. A narrative line that does not
+                # recompute is a stale finding waiting for its first counterexample.
+                # (plural, singular, values) — both grammatical forms are carried
+                # rather than derived, because deriving one from the other needs a
+                # rule that is wrong for "medians net of the local send queue".
+                candidates = [
+                    ("means", "mean", means),
+                    ("medians", "median", medians),
+                    (
+                        "means net of the local send queue",
+                        "mean net of the local send queue",
+                        net_means,
+                    ),
+                    (
+                        "medians net of the local send queue",
+                        "median net of the local send queue",
+                        net_medians,
+                    ),
+                ]
+                spreads = [
+                    (plural, singular, max(values) - min(values), values)
+                    for plural, singular, values in candidates
+                    if len(values) == len(means)
+                ]
+                if len(spreads) > 1:
+                    for plural, _, value, _values in spreads:
+                        block.append(f"The session **{plural}** span {value:.1f} ms.")
+                        block.append("")
+                    _, best, best_spread, best_values = min(
+                        spreads, key=lambda item: item[2]
+                    )
+                    _, worst, worst_spread, _ = max(spreads, key=lambda item: item[2])
                     block.append(
-                        f" The session **medians** differ by {median_spread:.1f} ms. "
-                        "That asymmetry is the finding, and it decides which statistic "
-                        "this row should be quoted by: the typical delivery gap "
-                        "reproduces across sessions, while the mean and the tail do "
-                        "not, because a session can contain a stall that drags them and "
-                        "leaves the median where it was. Quote the median; read the "
-                        "spread as the risk."
+                        f"Over {len(means)} live session(s) the statistic that actually "
+                        f"reproduces is the **{best}** — {best_spread:.1f} ms across all "
+                        f"of them, against {worst_spread:.1f} ms for the {worst} — so "
+                        f"that is the figure this row should be quoted by: "
+                        f"{', '.join(f'{v:.1f}' for v in best_values)} ms. The raw "
+                        "statistics carry this harness's own send buffer, which is why a "
+                        "session can look like a degrading network and turn out to be our "
+                        "queue filling. Read the spread as the risk."
                     )
                 block.append("")
                 block.append(
@@ -535,7 +592,7 @@ def build_report(
                         category=row.category,
                         verdict="NOT-RUN",
                         reasons=[
-                            f"no committed recording at {path.relative_to(REPO_ROOT)}; "
+                            f"no committed recording at {_display_path(path)}; "
                             "run `python -m scripts.make_transport_fixtures` against a "
                             "live room"
                         ],
@@ -549,7 +606,7 @@ def build_report(
         report = RowReport(
             row=row,
             outcome=RowOutcome(row_id=row.id, category=row.category, verdict="NOT-RUN"),
-            recording_path=str(path.relative_to(REPO_ROOT)),
+            recording_path=_display_path(path),
             recording_summary=recording.describe(),
         )
 

@@ -104,25 +104,48 @@ section makes unavoidable.
 
 ### Run-to-run spread, committed rather than caveated
 
-The same row was recorded twice and **both recordings are committed**, because a
-live figure whose repeatability is not in the repository is a figure a reader has
-to take on trust.
+The same row has now been recorded three times and **every recording is
+committed**, because a live figure whose repeatability is not in the repository is
+a figure a reader has to take on trust.
 
-| session | n | mean | p50 | stdev | row verdict |
-|---|---|---|---|---|---|
-| primary | 12 | 89.0 ms | 89.6 ms | 7.1 ms | PASS |
-| second session | 12 | 137.6 ms | 90.1 ms | 72.2 ms | **FAIL** |
+| session | n | mean | p50 | net mean | net p50 | stdev | queue corr | row verdict |
+|---|---|---|---|---|---|---|---|---|
+| primary | 12 | 89.0 ms | 89.6 ms | 86.0 ms | 88.7 ms | 7.1 ms | 0.72 | PASS |
+| second session | 12 | 137.6 ms | 90.1 ms | 104.7 ms | 90.1 ms | 72.2 ms | 0.99 | **FAIL** |
+| live run | 12 | 128.3 ms | **158.2 ms** | 87.9 ms | 84.7 ms | 42.5 ms | 0.99 | PASS |
 
-The **means differ by 48.6 ms. The medians differ by 0.5 ms.** That asymmetry is
-the finding, and it decides how the row should be quoted: the typical delivery gap
-reproduces across sessions to within half a millisecond, while the mean and the
-tail do not, because a session can contain a stall that drags them and leaves the
-median where it was. Quote the median; read the spread as the risk. A test pins
-this, so if a future pair of recordings breaks it, the claim in this paragraph
-fails a build.
+Spreads over all three: means **48.6 ms**, medians **68.6 ms**, means net of the
+local send queue **18.7 ms**, medians net of the local send queue **5.4 ms**.
+
+**This paragraph used to say "quote the median", and the third session falsified
+it.** On two sessions the raw medians agreed to half a millisecond, which made the
+median look like the stable statistic; the third put the raw medians 68.6 ms apart
+and made it the *least* stable of the four. What actually reproduces across all
+three sessions is the **median net of the local send queue**: 88.7, 90.1, 84.7 ms,
+a 5.4 ms spread — well inside one 10 ms frame.
+
+The mechanism is the correction the row already recorded for a different reason.
+The third session's raw median of 158.2 ms sits beside a queue correlation of
+**0.99** and a net median of 84.7 ms: roughly 70 ms of that figure was this
+harness's own send buffer filling, not a network delivering late. Without the
+send-queue column, that session reads as a transport degrading by 76% and would
+have been the headline. Quote the net median; read the spread as the risk.
+
+Two things were wrong with how the old claim was defended, and both are fixed:
+
+* The report **asserted** the interpretation in a fixed sentence beneath a
+  computed table. It now computes which of the four statistics has the tightest
+  spread and names that one, so the sentence cannot outlive the data underneath
+  it.
+* The test that existed to catch exactly this **named two files** and compared
+  them, so a counterexample could land in the directory it was reading from
+  without it noticing. It now globs every committed session, and it fails if the
+  tightest statistic is not the one this document quotes.
 
 The second session **fails the row's own scatter ceiling** and is kept anyway. An
 assertion no recorded session has ever tripped is an assertion nobody has tested.
+Note that the failing session and the session with the largest raw median are
+*different* sessions — which is itself an argument for keeping all three.
 
 A third session was recorded during development (mean 105.2 ms) and not kept: it
 was produced by code that has since changed, and a recording that the shipped code
@@ -182,17 +205,32 @@ the dose. This is the same shape as the naive control in
 Pacing at the receiver, from this row's own session — 465 frames, 464 intervals,
 nominal 10 ms:
 
-| session | mean abs deviation | longest interval | late frames |
-|---|---|---|---|
-| under 25.4% injected loss | 1.02 ms | **101.3 ms** | 1/464 (0.2%) |
-| loss-free (row 1's session) | 0.60 ms | 24.7 ms | 6/2285 (0.3%) |
+| session | injected loss | mean abs deviation | longest interval | late frames |
+|---|---|---|---|---|
+| `degradation.json` | 18/71 (25.4%) | 1.02 ms | **101.3 ms** | 1/464 (0.2%) |
+| `degradation-live-run.json` | 18/71 (25.4%) | 0.60 ms | **21.2 ms** | 1/464 (0.2%) |
+| loss-free (row 1's session) | none | 0.60 ms | 24.7 ms | 6/2285 (0.3%) |
 
-Injected loss quadrupled the longest inter-arrival interval — a 101 ms hole in
-delivery where the loss-free session's worst was 25 ms. There is no column for the
-file ladder in that table. A perturbed file has no
-time axis, so jitter — the thing that actually degrades a live call, and the thing
-a jitter buffer exists to absorb — is inexpressible in it at any rate. That is a
-structural gap in the ladder, not a missing feature.
+**An earlier version of this table had two rows and drew a causal conclusion from
+them: "injected loss quadrupled the longest inter-arrival interval". A second live
+session of the same row, at the identical injected rate, falsifies it.** 21.2 ms
+against 101.3 ms, with the same 18 of 71 frames withheld — and *below* the
+loss-free session's 24.7 ms. So the 101 ms hole was a network event that happened
+during that session, not a consequence of the loss injection, and the original
+comparison was not controlled: the two rows it compared came from different
+sessions, so session and treatment varied together.
+
+This is the third time in this suite that a control arm has reversed a
+conclusion — after the confusable-name clip and the es-US arm — and the first
+time it did so to a claim that had already been written down. The measurement was
+right both times; the causal reading was available only because n was 1.
+
+What survives, and does not need a causal claim: **jitter has no column for the
+file ladder at all.** A perturbed file has no time axis, so pacing — the thing
+that actually degrades a live call, and the thing a jitter buffer exists to
+absorb — is inexpressible in it at any rate. That is a structural gap in the
+ladder rather than a missing feature, and it holds regardless of which session's
+longest interval you quote.
 
 ---
 

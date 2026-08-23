@@ -1,0 +1,13 @@
+{"actor": "system", "engine": null, "kind": "session_start", "payload": {"adapter": "voice:transport", "onset_threshold_rms": 0.02, "scenario_id": "audio-transport-lifecycle", "session_id": "lab-transport-2e3ebd5e", "transport": "webrtc:livekit", "url_digest": "236755554af0"}, "ts": 0.401653166860342}
+{"actor": "system", "engine": "transport:webrtc/livekit", "kind": "transport_connected", "payload": {"attempt": 1, "observer": "receiver", "participant": "receiver"}, "ts": 0.401653166860342}
+{"actor": "system", "engine": "transport:webrtc/livekit", "kind": "transport_connected", "payload": {"attempt": 1, "observer": "publisher", "participant": "agent"}, "ts": 0.8251397500280291}
+{"actor": "agent", "engine": "clip:agent-4133d85a3343.opus", "kind": "agent_audio_first_byte", "payload": {"turn": 1}, "ts": 1.6186964169610292}
+{"actor": "system", "engine": "transport:webrtc/livekit", "kind": "audio_delivered", "payload": {"frames": 76, "participant": "receiver", "turn": 1}, "ts": 1.7030576248653233}
+{"actor": "agent", "engine": "clip:agent-4133d85a3343.opus", "kind": "agent_audio_complete", "payload": {"num_bytes": 25600, "turn": 1}, "ts": 2.3584887499455363}
+{"actor": "system", "engine": "transport:webrtc/livekit", "kind": "transport_disconnected", "payload": {"observer": "publisher", "participant": "agent", "reason": "dropped_mid_utterance"}, "ts": 2.4168083749245852}
+{"actor": "system", "engine": "transport:webrtc/livekit", "kind": "transport_disconnected", "payload": {"observer": "receiver", "participant": "agent", "reason": "participant_left"}, "ts": 2.4176208339631557}
+{"actor": "system", "engine": "transport:webrtc/livekit", "kind": "transport_connected", "payload": {"attempt": 2, "observer": "publisher", "participant": "agent"}, "ts": 3.2838800840545446}
+{"actor": "agent", "engine": "clip:agent-4133d85a3343.opus", "kind": "agent_audio_first_byte", "payload": {"turn": 2}, "ts": 4.083254833938554}
+{"actor": "system", "engine": "transport:webrtc/livekit", "kind": "audio_delivered", "payload": {"frames": 264, "participant": "receiver", "turn": 2}, "ts": 4.16319345892407}
+{"actor": "agent", "engine": "clip:agent-4133d85a3343.opus", "kind": "agent_audio_complete", "payload": {"num_bytes": 45440, "turn": 2}, "ts": 5.442685791989788}
+{"actor": "system", "engine": "transport:webrtc/livekit", "kind": "session_end", "payload": {"reason": "completed", "runs_delivered": 2, "turns": 2}, "ts": 5.442685791989788}

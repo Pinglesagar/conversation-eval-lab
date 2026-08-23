@@ -37,9 +37,11 @@ from lab.voice.suite import (
     assemble_audio,
     clip_for,
     corpus_cost,
+    is_cross_script,
     parse_magnitude,
     run_row,
     run_tier,
+    spoken_reference,
     tier_summary,
 )
 from scenarios.audio import tier, validate_tier
@@ -528,3 +530,138 @@ def test_an_untestable_row_cannot_be_assembled(rows) -> None:
     scenario = next(s for s in rows if s.audio and s.audio.untestable)
     with pytest.raises(ValueError, match="no audio to assemble"):
         assemble_audio(scenario, cache=ClipCache())
+
+
+# --------------------------------------------------------------------------- #
+# The reference a reconciliation is allowed to use
+# --------------------------------------------------------------------------- #
+
+
+def test_the_reference_is_the_spoken_form_and_never_the_input_string() -> None:
+    """The one that turned 416.7 corrections per 100 turns into 1.
+
+    A reconciliation of this tier built on the clips' *input* strings reported
+    416.7 silent corrections per 100 turns, because it compared `"SW1A 1AA"`
+    against `"s w one a one a a"` and scored every spoken letter as an insertion.
+    The number was absurd enough to notice; the point of this test is that a
+    smaller version of the same mistake would not be.
+    """
+    cache = ClipCache()
+    reference, why = spoken_reference(["postcode"], cache=cache)
+    assert why == "spoken-form"
+    assert reference is not None
+    # The spoken form, not the written one. Both facts asserted: the letters are
+    # spelled out, and the compact written form is absent.
+    assert "one" in reference.lower()
+    assert "SW1A" not in reference
+
+
+def test_a_clip_with_no_spoken_form_is_declined_by_name() -> None:
+    """`eleven_flash_v2` is the SSML model and not a spoken-form model.
+
+    Its input string is markup, so reconciling against it manufactures deletions
+    out of `alphabet` and `cmu-arpabet`. Declining is correct; declining *silently*
+    would hide a row from a denominator, so the reason names the clip and the
+    model.
+    """
+    reference, why = spoken_reference(["confusable-forced"], cache=ClipCache())
+    assert reference is None
+    assert "confusable-forced" in why
+    assert "eleven_flash_v2" in why
+
+
+def test_a_romanised_spoken_form_is_declined_on_the_reconciliation_path_too() -> None:
+    """The CJK inversion, guarded in a second place.
+
+    The vendor returns pinyin for the Mandarin clip while the audio is correct, so
+    the spoken form describes a different alphabet from the sound. The synthesis
+    engine already declines it; a reconciliation that read the sidecar directly
+    would inherit it, which is why the guard is applied here as well.
+    """
+    reference, why = spoken_reference(["mandarin-portfolio"], cache=ClipCache())
+    assert reference is None
+    assert "romanised" in why
+
+
+def test_a_cross_script_difference_is_not_counted_as_a_mishearing() -> None:
+    """`पोर्टफोलियो` against `portfolio` is an alphabet disagreement, not an error."""
+    assert is_cross_script("पोर्टफोलियो", "portfolio")
+    assert is_cross_script("投资", "investment")
+    # Same alphabet, genuinely different words: that is a mishearing and must count.
+    assert not is_cross_script("beattie", "beatty")
+    assert not is_cross_script("पंद्रह", "सोलह")
+    # A token with no letters at all cannot be classified either way.
+    assert not is_cross_script("1982", "1982")
+
+
+def test_every_runnable_capture_row_either_has_a_reference_or_says_why() -> None:
+    """No row may fall out of the reconciliation without a stated reason."""
+    cache = ClipCache()
+    stt = RecordedSTT(TranscriptCassette.load(FIXTURES / AUDIO_SUITE_CASSETTE))
+    for scenario in tier():
+        if scenario.audio_status() != "runnable":
+            continue
+        row = run_row(scenario, cache=cache, stt=stt, with_ladder=False)
+        if row.kind != "capture":
+            continue
+        reference, why = spoken_reference(row.clip_ids, cache=cache)
+        assert why, scenario.id
+        if reference is None:
+            # A refusal must name the clip it is refusing, so a reader can act.
+            assert any(clip_id in why for clip_id in row.clip_ids), scenario.id
+
+
+# --------------------------------------------------------------------------- #
+# The live second pass
+# --------------------------------------------------------------------------- #
+
+
+def test_the_live_second_pass_reproduced_the_committed_cassette() -> None:
+    """Whether the cassette is a measurement or a lucky snapshot.
+
+    `scripts/run_audio_live.py --live` re-transcribes every variant against the
+    live recogniser and ignores the cassette on the way in, so the two passes are
+    independent observations of the same audio. This asserts, from committed files
+    and with no key, that the second pass agreed with the first on every variant
+    it could pair — which is what licenses the offline tier to be quoted as a
+    measurement of the recogniser rather than of one HTTP response.
+
+    If a future pass disagrees, this fails and the disagreement is the finding.
+    """
+    path = FIXTURES / "audio_suite_live_pass.json"
+    if not path.is_file():
+        pytest.skip("no live second pass is committed")
+    payload = json.loads(path.read_text(encoding="utf-8"))
+
+    assert payload["elevenlabs_characters_spent"] == 0, (
+        "the live pass must not be able to spend synthesis credits; it never "
+        "constructs a synthesiser, so a non-zero figure here means it grew a path to one"
+    )
+    committed = json.loads(
+        (FIXTURES / AUDIO_SUITE_CASSETTE).read_text(encoding="utf-8")
+    )["entries"]
+
+    paired = [c for c in payload["comparisons"] if c["in_committed_cassette"]]
+    assert paired, "the live pass paired with nothing, so it compared nothing"
+    disagreements = [c for c in paired if not c["text_identical"]]
+    assert not disagreements, (
+        "the recogniser returned different text for identical audio across two live "
+        f"passes: {[(c['row_id'], c['variant']) for c in disagreements]}"
+    )
+    # And the pairing is real: every digest the live pass claims to have paired is
+    # actually a key of the committed cassette, with the same text recorded.
+    for comparison in paired:
+        entry = committed.get(comparison["digest"])
+        assert entry is not None, comparison["digest"]
+        assert entry["text"] == comparison["text_second_pass"]
+
+
+def test_the_live_pass_covered_every_runnable_row() -> None:
+    """A reproduction figure over a subset would be a coverage claim, not a check."""
+    path = FIXTURES / "audio_suite_live_pass.json"
+    if not path.is_file():
+        pytest.skip("no live second pass is committed")
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    covered = {c["row_id"] for c in payload["comparisons"]}
+    runnable = {s.id for s in tier() if s.audio_status() == "runnable"}
+    assert covered == runnable, f"not re-transcribed live: {sorted(runnable - covered)}"

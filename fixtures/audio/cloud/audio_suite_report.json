@@ -1,0 +1,654 @@
+{
+ "barge_in": [
+  {
+   "agent_duration_s": 3.29725,
+   "budget_ms": 300.0,
+   "overlap_s": 0.24,
+   "passed": true,
+   "row_id": "audio-barge-in-agent-yields",
+   "yield_ms": 240.0,
+   "yielded": true
+  }
+ ],
+ "blocked": [
+  {
+   "note": "blocked on trace event kinds nothing discovers: interruption_acknowledged, interruption_started. Reported as blocked, never as a pass",
+   "passed": null,
+   "row_id": "audio-barge-in-not-discovered"
+  }
+ ],
+ "by_category": {
+  "barge-in": {
+   "ids": [
+    "audio-barge-in-agent-yields",
+    "audio-barge-in-not-discovered"
+   ],
+   "passed": 1,
+   "result": "1/1 runnable",
+   "rows": 2,
+   "runnable": 1
+  },
+  "digits-and-names": {
+   "ids": [
+    "audio-capture-confusable-names",
+    "audio-capture-date-of-birth",
+    "audio-capture-money-amount",
+    "audio-capture-postcode",
+    "audio-capture-spelled-surname"
+   ],
+   "passed": 5,
+   "result": "5/5 runnable",
+   "rows": 5,
+   "runnable": 5
+  },
+  "line-quality": {
+   "ids": [
+    "audio-line-quality-noise-ladder",
+    "audio-line-quality-packet-loss-ladder",
+    "audio-line-quality-telephone-band"
+   ],
+   "passed": 3,
+   "result": "3/3 runnable",
+   "rows": 3,
+   "runnable": 3
+  },
+  "multilingual": {
+   "ids": [
+    "audio-bilingual-es-us-disclosure",
+    "audio-bilingual-es-us-regulator-verbatim",
+    "audio-hinglish-lakh-magnitude",
+    "audio-sg-constructed-code-switch"
+   ],
+   "passed": 4,
+   "result": "4/4 runnable",
+   "rows": 4,
+   "runnable": 4
+  },
+  "silence": {
+   "ids": [
+    "audio-silence-boundary-misattributed",
+    "audio-silence-over-threshold",
+    "audio-silence-under-threshold"
+   ],
+   "passed": 3,
+   "result": "3/3 runnable",
+   "rows": 3,
+   "runnable": 3
+  },
+  "untestable": {
+   "ids": [
+    "audio-hk-cantonese-untestable"
+   ],
+   "passed": 0,
+   "result": "0/0 runnable",
+   "rows": 1,
+   "runnable": 0
+  }
+ },
+ "cost": {
+  "characters_new": 371,
+  "clips_new": 7,
+  "clips_reused": 7,
+  "clips_total": 14,
+  "credits_avoided_by_reuse": 154,
+  "credits_if_nothing_reused": 342,
+  "credits_new": 188
+ },
+ "field_checks": {
+  "captured": 14,
+  "checks": 16,
+  "result": "14/16 declared field checks"
+ },
+ "field_level": [
+  {
+   "confidence": 1.0,
+   "control_all_captured": null,
+   "control_confidence": null,
+   "control_transcript": null,
+   "expected_capture": true,
+   "fields": {
+    "english_half": true,
+    "spanish_half": true
+   },
+   "numeric": {},
+   "numeric_seen": {},
+   "passed": true,
+   "row_id": "audio-bilingual-es-us-disclosure",
+   "transcript": "this call is recorded esta llamada se graba por motivos de cumplimiento",
+   "verbatim": {}
+  },
+  {
+   "confidence": 1.0,
+   "control_all_captured": null,
+   "control_confidence": null,
+   "control_transcript": null,
+   "expected_capture": true,
+   "fields": {},
+   "numeric": {},
+   "numeric_seen": {},
+   "passed": true,
+   "row_id": "audio-bilingual-es-us-regulator-verbatim",
+   "transcript": "finra exige que le informemos del coste total antes de continuar",
+   "verbatim": {
+    "FINRA": true
+   }
+  },
+  {
+   "confidence": 0.8483887,
+   "control_all_captured": false,
+   "control_confidence": 0.99609375,
+   "control_transcript": "is that bt or bt",
+   "expected_capture": false,
+   "fields": {
+    "surname": false
+   },
+   "numeric": {},
+   "numeric_seen": {},
+   "passed": true,
+   "row_id": "audio-capture-confusable-names",
+   "transcript": "is that beeti or beeti",
+   "verbatim": {}
+  },
+  {
+   "confidence": 1.0,
+   "control_all_captured": null,
+   "control_confidence": null,
+   "control_transcript": null,
+   "expected_capture": true,
+   "fields": {
+    "dob_day": true,
+    "dob_month": true,
+    "dob_year": true
+   },
+   "numeric": {},
+   "numeric_seen": {},
+   "passed": true,
+   "row_id": "audio-capture-date-of-birth",
+   "transcript": "date of birth the fourteenth of march nineteen eighty two",
+   "verbatim": {}
+  },
+  {
+   "confidence": 1.0,
+   "control_all_captured": null,
+   "control_confidence": null,
+   "control_transcript": null,
+   "expected_capture": true,
+   "fields": {},
+   "numeric": {
+    "premium_gbp": true
+   },
+   "numeric_seen": {
+    "premium_gbp": 4250.0
+   },
+   "passed": true,
+   "row_id": "audio-capture-money-amount",
+   "transcript": "the premium is four thousand two hundred and fifty pounds",
+   "verbatim": {}
+  },
+  {
+   "confidence": 0.9980469,
+   "control_all_captured": null,
+   "control_confidence": null,
+   "control_transcript": null,
+   "expected_capture": true,
+   "fields": {
+    "postcode": true
+   },
+   "numeric": {},
+   "numeric_seen": {},
+   "passed": true,
+   "row_id": "audio-capture-postcode",
+   "transcript": "the postcode is s w one a one a a",
+   "verbatim": {}
+  },
+  {
+   "confidence": 0.99902344,
+   "control_all_captured": null,
+   "control_confidence": null,
+   "control_transcript": null,
+   "expected_capture": true,
+   "fields": {
+    "surname": true
+   },
+   "numeric": {},
+   "numeric_seen": {},
+   "passed": true,
+   "row_id": "audio-capture-spelled-surname",
+   "transcript": "my name is priya gupta that's g u p t a",
+   "verbatim": {}
+  },
+  {
+   "confidence": 0.99560547,
+   "control_all_captured": null,
+   "control_confidence": null,
+   "control_transcript": null,
+   "expected_capture": true,
+   "fields": {},
+   "numeric": {
+    "portfolio_inr": true
+   },
+   "numeric_seen": {
+    "portfolio_inr": 1500000.0
+   },
+   "passed": true,
+   "row_id": "audio-hinglish-lakh-magnitude",
+   "transcript": "मेरा portfolio अब पंद्रह लाख का है",
+   "verbatim": {}
+  },
+  {
+   "confidence": 0.9980469,
+   "control_all_captured": null,
+   "control_confidence": null,
+   "control_transcript": null,
+   "expected_capture": true,
+   "fields": {
+    "postcode": true
+   },
+   "numeric": {},
+   "numeric_seen": {},
+   "passed": true,
+   "row_id": "audio-line-quality-noise-ladder",
+   "transcript": "the postcode is s w one a one a a",
+   "verbatim": {}
+  },
+  {
+   "confidence": 0.9941406,
+   "control_all_captured": null,
+   "control_confidence": null,
+   "control_transcript": null,
+   "expected_capture": true,
+   "fields": {
+    "postcode": true
+   },
+   "numeric": {},
+   "numeric_seen": {},
+   "passed": true,
+   "row_id": "audio-line-quality-packet-loss-ladder",
+   "transcript": "the postcode is s w one a one a a",
+   "verbatim": {}
+  },
+  {
+   "confidence": 0.9980469,
+   "control_all_captured": null,
+   "control_confidence": null,
+   "control_transcript": null,
+   "expected_capture": true,
+   "fields": {
+    "postcode": true
+   },
+   "numeric": {},
+   "numeric_seen": {},
+   "passed": true,
+   "row_id": "audio-line-quality-telephone-band",
+   "transcript": "the postcode is s w one a one a a",
+   "verbatim": {}
+  },
+  {
+   "confidence": 1.0,
+   "control_all_captured": null,
+   "control_confidence": null,
+   "control_transcript": null,
+   "expected_capture": false,
+   "fields": {
+    "english_half": true,
+    "mandarin_half": false
+   },
+   "numeric": {},
+   "numeric_seen": {},
+   "passed": true,
+   "row_id": "audio-sg-constructed-code-switch",
+   "transcript": "i want to check my portfolio",
+   "verbatim": {}
+  }
+ ],
+ "ladders": [
+  {
+   "axis": "add_noise",
+   "broke_at": -5.0,
+   "captured": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false
+   ],
+   "description": "add_noise: held to snr_db 0.0, broke at -5.0",
+   "held_to": 0.0,
+   "parameter": "snr_db",
+   "row_id": "audio-line-quality-noise-ladder",
+   "rungs": [
+    20.0,
+    15.0,
+    10.0,
+    6.0,
+    3.0,
+    0.0,
+    -5.0,
+    -10.0,
+    -15.0
+   ]
+  },
+  {
+   "axis": "packet_loss",
+   "broke_at": 0.9,
+   "captured": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false
+   ],
+   "description": "packet_loss: held to loss_rate 0.7, broke at 0.9",
+   "held_to": 0.7,
+   "parameter": "loss_rate",
+   "row_id": "audio-line-quality-packet-loss-ladder",
+   "rungs": [
+    0.01,
+    0.02,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9
+   ]
+  },
+  {
+   "axis": "telephone_band",
+   "broke_at": null,
+   "captured": [
+    true
+   ],
+   "description": "telephone_band: captured at every rung down to 300.0",
+   "held_to": 300.0,
+   "parameter": "low_hz",
+   "row_id": "audio-line-quality-telephone-band",
+   "rungs": [
+    300.0
+   ]
+  }
+ ],
+ "note": "Assembled by replaying the committed cassette, so every figure here is reproducible with each key unset. The live second pass is a separate file; this one is the tier's result.",
+ "silence": [
+  {
+   "declared_matches_measured": true,
+   "declared_pause_s": 2.0,
+   "description": "timeout at 6.0s and the label 'silence-timed-out' is WRONG: speech was present in the window. The caller was talking and the agent could not tell. Remedy: fix turn detection — raising the timeout only postpones this",
+   "expected_reason_accurate": false,
+   "expected_verdict": "vad_false_silence",
+   "fires": true,
+   "measured_silence_s": 2.0,
+   "passed": true,
+   "reason_is_accurate": false,
+   "row_id": "audio-silence-boundary-misattributed",
+   "threshold_s": 6.0,
+   "verdict": "vad_false_silence"
+  },
+  {
+   "declared_matches_measured": true,
+   "declared_pause_s": 6.1,
+   "description": "timeout at 6.0s and the label is CORRECT: 6.10s of measured silence with no speech in the window. Remedy: raise the timeout or prompt the caller",
+   "expected_reason_accurate": true,
+   "expected_verdict": "caller_silent",
+   "fires": true,
+   "measured_silence_s": 6.1000000000000005,
+   "passed": true,
+   "reason_is_accurate": true,
+   "row_id": "audio-silence-over-threshold",
+   "threshold_s": 6.0,
+   "verdict": "caller_silent"
+  },
+  {
+   "declared_matches_measured": true,
+   "declared_pause_s": 5.9,
+   "description": "no timeout: longest silent run 5.90s is under the 6.0s threshold",
+   "expected_reason_accurate": false,
+   "expected_verdict": "would_not_fire",
+   "fires": false,
+   "measured_silence_s": 5.9,
+   "passed": true,
+   "reason_is_accurate": false,
+   "row_id": "audio-silence-under-threshold",
+   "threshold_s": 6.0,
+   "verdict": "would_not_fire"
+  }
+ ],
+ "silent_corrections": {
+  "attributed_fraction": 1.0,
+  "corrections": 1,
+  "cross_script_corrections": 1,
+  "cross_script_detail": [
+   "turn 7: substitution 'पोर्टफोलियो' -> 'portfolio' (conf 0.996)"
+  ],
+  "description": "silent corrections: 1 over 10 turn(s) = 10.0 per 100 turns, 100% attributable (reference: spoken-form). Production's equivalent reconciliation could attribute 31.3%, because production never knows what was really said; here the audio was synthesised, so ground truth is an input.",
+  "detail": [
+   "turn 7: substitution 'पोर्टफोलियो' -> 'portfolio' (conf 0.996)"
+  ],
+  "per_hundred_turns": 10.0,
+  "recognition_corrections": 0,
+  "recognition_per_hundred_turns": 0.0,
+  "reference_source": "spoken-form",
+  "rows_declined": [
+   {
+    "reason": "confusable-forced: no spoken form — eleven_flash_v2 does not honour apply_text_normalization, so the only available reference is the input string, which here is SSML markup",
+    "row_id": "audio-capture-confusable-names"
+   },
+   {
+    "reason": "mandarin-portfolio: the vendor romanised the spoken form, so it describes a different alphabet from the audio and is not a reference",
+    "row_id": "audio-sg-constructed-code-switch"
+   }
+  ],
+  "rows_reconciled": [
+   "audio-bilingual-es-us-disclosure",
+   "audio-bilingual-es-us-regulator-verbatim",
+   "audio-capture-date-of-birth",
+   "audio-capture-money-amount",
+   "audio-capture-postcode",
+   "audio-capture-spelled-surname",
+   "audio-hinglish-lakh-magnitude",
+   "audio-line-quality-noise-ladder",
+   "audio-line-quality-packet-loss-ladder",
+   "audio-line-quality-telephone-band"
+  ],
+  "turns_compared": 10,
+  "unattributable": 0
+ },
+ "source": "scripts/run_audio_live.py",
+ "summary": {
+  "blocked": [
+   "audio-barge-in-not-discovered"
+  ],
+  "by_category": {
+   "barge-in": 2,
+   "digits-and-names": 5,
+   "line-quality": 3,
+   "multilingual": 4,
+   "silence": 3,
+   "untestable": 1
+  },
+  "constructed_rows": [
+   "audio-sg-constructed-code-switch"
+  ],
+  "failed": 0,
+  "pass_rate": "16/16 runnable",
+  "passed": 16,
+  "rows": 18,
+  "runnable": 16,
+  "untestable": [
+   "audio-hk-cantonese-untestable"
+  ]
+ },
+ "untestable": [
+  {
+   "language": "yue",
+   "passed": null,
+   "remediation": [
+    "Azure AI Speech offers yue-HK neural voices; adding it behind the existing TTSEngine protocol moves Hong Kong from untestable to monolingual.",
+    "Google Cloud Text-to-Speech offers yue-HK voices; same integration point, same gain.",
+    "Neither moves Hong Kong further than monolingual, because zh-HK is outside Deepgram nova-3's ten-language code-switching set, so an English/Cantonese switching row stays out of reach on this recogniser."
+   ],
+   "row_id": "audio-hk-cantonese-untestable"
+  }
+ ],
+ "wer": {
+  "caveat": "Both sides of every figure below were produced by this harness: the audio by our TTS, the transcript by our STT. There is no agent in this loop at all, so none of these numbers is an agent word error rate. They are the instrument's noise floor — the error a caller-side row inherits before the system under test has done anything.",
+  "corpus_errors": 7,
+  "corpus_normalised_wer": 0.056,
+  "corpus_raw_wer_mean": 0.43435116470830754,
+  "corpus_reference_words": 125,
+  "corpus_rows_total": 14,
+  "corpus_rows_with_spoken_form_reference": 14,
+  "metric": "tts_intelligibility_probe",
+  "rows": [
+   {
+    "errors": 0,
+    "group": "read-back",
+    "language": "en",
+    "normalised_wer": 0.0,
+    "raw_wer": 0.7272727272727273,
+    "reference_source": "spoken-form",
+    "reference_words": 12,
+    "row_id": "readback-name-spelled"
+   },
+   {
+    "errors": 0,
+    "group": "read-back",
+    "language": "en",
+    "normalised_wer": 0.0,
+    "raw_wer": 0.5555555555555556,
+    "reference_source": "spoken-form",
+    "reference_words": 9,
+    "row_id": "readback-dob"
+   },
+   {
+    "errors": 0,
+    "group": "read-back",
+    "language": "en",
+    "normalised_wer": 0.0,
+    "raw_wer": 0.6,
+    "reference_source": "spoken-form",
+    "reference_words": 10,
+    "row_id": "readback-postcode"
+   },
+   {
+    "errors": 0,
+    "group": "read-back",
+    "language": "en",
+    "normalised_wer": 0.0,
+    "raw_wer": 0.9,
+    "reference_source": "spoken-form",
+    "reference_words": 7,
+    "row_id": "readback-account-number"
+   },
+   {
+    "errors": 2,
+    "group": "read-back",
+    "language": "en",
+    "normalised_wer": 0.4,
+    "raw_wer": 0.6,
+    "reference_source": "spoken-form",
+    "reference_words": 5,
+    "row_id": "readback-irish-name"
+   },
+   {
+    "errors": 3,
+    "group": "read-back",
+    "language": "en",
+    "normalised_wer": 0.2,
+    "raw_wer": 0.5,
+    "reference_source": "spoken-form",
+    "reference_words": 15,
+    "row_id": "readback-sort-code"
+   },
+   {
+    "errors": 0,
+    "group": "advisory",
+    "language": "en",
+    "normalised_wer": 0.0,
+    "raw_wer": 0.18181818181818182,
+    "reference_source": "spoken-form",
+    "reference_words": 12,
+    "row_id": "advisory-drawdown"
+   },
+   {
+    "errors": 0,
+    "group": "advisory",
+    "language": "en",
+    "normalised_wer": 0.0,
+    "raw_wer": 0.2,
+    "reference_source": "spoken-form",
+    "reference_words": 10,
+    "row_id": "advisory-suitability"
+   },
+   {
+    "errors": 0,
+    "group": "advisory",
+    "language": "en",
+    "normalised_wer": 0.0,
+    "raw_wer": 0.2857142857142857,
+    "reference_source": "spoken-form",
+    "reference_words": 7,
+    "row_id": "advisory-charges"
+   },
+   {
+    "errors": 0,
+    "group": "code-switched",
+    "language": "es",
+    "normalised_wer": 0.0,
+    "raw_wer": 0.2222222222222222,
+    "reference_source": "spoken-form",
+    "reference_words": 9,
+    "row_id": "switch-es"
+   },
+   {
+    "errors": 1,
+    "group": "code-switched",
+    "language": "hi",
+    "normalised_wer": 0.2,
+    "raw_wer": 0.4,
+    "reference_source": "spoken-form",
+    "reference_words": 5,
+    "row_id": "switch-hi"
+   },
+   {
+    "errors": 0,
+    "group": "code-switched",
+    "language": "fr",
+    "normalised_wer": 0.0,
+    "raw_wer": 0.2,
+    "reference_source": "spoken-form",
+    "reference_words": 10,
+    "row_id": "switch-fr"
+   },
+   {
+    "errors": 1,
+    "group": "monolingual",
+    "language": "ar",
+    "normalised_wer": 0.16666666666666666,
+    "raw_wer": 0.3333333333333333,
+    "reference_source": "spoken-form",
+    "reference_words": 6,
+    "row_id": "mono-ar-uae"
+   },
+   {
+    "errors": 0,
+    "group": "agent-voice",
+    "language": "en",
+    "normalised_wer": 0.0,
+    "raw_wer": 0.375,
+    "reference_source": "spoken-form",
+    "reference_words": 8,
+    "row_id": "agent-confirmation"
+   }
+  ]
+ }
+}

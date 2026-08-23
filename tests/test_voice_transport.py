@@ -619,44 +619,70 @@ def test_the_scatter_ceiling_has_actually_caught_a_session(
     assert any("scatter" in reason for reason in outcome.reasons)
 
 
-def test_the_median_reproduces_across_sessions_and_the_mean_does_not(
+def test_the_net_median_is_the_statistic_that_reproduces_across_every_session(
     gate: CalibrationReport,
 ) -> None:
-    """Which statistic this row should be quoted by, asserted rather than asserted-in-prose.
+    """Which statistic this row should be quoted by, over **every** committed session.
 
-    Two live sessions of the same row, both committed. Their means differ by tens
-    of milliseconds because one contained a stall; their medians differ by well
-    under a frame. So the typical delivery gap is reproducible and the mean is
-    not, which is why the report quotes the median and reads the spread as the
-    risk. If a future pair of recordings breaks this, the claim in
-    docs/AUDIO_TRANSPORT.md is wrong and this test says so.
+    This test used to name two recordings and compare them, and it concluded that
+    the raw median was the stable statistic because those two agreed to half a
+    millisecond. A third live session then put the raw medians 68.6 ms apart. The
+    conclusion was not wrong about the data it saw; the test was wrong to hardcode
+    which data it saw, so it could not notice a counterexample arriving in the
+    same directory it was reading from.
+
+    So it now globs. Every committed delivery-gap session is scored, four
+    statistics are compared over all of them, and the tightest wins. The claim in
+    docs/AUDIO_TRANSPORT.md is whatever this computes — and if a fourth session
+    changes it, this fails and the document is stale rather than the number being
+    quietly wrong.
     """
-    second = FIXTURE_DIR / "delivery-gap-second-session.json"
-    if not second.exists():  # pragma: no cover - the fixture is committed
-        pytest.skip("the second session recording is not committed")
-    first = delivery_gap(
-        TransportRecording.read(FIXTURE_DIR / "delivery-gap.json"), calibration=gate
-    )
-    other = delivery_gap(TransportRecording.read(second), calibration=gate)
-    assert first.distribution is not None and other.distribution is not None
+    paths = sorted(FIXTURE_DIR.glob("delivery-gap*.json"))
+    if len(paths) < 2:  # pragma: no cover - the fixtures are committed
+        pytest.skip("fewer than two delivery-gap recordings are committed")
 
-    medians = [
-        distribution.quantile(0.50).value_s
-        for distribution in (first.distribution, other.distribution)
-    ]
-    assert all(value is not None for value in medians)
-    median_spread_ms = abs(medians[0] - medians[1]) * 1000.0  # type: ignore[operator]
-    mean_spread_ms = abs((first.mean_ms or 0.0) - (other.mean_ms or 0.0))
+    means: list[float] = []
+    medians: list[float] = []
+    net_means: list[float] = []
+    net_medians: list[float] = []
+    for path in paths:
+        measurement = delivery_gap(TransportRecording.read(path), calibration=gate)
+        assert measurement.reportable, f"{path.name}: {measurement.refusal}"
+        assert measurement.distribution is not None
+        assert measurement.net_distribution is not None
+        assert measurement.mean_ms is not None
+        assert measurement.net_mean_ms is not None
+        raw_p50 = measurement.distribution.quantile(0.50).value_s
+        net_p50 = measurement.net_distribution.quantile(0.50).value_s
+        assert raw_p50 is not None and net_p50 is not None
+        means.append(measurement.mean_ms)
+        medians.append(raw_p50 * 1000.0)
+        net_means.append(measurement.net_mean_ms)
+        net_medians.append(net_p50 * 1000.0)
 
-    assert median_spread_ms < 10.0, "the typical gap should reproduce across sessions"
-    assert mean_spread_ms > median_spread_ms, (
-        "the mean is the statistic a stall moves; if it were the stabler of the two, "
-        "the report is quoting the wrong one"
+    def spread(values: list[float]) -> float:
+        return max(values) - min(values)
+
+    spreads = {
+        "mean": spread(means),
+        "median": spread(medians),
+        "net mean": spread(net_means),
+        "net median": spread(net_medians),
+    }
+    tightest = min(spreads, key=lambda name: spreads[name])
+    assert tightest == "net median", (
+        "docs/AUDIO_TRANSPORT.md and the report both quote the median net of the "
+        f"local send queue as the reproducible statistic; over {len(paths)} session(s) "
+        f"the tightest is now {tightest!r}. Spreads: {spreads}"
     )
-    # And both sessions still make the row's point, on either statistic.
-    for value in (*medians, first.mean_ms, other.mean_ms):
-        assert value is not None
-    assert min(medians) * 1000.0 > 10.0  # type: ignore[operator]
+    assert spreads["net median"] < 10.0, (
+        "the net median should reproduce to within a frame across sessions; "
+        f"it spans {spreads['net median']:.1f} ms over {len(paths)} session(s)"
+    )
+    # And every session still makes the row's point, on every statistic: the gap
+    # is nowhere near the 0 ms an agent-side figure implies.
+    for values in (means, medians, net_means, net_medians):
+        assert min(values) > 10.0
 
 
 # --------------------------------------------------------------------------- #
@@ -1170,3 +1196,108 @@ def test_frame_energies_frames_both_sides_of_the_comparison_the_same_way() -> No
     # A trailing partial frame is dropped rather than padded: padding would
     # invent quiet audio and move a silent-frame count.
     assert session.frame_energies([0.5] * 200, 160) == pytest.approx([0.5])
+
+
+# --------------------------------------------------------------------------- #
+# What reproduces across sessions, and what turned out not to
+# --------------------------------------------------------------------------- #
+
+
+def test_the_jitter_spike_was_not_caused_by_the_injected_loss() -> None:
+    """A causal claim this suite made from one session, and a second session refuted.
+
+    docs/AUDIO_TRANSPORT.md once read "injected loss quadrupled the longest
+    inter-arrival interval", on the strength of a 101.3 ms longest interval in the
+    loss-injected session against 24.7 ms in row 1's loss-free session. Those were
+    *different sessions*, so treatment and session varied together and the
+    comparison was uncontrolled.
+
+    A second recording of the same row, at the identical injected rate, delivers a
+    longest interval below the loss-free session's. So the 101 ms hole was a
+    network event, not a consequence of the injection. This test holds the
+    corrected reading in place: the two sessions inject the same dose and disagree
+    about pacing by a large factor, which is exactly what forbids a causal claim.
+    """
+    paths = sorted(FIXTURE_DIR.glob("degradation*.json"))
+    if len(paths) < 2:  # pragma: no cover - the fixtures are committed
+        pytest.skip("fewer than two degradation recordings are committed")
+
+    doses: set[tuple[int, int]] = set()
+    longest: list[float] = []
+    for path in paths:
+        recording = TransportRecording.read(path)
+        injected = next(u for u in recording.utterances if u.withheld_source_index)
+        doses.add((len(injected.withheld_source_index), injected.pushes.n))
+        longest.append(jitter_stats(recording.arrivals).max_gap_ms)
+
+    assert len(doses) == 1, (
+        "these sessions do not inject the same dose, so they cannot be used to "
+        f"control each other: {doses}"
+    )
+    assert max(longest) / min(longest) > 2.0, (
+        "the corrected reading in docs/AUDIO_TRANSPORT.md says the longest "
+        "inter-arrival interval varies by a large factor at a fixed injected loss, "
+        "which is why the original causal claim was withdrawn. If these sessions "
+        f"now agree, that paragraph needs rewriting: {longest}"
+    )
+
+
+def test_the_degradation_verdict_itself_does_reproduce(gate: CalibrationReport) -> None:
+    """The finding survives what the causal claim did not.
+
+    Pacing varied wildly between the two sessions; the row's actual conclusion —
+    that a rung of the file ladder is not the loss rate a real transport produces —
+    did not. Worth pinning separately, because "one number in this row did not
+    reproduce" is not a reason to distrust the row, and the way to show that is to
+    assert which parts hold.
+    """
+    paths = sorted(FIXTURE_DIR.glob("degradation*.json"))
+    if len(paths) < 2:  # pragma: no cover - the fixtures are committed
+        pytest.skip("fewer than two degradation recordings are committed")
+    row = next(r for r in load_rows() if r.category == "transport-degradation")
+    for path in paths:
+        recording = TransportRecording.read(path)
+        for fill in ("zero", "hold"):
+            perturbed, baseline, realised, refusal = ladder_side(recording, fill=fill)
+            assert refusal is None, f"{path.name}/{fill}: {refusal}"
+            comparison = degradation_comparison(
+                recording,
+                file_rms=perturbed,
+                file_baseline_rms=baseline,
+                file_realised_loss=realised,
+                fill=fill,
+            )
+            assert not comparison.agree, (
+                f"{path.name} with fill={fill!r} now says the file ladder agrees with "
+                "the transport; the row's headline finding is that it does not"
+            )
+            assert evaluate_degradation(row, comparison).verdict == "PASS", (
+                f"{path.name} with fill={fill!r}"
+            )
+
+
+def test_the_lifecycle_row_reproduces_including_the_late_frames(
+    gate: CalibrationReport,
+) -> None:
+    """`recovered-turn-lost` twice, and the jitter-buffer tail twice.
+
+    The three-bucket analysis exists because frames of the interrupted turn arrive
+    *after* the sender has gone. That is the kind of detail that could easily have
+    been one session's quirk, so it is asserted over every committed session.
+    """
+    paths = sorted(FIXTURE_DIR.glob("lifecycle*.json"))
+    if not paths:  # pragma: no cover - the fixture is committed
+        pytest.skip("no lifecycle recording is committed")
+    for path in paths:
+        observation = lifecycle_observation(TransportRecording.read(path))
+        assert observation.verdict == "recovered-turn-lost", path.name
+        assert observation.frames_after_drop_in_flight > 0, (
+            f"{path.name}: no frame of the interrupted turn outlived the sender, so "
+            "the third bucket in the analysis has no evidence in this session"
+        )
+        assert observation.audio_silence_s is not None
+        assert observation.transport_recovery_s is not None
+        assert observation.audio_silence_s > observation.transport_recovery_s, (
+            f"{path.name}: the transport-level figure should understate the hole in "
+            "the conversation; that gap is the row's finding"
+        )
