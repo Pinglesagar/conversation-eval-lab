@@ -1,0 +1,46 @@
+id: audio-capture-money-amount
+title: A four-figure premium spoken as words, captured as a number
+persona: corporate_pa
+tags: [digits-and-names, magnitude, voice-en-gb]
+
+goal:
+  intent: state the annual premium
+  facts:
+    premium: "4250"
+  success_criteria:
+    - the amount on the record is the amount that was said, to the pound
+
+audio:
+  clip: money-amount
+  languages: [en]
+  capture:
+    numeric:
+      premium_gbp: 4250.0
+
+voice:
+  sample_rate: 16000
+  requires_events: [transcript_in]
+
+notes: >-
+  A money amount is the capture failure with the largest consequence per
+  character, and the only one in this group asserted as a **number** rather than
+  a string. "Four thousand two hundred and fifty" can be transcribed as `4250`,
+  `4,250`, `£4250`, `four thousand two hundred and fifty`, or — the failure that
+  matters — `4000 250`. Every one of the first four is correct and no two are
+  equal as strings, so a string comparison would report differences that are
+  formatting and could not report the one that is an error.
+  .
+  So the assertion parses the transcript to a value and compares numerically.
+  That is a different code path from the field matcher the other capture rows
+  use, and it exists because `normalise`'s cardinal parser is built for
+  digit-by-digit readouts and corrupts spoken magnitudes — the same parser turns
+  "four zero seven one nine nine two eight" into `"4 8 9 11 8"`. One instrument
+  cannot do both jobs; pretending it can is how two perfect transcripts got
+  reported as capture failures once already.
+  .
+  Paired with `audio-hinglish-lakh-magnitude`, which asks the same question where
+  the magnitude word is "lakh" and the scale is not a power of a thousand.
+  .
+  Why text cannot test this: the ambiguity is created by speech. Written down,
+  the amount is unambiguous; spoken, the boundary between "four thousand" and
+  "two hundred and fifty" is a hypothesis the recogniser forms.

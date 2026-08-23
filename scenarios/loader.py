@@ -117,6 +117,14 @@ __all__ = [
     "PhraseSpec",
     "PerturbationSpec",
     "VoiceSpec",
+    "SYNTHESISABLE_LANGUAGE_IDS",
+    "CODE_SWITCHABLE_LANGUAGE_IDS",
+    "SilenceExpectation",
+    "BargeInExpectation",
+    "CaptureExpectation",
+    "UntestableDeclaration",
+    "AudioSpec",
+    "AudioStatus",
     "ExpectedFailure",
     "Scenario",
     "Corpus",
@@ -164,6 +172,10 @@ Suite = Literal["happy", "edge", "adversarial", "voice", "audio"]
 Build = Literal["scripted", "live"]
 BUILDS: tuple[str, ...] = ("scripted", "live")
 
+#: What can be said about an audio row before it is run. See
+#: `Scenario.audio_status` for why three values and not two.
+AudioStatus = Literal["runnable", "blocked", "untestable"]
+
 #: Suite = subdirectory = id prefix. One idea in three places on purpose: given a
 #: scenario id from a result row, the file is `scenarios/<suite>/<id>.yaml` with
 #: no lookup, and given a file, its suite is unambiguous.
@@ -193,7 +205,22 @@ ALL_SUITES: tuple[str, ...] = SUITES + (AUDIO_TIER,)
 #: Smallest audio tier worth publishing. Deliberately not an entry in
 #: `SUITE_MINIMUMS`, which is iterated against the default corpus's suite
 #: counts and would raise a `KeyError` on a suite the default corpus omits.
-AUDIO_TIER_MINIMUM: int = 50
+#:
+#: **It was 50, and 50 was wrong.** That number was written before the tier had
+#: an admission rule, on the assumption that an audio tier should be large
+#: because audio is important. The admission rule — a row belongs here only if
+#: the audio layer is *the thing under test* — then turned out to exclude most
+#: of what was imagined for it. Compliance logic, disclosure ordering, objection
+#: handling and judge calibration are all cheaper, faster and more repeatable in
+#: text, and a row that puts them behind a synthesiser buys nothing but cost and
+#: variance. Fifty rows could only have been reached by admitting those, which
+#: would have made the tier's headline number bigger and every one of its
+#: findings weaker.
+#:
+#: So the floor is the size of the tier that the rule actually admits. A minimum
+#: that cannot be met without breaking the entry rule is not a quality bar; it is
+#: pressure to break the entry rule.
+AUDIO_TIER_MINIMUM: int = 18
 
 #: The tag vocabulary, each with the one line that says what it means. This is
 #: documentation and validation in one object: a tag is legal because it is
@@ -249,28 +276,50 @@ TAG_VOCABULARY: dict[str, str] = {
 #: The first seven are the tier's categories and every row carries exactly one
 #: of them — that is what makes the category table countable rather than
 #: editorial.
+#: **This vocabulary was pruned when the rows were written**, and the prune is the
+#: interesting part. It previously offered seven categories and five caller-voice
+#: locales, sized for the fifty-row tier that `AUDIO_TIER_MINIMUM` used to
+#: demand. Three categories (`accent-and-voice`, `latency-budget`, `cadence`) and
+#: four voice locales (`voice-en-us`, `voice-en-ie`, `voice-en-in`,
+#: `voice-en-au`) had no row and could not get one:
+#:
+#:   * `latency-budget` and `cadence` describe conversation properties that the
+#:     text suites already measure more cheaply, so the admission rule excludes
+#:     them.
+#:   * `accent-and-voice` and the four non-`en-GB` voice locales are blocked by
+#:     the vendor's *free tier*, not by effort: Voice Library voices are not
+#:     available over the API there, so the only selectable voices are the stock
+#:     premade set. There are 928 Indian-English voices in that library and this
+#:     harness can reach none of them. Accent coverage is therefore a paid
+#:     capability, which is a finding worth stating rather than a tag worth
+#:     keeping.
+#:
+#: An unused tag is an aspiration, and an aspiration in a closed vocabulary reads
+#: as coverage to anyone counting tags. `tests/test_audio_suite.py` asserts this
+#: dict and the tier's actual tag counts have identical key sets in both
+#: directions, so neither an unused tag nor an undefined one can survive.
 AUDIO_TAG_VOCABULARY: dict[str, str] = {
     # --- categories: exactly one per row
     "digits-and-names": "capture of a digit string or a name, where an STT slip does harm",
-    "accent-and-voice": "one content script across synthesised voices; capture must hold",
     "line-quality": "a graded channel condition: noise, band limit or packet loss",
     "barge-in": "the caller speaks over the agent",
-    "latency-budget": "response latency against a stated budget",
-    "cadence": "speaking rate, pausing, disfluency and self-correction",
     "silence": "dead air where speech was expected",
+    "multilingual": "the subject is a language other than English, or a switch between two",
+    "untestable": "the recorded result is that this row cannot be run on this stack",
     # --- what the row does to the audio or to the caller
     "ladder": "one rung of a graded series; only interpretable beside its siblings",
     "confusable": "the content contains an acoustically confusable pair",
     "spelled": "the caller spells a string out letter by letter",
-    "disfluency": "filled pauses, restarts or a mid-sentence self-correction",
+    "magnitude": "a spoken magnitude word whose numeric value must be captured",
     "dead-air": "a stretch where the agent receives no speech at all",
     "interruption": "requires the reserved interruption events (see `not-yet-runnable`)",
+    "phonetic-forced": "pronunciation forced with SSML phonemes, to plant a known slip",
+    "verbatim-entity": "a named entity that must survive untranslated and unexpanded",
+    "code-switch": "one utterance carries two languages",
+    "constructed": "the utterance was assembled by concatenation, not synthesised as one",
+    "control-arm": "exists to separate a vendor limitation from a product defect",
     # --- the synthesised caller voice, so a failure names the voice
     "voice-en-gb": "synthesised caller voice in the en-GB locale",
-    "voice-en-us": "synthesised caller voice in the en-US locale",
-    "voice-en-ie": "synthesised caller voice in the en-IE locale",
-    "voice-en-in": "synthesised caller voice in the en-IN locale",
-    "voice-en-au": "synthesised caller voice in the en-AU locale",
     # --- honesty about what the harness can do today
     "not-yet-runnable": "waits on a harness capability; must never be reported as a pass",
 }
@@ -294,6 +343,36 @@ def tag_vocabulary(suite: str | None = None) -> dict[str, str]:
 #: equals the registry's keys, so drift breaks a test instead of a run.
 PERTURBATION_NAMES: frozenset[str] = frozenset(
     {"add_noise", "resample_speed", "shift_pitch", "telephone_band", "packet_loss"}
+)
+
+#: Language ids the text-to-speech vendor can actually synthesise, duplicated from
+#: `lab.voice.engines.coverage.SYNTHESISABLE_LANGUAGES` for exactly the reason
+#: `PERTURBATION_NAMES` is duplicated: importing that module reaches
+#: `deepgram_stt` and therefore numpy, and loading a corpus must not require the
+#: audio extra. `tests/test_audio_suite.py` asserts the two sets are equal, so
+#: drift breaks a test rather than a run.
+#:
+#: This set is what makes an *untestable* row machine-readable. A row declaring
+#: `audio.untestable.language: yue` is admitted only while `yue` is absent here,
+#: so the day a vendor ships Cantonese the refusal stops validating and somebody
+#: has to convert it into a real row. A hand-written "cannot be tested" flag would
+#: have outlived the limitation it describes.
+SYNTHESISABLE_LANGUAGE_IDS: frozenset[str] = frozenset(
+    {
+        "ar", "bg", "cs", "da", "de", "el", "en", "es", "fi", "fil", "fr", "hi",
+        "hr", "hu", "id", "it", "ja", "ko", "ms", "nl", "no", "pl", "pt", "ro",
+        "ru", "sk", "sv", "ta", "tr", "uk", "vi", "zh",
+    }
+)
+
+#: Language ids the recogniser will follow *mid-sentence* — Deepgram nova-3's
+#: `multi` set, exactly ten. Duplicated from
+#: `lab.voice.engines.deepgram_stt.MULTI_LANGUAGES`, same reason, same drift test.
+#: A `code-switch` row must name two languages from this set; a row that switches
+#: into anything else is declaring a test the recogniser cannot pass, and it has
+#: to say so with `expect_capture: false` instead of quietly failing.
+CODE_SWITCHABLE_LANGUAGE_IDS: frozenset[str] = frozenset(
+    {"de", "en", "es", "fr", "hi", "it", "ja", "nl", "pt", "ru"}
 )
 
 #: Operators accepted by `ArgPredicate`, restated so a YAML typo is caught at
@@ -953,6 +1032,364 @@ class VoiceSpec(_Block):
 
 
 # --------------------------------------------------------------------------- #
+# The audio tier's own assertions
+# --------------------------------------------------------------------------- #
+#
+# WHY THESE EXIST AT ALL
+# ----------------------
+# Every contract above is a statement about a *conversation*: a tool was called,
+# a promise was kept, a value was not asked for twice. An audio-tier row makes a
+# statement about a *signal*: this postcode survived this channel, this timeout
+# fired at this threshold, this label was true. The two are not the same kind of
+# claim and the second one had nowhere to live.
+#
+# The consequence was concrete and it is worth stating, because it is the sort of
+# thing that passes review. `Scenario` rejects a row that declares no contract —
+# "asserts nothing" — so an audio row had two ways to get through the door, and
+# both were bad. It could declare a tool contract that the engine-level run never
+# evaluates, which is a check that cannot fire, the exact failure mode this
+# module's docstring opens with. Or the audio expectation could live in the test
+# file, hard-coded next to the row id, where the corpus cannot see it, the
+# summary cannot count it, and a reviewer reading the YAML would find a row whose
+# stated purpose is capturing a postcode and no mention of the postcode.
+#
+# So the assertion is data, like every other assertion here, and it is validated
+# the same way: expectations that contradict themselves are rejected at load
+# time rather than discovered as a confusing pass.
+
+
+class SilenceExpectation(_Block):
+    """What a declared pause should do to a timeout, and whether the label is true.
+
+    Two separate claims, and the reference bug is that production only ever made
+    the first one. `expect_verdict` says whether the timer fires;
+    `expect_reason_accurate` says whether `"silence-timed-out"` would have been an
+    honest description of why. The validator below refuses any combination of the
+    two that cannot happen, because a row that expects a firing timeout *and* an
+    accurate label *and* speech in the window is describing the bug as if it were
+    correct behaviour, and it would pass against a build that had it.
+    """
+
+    target_silence_s: float = Field(gt=0.0)
+    threshold_s: float = Field(default=6.0, gt=0.0)
+    speech_during_timeout: bool = False
+    expect_verdict: Literal["caller_silent", "vad_false_silence", "would_not_fire"]
+    expect_reason_accurate: bool
+
+    @model_validator(mode="after")
+    def _validate(self) -> "SilenceExpectation":
+        reaches = self.target_silence_s >= self.threshold_s
+        if self.expect_verdict == "vad_false_silence" and not self.speech_during_timeout:
+            raise ValueError(
+                "expect_verdict 'vad_false_silence' requires speech_during_timeout: true — "
+                "the whole content of that verdict is that the caller was audibly speaking "
+                "while the agent believed they were away"
+            )
+        if self.expect_verdict == "caller_silent":
+            if self.speech_during_timeout:
+                raise ValueError(
+                    "expect_verdict 'caller_silent' with speech_during_timeout: true is the "
+                    "misattribution itself; declare 'vad_false_silence'"
+                )
+            if not reaches:
+                raise ValueError(
+                    f"expect_verdict 'caller_silent' needs the pause to reach the threshold, "
+                    f"but target_silence_s {self.target_silence_s} < threshold_s "
+                    f"{self.threshold_s}, so no timeout would fire"
+                )
+        if self.expect_verdict == "would_not_fire":
+            if self.speech_during_timeout:
+                raise ValueError(
+                    "a detector that reports the user away fires the timeout regardless of "
+                    "the audio; 'would_not_fire' with speech_during_timeout: true cannot happen"
+                )
+            if reaches:
+                raise ValueError(
+                    f"expect_verdict 'would_not_fire' but target_silence_s "
+                    f"{self.target_silence_s} >= threshold_s {self.threshold_s}, which fires"
+                )
+        accurate = self.expect_verdict == "caller_silent"
+        if self.expect_reason_accurate != accurate:
+            raise ValueError(
+                f"expect_reason_accurate {self.expect_reason_accurate} contradicts "
+                f"expect_verdict {self.expect_verdict!r}: the label 'silence-timed-out' is "
+                "true for 'caller_silent' and for nothing else"
+            )
+        return self
+
+    def fires(self) -> bool:
+        """Whether the timeout is expected to expire at all."""
+        return self.expect_verdict != "would_not_fire"
+
+
+class BargeInExpectation(_Block):
+    """The caller talks over the agent. Does the agent stop, and how fast?
+
+    `yield_after_s` is when the agent's audio actually stopped, measured from the
+    start of its own playback, and `None` means it never stopped. `None` is not a
+    large number: an agent that talks through an interruption has not yielded
+    slowly, it has failed, and folding the two into one latency distribution is
+    how a failure gets averaged into an acceptable median.
+    """
+
+    caller_starts_s: float = Field(ge=0.0)
+    yield_after_s: float | None = None
+    expect_yield: bool
+    max_yield_ms: float | None = Field(default=None, gt=0.0)
+
+    @model_validator(mode="after")
+    def _validate(self) -> "BargeInExpectation":
+        if self.expect_yield and self.yield_after_s is None:
+            raise ValueError(
+                "expect_yield: true needs yield_after_s — the moment the agent stopped. "
+                "Without it there is nothing to compare against max_yield_ms and the row "
+                "would assert only that something happened"
+            )
+        if not self.expect_yield and self.yield_after_s is not None:
+            raise ValueError(
+                "expect_yield: false means the agent played to the end; drop yield_after_s "
+                "rather than declaring a stop time the row says did not happen"
+            )
+        if self.yield_after_s is not None and self.yield_after_s < self.caller_starts_s:
+            raise ValueError(
+                f"yield_after_s {self.yield_after_s} precedes caller_starts_s "
+                f"{self.caller_starts_s}: the agent cannot stop before it is interrupted"
+            )
+        if self.max_yield_ms is not None and not self.expect_yield:
+            raise ValueError(
+                "max_yield_ms is a budget on a yield that this row expects not to happen; "
+                "a budget that can never be evaluated is not a check"
+            )
+        return self
+
+
+class CaptureExpectation(_Block):
+    """The values that must survive the channel, asserted field by field.
+
+    **Never a word error rate.** `lab/voice/engines/WER_NORMALISATION.md` records
+    the measurement: a transcript that got every character of a postcode right
+    scores 0.000 or 1.400 depending only on which reference string it is compared
+    against, so the ten rows whose entire purpose is proving a postcode survives
+    would be the worst-scoring rows in the suite while both vendors worked
+    perfectly. The question a capture row asks is "is the value correct?", and
+    that is an exact comparison against a declared value.
+
+    `expect_capture: false` is the honest declaration for a row that is *predicted
+    to fail* — the constructed Singapore utterance, where Mandarin is outside the
+    recogniser's code-switching set. It keeps the row running and keeps its result
+    read as a measured vendor boundary rather than as a defect to be triaged.
+    """
+
+    fields: dict[str, str] = Field(default_factory=dict)
+    numeric: dict[str, float] = Field(default_factory=dict)
+    verbatim: list[str] = Field(default_factory=list)
+    expect_capture: bool = True
+
+    @model_validator(mode="after")
+    def _validate(self) -> "CaptureExpectation":
+        if not (self.fields or self.numeric or self.verbatim):
+            raise ValueError(
+                "a capture expectation with no fields, no numeric values and no verbatim "
+                "tokens asserts nothing about the captured audio"
+            )
+        for name, value in self.fields.items():
+            if not str(value).strip():
+                raise ValueError(f"capture field {name!r} has an empty expected value")
+        for token in self.verbatim:
+            if not token.strip():
+                raise ValueError("capture verbatim tokens must not be blank")
+        return self
+
+
+class UntestableDeclaration(_Block):
+    """A row whose recorded result is that it cannot be run. A first-class outcome.
+
+    Not a skip, not an xfail, and above all not an absence. A market that quietly
+    has no rows looks identical to a market that passes, and the difference is the
+    single most important thing this suite has to say. So the refusal is a row,
+    it carries its own evidence and its own remediation, and the report counts it
+    in a third column.
+
+    `language` is validated against `SYNTHESISABLE_LANGUAGE_IDS`: the declaration
+    is only admissible *while the vendor still cannot do it*. When Cantonese
+    synthesis ships, this row stops validating and somebody has to come back and
+    turn it into a real test. That is the opposite of how a stale caveat behaves.
+    """
+
+    language: str = Field(min_length=2)
+    finding: str = Field(min_length=40)
+    remediation: list[str] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _validate(self) -> "UntestableDeclaration":
+        if self.language in SYNTHESISABLE_LANGUAGE_IDS:
+            raise ValueError(
+                f"language {self.language!r} IS synthesisable, so this row is testable and "
+                "must not be declared untestable. If the vendor has just added it, the "
+                "refusal is now a real row: delete this block and write the test"
+            )
+        return self
+
+
+class AudioSpec(_Block):
+    """What an audio-tier row asserts, and which committed clips it is built from.
+
+    Legal only in `scenarios/audio/`. Exactly one expectation per row, because a
+    row that asserted a capture *and* a timeout *and* a barge-in would report one
+    verdict for three independent claims, and the first thing anyone would ask
+    about a red cell is which of the three broke.
+    """
+
+    #: Corpus id of the committed clip this row's caller audio comes from. Rows
+    #: reuse the recorded corpus wherever the content allows, because a cache hit
+    #: costs zero characters and the character allowance is the binding limit.
+    clip: str | None = None
+
+    #: Clip ids concatenated, in order, to build one utterance from two languages
+    #: that no single model will speak together. Declared as a list rather than
+    #: hidden in a helper so that "this utterance was assembled, not spoken"
+    #: is visible in the corpus and printable in the report.
+    clauses: list[str] = Field(default_factory=list)
+
+    #: Language ids in the utterance, in order of appearance.
+    languages: list[str] = Field(default_factory=list)
+
+    #: The agent's own clip, for a barge-in row. The caller talks over *something*,
+    #: and that something has a real measured duration — which is what makes the
+    #: overlap and the yield latency numbers rather than parameters.
+    agent_clip: str | None = None
+
+    #: A second clip whose result is reported beside this row's, and which the
+    #: row's own verdict does not depend on.
+    #:
+    #: This is what turns "we used SSML phonemes" into a measurement. A row that
+    #: forces a mispronunciation and then observes a capture failure has shown
+    #: nothing on its own — the recogniser might have failed on that name anyway.
+    #: The control is the same sentence without the phoneme tag. Two clips, one
+    #: variable, and the variable is the thing the row claims to be testing.
+    control_clip: str | None = None
+
+    silence: SilenceExpectation | None = None
+    barge_in: BargeInExpectation | None = None
+    capture: CaptureExpectation | None = None
+    untestable: UntestableDeclaration | None = None
+
+    @model_validator(mode="after")
+    def _validate(self) -> "AudioSpec":
+        declared = [
+            name
+            for name, value in (
+                ("silence", self.silence),
+                ("barge_in", self.barge_in),
+                ("capture", self.capture),
+                ("untestable", self.untestable),
+            )
+            if value is not None
+        ]
+        if not declared:
+            raise ValueError(
+                "an audio row must declare one of silence, barge_in, capture or untestable; "
+                "otherwise the row runs the engines and checks nothing they produced"
+            )
+        if len(declared) > 1:
+            raise ValueError(
+                f"one expectation per row, got {declared}: a single verdict covering "
+                "independent claims cannot say which one failed"
+            )
+
+        if self.untestable is not None:
+            if self.clip or self.clauses or self.agent_clip or self.control_clip:
+                raise ValueError(
+                    "an untestable row names no clip: the finding is that the audio cannot "
+                    "be synthesised, so a clip id would contradict it"
+                )
+            return self
+
+        if self.barge_in is not None and self.agent_clip is None:
+            raise ValueError(
+                "a barge-in row needs `agent_clip`: the overlap and the yield latency are "
+                "measured against the agent's real clip duration, and without it both "
+                "numbers would be parameters chosen to make the row pass"
+            )
+        if self.barge_in is None and self.agent_clip is not None:
+            raise ValueError(
+                "`agent_clip` is only meaningful where the caller talks over the agent; "
+                "drop it or declare the barge_in expectation it belongs to"
+            )
+
+        if self.clip and self.clauses:
+            raise ValueError(
+                "declare `clip` for a single synthesised utterance or `clauses` for one "
+                "assembled from several, not both"
+            )
+        if not self.clip and not self.clauses:
+            raise ValueError(
+                "a runnable audio row needs `clip` or `clauses`: the audio has to come from "
+                "a committed recording, or the row cannot run on a fresh clone with no keys"
+            )
+        if len(self.clauses) == 1:
+            raise ValueError(
+                "one clause is not a concatenation; use `clip` and drop the "
+                "constructed-by-concatenation claim"
+            )
+
+        duplicate_languages = sorted(
+            {code for code, n in Counter(self.languages).items() if n > 1}
+        )
+        if duplicate_languages:
+            raise ValueError(f"languages lists {duplicate_languages} twice")
+        unsynthesisable = [
+            code for code in self.languages if code not in SYNTHESISABLE_LANGUAGE_IDS
+        ]
+        if unsynthesisable:
+            raise ValueError(
+                f"languages {unsynthesisable} cannot be synthesised by the vendor, so this "
+                "row has no audio; declare `untestable` instead of naming a language the "
+                "stack cannot speak"
+            )
+
+        # A switching row that expects to succeed must be switching between
+        # languages the recogniser will actually follow mid-utterance. Declaring
+        # otherwise is how a vendor boundary gets filed as a product bug.
+        if len(self.languages) > 1 and self.capture is not None and self.capture.expect_capture:
+            outside = [
+                code
+                for code in self.languages
+                if code not in CODE_SWITCHABLE_LANGUAGE_IDS
+            ]
+            if outside:
+                raise ValueError(
+                    f"this row switches into {outside}, which is outside the recogniser's "
+                    f"{len(CODE_SWITCHABLE_LANGUAGE_IDS)}-language code-switching set, yet "
+                    "expects capture to succeed. Set `capture.expect_capture: false` and "
+                    "record the boundary, or the row will report a vendor limit as a defect"
+                )
+        return self
+
+    def kind(self) -> str:
+        """Which expectation this row carries: the tier's own category key."""
+        if self.silence is not None:
+            return "silence"
+        if self.barge_in is not None:
+            return "barge_in"
+        if self.capture is not None:
+            return "capture"
+        return "untestable"
+
+    def is_constructed(self) -> bool:
+        """True when the utterance was assembled from clauses rather than synthesised."""
+        return bool(self.clauses)
+
+    def clip_ids(self) -> list[str]:
+        """Every committed clip this row reads, in order, caller side first."""
+        ids = list(self.clauses) if self.clauses else ([self.clip] if self.clip else [])
+        for extra in (self.agent_clip, self.control_clip):
+            if extra:
+                ids.append(extra)
+        return ids
+
+
+# --------------------------------------------------------------------------- #
 # Expected failure
 # --------------------------------------------------------------------------- #
 
@@ -1057,6 +1494,7 @@ class Scenario(_Block):
     no_progress: NoProgressSpec | None = None
     phrases: PhraseSpec | list[PhraseSpec] | None = None
     voice: VoiceSpec | None = None
+    audio: AudioSpec | None = None
     expected_failure: ExpectedFailure | None = None
     tags: list[str] = Field(min_length=1)
     notes: str = Field(
@@ -1102,8 +1540,17 @@ class Scenario(_Block):
             )
 
         declared = self.contract_names()
-        if not declared:
-            raise ValueError("scenario declares no contracts, so it asserts nothing")
+        if not declared and self.audio is None:
+            # The rule is "assert something", not "declare a conversation
+            # contract". An audio-tier row asserts through its `audio:` block —
+            # see the section header above that block for why a signal-level
+            # claim could not be expressed as a `lab.checks` contract, and why
+            # letting one masquerade as a tool contract would have produced a
+            # check that never fires.
+            raise ValueError(
+                "scenario declares no contracts, so it asserts nothing (an audio-tier row "
+                "may assert through its `audio:` block instead)"
+            )
         duplicate_contracts = sorted({c for c, n in Counter(declared).items() if n > 1})
         if duplicate_contracts:
             raise ValueError(
@@ -1162,6 +1609,24 @@ class Scenario(_Block):
             # channel condition or the harness capability it is waiting on. A row
             # with neither is a text row filed in the wrong directory, and it
             # would report a text result under an audio heading.
+            if self.audio is None:
+                raise ValueError(
+                    "an audio-tier scenario must declare an `audio:` block; the tier's rows "
+                    "assert things about a signal — a captured value, a timeout, a yield — "
+                    "and none of the conversation contracts can express one"
+                )
+            # A recorded refusal is admitted on the strength of the refusal
+            # itself. It declares no `voice:` block because there is no audio to
+            # declare conditions for, and no blocked event because nothing in
+            # this harness is what stops it — the vendor is.
+            if self.audio.untestable is not None:
+                if self.voice is not None:
+                    raise ValueError(
+                        "an untestable row declares no `voice:` block: sample rates, "
+                        "perturbations and latency budgets are all properties of audio that "
+                        "this row exists to say cannot be produced"
+                    )
+                return
             if self.voice is None:
                 raise ValueError(
                     "an audio-tier scenario must declare a `voice:` block; the tier exists "
@@ -1175,6 +1640,12 @@ class Scenario(_Block):
                     "audio that the text suites do not already say more cheaply"
                 )
             return
+        if self.audio is not None:
+            raise ValueError(
+                "an `audio:` block asserts against synthesised audio and committed clips, "
+                f"which only the {AUDIO_TIER!r} tier runs; a row outside it would declare a "
+                "capture, a timeout or a yield that nothing ever evaluates"
+            )
         if self.suite == "voice":
             if self.voice is None or not self.voice.perturbations:
                 raise ValueError(
@@ -1294,7 +1765,26 @@ class Scenario(_Block):
 
     def is_runnable(self) -> bool:
         """False when the row waits on a harness capability that does not exist yet."""
-        return not self.blocked_on()
+        return not self.blocked_on() and self.audio_status() != "untestable"
+
+    def audio_status(self) -> "AudioStatus":
+        """Three outcomes, because collapsing them loses the one that matters.
+
+            "runnable"    the row can be run now, and its verdict is a pass or a fail.
+            "blocked"     the row is declared and the *harness* cannot run it yet.
+            "untestable"  the row is declared and no *vendor* in this stack can run
+                          it. No amount of work in this repo changes that.
+
+        A report that counts only passes and failures has to put the second and
+        third somewhere, and both available answers are wrong: counted as passes
+        they inflate coverage, counted as failures they look like defects and
+        somebody is sent to fix a product that is working. Hong Kong is the case
+        that forces the distinction — a market with a regional hub, no audio path
+        at all, and a remediation that is a purchase order rather than a patch.
+        """
+        if self.audio is not None and self.audio.untestable is not None:
+            return "untestable"
+        return "blocked" if self.blocked_on() else "runnable"
 
     def expects_failure_of(self, contract_name: str, build: str = "scripted") -> bool:
         """Is this contract a declared known gap for this scenario, on this build?
@@ -1549,7 +2039,14 @@ def validate_corpus(
 def _advisories(scenario: Scenario, path: Path) -> list[ValidationIssue]:
     """Non-blocking observations: legal, loadable, and probably not what was meant."""
     out: list[ValidationIssue] = []
-    if scenario.tools is None and scenario.promises is None:
+    # An audio-tier row asserting through its `audio:` block is exempt: the
+    # advisory below is about a conversation row that can only check wording and
+    # would therefore miss a booking that never happened. An audio row is not
+    # trying to detect a booking. Left unscoped, this fired on all eighteen tier
+    # rows — and a warning that is wrong eighteen times out of eighteen trains
+    # people to ignore the warnings that are right.
+    asserts_via_audio = scenario.suite == AUDIO_TIER and scenario.audio is not None
+    if scenario.tools is None and scenario.promises is None and not asserts_via_audio:
         out.append(
             ValidationIssue(
                 path=str(path),

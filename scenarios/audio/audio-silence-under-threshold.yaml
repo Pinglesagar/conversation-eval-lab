@@ -1,0 +1,46 @@
+id: audio-silence-under-threshold
+title: A five-point-nine second thinking pause, and a timeout that must not fire
+persona: polite_elder
+tags: [silence, dead-air, voice-en-gb]
+
+goal:
+  intent: ask about drawdown, then pause to think before answering
+  success_criteria:
+    - the call is still alive after the pause
+    - nothing in the trace claims the caller went away
+
+audio:
+  clip: drawdown
+  languages: [en]
+  silence:
+    target_silence_s: 5.9
+    threshold_s: 6.0
+    speech_during_timeout: false
+    expect_verdict: would_not_fire
+    expect_reason_accurate: false
+
+voice:
+  sample_rate: 16000
+  requires_events: [transcript_in, session_end]
+
+notes: >-
+  The lower half of the boundary, and the reason the pair 5.9/6.1 is worth two
+  rows rather than one assertion. 5.9 seconds is an ordinary pause: a caller who
+  has been asked their date of birth and is working it out. At the 6 second
+  away_timeout that actually shipped, it must not end the call.
+  .
+  The row is really a test of the instrument. A synthesised clip is not
+  silent-terminated — every committed ElevenLabs clip carries about 200 ms of
+  trailing silence — so appending a declared 5.9 second pause produces a 6.1
+  second silent run and fires the timeout. The tempting repair is a wider
+  tolerance, and it would leave a suite that cannot tell 5.9 from 6.1 while
+  certifying a threshold it never measured. `pause_for_silence` computes the
+  padding against the clip in hand, and `declared_matches_measured` checks the
+  pause we asked for is the pause the envelope found before any verdict is read.
+  .
+  `expect_reason_accurate: false` is not a prediction of a bug here. No timeout
+  fires, so there is no reason to be accurate about; the label is only true under
+  `caller_silent`, and the loader rejects any other combination.
+  .
+  Why text cannot test this: there is no silence in a transcript. A pause is not
+  a token, and a text harness has no representation for the thing under test.

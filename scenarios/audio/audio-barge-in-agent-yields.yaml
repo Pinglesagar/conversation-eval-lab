@@ -1,0 +1,53 @@
+id: audio-barge-in-agent-yields
+title: The caller cuts across the confirmation, and the agent stops
+persona: hurried_commuter
+tags: [barge-in, voice-en-gb]
+
+goal:
+  intent: interrupt the agent mid-confirmation to correct it
+  success_criteria:
+    - the agent stops speaking
+    - it stops fast enough that the caller does not have to repeat themselves
+
+audio:
+  clip: suitability
+  agent_clip: agent-confirmation
+  languages: [en]
+  barge_in:
+    caller_starts_s: 1.2
+    yield_after_s: 1.44
+    expect_yield: true
+    max_yield_ms: 300.0
+
+voice:
+  sample_rate: 16000
+  requires_events: [audio_emitted, agent_audio_complete, transcript_in]
+
+notes: >-
+  Reference bug 5: the interruption metrics exist in the framework and nothing
+  used them. `lab.trace.schema` has defined `interruption_started` and
+  `interruption_acknowledged` from the beginning, with no named emitter and no
+  consumer — a declared capability that had never once produced a number.
+  .
+  This row produces one. Both clips are real and committed, so the agent's
+  playback length is measured rather than assumed, and the overlap and the yield
+  latency are arithmetic over two real durations. The caller starts 1.2 s into a
+  confirmation that runs longer than that, so the interruption is genuine:
+  `interaction.barge_in` raises rather than returning a zero-overlap event if the
+  caller turns out to have started after the agent finished, because populating a
+  barge-in metric with non-events is how the metric stops meaning anything.
+  .
+  **Constructed, not discovered — and this row says so rather than implying
+  otherwise.** The adapter's turn loop is half-duplex: it cannot produce an
+  overlap, so it cannot find one. What this row proves is that given an overlap,
+  the harness measures the yield correctly and emits the two events the schema
+  reserved. Discovery is `audio-barge-in-not-discovered`, and that row is
+  reported blocked.
+  .
+  300 ms is the budget because for a live in-call coaching product the
+  interruption is the caller reclaiming the floor. An agent still talking 300 ms
+  after being cut across is talking over the person it exists to help, and no
+  amount of good content redeems that.
+  .
+  Why text cannot test this: two turns cannot overlap in a transcript. Text
+  serialises the conversation, and the overlap is the measurement.

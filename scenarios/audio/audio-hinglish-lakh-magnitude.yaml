@@ -1,0 +1,60 @@
+id: audio-hinglish-lakh-magnitude
+title: Fifteen lakh, said in Hindi with an English noun in the middle
+persona: brisk_regular
+tags: [multilingual, code-switch, magnitude, voice-en-gb]
+
+goal:
+  intent: state a portfolio value in lakhs
+  facts:
+    portfolio_value: "1500000"
+  success_criteria:
+    - the value reaches the record as fifteen hundred thousand, not fifteen
+    - the English noun inside the Hindi sentence is not lost
+
+audio:
+  clip: hinglish-lakh
+  languages: [hi, en]
+  capture:
+    numeric:
+      portfolio_inr: 1500000.0
+
+voice:
+  sample_rate: 16000
+  requires_events: [transcript_in]
+
+notes: >-
+  Code-switching that the **recogniser** genuinely supports: `hi` and `en` are
+  both inside Deepgram nova-3's ten-language `multi` set, so a caller mixing them
+  mid-sentence is a case the vendor claims and this row can check.
+  .
+  The **synthesiser** is a different matter, and this row is where that asymmetry
+  becomes visible. ElevenLabs has no code-switching support at all — zero
+  occurrences of "code-switch" in their documentation, and their help centre
+  advises against putting multiple languages in one prompt. So this utterance is
+  an *attempted native* mixed-script synthesis: one prompt, Devanagari with an
+  English noun in it, `language_code` pinned to `hi`. Whatever comes out is the
+  finding. If the English noun is spoken with Hindi phonetics, that is the
+  vendor's advice being correct, and it is worth having measured rather than
+  assumed. Contrast `audio-sg-constructed-code-switch`, where the mix is built by
+  concatenation because no single model will speak the pair at all.
+  .
+  The assertion is the **numeric value**, and lakh is why. Indian magnitude words
+  do not sit on powers of a thousand: one lakh is 100,000 and one crore is
+  10,000,000, so "fifteen lakh" is 1,500,000 and there is no grouping of Western
+  thousands that produces it. A recogniser that transcribes the words perfectly
+  and a parser that reads them as Western scale produce 15, or 15,000, or
+  1,500 — every one of them a plausible portfolio value, and none of them
+  detectable as wrong without knowing the scale. That is a silent
+  three-orders-of-magnitude error in a suitability calculation.
+  .
+  One transport limit this row cannot work around, stated because it changes what
+  a green result means: Deepgram's own guidance for code-switched audio is to
+  drop `endpointing` to **100 ms**, and `endpointing` is a *streaming* parameter
+  with no meaning on the pre-recorded endpoint this harness uses. So the vendor's
+  recommended mitigation for the hardest multilingual case is unavailable here.
+  A pass is a pass on batch audio; the streaming path would need retuning and
+  this suite cannot tell you whether that retuning works.
+  .
+  Why text cannot test this: the switch and the magnitude both live in the audio.
+  Typed in, "15 lakh" is a parsing question that the text suites already cover
+  more cheaply.

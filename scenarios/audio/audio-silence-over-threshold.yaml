@@ -1,0 +1,40 @@
+id: audio-silence-over-threshold
+title: A six-point-one second silence, and a timeout whose label is true
+persona: polite_elder
+tags: [silence, dead-air, voice-en-gb]
+
+goal:
+  intent: ask about drawdown, then genuinely stop speaking
+  success_criteria:
+    - the timeout fires
+    - the end reason honestly describes what happened
+
+audio:
+  clip: drawdown
+  languages: [en]
+  silence:
+    target_silence_s: 6.1
+    threshold_s: 6.0
+    speech_during_timeout: false
+    expect_verdict: caller_silent
+    expect_reason_accurate: true
+
+voice:
+  sample_rate: 16000
+  requires_events: [transcript_in, session_end]
+
+notes: >-
+  The upper half of the boundary, and the case where "silence-timed-out" is the
+  right label. The caller really did stop, the measured silent run really does
+  reach the threshold, and the remedy really is to raise the timeout or prompt
+  them. This row exists so the suite can tell that situation apart from the one
+  in `audio-silence-boundary-misattributed`, which carries the identical label
+  and the opposite remedy.
+  .
+  Read the two rows together and the pair asserts the threshold is where it is
+  claimed to be: 5.9 does not fire, 6.1 does. Either assertion alone is
+  satisfiable by a broken detector — one that never fires passes the first, one
+  that always fires passes the second.
+  .
+  Why text cannot test this: same as its sibling. A transcript records what was
+  said, and this row is about an interval in which nothing was.

@@ -1,0 +1,54 @@
+id: audio-silence-boundary-misattributed
+title: The caller is still talking and the agent ends the call for silence
+persona: chatty_planner
+tags: [silence, dead-air, voice-en-gb]
+
+goal:
+  intent: keep talking about drawdown while the agent decides you have gone away
+  success_criteria:
+    - if the call ends, the recorded reason is not a silence label
+    - the diagnosis points at turn detection rather than at the caller
+
+audio:
+  clip: drawdown
+  languages: [en]
+  silence:
+    target_silence_s: 2.0
+    threshold_s: 6.0
+    speech_during_timeout: true
+    expect_verdict: vad_false_silence
+    expect_reason_accurate: false
+
+voice:
+  sample_rate: 16000
+  requires_events: [transcript_in, session_end]
+
+notes: >-
+  Reference bug 1, and the row this whole tier is justified by. A production
+  voice agent ended calls with `callEndReason = "silence-timed-out"`. The label
+  was believed, the investigation went looking for quiet callers, and it was
+  misdiagnosed for weeks. The real cause was two things compounding: under
+  `turn_detection="stt"` the VAD was driving `user_state` — an upstream fix that
+  is still unmerged — and `away_timeout` was 6 seconds, aggressive enough that
+  ordinary thinking pauses reached it.
+  .
+  Here the longest measured silent run is 2 seconds, comfortably under the
+  threshold, so no honest detector would fire. The detector fires anyway. That is
+  the whole bug in one row: one label, two situations, opposite remedies. If the
+  caller really went quiet, raise the timeout. If the caller was speaking and the
+  agent could not tell, fix turn detection — raising the timeout only postpones
+  it, which is exactly the wrong fix the label recommends.
+  .
+  Telling the two apart requires knowing whether there was speech in the window.
+  Production cannot know: the only instrument it has is the detector whose failure
+  is the question. This harness can, because it synthesised the audio and
+  measures energy with an RMS envelope rather than a VAD — deliberately, since
+  adjudicating a VAD failure with a VAD is measuring the instrument with itself.
+  .
+  `speech_during_timeout` is an input, not an inference. It models the agent's
+  internal belief that the user was away, and no amount of listening to the audio
+  can reveal a belief. What the audio can reveal is that the belief was false.
+  .
+  Why text cannot test this: doubly. There is no silence in a transcript, and
+  the failure is a disagreement between the audio and the agent's state — two
+  things a transcript flattens into one.

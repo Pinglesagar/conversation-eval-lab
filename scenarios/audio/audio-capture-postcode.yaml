@@ -1,0 +1,45 @@
+id: audio-capture-postcode
+title: A postcode on a clean line, asserted as a value and never as a word error rate
+persona: brisk_regular
+tags: [digits-and-names, voice-en-gb]
+
+goal:
+  intent: give a postcode for the correspondence address
+  facts:
+    postcode: SW1A 1AA
+  success_criteria:
+    - the postcode on the record is the postcode that was said
+
+audio:
+  clip: postcode
+  languages: [en]
+  capture:
+    fields:
+      postcode: SW1A 1AA
+
+voice:
+  sample_rate: 16000
+  requires_events: [transcript_in]
+
+notes: >-
+  Reference bug 4 at its simplest, on a clean channel, so that a failure here is
+  a capture failure and cannot be blamed on the line. The line-quality rows carry
+  the same content over three degraded channels; this is their control.
+  .
+  It is also the canonical demonstration of the reference trap, which is why the
+  assertion is a field. Measured on the live engines, this exact clip produced a
+  transcript with every character of the postcode correct — and a normalised word
+  error rate of **0.000 against what was spoken, 1.400 against the string we
+  sent, and 0.700 against the smart-formatted rendering**. Same audio, same
+  transcript, three numbers. Scored the wrong way, the rows whose entire purpose
+  is proving a postcode survives become the worst category in the suite while
+  both vendors are working perfectly, and somebody swaps a vendor to fix nothing.
+  .
+  So the question this row asks is "is the value correct?", and the answer is an
+  exact comparison. WER is recorded alongside for the prose rows where it is the
+  right instrument, with its reference source named.
+  .
+  Why text cannot test this: the substitution being guarded against is acoustic.
+  Typing "SW1A 1AA" into a text harness tests the agent's handling of a postcode
+  it has already received perfectly, which is the half of the problem that was
+  never at risk.

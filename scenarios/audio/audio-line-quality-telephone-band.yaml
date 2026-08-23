@@ -1,0 +1,42 @@
+id: audio-line-quality-telephone-band
+title: The same postcode through a 300 to 3400 hertz telephone channel
+persona: polite_elder
+tags: [line-quality, ladder, voice-en-gb]
+
+goal:
+  intent: give a postcode over a landline
+  facts:
+    postcode: SW1A 1AA
+  success_criteria:
+    - narrowband alone does not cost the postcode
+
+audio:
+  clip: postcode
+  languages: [en]
+  capture:
+    fields:
+      postcode: SW1A 1AA
+
+voice:
+  sample_rate: 16000
+  perturbations:
+    - name: telephone_band
+      params: {low_hz: 300.0, high_hz: 3400.0}
+
+notes: >-
+  The rung that is not a degradation but a fact. 300 to 3400 Hz is the telephone
+  network, and for a voice product most real calls arrive through it, so this row
+  is the floor the other two are read against rather than an adversarial
+  condition. If the postcode does not survive narrowband on its own, the noise
+  and packet-loss findings mean nothing, because the baseline is already broken.
+  .
+  It also carries a specific risk for this content. Band-limiting removes the
+  high-frequency energy that distinguishes the fricatives and sibilants — the
+  letter names S and F, and the pair "S" and "F" spoken in a postcode — so a
+  narrowband capture failure on a spelled string is a different mechanism from a
+  noise failure, and the two want different remedies. Deterministic by
+  construction: a band-pass filter has no random component, so this rung needs no
+  seed and repeats exactly.
+  .
+  Why text cannot test this: a filter has no textual equivalent at all. The
+  quantity being removed is spectral energy.

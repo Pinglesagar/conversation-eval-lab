@@ -1,0 +1,12 @@
+{
+ "apply_text_normalization": "on",
+ "credits": 33,
+ "engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+ "language_code": "es",
+ "model_id": "eleven_flash_v2_5",
+ "output_format": "pcm_16000",
+ "sample_rate": 16000,
+ "spoken_text": "FINRA exige que le informemos del coste total antes de continuar.",
+ "text": "FINRA exige que le informemos del coste total antes de continuar.",
+ "voice_id": "JBFqnCBsd6RMkjVDRZzb"
+}

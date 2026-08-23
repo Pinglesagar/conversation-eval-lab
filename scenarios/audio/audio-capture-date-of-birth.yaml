@@ -1,0 +1,47 @@
+id: audio-capture-date-of-birth
+title: A spoken date of birth, and the formatter that rewrites it into a US date
+persona: polite_elder
+tags: [digits-and-names, voice-en-gb]
+
+goal:
+  intent: give a date of birth for identification
+  facts:
+    dob: 14 March 1982
+  success_criteria:
+    - the day, month and year all reach the record
+    - nothing silently reorders the day and the month
+
+audio:
+  clip: dob
+  languages: [en]
+  capture:
+    fields:
+      dob_day: 14th
+      dob_month: march
+      dob_year: "1982"
+
+voice:
+  sample_rate: 16000
+  requires_events: [transcript_in]
+
+notes: >-
+  Reference bug 4, and the row that carries the clearest single piece of evidence
+  for asserting fields instead of scoring strings. Measured live: the caller said
+  "the fourteenth of March, nineteen eighty-two" and Deepgram's smart-formatted
+  rendering was `03/14/1982` — **US month-day order, for a UK date**. Recognition
+  was perfect. Five of nine words differ from the spoken form, all of it
+  formatting policy, none of it error.
+  .
+  The three parts are asserted separately on purpose. A single `dob` field
+  comparison would be satisfied by a string that happens to contain the right
+  characters in the wrong order, and day-month transposition is precisely the
+  failure this content is exposed to — 14/03 and 03/14 are both valid dates, so
+  nothing downstream will ever reject the wrong one. A date of birth that is
+  wrong by a transposition is an identity check that passes for the wrong person.
+  .
+  Scored on `smart_format=false`, with the smart-formatted string kept for
+  display only and labelled, because that is where `03/14/1982` came from.
+  .
+  Why text cannot test this: the reordering happens in the speech recogniser's
+  formatter, downstream of the words and upstream of the agent. It exists only on
+  the audio path.

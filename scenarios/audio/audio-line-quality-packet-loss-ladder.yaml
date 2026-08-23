@@ -1,0 +1,47 @@
+id: audio-line-quality-packet-loss-ladder
+title: The postcode with packets dropped out of the middle of it
+persona: hurried_commuter
+tags: [line-quality, ladder, voice-en-gb]
+
+goal:
+  intent: give a postcode over a connection that is dropping audio
+  facts:
+    postcode: SW1A 1AA
+  success_criteria:
+    - the postcode survives, or the loss rate that broke it is named
+
+audio:
+  clip: postcode
+  languages: [en]
+  capture:
+    fields:
+      postcode: SW1A 1AA
+
+voice:
+  sample_rate: 16000
+  perturbations:
+    - name: packet_loss
+      params: {loss_rate: 0.05, packet_ms: 20.0, fill: zero, seed: 20260823}
+
+notes: >-
+  The third axis, and the one whose failure mode is unlike the other two. Noise
+  and band limiting degrade every part of the signal a little. Packet loss
+  removes short stretches completely and leaves the rest untouched, so its damage
+  is a matter of *where* the gaps land: 5 percent loss that happens to fall
+  across the two seconds of spelled postcode is far worse than 15 percent spread
+  over the surrounding prose, and an average loss rate does not distinguish them.
+  Seeded for exactly that reason — the placement is part of the condition, so it
+  has to be reproducible.
+  .
+  20 ms packets because that is the frame size in ordinary use, and zero-fill
+  rather than a repeat of the previous frame because zero-fill is the
+  pessimistic case and a channel test should not quietly assume the concealment
+  the transport might do for it.
+  .
+  The rung declared here is the row's verdict; the runner sweeps the ladder and
+  reports where capture breaks.
+  .
+  Why text cannot test this: dropping a token from a transcript is not the same
+  operation. Packet loss removes a fixed span of *time*, which can take half a
+  syllable, a whole word, or the boundary between two, and which of those it does
+  is the finding.

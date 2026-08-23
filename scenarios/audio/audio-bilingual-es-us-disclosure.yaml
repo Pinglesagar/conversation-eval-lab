@@ -1,0 +1,56 @@
+id: audio-bilingual-es-us-disclosure
+title: The recording disclosure delivered in English and then in Spanish
+persona: brisk_regular
+tags: [multilingual, code-switch, control-arm, voice-en-gb]
+
+goal:
+  intent: hear the call-recording disclosure in both languages
+  success_criteria:
+    - both halves of the disclosure are captured
+    - neither language displaces the other
+
+audio:
+  clip: es-disclosure
+  languages: [en, es]
+  capture:
+    fields:
+      english_half: recorded
+      spanish_half: cumplimiento
+
+voice:
+  sample_rate: 16000
+  requires_events: [transcript_in]
+
+notes: >-
+  **THE CONTROL ARM OF THE WHOLE MULTILINGUAL GROUP, and it is here for a
+  diagnostic reason rather than for coverage.** English/Spanish is the only pair
+  both vendors fully support, including code-switching: `es` is inside Deepgram
+  nova-3's ten-language `multi` set and ElevenLabs synthesises it. So this row is
+  the one place where a failure has only one possible cause.
+  .
+  Read the group as a three-way test:
+  .
+  * es-US passes and Singapore fails, so the failure is the **vendor** — the
+    limitation is real and no amount of work in this repo moves it.
+  * both fail, so the failure is the **agent** or the content, because the pair
+    that is known to work did not.
+  * es-US fails, so the failure is the **harness**, and every other multilingual
+    result in the suite is void until it is fixed.
+  .
+  Without this row those three outcomes are indistinguishable, and the default
+  reading of a red multilingual cell is "our product is bad in that market" — a
+  vendor limitation filed as a product bug, with an engineer assigned to it.
+  .
+  A caveat this row cannot fix, stated rather than left to be found: the caller
+  voice is a **British premade voice speaking Spanish**, not an es-US voice.
+  Voice Library voices are not available over the API on the free tier, so the
+  accent is wrong even though the language is right. What is being tested is the
+  language capability and the capture, not the accent.
+  .
+  Both halves are asserted rather than the sentence as a whole, because the
+  characteristic failure of a bilingual utterance is not garbling — it is one
+  language quietly winning, with the other transcribed as approximate English.
+  A whole-string check would report that as a partial match.
+  .
+  Why text cannot test this: the switch is the test. In text both clauses are
+  simply present, and no recogniser has to decide which language it is hearing.

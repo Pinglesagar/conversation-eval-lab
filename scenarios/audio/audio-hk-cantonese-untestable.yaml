@@ -1,0 +1,65 @@
+id: audio-hk-cantonese-untestable
+title: Hong Kong in Cantonese, which no model in this stack can speak
+persona: brisk_regular
+tags: [untestable]
+
+goal:
+  intent: ask about a portfolio in Cantonese, as a Hong Kong caller would
+  success_criteria:
+    - the suite records that this cannot be tested, rather than omitting it
+    - the report counts it as untestable and not as a pass or a failure
+
+audio:
+  languages: []
+  untestable:
+    language: yue
+    finding: >-
+      No ElevenLabs model can synthesise Cantonese. Verified against the live API
+      rather than the documentation: zero occurrences of `yue`, `zh-HK` or
+      "Cantonese" across all nine models, and the only Chinese language id is
+      `zh`, named "Mandarin Chinese" on eleven_v3. The Voice Library's `yue`
+      language filter returns 0 voices. The 13 voices labelled with a "Cantonese
+      (Hong Kong)" accent sit under `language=Chinese` — that is voice metadata,
+      not model support, and selecting one does not make the model speak
+      Cantonese. Deepgram nova-3 does transcribe `zh-HK` and does distinguish
+      Cantonese from Mandarin, so recognition is ahead of synthesis and the gap
+      is structural rather than a matter of effort or budget.
+    remediation:
+      - Azure AI Speech offers yue-HK neural voices; adding it behind the existing TTSEngine protocol moves Hong Kong from untestable to monolingual.
+      - Google Cloud Text-to-Speech offers yue-HK voices; same integration point, same gain.
+      - Neither moves Hong Kong further than monolingual, because zh-HK is outside Deepgram nova-3's ten-language code-switching set, so an English/Cantonese switching row stays out of reach on this recogniser.
+
+notes: >-
+  **A first-class row whose recorded result is UNTESTABLE.** Not a skip, not an
+  xfail, and above all not an absence — because an absent market and a passing
+  market look identical in a coverage table, and the difference is the most
+  important thing this suite has to say.
+  .
+  Hong Kong is a **regional hub** in the product brief, alongside Singapore and
+  London, and it is regulated by the SFC/IA. It is the one market in the matrix
+  with no audio path at all. There is no clip to perturb, no transcript to score
+  and no threshold to assert, so every other row in this tier is inapplicable to
+  it. Reporting that as "0 tests failed" would be true and useless.
+  .
+  The declaration is machine-readable so the report can count it in a third
+  column: `Scenario.audio_status()` returns `untestable`, distinct from `blocked`
+  — which is what `audio-barge-in-not-discovered` returns. The distinction is the
+  remediation. A blocked row waits on **this harness**; an untestable row waits on
+  **a vendor**, and the fix is a procurement decision rather than a patch.
+  .
+  It expires by itself. `UntestableDeclaration` validates `language` against
+  `SYNTHESISABLE_LANGUAGE_IDS`, so this row is only admissible *while* the vendor
+  still cannot synthesise Cantonese. The day `yue` appears in that set, this file
+  stops validating and somebody has to come back and write the real test. That is
+  the opposite of how a caveat in a document behaves — a document would still be
+  claiming the limitation years after it was lifted.
+  .
+  It declares no `voice:` block, and the loader enforces that too: sample rates,
+  perturbations and latency budgets are all properties of audio, and this row
+  exists to say the audio cannot be produced.
+  .
+  Why text cannot test this: text could test Hong Kong perfectly well, and that
+  is the finding. A text harness would report this market as covered, because
+  Cantonese written in Traditional characters goes through a text pipeline
+  without complaint. The gap only exists on the audio path, and it only becomes
+  visible when you try to make a sound.

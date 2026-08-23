@@ -1,0 +1,12 @@
+{
+ "apply_text_normalization": "on",
+ "credits": 43,
+ "engine": "tts:elevenlabs/eleven_flash_v2/JBFqnCBsd6RMkjVDRZzb",
+ "language_code": "en",
+ "model_id": "eleven_flash_v2",
+ "output_format": "pcm_16000",
+ "sample_rate": 16000,
+ "spoken_text": null,
+ "text": "Is that <phoneme alphabet=\"cmu-arpabet\" ph=\"B IY1 T IY0\">Beattie</phoneme> or Beatty?",
+ "voice_id": "JBFqnCBsd6RMkjVDRZzb"
+}

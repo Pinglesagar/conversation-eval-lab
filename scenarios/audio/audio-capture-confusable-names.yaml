@@ -1,0 +1,63 @@
+id: audio-capture-confusable-names
+title: Beattie and Beatty, with the difference between them deliberately removed
+persona: brisk_regular
+tags: [digits-and-names, confusable, phonetic-forced, voice-en-gb]
+
+goal:
+  intent: distinguish two near-identical surnames on the account
+  facts:
+    surname: Beattie
+  success_criteria:
+    - the two names are not collapsed into one
+    - if they are collapsed, the record says the pronunciation was forced
+
+audio:
+  clip: confusable-forced
+  control_clip: confusable-plain
+  languages: [en]
+  capture:
+    fields:
+      surname: Beattie
+    expect_capture: false
+
+voice:
+  sample_rate: 16000
+  requires_events: [transcript_in]
+
+notes: >-
+  Reference bug 4 in its hardest form, and the one row that uses phonetic
+  forcing. "Is that Beattie or Beatty?" is a question an adviser genuinely has to
+  resolve, and the two names differ by one unstressed final vowel.
+  .
+  Here that vowel is removed on purpose. SSML `<phoneme
+  alphabet="cmu-arpabet">` forces "Beattie" to be pronounced as "Beatty", so the
+  two names in the utterance are acoustically identical and the recogniser is
+  being asked to make a distinction that is no longer present in the signal.
+  `expect_capture: false` is therefore the correct declaration: **the slip is
+  planted, the row's job is to prove the harness notices it.** A row that
+  expected capture to succeed here would be asserting that a recogniser can
+  recover information that was destroyed before it arrived.
+  .
+  `control_clip` is what makes this a measurement rather than an anecdote. The
+  control is the same sentence with no phoneme tag, and the row reports both. If
+  the control captures and the forced clip does not, the forcing caused the
+  failure. If neither captures, the name was beyond the recogniser anyway and the
+  SSML proved nothing — which is a result worth having and a conclusion this row
+  would otherwise have got wrong.
+  .
+  Phonetic forcing is available for **English rows only**, and this is the
+  binding constraint rather than a preference. Inline IPA works on `eleven_v3`
+  alone; SSML `<phoneme>` works on `eleven_flash_v2` alone, which is
+  English-only and accepts one tag per word. The multilingual models get alias
+  substitution and pronunciation dictionaries — nothing phonetic. So a planted
+  mispronunciation cannot be built for any of the multilingual rows, and the
+  Spanish, Hindi and Mandarin rows carry no equivalent.
+  .
+  A consequence worth noticing: `eleven_flash_v2` is not in `SPOKEN_FORM_MODELS`,
+  so this clip has no spoken-form reference and no word error rate is available
+  for it at all. The one row where WER is impossible is a row where WER was the
+  wrong instrument anyway.
+  .
+  Why text cannot test this: the entire content of the row is a pronunciation.
+  In text, "Beattie" and "Beatty" are simply two different strings and nothing is
+  confusable about them.

@@ -1,0 +1,44 @@
+id: audio-capture-spelled-surname
+title: A surname spelled out letter by letter
+persona: minimal_replier
+tags: [digits-and-names, spelled, voice-en-gb]
+
+goal:
+  intent: give a surname and then spell it
+  facts:
+    surname: Gupta
+  success_criteria:
+    - the spelled letters are captured as the surname
+
+audio:
+  clip: spelled-surname
+  languages: [en]
+  capture:
+    fields:
+      surname: Gupta
+
+voice:
+  sample_rate: 16000
+  requires_events: [transcript_in]
+
+notes: >-
+  Spelling a name out is what a caller does *because* the first attempt was
+  misheard, so this row tests the recovery path rather than the happy one. If
+  spelled capture is unreliable, the agent has no escalation left and the call
+  ends with a wrong record or a transfer.
+  .
+  The content is deliberately a name the recogniser gets right unspelled, so that
+  the row isolates the spelled-letter mechanism. Letter names are acoustically
+  awful: B, D, E, G, P, T, V and three all share a vowel, and they are the
+  characters most exposed to the band limiting in the telephone-band row.
+  .
+  Capture is asserted after collapsing spelled runs on both sides — `g u p t a`
+  and `gupta` must reduce to the same token — because whether the recogniser
+  joins the letters is a formatting decision and not a recognition one. Live
+  measurement, this clip: raw `"my name is priya gupta that's g u p t a"`,
+  smart-formatted `"...that's g u p t a."` Both capture the surname; neither
+  string equals the other.
+  .
+  Why text cannot test this: "G-U-P-T-A" arrives in a text harness as five
+  characters that are already correct. The letters only exist as sounds that can
+  be confused with each other.

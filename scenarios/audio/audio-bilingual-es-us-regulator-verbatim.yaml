@@ -1,0 +1,47 @@
+id: audio-bilingual-es-us-regulator-verbatim
+title: A regulator's name inside a Spanish sentence, which must not be translated
+persona: corporate_pa
+tags: [multilingual, verbatim-entity, control-arm, voice-en-gb]
+
+goal:
+  intent: hear the cost disclosure requirement in Spanish
+  success_criteria:
+    - the regulator's name survives exactly as spoken
+    - it is not translated, expanded or spelled out
+
+audio:
+  clip: es-regulator
+  languages: [es]
+  capture:
+    verbatim: [FINRA]
+
+voice:
+  sample_rate: 16000
+  requires_events: [transcript_in]
+
+notes: >-
+  The second half of the control arm, and the one that matters for a regulated
+  product. A named regulatory body inside a Spanish sentence is a token that must
+  come back **verbatim** — not translated, not expanded into words, not
+  re-spelled. For a compliance record, "FINRA" and a plausible Spanish rendering
+  of it are not the same value, and a live in-call support surface that quotes
+  the wrong authority is worse than one that says nothing.
+  .
+  This is a specific and known weakness of multilingual recognition rather than a
+  hypothetical. A recogniser running in Spanish has every incentive to resolve an
+  unfamiliar acoustic sequence into Spanish phonology, and an all-caps English
+  acronym is exactly that sequence. The failure is quiet: the sentence still
+  reads as fluent Spanish and only the entity is wrong.
+  .
+  Asserted as a verbatim token rather than a field, because the check is identity
+  and not containment after normalisation. Case is folded — a recogniser choosing
+  `finra` over `FINRA` is making a formatting decision — but nothing else is.
+  .
+  `languages: [es]` and not `[es, en]`: the utterance is one language with one
+  borrowed proper noun in it, which is not code-switching, and declaring it as a
+  switch would have this row silently claim coverage that
+  `audio-bilingual-es-us-disclosure` is the actual test for.
+  .
+  Why text cannot test this: the risk is created by the recogniser's language
+  model. Written into a prompt, the acronym is five characters that cannot be
+  misheard.

@@ -1,0 +1,52 @@
+id: audio-barge-in-not-discovered
+title: An interruption the harness would have to notice by itself
+persona: hurried_commuter
+tags: [barge-in, interruption, not-yet-runnable, voice-en-gb]
+
+goal:
+  intent: talk over the agent without the harness being told in advance that you will
+  success_criteria:
+    - the run detects the overlap without being handed its timings
+    - the interruption events are emitted by the thing that observed it
+
+audio:
+  clip: suitability
+  agent_clip: agent-confirmation
+  languages: [en]
+  barge_in:
+    caller_starts_s: 1.2
+    expect_yield: false
+
+voice:
+  sample_rate: 16000
+  requires_events: [interruption_started, interruption_acknowledged, audio_emitted]
+
+notes: >-
+  **NOT YET RUNNABLE, and reported as blocked rather than as a pass.** This is
+  the honest half of reference bug 5, and the distinction it draws is the point
+  of the row.
+  .
+  The two event kinds this row requires are no longer un-emitted:
+  `interaction.emit_barge_in` writes them, and `audio-barge-in-agent-yields`
+  exercises that path. What does not exist is an adapter that *discovers* an
+  overlap. The turn loop plays the agent, then plays the caller; there is no
+  moment at which both are sounding, so there is nothing for a detector to find.
+  Every barge-in figure this suite can currently report was constructed from
+  timings the row handed it.
+  .
+  That difference decides what a green result would mean, which is why the row
+  exists as a declaration instead of as a sentence in a document. If it silently
+  passed on constructed timings, the suite would be claiming a detection
+  capability it does not have, and the first real duplex integration would be
+  measured against a baseline that had never detected anything.
+  .
+  `blocked_on()` derives this from `EventKind.V2_RESERVED` rather than from a
+  hand-kept list, so the day a duplex adapter emits these kinds and the schema
+  promotes them to `KNOWN`, this row becomes runnable on its own. The block
+  expires by itself; nobody has to remember it.
+  .
+  `expect_yield: false` is the prediction for the build being described, not an
+  aspiration: with no duplex path there is nothing to make the agent stop.
+  .
+  Why text cannot test this: as with its sibling, a transcript has no way to
+  represent two people speaking at once.

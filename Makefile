@@ -21,7 +21,7 @@ PY_OK := $(shell $(PYTHON) -c 'import sys; print(1 if sys.version_info[:2] >= (3
 PY_HAVE := $(shell $(PYTHON) -c 'import sys; print("%d.%d" % sys.version_info[:2])' 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help python-ok install test demo calibrate report validate replay errors reference live-replay live-score live-record audio-fixtures audio-check audio-setup roleplay-demo roleplay-validate advisory-verdicts clean
+.PHONY: help python-ok install test demo calibrate report validate replay errors reference live-replay live-score live-record audio-fixtures audio-check audio-suite audio-suite-plan audio-suite-record audio-suite-evidence audio-setup roleplay-demo roleplay-validate advisory-verdicts clean
 
 help:  ## Show this help.
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -53,6 +53,18 @@ audio-fixtures: python-ok  ## Re-record fixtures/audio from real speech (needs a
 
 audio-check: python-ok  ## Replay the committed audio fixtures and fail if they no longer match.
 	$(PYTHON) -m scripts.make_audio_fixtures --check
+
+audio-suite: python-ok  ## Run the 18-row in-process audio tier offline (no keys, no network).
+	$(PYTHON) -m pytest tests/test_audio_suite.py -q
+
+audio-suite-plan: python-ok  ## Print what re-recording the audio tier would cost, and spend nothing.
+	$(PYTHON) -m scripts.make_audio_suite_fixtures --dry-run
+
+audio-suite-record: python-ok  ## Re-record the audio tier (needs LAB_LIVE_TTS, LAB_LIVE_STT and both keys).
+	$(PYTHON) -m scripts.make_audio_suite_fixtures
+
+audio-suite-evidence: python-ok  ## Re-derive the tier's evidence file from the committed cassette. No keys.
+	$(PYTHON) -m scripts.make_audio_suite_fixtures --evidence-only
 
 audio-setup:  ## Show what the local speech engines would download, then install them.
 	./scripts/setup_audio.sh

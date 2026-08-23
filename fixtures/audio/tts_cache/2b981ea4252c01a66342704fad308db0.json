@@ -1,0 +1,12 @@
+{
+ "apply_text_normalization": "on",
+ "credits": 37,
+ "engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+ "language_code": "es",
+ "model_id": "eleven_flash_v2_5",
+ "output_format": "pcm_16000",
+ "sample_rate": 16000,
+ "spoken_text": "This call is recorded. Esta llamada se graba por motivos de cumplimiento.",
+ "text": "This call is recorded. Esta llamada se graba por motivos de cumplimiento.",
+ "voice_id": "JBFqnCBsd6RMkjVDRZzb"
+}

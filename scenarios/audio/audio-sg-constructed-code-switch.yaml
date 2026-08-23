@@ -1,0 +1,60 @@
+id: audio-sg-constructed-code-switch
+title: An English clause spliced onto a Mandarin one, because no model will say both
+persona: brisk_regular
+tags: [multilingual, code-switch, constructed, voice-en-gb]
+
+goal:
+  intent: ask about a portfolio, switching from English into Mandarin mid-utterance
+  success_criteria:
+    - if the switch is not followed, the record says which half was lost
+    - the result is read as a vendor boundary and not as a product defect
+
+audio:
+  clauses: [sg-english-clause, mandarin-portfolio]
+  languages: [en, zh]
+  capture:
+    fields:
+      english_half: portfolio
+      mandarin_half: 投资组合
+    expect_capture: false
+
+voice:
+  sample_rate: 16000
+  requires_events: [transcript_in]
+
+notes: >-
+  **CONSTRUCTED BY CONCATENATION, NOT NATIVE SYNTHESIS.** This utterance was
+  never spoken by any model. The English clause was synthesised with an English
+  voice, the Mandarin clause with a Mandarin voice, and the two waveforms were
+  joined into one clip. The label is on the row, in the report, and in
+  `docs/AUDIO_SUITE.md`, because a spliced utterance presented as a native one
+  would be the single most misleading artefact this suite could produce.
+  .
+  It is constructed because it cannot be synthesised. ElevenLabs has no
+  code-switching support and `language_code` pins exactly one language, so
+  Singapore's ordinary register — English with Mandarin phrases dropped into it —
+  has no native path on this vendor.
+  .
+  `expect_capture: false`, and the loader **enforces** that: `zh` is outside
+  Deepgram nova-3's ten-language `multi` set, so a row that switched into Mandarin
+  and expected capture to succeed would be declaring a test the recogniser cannot
+  pass, and its red cell would be read as a defect. The prediction is that one
+  half is transcribed and the other is either dropped or rendered as approximate
+  English. Whatever happens is recorded.
+  .
+  The splice is arguably the harder test, and that is a feature rather than an
+  excuse. A concatenated boundary has no coarticulation, no shared prosody and a
+  discontinuity at the join — conditions a real bilingual speaker never produces.
+  So a recogniser that follows this switch would certainly follow a natural one,
+  and a failure here does not by itself prove a natural switch would fail. The
+  row is a lower bound on capability, and it is labelled as one.
+  .
+  Singapore is a **regional hub** in the product brief, so this is not a marginal
+  market. Its verdict in the capability matrix is "monolingual": both languages
+  synthesise and transcribe perfectly on their own, and only the switch is out of
+  reach. That middle verdict is the one a pass/fail coverage table would destroy —
+  calling Singapore covered overclaims, calling it untestable hides that Hong
+  Kong is a different and worse problem.
+  .
+  Why text cannot test this: the join is an acoustic event. In text, two clauses
+  in two scripts are simply two clauses.

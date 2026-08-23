@@ -1,0 +1,52 @@
+id: audio-line-quality-noise-ladder
+title: A postcode read out over rising background noise
+persona: hurried_commuter
+tags: [line-quality, ladder, voice-en-gb]
+
+goal:
+  intent: give a postcode from a busy street
+  facts:
+    postcode: SW1A 1AA
+  success_criteria:
+    - the postcode reaches the record intact, or the failure names the noise level
+
+audio:
+  clip: postcode
+  languages: [en]
+  capture:
+    fields:
+      postcode: SW1A 1AA
+
+voice:
+  sample_rate: 16000
+  perturbations:
+    - name: add_noise
+      params: {snr_db: 6.0, kind: pink, seed: 20260823}
+
+notes: >-
+  One rung of the noise axis, and the rung the row's own verdict is read at:
+  6 dB SNR of pink noise, which is a genuinely bad line rather than an
+  adversarial one. The runner sweeps the whole declared ladder around it and
+  reports the SNR at which capture first breaks, because the useful output of a
+  channel test is a breaking point, not a boolean. "Fails at 6 dB" tells a team
+  nothing they can act on; "holds to 10 dB and breaks at 5" tells them what
+  margin they have.
+  .
+  Pink rather than white, because pink noise concentrates energy at the low end
+  where speech formants live and is the closer model of traffic and room noise.
+  Seeded, so the rung is one condition rather than a distribution: an unseeded
+  noise row re-rolls the channel every run and its pass or fail carries a
+  variance nobody records.
+  .
+  The content is a postcode because that is where a channel failure does harm. A
+  postcode is high-entropy — no language model can repair it from context, unlike
+  ordinary prose where a lost word is often recoverable — and a single wrong
+  character sends correspondence to the wrong address. Asserted as a field, never
+  as a word error rate: see `WER_NORMALISATION.md`, where this exact string
+  scores 0.000 or 1.400 on the same perfect transcript depending only on which
+  reference it is compared against.
+  .
+  Why text cannot test this: noise is not representable in text. A text harness
+  can delete or corrupt a token to simulate it, which tests the agent's tolerance
+  of a corruption the harness invented rather than the recogniser's behaviour
+  under a channel that actually occurs.

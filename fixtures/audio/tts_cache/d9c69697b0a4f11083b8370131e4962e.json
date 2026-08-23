@@ -1,0 +1,12 @@
+{
+ "apply_text_normalization": "on",
+ "credits": 29,
+ "engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+ "language_code": "en",
+ "model_id": "eleven_flash_v2_5",
+ "output_format": "pcm_16000",
+ "sample_rate": 16000,
+ "spoken_text": "The premium is four thousand two hundred and fifty pounds.",
+ "text": "The premium is four thousand two hundred and fifty pounds.",
+ "voice_id": "JBFqnCBsd6RMkjVDRZzb"
+}

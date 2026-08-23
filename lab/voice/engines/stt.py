@@ -477,12 +477,22 @@ class RecordedSTT:
         provenance: Provenance = str(entry.get("provenance", "recorded"))  # type: ignore[assignment]
         recorded_engine = str(entry.get("engine", REFERENCE_ENGINE))
         confidence = entry.get("confidence")
+        # `display_text` and `formatting` are carried forward because the
+        # cassette records them and dropping them made the smart-formatted
+        # rendering unreachable offline — which is where the evidence for the
+        # whole WER-reference finding lives (a UK date rendered `03/14/1982`).
+        # A replay that silently loses a recorded field is a replay that cannot
+        # reproduce the measurement it was recorded for.
+        display = entry.get("display_text")
+        formatting = entry.get("formatting")
         return Transcription(
             text=str(entry.get("text", "")),
             engine=f"replay:{recorded_engine}",
             provenance=provenance,
             confidence=float(confidence) if confidence is not None else None,
             language=entry.get("language"),
+            display_text=str(display) if display is not None else None,
+            **({"formatting": str(formatting)} if formatting is not None else {}),
         )
 
     def __repr__(self) -> str:
