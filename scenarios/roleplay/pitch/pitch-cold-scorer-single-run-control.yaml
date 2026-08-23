@@ -1,0 +1,50 @@
+id: pitch-cold-scorer-single-run-control
+title: The consistency transcript, graded once by a cold scorer
+customer: cautious_saver
+tags: [control, cohort-curve, score-consistency, disclosure]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - What matters more to you - a steadier ride, or a bigger number at the end?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      That is a fair point about last year. The fund is diversified across bonds
+      and equities, so one bad market does not decide the outcome.
+    - >-
+      On access, there is no lock-in. You can withdraw at any time, and the
+      annual management charge is 0.68 per cent a year.
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    A complete and compliant consultative session that never asks for the
+    business. Sixteen out of twenty is the right grade for it: everything the
+    customer needed to hear was said, and the trainee left without a decision.
+
+tools:
+  expected: [record_disclosure, score_session]
+  min_calls: {record_disclosure: 3}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+    - tool: score_session
+      arg: adjustment
+      op: eq
+      value: 0
+
+notes: >-
+  Deliberately the same trainee script as
+  consistency-identical-transcript-warm-k5. The only difference between the two
+  rows is how many times it is run and whether the scoring service is reused, and
+  that is the whole experiment: this row asserts the cold grade is 16 with a zero
+  curve adjustment, and the consistency row shows what the same performance scores
+  when the same service has graded four sessions before it. A boundary pair whose
+  boundary is a process lifetime rather than a threshold value.

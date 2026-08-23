@@ -1,0 +1,67 @@
+id: compliance-missing-risk-disclosure
+title: A fluent pitch with the word risk and no risk warning
+customer: cautious_saver
+tags: [disclosure, compliance-gate, discovery, closing]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - What matters more to you - a steadier ride, or a bigger number at the end?
+    - >-
+      The fund I have in mind is a balanced growth fund. There is a bit of risk in
+      it of course, but nothing that should trouble somebody with your level of
+      capital behind them.
+    - >-
+      That is a fair point about last year. It is diversified across bonds and
+      equities, so one bad market does not decide the outcome.
+    - On access, there is no lock-in. You can withdraw at any time.
+    - >-
+      So to summarise: growth over ten years and the money reachable when you
+      need it. Shall we get the paperwork started?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    Not one of the three disclosures this market requires was given. The word
+    "risk" appears once, inside a sentence whose purpose is to minimise it, and
+    the register is empty. A session in which the customer was never told they
+    could lose money cannot be certified however well the rest of it went.
+
+tools:
+  expected: [score_session]
+  forbidden: [record_disclosure]
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - a bit of risk
+  forbidden:
+    - capital at risk
+    - past performance
+    - annual management charge
+
+expected_failure:
+  contracts: [tools, score-claims-backed]
+  since: first observed in the 0.1.0 roleplay pack
+  expectation: >-
+    We expect this session to be certified. The mandatory-disclosure criterion is
+    computed from the presence of compliance vocabulary in the trainee's speech
+    rather than from the register, and "a bit of risk" plus "your level of
+    capital" is two keywords, which is enough for three marks out of four. So the
+    tool contract should report a pass where a fail was required, and the claim
+    contract should report the score card asserting that the disclosure was given
+    while the register holds nothing at all. Read as a pair they describe a
+    trainee who is now certified to have a conversation they have never had.
+
+notes: >-
+  The sentence is the interesting part. "There is a bit of risk in it of course,
+  but nothing that should trouble somebody with your level of capital" is worse
+  than silence: it contains both of the words the criterion looks for and it
+  actively reassures. A keyword-scored compliance criterion does not merely miss
+  this - it rewards it.

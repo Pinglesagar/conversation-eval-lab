@@ -1,0 +1,59 @@
+id: locale-apac-suitability-disclosure
+title: A market that requires a fourth disclosure
+customer: cautious_saver
+tags: [jurisdiction, disclosure, control, closing]
+jurisdiction: apac-retail
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - What matters more to you - a steadier ride, or a bigger number at the end?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      That is a fair point about last year. It is diversified across bonds and
+      equities, so one bad market does not decide the outcome.
+    - >-
+      On access, there is no lock-in. You can withdraw at any time, and the
+      annual management charge is 0.68 per cent a year.
+    - >-
+      Nothing is decided today. Once we have completed the suitability assessment
+      I can tell you whether this is right for you at all. Shall we book that in?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    The same conversation as the exemplary row plus the fourth disclosure this
+    market requires, and the trainee closes on the suitability review rather than
+    on the product. All four required codes are in the register in registered
+    wording.
+
+tools:
+  expected: [record_disclosure, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 4}
+  args:
+    - tool: score_session
+      arg: jurisdiction
+      op: eq
+      value: apac-retail
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - once we have completed the suitability assessment
+
+notes: >-
+  The control that proves the requirement set is data keyed by market rather than a
+  constant. The trainee script here is the exemplary row plus one sentence, and the
+  register demands four codes instead of three purely because the scenario names a
+  different jurisdiction. If a future change hard-codes the European set, this row
+  goes red and the exemplary row stays green, which localises the regression to the
+  keying rather than to the register.

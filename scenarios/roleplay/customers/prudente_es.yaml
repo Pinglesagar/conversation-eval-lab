@@ -1,0 +1,30 @@
+# The same cautious customer, in Spanish. The jurisdiction is unchanged: the
+# disclosure requirement is a property of the market, not of the language, and
+# separating the two is the whole point of this profile.
+key: prudente_es
+display_name: Sra. Rivas
+situation: Tengo unos ahorros en la cuenta y no se muy bien que hacer con ellos.
+language: es
+jurisdiction: eu-retail
+probes_to_reveal: 1
+
+concerns:
+  - key: estudios
+    topic: los estudios de mis hijos
+    reveal: >-
+      Lo que me preocupa son los estudios de mis hijos, que empiezan dentro de
+      cuatro anos.
+
+objections:
+  - key: perdidas
+    topic: las perdidas del ano pasado
+    says: >-
+      He leido que estos fondos perdieron dinero el ano pasado. Por que iba a
+      poner mis ahorros ahi?
+    handled_by: ["rentabilidad pasada", "ano pasado", "diversific", "mercado"]
+
+notes: >-
+  Accents are omitted throughout, deliberately. `roleplay.register.normalise`
+  strips them before matching, so a register that recorded a disclosure only when
+  the diacritics were right would be measuring a keyboard rather than a
+  disclosure. Writing the fixtures without them keeps that property under test.

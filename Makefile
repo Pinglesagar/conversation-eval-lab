@@ -21,7 +21,7 @@ PY_OK := $(shell $(PYTHON) -c 'import sys; print(1 if sys.version_info[:2] >= (3
 PY_HAVE := $(shell $(PYTHON) -c 'import sys; print("%d.%d" % sys.version_info[:2])' 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help python-ok install test demo calibrate report validate replay errors reference audio-fixtures audio-check audio-setup clean
+.PHONY: help python-ok install test demo calibrate report validate replay errors reference audio-fixtures audio-check audio-setup roleplay-demo roleplay-validate clean
 
 help:  ## Show this help.
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -79,6 +79,22 @@ errors: python-ok  ## Recount the hand-assigned failure modes and redraw error_a
 reference: python-ok  ## Regenerate the committed reference run. Review the diff before committing it.
 	$(PYTHON) -m lab.cli run --out fixtures/replay_run
 	@git --no-pager diff --stat -- fixtures/replay_run
+
+# The roleplay pack is a second domain on the same framework: a BFSI sales-coach
+# whose scorer is the system under test. It shares `lab/` and nothing else, which
+# is the point of it, so it gets its own entry points rather than being folded
+# into `demo` — a target that ran both would make it impossible to tell which
+# domain a failure came from.
+#
+# `roleplay-demo` prints red findings and exits zero. Those are two different
+# verdicts: the product under test has three real defects and the run reports all
+# of them, while the exit code says only whether anything moved since the last
+# review. See docs/ADVISORY_DEMO.md.
+roleplay-demo: python-ok  ## Run the BFSI sales-roleplay pack: contracts, score consistency, scorer calibration.
+	$(PYTHON) -m roleplay.demo
+
+roleplay-validate: python-ok  ## Validate the roleplay corpus against its schema, with coverage.
+	$(PYTHON) -m roleplay.corpus --coverage --list
 
 clean:  ## Remove caches and build output.
 	rm -rf build dist .pytest_cache .coverage htmlcov *.egg-info

@@ -1,0 +1,31 @@
+# Volunteers nothing, answers in a word, and needs two open questions before a
+# concern surfaces. Whether the trainee keeps asking is the thing under test.
+key: reluctant_minimal
+display_name: Mr Tan
+situation: Not much to tell.
+language: en
+jurisdiction: eu-retail
+terse: true
+probes_to_reveal: 2
+
+concerns:
+  - key: redundancy
+    topic: redundancy
+    reveal: >-
+      There is talk of redundancies at work. That is the honest answer, and it is
+      why I have not moved the money.
+    reveal_terse: Might be made redundant. That is it.
+
+objections:
+  - key: too_complicated
+    topic: complexity
+    says: >-
+      Sounds complicated.
+    says_terse: Sounds complicated.
+    handled_by: ["simple", "one fund", "plain", "in one line", "straightforward"]
+
+notes: >-
+  The monosyllabic customer is the row that catches a scorer crediting discovery
+  for questions that produced nothing. Two probes are needed here and one is not
+  enough, so a trainee who asks once and gives up scores differently from one who
+  asks twice - and the transcripts differ by a single turn.

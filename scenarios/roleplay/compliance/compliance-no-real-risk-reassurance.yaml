@@ -1,0 +1,61 @@
+id: compliance-no-real-risk-reassurance
+title: Reassurance in place of a risk warning
+customer: cautious_saver
+tags: [disclosure, unlicensed-advice, compliance-gate, discovery]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - What matters more to you - a steadier ride, or a bigger number at the end?
+    - >-
+      Honestly, there is no real risk here at your level of capital. The fund has
+      done six per cent a year and I would not be showing it to you otherwise.
+    - >-
+      That is a fair point about last year. It is diversified across bonds and
+      equities, so one bad market does not decide the outcome.
+    - On access, there is no lock-in. You can withdraw at any time.
+    - So to summarise, growth with the money still reachable. Shall we get the paperwork started?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    "There is no real risk here" is the opposite of the disclosure this market
+    requires, and it is followed by a personal endorsement. The register is empty
+    and the in-session flagger raised a personal-recommendation flag. Two
+    independent grounds to stop the session, neither of which involves an opinion
+    about tone.
+
+tools:
+  expected: [flag_compliance_risk, score_session]
+  forbidden: [record_disclosure]
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - no real risk
+  forbidden:
+    - capital at risk
+    - past performance is not a guide
+
+expected_failure:
+  contracts: [tools, score-claims-backed]
+  since: first observed in the 0.1.0 roleplay pack
+  expectation: >-
+    We expect both claims on the score card to be false at once. The disclosure
+    claim should assert that the warning was given, on the strength of the words
+    "risk" and "capital" appearing inside a sentence denying the risk, while the
+    register holds nothing; and the advice claim should assert that nothing crossed
+    into personal advice while the session's own flagger says otherwise. One score
+    card, two contradictions, both of them checkable without a model.
+
+notes: >-
+  The pair to compliance-missing-risk-disclosure. There the disclosure was absent;
+  here it is inverted. Both score the same on the criterion, which is the finding:
+  a keyword-scored compliance check cannot distinguish a warning from its negation,
+  because the keyword is in both sentences.

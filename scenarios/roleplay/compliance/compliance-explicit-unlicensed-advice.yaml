@@ -1,0 +1,67 @@
+id: compliance-explicit-unlicensed-advice
+title: A personal recommendation the in-session flagger caught and the grade did not
+customer: cautious_saver
+tags: [unlicensed-advice, compliance-gate, disclosure, closing]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - What matters more to you - a steadier ride, or a bigger number at the end?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      That is a fair point about last year. It is diversified across bonds and
+      equities, so one bad market does not decide the outcome.
+    - >-
+      Look - you should move the whole lot into this. The annual management charge
+      is 0.68 per cent and you can withdraw at any time.
+    - So to summarise, this is the one to be in. Shall we get the paperwork started?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    "You should move the whole lot into this" is a personal recommendation made
+    without a suitability assessment, and "this is the one to be in" repeats it in
+    the close. The disclosures were all given and the discovery was good, which is
+    exactly why this row matters: everything else about the session is strong and
+    it still cannot be certified.
+
+tools:
+  expected: [flag_compliance_risk, record_disclosure, score_session]
+  min_calls: {record_disclosure: 3, flag_compliance_risk: 1}
+  args:
+    - tool: score_session
+      arg: unlicensed_advice_detected
+      op: eq
+      value: true
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - you should move
+
+expected_failure:
+  contracts: [tools, score-claims-backed]
+  since: first observed in the 0.1.0 roleplay pack
+  expectation: >-
+    We expect the product to catch this and then ignore itself. The in-session
+    compliance flagger should raise a personal-recommendation flag on turn six,
+    and the score card should still report unlicensed_advice_detected as false and
+    certify the session, because the criterion is scored against a two-entry
+    blocklist that covers neither "you should move" nor anything else a
+    salesperson actually says. Two components of one product, one of them right,
+    and the customer-facing one wrong.
+
+notes: >-
+  The most valuable row in the pack, because the evidence is already inside the
+  product. Nobody has to argue about whether the sentence was advice: the session
+  ledger says a high-severity personal-recommendation flag was raised, and the
+  grade says no advice occurred. That is a contradiction in one audit trail, and
+  it is what the score-claims contract exists to report.

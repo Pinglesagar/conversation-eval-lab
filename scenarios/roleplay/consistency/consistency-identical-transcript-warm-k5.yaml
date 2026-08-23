@@ -1,0 +1,57 @@
+id: consistency-identical-transcript-warm-k5
+title: The same performance, graded five times by the same service
+customer: cautious_saver
+tags: [score-consistency, cohort-curve, disclosure]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - What matters more to you - a steadier ride, or a bigger number at the end?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      That is a fair point about last year. The fund is diversified across bonds
+      and equities, so one bad market does not decide the outcome.
+    - >-
+      On access, there is no lock-in. You can withdraw at any time, and the
+      annual management charge is 0.68 per cent a year.
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    Identical in every respect to pitch-cold-scorer-single-run-control, which a
+    reviewer passes at sixteen out of twenty. The same performance must receive the
+    same grade; if it does not, the disagreement is with the product and not with
+    the reviewer.
+
+tools:
+  expected: [record_disclosure, score_session]
+  min_calls: {record_disclosure: 3}
+
+consistency:
+  k: 5
+  tolerance: 0
+  control: true
+  expected_spread: 4
+  expected_flips: 1
+  expectation: >-
+    We expect five identical inputs to produce five different grades. Graded by one
+    long-lived scoring service the totals should walk downwards as the service
+    steers its recent pass rate towards a target, crossing the pass threshold part
+    way through, so that the same performance is both certified and refused inside
+    one run of five. The cold control arm - a fresh service per repeat - should be
+    flat, which is what localises the movement to state held between sessions
+    rather than to the grading of any one session.
+
+notes: >-
+  A tolerance of zero, stated rather than defaulted. A rubric score that moves at
+  all on identical input is a defect, and any non-zero tolerance here would be an
+  argued exception rather than a starting position. The row is declared with
+  min_calls only: what it asserts about the score is not a value but a spread, and
+  a spread is not something a per-run contract can express - which is why
+  roleplay.consistency exists as a separate verdict family rather than as another
+  contract.

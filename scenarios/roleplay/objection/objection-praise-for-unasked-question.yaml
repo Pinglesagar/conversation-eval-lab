@@ -1,0 +1,67 @@
+id: objection-praise-for-unasked-question
+title: Three good questions, none of them the one it praises
+customer: aggressive_challenger
+tags: [discovery, feedback-groundedness, objection-handling, disclosure]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Where has this money been sitting, and what has stopped you moving it before now?
+    - How much of it would you want to keep where you can reach it?
+    - Which would bother you more - a bad year, or five flat ones?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      On cost, the annual management charge is 0.68 per cent and every figure I
+      have quoted is net of it.
+    - >-
+      And you are right that we receive a commission on this product. If the
+      suitability review says it is not right for you, we do not proceed.
+    - >-
+      So to summarise: capital at risk, 0.68 per cent a year, nothing signed until
+      the review. Shall we get started on it?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    Three open questions, both objections answered in the customer's own terms,
+    every required disclosure given in registered wording, the commission
+    volunteered, and a summary before the ask. A strong session by any reading of
+    the rubric.
+
+tools:
+  expected: [record_disclosure, resolve_objection, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 3, resolve_objection: 2}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - what has stopped you moving it before now
+  forbidden:
+    - what would you want this money to be doing
+
+expected_failure:
+  contracts: [feedback-grounded]
+  since: first observed in the 0.1.0 roleplay pack
+  expectation: >-
+    We expect a deserved top mark for discovery and a quoted question that does
+    not appear anywhere in the session. The trainee's three questions are good and
+    none of them is the template's exemplar, so the feedback should attribute the
+    exemplar to them verbatim, in quotation marks. The forbidden phrase clause is
+    what makes this an assertion rather than an assumption: the row is rejected at
+    load time if the script happens to contain the exemplar wording.
+
+notes: >-
+  The cleanest statement of the defect in the pack, because there is nothing else
+  wrong with the row. Every number is correct, the customer was handled well, and
+  the one thing the product says to the human being who did the work is untrue.
+  This is the failure mode that a rubric-score regression suite is structurally
+  incapable of catching, and it is caught here by a deterministic contract with no
+  judge and no API key.

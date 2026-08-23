@@ -1,0 +1,36 @@
+# The combative customer. Raises objections unprompted and repeats an unhandled
+# one rather than letting it drop, which is what makes a row using this profile
+# able to distinguish "engaged with the objection" from "waited it out".
+key: aggressive_challenger
+display_name: Mr Novak
+situation: I run my own business and I have been sold to before.
+language: en
+jurisdiction: eu-retail
+assertive: true
+probes_to_reveal: 1
+
+concerns:
+  - key: past_mis_sale
+    topic: the last thing I was sold
+    reveal: >-
+      What is actually on my mind is that the last person who sat where you are
+      sold me something that lost money, and nobody rang me afterwards.
+
+objections:
+  - key: fees
+    topic: charges
+    says: >-
+      Your charges will eat the whole return. My brother-in-law says these
+      products are a racket and the fees are where the money goes.
+    handled_by: ["annual management charge", "ongoing charges", "net of", "total cost"]
+  - key: whose_interest
+    topic: whose interest you serve
+    says: >-
+      And you are paid to sell me this. Why would I trust a word of it?
+    handled_by: ["commission", "paid a fee", "suitability", "no obligation"]
+
+notes: >-
+  `assertive: true` only matters once the bank is empty: the customer then
+  re-raises whatever is still unhandled instead of moving on. That is the
+  behaviour a trainee has to survive, and it is also the behaviour that makes an
+  unhandled objection visible in the ledger for as long as it stays unhandled.

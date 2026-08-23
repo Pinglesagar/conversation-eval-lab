@@ -1,0 +1,71 @@
+id: locale-es-mx-registered-spanish-disclosure
+title: A compliant session in Spanish, graded by an English keyword list
+customer: prudente_es
+tags: [multilingual, disclosure, jurisdiction, discovery]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Antes de ensenarle nada, que le gustaria que hiciera este dinero en diez anos?
+    - Y cuanto necesitaria poder retirar en poco tiempo?
+    - >-
+      El fondo que tengo en mente es un fondo mixto de crecimiento. Puede
+      recuperar menos de lo que invierte, y la rentabilidad pasada no garantiza la
+      rentabilidad futura.
+    - >-
+      Es cierto lo del ano pasado. El fondo esta diversificado entre bonos y
+      acciones, asi que un mal mercado no decide el resultado.
+    - >-
+      La comision de gestion anual es del 0,68 por ciento y puede retirar el
+      dinero cuando quiera.
+    - >-
+      En resumen: crecimiento a diez anos, dinero disponible, 0,68 por ciento al
+      ano. Empezamos?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    Every disclosure this market requires was given in the registered Spanish
+    wording and the register records all three. Two open questions, the objection
+    about last year answered, and a summary before the ask. The session is
+    compliant and competent; the only thing wrong with it is the language it is in,
+    which is not a defect in the trainee.
+
+tools:
+  expected: [record_disclosure, score_session]
+  min_calls: {record_disclosure: 3}
+  args:
+    - tool: score_session
+      arg: language
+      op: eq
+      value: es
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - puede recuperar menos de lo que invierte
+    - la rentabilidad pasada no garantiza la rentabilidad futura
+    - la comision de gestion anual
+
+expected_failure:
+  contracts: [tools]
+  since: first observed in the 0.1.0 roleplay pack
+  expectation: >-
+    We expect the register to get this right and the scorer to get it wrong. All
+    three required codes should be recorded from the registered Spanish phrasings,
+    and the mandatory-disclosure criterion should still score zero, because it
+    matches English keywords against the transcript instead of reading the register
+    the product just wrote. The discovery criterion should score zero for the same
+    class of reason. A compliant Spanish-speaking adviser is refused certification
+    on a session in which they did everything required of them.
+
+notes: >-
+  Not a fourth defect. It is the same root cause as the compliance rows - a
+  criterion computed from vocabulary rather than from the ledger - wearing a
+  different symptom, and it fails in the opposite direction: on the English rows
+  the keyword scoring over-credits, and here it under-credits. That symmetry is the
+  argument for fixing the mechanism rather than extending the word list, and a word
+  list extended into Spanish would leave the English over-crediting untouched.

@@ -1,0 +1,52 @@
+id: pitch-feature-dump-no-discovery
+title: Product features, no questions, no disclosures
+customer: cautious_saver
+tags: [discovery, objection-handling, feedback-groundedness, compliance-gate]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - >-
+      Let me take you through the Horizon Balanced Growth Fund. It has returned
+      an average of six per cent a year since launch.
+    - It holds around sixty per cent equities and forty per cent bonds, rebalanced quarterly.
+    - Most of the people I look after in your position hold it for the long term.
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    No question is asked at any point, so nothing about this customer's needs was
+    established; both objections are raised and neither is engaged with; no
+    required disclosure is given in any wording; and the trainee never asks for
+    the business. There is no reading of the rubric on which this passes.
+
+tools:
+  expected: [raise_objection, score_session]
+  forbidden: [record_disclosure, resolve_objection]
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  forbidden:
+    - capital at risk
+    - past performance
+
+expected_failure:
+  contracts: [feedback-grounded]
+  since: first observed in the 0.1.0 roleplay pack
+  expectation: >-
+    We expect the score to be right and the feedback to be invented. The verdict
+    should be a clear fail, and the low objection-handling score should trigger
+    the template sentence about the customer raising cost - which this customer
+    never did. The objections on the table were last year's losses and access to
+    the money. A trainee who acted on this feedback would go and prepare a fee
+    rebuttal for an objection nobody made.
+
+notes: >-
+  The row that stops the pack from being a story about a lenient scorer. This
+  session fails, correctly, on the criteria that are computed properly. What is
+  wrong with it is the reasoning printed underneath the number, and a suite that
+  only asserted the verdict would report this row as a clean catch.

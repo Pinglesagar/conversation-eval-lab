@@ -1,0 +1,62 @@
+id: pitch-terse-customer-patient-probing
+title: Two probes before a monosyllabic customer says anything
+customer: reluctant_minimal
+tags: [discovery, monosyllabic-customer, feedback-groundedness, disclosure]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - What would you like your savings to be doing over the next five years?
+    - How would you feel about something that moves up and down a little in exchange for more growth?
+    - What would change for you if that happened?
+    - >-
+      Then here is the shape of it in one line: one fund, capital at risk, you
+      could get back less than you put in, and past performance is not a guide to
+      future performance.
+    - >-
+      It is deliberately simple - one fund, one annual management charge of 0.68
+      per cent, and nothing for you to manage yourself.
+    - >-
+      So to summarise: one simple fund, your capital at risk, 0.68 per cent a
+      year. Shall we get started?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    The customer volunteers nothing and the trainee keeps asking anyway, which is
+    the behaviour being practised. Three open questions, the complexity objection
+    answered in the customer's own terms, all three required disclosures in
+    registered wording, and a summary before the ask.
+
+tools:
+  expected: [record_disclosure, raise_objection, resolve_objection, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 3}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - capital at risk
+    - annual management charge
+
+expected_failure:
+  contracts: [feedback-grounded]
+  since: first observed in the 0.1.0 roleplay pack
+  expectation: >-
+    We expect this session to score full marks and be handed feedback that quotes
+    a question the trainee never asked. The discovery criterion is satisfied by
+    three good questions; the feedback template for a high discovery score carries
+    its exemplar in quotation marks, and this trainee's wording is not the
+    exemplar's. The number will be right and the sentence under it will be
+    fiction, which is the combination a score-only regression suite cannot see.
+
+notes: >-
+  The control for the monosyllabic pair is the customer profile itself: two probes
+  are needed here and one is not enough, so a trainee who asks once and gives up
+  produces a measurably different row. Read alongside
+  pitch-exemplary-eu-retail-run, where the same feedback template fires and is
+  grounded - the difference between the two rows is the wording of one question.

@@ -1,0 +1,63 @@
+id: pitch-exemplary-eu-retail-run
+title: A complete, compliant, consultative pitch
+customer: cautious_saver
+tags: [discovery, objection-handling, disclosure, closing, control]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - Thank you. And how much of it would you need to be able to reach at short notice?
+    - What matters more to you - a steadier ride, or a bigger number at the end?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      That is a fair point about last year. The fund is diversified across bonds
+      and equities precisely so that one bad market does not decide the outcome.
+    - >-
+      On access, there is no lock-in at all. You can withdraw at any time, and
+      the annual management charge is 0.68 per cent a year.
+    - >-
+      So to summarise: growth over ten years, the money reachable when you need
+      it, 0.68 per cent a year in charges, and your capital at risk. Shall we get
+      the paperwork started?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    Three open questions before a single product feature, both objections engaged
+    with rather than acknowledged, all three disclosures this market requires
+    given in registered wording, no personal recommendation, and a summary before
+    the ask. There is nothing here a reviewer would stop.
+
+tools:
+  expected: [load_customer_profile, record_disclosure, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 3, resolve_objection: 2}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+    - tool: score_session
+      arg: mandatory_disclosure_given
+      op: eq
+      value: true
+
+trainee_phrases:
+  required:
+    - capital at risk
+    - past performance is not a guide to future performance
+    - annual management charge
+
+notes: >-
+  The row every other row is read against. It is not here to prove the product
+  works; it is here so that a finding elsewhere is a statement about a boundary
+  rather than a guess about the model. Note in particular that the canned exemplar
+  question in the scorer's feedback happens to be grounded on this row, because
+  this trainee asked almost exactly the model question - which is why the
+  hallucination seeded in the feedback generator is invisible here and visible on
+  pitch-terse-customer-patient-probing, where the trainee's three questions are
+  just as good and differently worded.

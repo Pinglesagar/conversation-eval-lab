@@ -1,0 +1,44 @@
+# The default customer: cooperative, risk-averse, and holding two things back.
+#
+# Cooperativeness is high on purpose. This customer is not obstructive, they are
+# private: the concerns surface on the first open question and never without one,
+# so a row using this profile measures whether the trainee asked, not whether the
+# customer relented.
+key: cautious_saver
+display_name: Ms Bergstrom
+situation: I have about sixty thousand sitting in a savings account doing nothing much.
+language: en
+jurisdiction: eu-retail
+probes_to_reveal: 1
+
+concerns:
+  - key: school_fees
+    topic: school fees
+    reveal: >-
+      Honestly, the thing on my mind is school fees. There are two lots of them
+      starting in three years, so I cannot have all of it locked away.
+  - key: spouse
+    topic: my husband
+    reveal: >-
+      And my husband handles our long-term money. He will want to see whatever
+      this is in writing before I agree to anything.
+
+objections:
+  - key: last_year_losses
+    topic: last year's losses
+    says: >-
+      I read that funds like this one lost money last year. Why would I put good
+      savings into that?
+    handled_by: ["past performance", "last year", "market", "diversif", "spread across"]
+  - key: lock_in
+    topic: access to the money
+    says: >-
+      And how long would it be tied up? I do not like the idea of not being able
+      to get at my own money.
+    handled_by: ["access", "withdraw", "notice period", "no lock", "any time"]
+
+notes: >-
+  Two objections in this order and no others. The order is load-bearing for the
+  objection suite: a row that handles the first and abandons the second is a
+  different finding from one that abandons both, and a customer who volunteered
+  them in a different order each run would make neither finding reproducible.

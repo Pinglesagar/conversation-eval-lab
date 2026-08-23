@@ -1,0 +1,57 @@
+id: objection-aggressive-fee-challenge
+title: A combative customer, both objections answered in their own terms
+customer: aggressive_challenger
+tags: [objection-handling, aggressive-customer, disclosure, control]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before anything else, what would you want this money to be doing for you in ten years?
+    - How would you want to be told if it went the wrong way?
+    - What matters more to you - the number at the end, or knowing where it is?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      On cost, the annual management charge is 0.68 per cent and there is nothing
+      else. Every return figure I have quoted you is net of it.
+    - >-
+      On the second point, we receive a commission on this product and I would
+      rather you heard that from me. If the suitability review says this is not
+      right for you, we do not proceed.
+    - >-
+      So to summarise: your capital at risk, 0.68 per cent a year, and no
+      obligation until the review is done. Shall we get started on that review?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    Both objections were answered on their merits rather than deflected - the fee
+    objection with the actual charge and the fact that quoted returns are net of
+    it, the trust objection by volunteering the commission unprompted. Three open
+    questions, all disclosures given, no recommendation, and a summary before the
+    ask.
+
+tools:
+  expected: [raise_objection, resolve_objection, record_disclosure, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 3, resolve_objection: 2}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - annual management charge
+    - we receive a commission on this product
+
+notes: >-
+  The aggressive profile re-raises anything still unhandled, so a row using it
+  cannot pass by outlasting the customer. It is also the control for the fee
+  objection in the feedback templates: on this row the customer really did raise
+  cost, so the template sentence about it would be grounded - which is what makes
+  the same sentence on objection-lock-in-left-unanswered a finding rather than a
+  wording quibble.

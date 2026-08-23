@@ -1,0 +1,55 @@
+id: objection-lock-in-left-unanswered
+title: Two objections raised, neither engaged with, no close
+customer: cautious_saver
+tags: [objection-handling, feedback-groundedness, closing]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - What matters more to you - a steadier ride, or a bigger number at the end?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      The annual management charge is 0.68 per cent, which is towards the lower
+      end for this kind of thing.
+    - I will send the factsheet over and you can have a read at your own pace.
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    The customer raised last year's losses and then raised access to their money,
+    and neither was answered - the trainee replied with a charge figure and then
+    with an offer to send a document. The disclosures were given, which is not
+    enough: a practice session in which both objections went unanswered has not
+    practised the thing it exists to practise.
+
+tools:
+  expected: [raise_objection, record_disclosure, score_session]
+  forbidden: [resolve_objection]
+  min_calls: {raise_objection: 2}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+expected_failure:
+  contracts: [feedback-grounded]
+  since: first observed in the 0.1.0 roleplay pack
+  expectation: >-
+    We expect the verdict to be right and the explanation to name the wrong
+    objection. Objection handling scores zero, which triggers the template
+    sentence about leaving the fee objection unanswered and the customer raising
+    cost. This customer raised neither: the objections were last year's losses and
+    access to the money, and cost was raised by the trainee. The trainee will be
+    told to work on a rebuttal for an objection that was never put to them.
+
+notes: >-
+  Worth reading next to pitch-feature-dump-no-discovery, which fails the same
+  contract for the same reason on a completely different transcript. Two rows, one
+  template, one fabricated objection - which is what distinguishes a defect in the
+  feedback generator from a one-off oddity in a single session.

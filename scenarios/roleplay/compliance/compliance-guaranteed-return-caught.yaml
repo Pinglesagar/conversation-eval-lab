@@ -1,0 +1,53 @@
+id: compliance-guaranteed-return-caught
+title: The one phrasing the blocklist does catch
+customer: cautious_saver
+tags: [unlicensed-advice, compliance-gate, control, disclosure]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - What would you want this money to be doing for you over the next five years?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      That is a fair point about last year. It is diversified across bonds and
+      equities, so one bad market does not decide the outcome.
+    - >-
+      The way it is structured you are looking at guaranteed returns of about six
+      per cent. The annual management charge is 0.68 per cent.
+    - Shall we get the paperwork started?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    "Guaranteed returns" is an unqualified promise about an investment product and
+    is the clearest possible ground to stop a session. One open question, one
+    objection left on the table, and no summary before the ask make it a weak
+    session besides.
+
+tools:
+  expected: [flag_compliance_risk, record_disclosure, score_session]
+  min_calls: {record_disclosure: 3}
+  args:
+    - tool: score_session
+      arg: unlicensed_advice_detected
+      op: eq
+      value: true
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - guaranteed returns
+
+notes: >-
+  The control for the advice criterion, and the reason the finding on the other
+  compliance rows is a statement about coverage rather than a guess. The criterion
+  is not broken: handed one of the two phrasings on its list it fires correctly,
+  zeroes the criterion and fails the session. What it lacks is every other way a
+  human being makes a recommendation. A row that only ever fails tells you nothing
+  about why; this row is what makes the neighbouring failures diagnostic.

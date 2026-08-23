@@ -1,0 +1,52 @@
+id: consistency-borderline-transcript-warm-k5
+title: A session on the pass line, graded five times
+customer: aggressive_challenger
+tags: [score-consistency, cohort-curve, borderline, objection-handling]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before anything else, what would you want this money to be doing for you in ten years?
+    - How would you want to be told if it went the wrong way?
+    - What matters more to you - the number at the end, or knowing where it is?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      On cost, the annual management charge is 0.68 per cent and every return
+      figure I have quoted you is net of it.
+    - I will send you the factsheet and the key information document to read over.
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    Deliberately marginal. Three open questions and all three disclosures given in
+    registered wording, against one of two objections answered and no ask for the
+    business. Fourteen out of twenty is exactly the pass line, and a reviewer
+    passes it on the compliance record while noting the missing close.
+
+tools:
+  expected: [record_disclosure, raise_objection, score_session]
+  min_calls: {record_disclosure: 3}
+
+consistency:
+  k: 5
+  tolerance: 0
+  control: true
+  expected_spread: 1
+  expected_flips: 4
+  expectation: >-
+    We expect the verdict to oscillate. Sitting exactly on the threshold, a curve
+    adjustment of a single point is enough to flip it, and the curve reverses
+    direction as soon as the recent pass rate crosses its target - so the same
+    performance should alternate between certified and refused across five runs.
+    The spread in points will be small; the number of verdict flips will not, and
+    that is the figure a certification process actually inherits.
+
+notes: >-
+  Read against consistency-identical-transcript-warm-k5, which spreads four points
+  and flips once. This row spreads one point and flips four times, and it is much
+  the worse product behaviour of the two. That is why the spread and the flip count
+  are reported separately: a suite that ranked instability by standard deviation
+  alone would put this row second.
