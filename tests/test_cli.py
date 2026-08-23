@@ -503,6 +503,23 @@ def test_the_parser_documents_every_subcommand() -> None:
     assert set(actions[0].choices) == {"run", "validate", "report", "calibrate", "replay"}
 
 
+def test_a_missing_corpus_module_ends_in_a_sentence_not_a_stack() -> None:
+    """The non-editable-install failure mode, reachable without one.
+
+    `pip install .` (no `-e`) puts the library in site-packages, where the case
+    study was never copied, and the old failure was a twenty-line traceback whose
+    last word was `scenarios`. A person reading that cannot tell that the fix is
+    a flag on the install command. The message has to say so.
+    """
+    with pytest.raises(SystemExit) as caught:
+        cli._import_module("no_such_corpus_module")
+    message = str(caught.value)
+    assert "no_such_corpus_module" in message
+    assert 'pip install -e ".[dev]"' in message
+    assert "--corpus-module" in message
+    assert "Traceback" not in message
+
+
 def test_import_object_accepts_both_spellings() -> None:
     assert cli._import_object("tablemate.runtime:build_agent") is cli._import_object(
         "tablemate.runtime.build_agent"

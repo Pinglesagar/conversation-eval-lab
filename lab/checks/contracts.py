@@ -152,6 +152,47 @@ def _tool_calls(trace: Trace, name: str | None = None) -> list[TraceEvent]:
     return [e for e in calls if e.get("name") == name]
 
 
+def _sequence(trace: Trace) -> dict[int, int]:
+    """Map each event to its position in the trace, for ordering comparisons.
+
+    WHY POSITION AND NOT TIMESTAMP
+    ------------------------------
+    "A happened before B" is a question about the event *stream*, and the stream
+    is the ordered list; `ts` is a measurement taken of it. The two agree except
+    when they collide, and collisions are ordinary rather than exotic:
+
+    * Under a `FakeClock` with an agent that returns without sleeping — the
+      deterministic setup this repo recommends for tests — every event in a
+      session can carry `ts=0.0`.
+    * `lab.simulator.driver._WindowStamper` interpolates tool and handoff events
+      strictly inside `(t0, t1)`; when that window has zero span it assigns `t0`
+      to all of them, by documented design.
+    * A coarse clock, or a trace round-tripped through a format that rounds `ts`,
+      produces the same ties.
+
+    A `<=` on tied timestamps reads as "in order", so an ordering clause compared
+    on `ts` alone silently *cannot fail* on such a trace. That is worse than
+    having no clause: the report shows a green check. Comparing positions is a
+    strict refinement — the schema already requires `ts` to be non-decreasing
+    (`Trace.is_ordered`), so position agrees with `ts` wherever `ts` discriminates,
+    and breaks ties by emission order rather than declaring a tie to be in order.
+
+    Timestamps are still what gets *quoted* in evidence, because a reader wants to
+    know when something happened; they are just not what decides the comparison.
+    """
+    return {id(event): position for position, event in enumerate(trace.events)}
+
+
+def _at(sequence: Mapping[int, int], event: TraceEvent) -> int:
+    """Position of `event`, or a value that sorts after everything if unknown.
+
+    An event that is not in the trace it was drawn from is a programming error
+    upstream, not a finding; sorting it last keeps the caller's comparison
+    defined instead of raising inside a check.
+    """
+    return sequence.get(id(event), len(sequence))
+
+
 def _agent_sentences(trace: Trace) -> list[tuple[TraceEvent, str]]:
     """Flatten agent utterances into (event, sentence) pairs, in order.
 
@@ -644,8 +685,13 @@ class ToolContract(Contract):
                     Evidence.from_event(thens[0], note=f"no {rule.first} call anywhere in the trace"),
                 ],
             )
+        # Ordering is decided on position in the event stream, not on `ts` — see
+        # `_sequence` for why a tied timestamp must not read as "in order".
+        sequence = _sequence(trace)
         if rule.strict:
-            offenders = [t for t in thens if not any(f.ts <= t.ts for f in firsts)]
+            offenders = [
+                t for t in thens if not any(_at(sequence, f) < _at(sequence, t) for f in firsts)
+            ]
             if offenders:
                 return (
                     False,
@@ -656,7 +702,7 @@ class ToolContract(Contract):
                     ],
                 )
             return True, "", []
-        if firsts[0].ts <= thens[0].ts:
+        if _at(sequence, firsts[0]) < _at(sequence, thens[0]):
             return True, "", []
         return (
             False,
@@ -812,6 +858,30 @@ class PromiseContract(Contract):
        occasionally misses is a gap, while a check that occasionally lies gets the
        whole suite switched off.
 
+    THE BLIND SPOT: MULTIPLICITY
+    ---------------------------
+    Satisfaction is existential, not one-to-one. Every commitment in a session is
+    scored against the same pool of qualifying calls, so a session with three
+    "that is all booked in" claims and one `create_booking` reports zero unbacked
+    claims. In the case study `edge-correction-during-read-back` is exactly that
+    trace: the agent books a table for two at 7pm, the caller then changes the
+    time, the agent misreads "make that eight o'clock" as a party of eight, says
+    *"That is all booked in — a table for eight"* and never calls the tool again.
+    The second claim is a genuine phantom confirmation and this contract passes
+    the trace, because the *first* booking is still in the ledger. That row is
+    caught, but by `ToolContract`'s argument predicate rather than here — which is
+    a property of how that scenario happens to be written, not of this check.
+
+    The reason it is left existential is that the obvious fix is worse. Pairing
+    claims to calls one-to-one fires on the healthy conversation where the agent
+    confirms once and then re-states the confirmation on request ("yes — table for
+    two on Friday, all confirmed"), which is one call and two claims and nothing
+    wrong. Closing this properly needs claim *identity* — which booking is each
+    claim about — and that means comparing the read-back's slots against the
+    call's arguments, i.e. a different check with a different failure mode, not a
+    stricter counter here. Until that exists, this contract's honest scope is
+    "the session claims an action that never happened at all".
+
     Attributes:
         require_before_utterance: Off by default. When off, a commitment is
             satisfied by a qualifying call anywhere in the session. That is
@@ -866,10 +936,14 @@ class PromiseContract(Contract):
 
         evidence: list[Evidence] = []
         broken = 0
+        # Positions, not timestamps: a call emitted after the claim but stamped at
+        # the same instant must not count as having preceded it (see `_sequence`).
+        sequence = _sequence(trace)
         for event, sentence, promise in detected:
             calls = [c for name in promise.requires for c in _tool_calls(trace, name)]
             if self.require_before_utterance:
-                calls = [c for c in calls if c.ts <= event.ts]
+                claimed_at = _at(sequence, event)
+                calls = [c for c in calls if _at(sequence, c) < claimed_at]
             if calls:
                 continue
             broken += 1
@@ -961,6 +1035,7 @@ class NoReAskContract(Contract):
 
         frames = _compiled(CONFIRMATION_FRAMES)
         agent_sentences = _agent_sentences(trace)
+        sequence = _sequence(trace)
 
         tracked = 0
         clean = 0
@@ -979,11 +1054,19 @@ class NoReAskContract(Contract):
                 continue
 
             tracked += 1
+            # "After the caller supplied it" is a question about the event stream,
+            # so it is answered by position (see `_sequence`); `grace_seconds` is a
+            # genuinely temporal allowance and stays on `ts`. Split this way, a
+            # trace whose timestamps all collapse to one instant still detects the
+            # re-ask, and a zero grace window forgives nothing by accident.
+            supplied_at = _at(sequence, supply)
             cutoff = supply.ts + self.grace_seconds
             offenders: list[tuple[TraceEvent, str]] = []
 
             for event, sentence in agent_sentences:
-                if event.ts <= cutoff:
+                if _at(sequence, event) <= supplied_at:
+                    continue
+                if self.grace_seconds > 0 and event.ts <= cutoff:
                     continue
                 if not tracked_field.is_asked_in(sentence):
                     continue
@@ -1093,7 +1176,12 @@ class FieldPropagationContract(Contract):
                 applicable=False,
             )
 
-        calls = [c for c in _tool_calls(trace, self.tool) if c.ts >= supply.ts]
+        # Positions, not timestamps (see `_sequence`): "the call came after the
+        # caller supplied the value" must stay decidable on a trace whose events
+        # all share one instant, which is the common case in the same turn.
+        sequence = _sequence(trace)
+        supplied_at = _at(sequence, supply)
+        calls = [c for c in _tool_calls(trace, self.tool) if _at(sequence, c) > supplied_at]
         if not calls:
             return self._result(
                 passed=True,
@@ -1107,7 +1195,10 @@ class FieldPropagationContract(Contract):
                 ],
             )
 
-        crossings = [h for h in trace.handoffs() if supply.ts <= h.ts <= calls[-1].ts]
+        last_call_at = _at(sequence, calls[-1])
+        crossings = [
+            h for h in trace.handoffs() if supplied_at < _at(sequence, h) < last_call_at
+        ]
         if self.require_handoff and not crossings:
             return self._result(
                 passed=True,
@@ -1247,7 +1338,13 @@ class NoProgressContract(Contract):
             )
 
         progress_events = trace.events_of_kind(*self.progress_kinds)
-        captures = self._capture_times(trace, context)
+        # Positions, not timestamps (see `_sequence`). The tie direction matters
+        # here too, and in the opposite way to the ordering clauses: a tool call
+        # stamped at the same instant as the two questions around it is real
+        # progress, and comparing on `ts` would hide it and report a healthy
+        # conversation as a stuck one.
+        sequence = _sequence(trace)
+        captures = self._capture_positions(trace, context, sequence)
 
         windows = 0
         stalled = 0
@@ -1258,9 +1355,10 @@ class NoProgressContract(Contract):
                 occurrences, occurrences[1:], strict=False
             ):
                 windows += 1
-                lo, hi = prev_event.ts, next_event.ts
-                advanced = [e for e in progress_events if lo < e.ts <= hi]
-                captured = [(name, ts) for name, ts in captures if lo < ts <= hi]
+                lo, hi = _at(sequence, prev_event), _at(sequence, next_event)
+                elapsed = next_event.ts - prev_event.ts
+                advanced = [e for e in progress_events if lo < _at(sequence, e) < hi]
+                captured = [(name, at) for name, at in captures if lo < at < hi]
                 if advanced or captured:
                     continue
                 stalled += 1
@@ -1272,7 +1370,7 @@ class NoProgressContract(Contract):
                         next_event,
                         quote=next_text,
                         note=(
-                            f"asked again {hi - lo:.3f}s later with no tool call, no handoff "
+                            f"asked again {elapsed:.3f}s later with no tool call, no handoff "
                             "and no new field captured in between"
                         ),
                     )
@@ -1283,15 +1381,22 @@ class NoProgressContract(Contract):
             detail += f" -- {stalled} stalled repeat(s)"
         return self._result(passed=stalled == 0, detail=detail, evidence=evidence)
 
-    def _capture_times(
-        self, trace: Trace, context: Mapping[str, Any] | None
-    ) -> list[tuple[str, float]]:
-        """When each tracked field was first supplied — the third progress signal."""
-        out: list[tuple[str, float]] = []
+    def _capture_positions(
+        self,
+        trace: Trace,
+        context: Mapping[str, Any] | None,
+        sequence: Mapping[int, int],
+    ) -> list[tuple[str, int]]:
+        """Where in the stream each tracked field was first supplied.
+
+        The third progress signal, expressed as a position rather than a timestamp
+        so that a window whose endpoints share an instant can still see it.
+        """
+        out: list[tuple[str, int]] = []
         for tracked_field in self.fields:
             supply = tracked_field.supply_event(trace, context)
             if supply is not None:
-                out.append((tracked_field.name, supply.ts))
+                out.append((tracked_field.name, _at(sequence, supply)))
         return out
 
 

@@ -60,10 +60,16 @@ clean:
 The proof is empirical, not rhetorical. `run_calibration` injects a configurable
 slab of artificial harness overhead — split either side of the boundary — and the
 gate still has to pass. `tests/test_timing_calibration.py` runs the calibration
-twice, with zero overhead and with overhead an order of magnitude larger than the
-smallest delay under test, and asserts the recovered samples are *bit-identical*.
-If the harness were charging any of its own compute to the agent, that assertion
-would fail immediately.
+twice, with zero overhead and with overhead five times the smallest delay under
+test, and asserts the recovered samples are *unchanged to within 1 ns*. They are
+not bit-identical, and the reason is worth stating rather than papering over:
+overhead shifts the clock's absolute value, so `t1 - t0` is a subtraction between
+larger floats and the last bits of the mantissa move. Measured, that drift is
+about 4e-15 s at the default overhead and 1.4e-14 s at overhead a hundred times
+larger — six orders of magnitude below the 1 ns bound and eleven below anything
+the gate reports. What the assertion rules out is the failure that matters: if
+the harness were charging any of its own compute to the agent, the 100 ms row
+would come back at 600 ms, not 100.000000000000004 ms.
 
 The same run also records a deliberately naive control: `t_turn_end -
 t_turn_start`, the wall-clock time for the whole turn including harness compute.

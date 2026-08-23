@@ -21,9 +21,10 @@ CI regenerates and diffs byte for byte on every commit:
 | | |
 | --- | --- |
 | scenarios driven | **47/55** (8 voice rows need the audio path, not the text adapter) |
-| scenarios where every check passed, on every repeat | **44/47** |
+| scenarios with no *undeclared* failure, on every repeat | **44/47** |
+| scenarios where literally every check passed | **37/47** (10 carry a contract failure the corpus declares) |
 | contract evaluations that failed | **36/366** |
-| findings, each with a quote from the trace | **12** |
+| findings, each anchored to trace evidence | **12** (10 quote an utterance or a tool call, 2 record an absence) |
 | repeats that were byte-identical (k = 3) | **47/47** |
 | response latency, p50 / p95 (175 turn samples) | **717 ms / 1104 ms**, calibration gate PASS |
 | judge agreement with hand labels (prompt v2) | **TPR 8/8, TNR 15/16** on 24 labelled calls |
@@ -121,15 +122,15 @@ not driven rather than run as text. See [Limitations](#limitations).
 ## What it does, and what comparable tools do
 
 Five capabilities, each with an honest note on what I found in the open-source
-landscape when I looked. Star counts are GitHub stars, rounded, at the time of
-writing; they move, and so do the tools.
+landscape when I looked. Star counts are GitHub stars, rounded, read from the GitHub API on 23 August
+2026; they move, and so do the tools.
 
 | capability | here | what I found elsewhere |
 | --- | --- | --- |
 | **1.** one trace schema for voice and text; every figure derives from it | JSONL events; `transcript_in` (heard) distinct from `caller_utterance` (said); first-audio-byte boundary | tracing is the mature part — langfuse (~33.6k★), Phoenix, Inspect AI — with the voice boundary events not usually first-class |
 | **2.** said-versus-done checks across a handoff | promise ↔ tool call, value survives a handoff, no re-ask; vacuous ≠ pass | rich assertions per prompt/turn in promptfoo (~24.5k★), DeepEval (~17.8k★), Ragas (~15.4k★); whole-conversation agent evaluation in tau2-bench, as a benchmark rather than a library |
 | **3.** a judge you are allowed to believe | TPR *and* TNR vs hand labels, required to render a verdict; CI refuses an uncalibrated judge | model-graded metrics and annotation everywhere; the *refusal* is a policy few tools default to |
-| **4.** timing you are allowed to quote | a calibration gate that recovers a known delay before any p95 is published; WER, silence attribution, perturbation chains | thinnest area: ServiceNow's `eva` (~197★) is voice-specific and small; latency elsewhere is wall-clock around a call |
+| **4.** timing you are allowed to quote | a calibration gate that recovers a known delay before any p95 is published; WER, silence attribution, perturbation chains | ServiceNow's `eva` (~197★) is the closest thing to this and is ahead of it on audio: bot-to-bot, end-to-end speech, its own combined-perturbation suite. Latency in the general-purpose tools is wall-clock around a call |
 | **5.** stability as a verdict, and a gate on change | pass^k where FLAKY is not a pass; baseline diff that fails when a finding *vanishes* | pass^k in tau2-bench; snapshot-baseline gating is common in general testing, less so in eval tooling |
 
 The detail, capability by capability:
@@ -197,17 +198,23 @@ on purpose (`lab/judges/`).
 delays from 100 ms to 2 s and prints a deliberately naive control that charges the
 harness's own compute to the agent. The control passes at 2 s (+1.5%) and fails at
 100 ms (+30.3%) — a fixed additive bias vanishes in relative terms, which is why
-the sweep spans two orders of magnitude instead of checking one delay. Plus WER
+the sweep spans a twentyfold range of delays instead of checking one. Plus WER
 with normalisation accounting, silence attribution, and five audio perturbations
 composed into chains.
 
-> **Elsewhere:** this is the thinnest part of the open landscape. **ServiceNow's
-> `eva`** (~197★) is the only voice-agent-specific evaluation project I came
-> across with any traction, and it is small and new; I may well have missed
-> others. Latency in the general-purpose tools is
-> wall-clock around a call. The thing I have not seen anywhere is a *calibration
+> **Elsewhere:** voice-specific evaluation is thin on the ground, but it is not
+> empty, and the honest comparison here goes against me on one axis.
+> **ServiceNow's `eva`** (~197★) is the closest published project to this one and
+> is further along on audio: it drives bot-to-bot conversations end to end
+> through real speech, ships its own perturbation suite including combined
+> perturbations, and reports scored results across a dozen systems on a
+> 200-plus-scenario corpus. Its star count is small; its scope is not, and this
+> repository's committed run does not drive audio at all (see
+> [Limitations](#limitations)). Latency in the general-purpose tools is wall-clock
+> around a call. What I have not seen anywhere, `eva` included, is a *calibration
 > gate on the stopwatch itself* — a harness proving it can recover a delay it does
-> not know about before it is allowed to publish a p95.
+> not know about before it is allowed to publish a p95 — and that is the claim in
+> this row, not superiority at voice evaluation.
 
 ### 5. Stability as a verdict, and a gate that fails when a finding disappears
 

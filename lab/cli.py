@@ -63,10 +63,13 @@ import argparse
 import importlib
 import json
 import os
+import statistics
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping, Sequence
+
+from pydantic import ValidationError
 
 from lab import __version__
 from lab.checks import CheckReport, CheckResult
@@ -165,6 +168,14 @@ def _import_module(name: str) -> Any:
     So the checkout root is added on the retry, and only on the retry: an
     installed module of the same name still wins, and nothing is put on the path
     when nothing needed it.
+
+    And when the retry fails too, that is the end of the road, so it ends in a
+    sentence rather than a stack. The way to get here is a *non-editable* install
+    — `pip install .` instead of `pip install -e .` — after which `repo_root()`
+    points inside site-packages, where the case study was never copied because
+    the packaging deliberately excludes it. The traceback that used to come out
+    named `scenarios` and nothing else, which is the least useful half of the
+    explanation.
     """
     try:
         return importlib.import_module(name)
@@ -172,8 +183,19 @@ def _import_module(name: str) -> Any:
         root = str(repo_root())
         if root not in sys.path:
             sys.path.insert(0, root)
+        try:
             return importlib.import_module(name)
-        raise
+        except ModuleNotFoundError as exc:
+            raise SystemExit(
+                f"cannot import '{name}', and it is not beside the library either "
+                f"(looked in {root}).\n"
+                "The case study — scenarios/, tablemate/'s fixtures, error_analysis/ — "
+                "ships in the checkout, not in the wheel, so an installed copy has "
+                "only the library.\n"
+                "Install for development from a clone instead:\n"
+                '    pip install -e ".[dev]"\n'
+                "or point the command at your own corpus with --corpus-module."
+            ) from exc
 
 
 def _import_object(dotted: str) -> Any:
@@ -501,25 +523,88 @@ def _to_agent(result: CheckResult) -> str | None:
 # --------------------------------------------------------------------------- #
 
 
+def _is_number(value: object) -> bool:
+    """A real numeric measurement. `bool` is an `int` in Python and is not one."""
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _verdict_from_calibration_samples(payload: object) -> str:
+    """Score a timing-calibration artefact from its own recorded samples.
+
+    Returns PASS, FAIL, or NOT_RUN. NOT_RUN covers every way the artefact fails
+    to be evidence: wrong shape, no delays, a delay with fewer than two samples
+    (no standard deviation exists), a non-positive nominal delay. Silence is the
+    honest answer there — the alternative is a verdict derived from nothing.
+
+    The artefact's own tolerance is honoured only where it is at least as strict
+    as `CalibrationTolerance()`'s defaults. Otherwise the numbers are real but
+    the bar they cleared is not the harness's, and a report that printed PASS
+    would be quoting a pass against a bar the artefact chose for itself. Since
+    this report prints the verdict without the tolerance beside it, a looser bar
+    is unreadable from the report and is refused rather than reported.
+    """
+    from lab.voice.calibration import CalibrationTolerance
+
+    if not isinstance(payload, dict):
+        return "NOT_RUN"
+    rows = payload.get("delays")
+    if not isinstance(rows, list) or not rows:
+        return "NOT_RUN"
+    try:
+        tolerance = CalibrationTolerance.model_validate(payload.get("tolerance") or {})
+    except ValidationError:
+        return "NOT_RUN"
+    stated = CalibrationTolerance()
+    if (
+        tolerance.max_rel_error > stated.max_rel_error
+        or tolerance.max_stdev_s > stated.max_stdev_s
+    ):
+        return "NOT_RUN"
+
+    verdict = "PASS"
+    for row in rows:
+        if not isinstance(row, dict):
+            return "NOT_RUN"
+        samples = row.get("samples_s")
+        nominal = row.get("nominal_delay_s")
+        if not isinstance(samples, list) or len(samples) < 2:
+            return "NOT_RUN"
+        if not all(_is_number(value) for value in samples):
+            return "NOT_RUN"
+        if not _is_number(nominal) or nominal <= 0:
+            return "NOT_RUN"
+        mean = statistics.fmean(samples)
+        spread = statistics.stdev(samples)
+        rel_error = (mean - nominal) / nominal
+        if abs(rel_error) > tolerance.max_rel_error or spread > tolerance.max_stdev_s:
+            verdict = "FAIL"
+    return verdict
+
+
 def _calibration_verdict(path: Path) -> tuple[str, str | None]:
-    """Read the timing gate's verdict, or say it was never run."""
+    """Re-derive the timing gate's verdict from the artefact, or say it was never run.
+
+    The verdict is recomputed from the recorded samples rather than read out of
+    the artefact's `verdict` field, for the same reason `_audit_judges_for_ci`
+    recomputes the judge's calibration instead of trusting
+    `calibration_v2.json`: a stale or hand-edited artefact must not be able to
+    put a PASS badge on a report. Reading a one-word claim would make every
+    latency figure below it rest on a string somebody could have typed.
+
+    The artefact carries every raw sample, so this needs no measurement — the
+    tolerance and the per-delay samples in the file decide the verdict, and a
+    file that cannot support one is `NOT_RUN`. (Re-running the gate outright
+    costs a couple of milliseconds and would be defensible too, but then `run`
+    would report a verdict about the machine it happened to run on rather than
+    about the committed evidence a reader can inspect.)
+    """
     if not path.exists():
         return "NOT_RUN", None
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return "NOT_RUN", None
-    verdict = str(payload.get("verdict", "NOT_RUN")).upper()
-    if verdict not in ("PASS", "FAIL"):
-        verdict = "NOT_RUN"
-    # Repo-relative: an absolute path in a committed report makes the artefact
-    # machine-specific, and the whole point of committing it is that two machines
-    # produce the same bytes.
-    try:
-        source = str(path.relative_to(repo_root()))
-    except ValueError:
-        source = str(path)
-    return verdict, source
+    return _verdict_from_calibration_samples(payload), _portable(path)
 
 
 def _voice_metrics(traces: Sequence[Trace], *, calibration_json: Path) -> VoiceMetrics:

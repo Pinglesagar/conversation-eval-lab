@@ -10,6 +10,8 @@
 
 A scenario passes only if it passes **every** run. FLAKY is not a pass: it means the agent's behaviour on that scenario is not determined by the scenario.
 
+**What `passed` means in this table.** A run counts as passed when nothing failed that the corpus had not already declared as a known gap. So a scenario can read STABLE_PASS here while a contract failure against it is listed under Contract failures — the defect reproduced exactly as declared, which is a stable result and not a regression. This column is therefore *no undeclared failure on any repeat*, not *every check passed*; the failure count is the section below.
+
 - Stable pass: 44/47 (93.6%)
 - Flaky: 0/47 (0.0%)
 - Stable fail: 3/47 (6.4%)

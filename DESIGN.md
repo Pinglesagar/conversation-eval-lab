@@ -114,7 +114,11 @@ evidence; it makes no claim about why.
 
 ## 7. Stability is a dimension of the verdict, not a footnote
 
-`lab/simulator/passk.py`: a scenario is `STABLE_PASS` only if every repeat passed;
+`lab/simulator/passk.py`: a scenario is `STABLE_PASS` only if every repeat passed —
+where a repeat "passed" means nothing failed that the corpus had not already
+declared as a known gap, so `STABLE_PASS` reads *no undeclared failure* and not
+*every check passed* (§9 is why the verdict is drawn that way, and the report's
+own stability section says so above the table).
 `FLAKY` is not a pass, and `StabilityVerdict.passed` is True for `STABLE_PASS`
 alone so no downstream aggregation can round a flaky scenario green.
 `StabilitySummary` refuses to average pass rates across scenarios — two flaky
