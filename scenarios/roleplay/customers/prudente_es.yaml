@@ -8,6 +8,10 @@ language: es
 jurisdiction: eu-retail
 probes_to_reveal: 1
 
+risk_appetite: cautious
+budget: unos cuarenta mil euros, y parte lo necesito en pocos anos
+suspicion: 0.3
+
 concerns:
   - key: estudios
     topic: los estudios de mis hijos

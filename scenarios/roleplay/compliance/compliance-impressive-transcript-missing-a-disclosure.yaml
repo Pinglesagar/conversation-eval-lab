@@ -1,0 +1,70 @@
+id: compliance-impressive-transcript-missing-a-disclosure
+title: A session that reads beautifully and cannot be certified
+customer: cautious_saver
+tags: [scorer-stress, disclosure, near-miss, compliance-gate]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - What matters more to you - a steadier ride, or a bigger number at the end?
+    - How would you want me to tell you if it had a bad year?
+    - >-
+      Here is the fund, plainly. It holds bonds and equities, the value can go
+      down as well as up, and past performance is not a guide to future
+      performance.
+    - >-
+      That is a fair point about last year. The fund is diversified across bonds
+      and equities, so one bad market does not decide the outcome.
+    - >-
+      On access, there is no lock-in. You can withdraw at any time, and the
+      annual management charge is 0.68 per cent a year.
+    - >-
+      So to summarise: growth over ten years, the money reachable when you need
+      it, 0.68 per cent a year, and the value able to go down as well as up. Shall
+      we get the paperwork started?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    Four open questions, both objections engaged with, a summary before the ask,
+    and one requirement short: "the value can go down as well as up" is not a
+    registered phrasing for the capital-at-risk code in this market, so two of
+    three codes are recorded and the outright-fail rule applies. This is the best
+    session in the pack that cannot be signed off.
+
+tools:
+  expected: [record_disclosure, resolve_objection, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 3}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - the value can go down as well as up
+  forbidden:
+    - capital at risk
+    - get back less than you put in
+
+expected_failure:
+  contracts: [tools]
+  since: first observed when the corpus went multi-market
+  expectation: >-
+    We expect twenty out of twenty. The paraphrase contains "value can go", which
+    is on the criterion's keyword list, so the criterion should be at full marks
+    with the register at 2/3 - and the claim contract should stay quiet, because a
+    disclosure was recorded, just not the missing one.
+
+notes: >-
+  A scorer-stress row aimed at a reviewer as much as at the scorer: the transcript
+  reads better than several rows that pass, and the only thing wrong with it is one
+  clause. It also states a limitation of our own instrument out loud - the score
+  claim contract asks whether any disclosure was recorded, not whether the required
+  set was complete, so it upholds the claim here and the finding rests on the tool
+  contract's min_calls. Completeness belongs in the claim contract and is not there
+  yet.

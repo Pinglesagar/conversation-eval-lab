@@ -1,0 +1,60 @@
+id: objection-two-objections-resolved-in-one-sentence
+title: Both objections closed by a single sentence
+customer: comparison_shopper
+tags: [objection-handling, control, disclosure, closing]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      It holds around sixty per cent equities and forty per cent bonds, and the
+      annual management charge is 0.68 per cent a year.
+    - >-
+      Let us compare the two like for like, and I will put that comparison in
+      writing so both of you can go through it at home.
+    - >-
+      So to summarise: your capital at risk, 0.68 per cent a year, and a written
+      comparison for the two of you. Shall we get the paperwork started when you
+      have read it?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    One open question is thin, and both objections were engaged with in one
+    sentence that answered each on its own terms - a like-for-like comparison for
+    the bank objection and a written copy for the husband who is not in the room.
+    All three disclosures in registered wording and a summary before the ask:
+    eighteen out of twenty.
+
+tools:
+  expected: [raise_objection, resolve_objection, record_disclosure, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {resolve_objection: 2, record_disclosure: 3}
+  args:
+    - tool: resolve_objection
+      arg: turn
+      op: eq
+      value: 4
+      quantifier: all
+      label: both objections were resolved on trainee turn four
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 18
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+notes: >-
+  The mechanism row for the objection ledger, and the counterpart to
+  locale-eu-three-disclosures-in-one-turn on the register side. Every other row
+  resolves at most one objection per turn, so "two resolutions" and "two turns"
+  have the same answer everywhere else; a ledger that recorded only the first match
+  in an utterance would still look correct on all of them and would halve the
+  objection score here.

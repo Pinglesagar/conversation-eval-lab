@@ -1,0 +1,67 @@
+id: locale-eu-market-keying-on-the-card
+title: The market label carried from the row to the score card
+customer: cautious_saver
+tags: [jurisdiction, disclosure, control]
+jurisdiction: eu-retail
+language: en
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - What is this money actually for?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      That is a fair point about last year. The fund is diversified across bonds
+      and equities, so one bad market does not decide the outcome.
+    - >-
+      On access, there is no lock-in. You can withdraw at any time, and the
+      annual management charge is 0.68 per cent a year.
+    - >-
+      So to summarise: your capital at risk, 0.68 per cent a year, and the money
+      reachable when you need it. Shall we get the paperwork started?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    One open question is thin discovery and the rest of the session is complete:
+    all three required codes in registered wording, both objections engaged with,
+    a summary before the ask, no recommendation. A reviewer passes it and writes
+    "ask more" on the sheet rather than refusing it.
+
+tools:
+  expected: [load_customer_profile, record_disclosure, score_session]
+  min_calls: {record_disclosure: 3}
+  args:
+    - tool: load_customer_profile
+      arg: jurisdiction
+      op: eq
+      value: eu-retail
+    - tool: record_disclosure
+      arg: jurisdiction
+      op: eq
+      value: eu-retail
+      quantifier: all
+    - tool: record_disclosure
+      arg: language
+      op: eq
+      value: en
+      quantifier: all
+    - tool: score_session
+      arg: jurisdiction
+      op: eq
+      value: eu-retail
+    - tool: score_session
+      arg: language
+      op: eq
+      value: en
+
+notes: >-
+  A plumbing row, and the pack needs exactly one. Every other jurisdiction row
+  asserts an outcome that depends on the market being carried correctly from the
+  scenario into the register and out onto the card; if that wiring broke, those
+  rows would go red in ways that read as compliance findings. This row asserts the
+  wiring itself at all four points it is visible, so a keying regression names
+  itself instead of arriving disguised as a disclosure defect.

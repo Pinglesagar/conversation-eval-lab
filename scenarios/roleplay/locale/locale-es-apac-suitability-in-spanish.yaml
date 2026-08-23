@@ -1,0 +1,68 @@
+id: locale-es-apac-suitability-in-spanish
+title: Four codes discharged in Spanish, graded at zero
+customer: prudente_es
+tags: [multilingual, jurisdiction, disclosure, compliance-gate]
+jurisdiction: apac-retail
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Antes de ensenarle nada, que le gustaria que hiciera este dinero en diez anos?
+    - >-
+      El fondo que tengo en mente es un fondo mixto de crecimiento. Puede
+      recuperar menos de lo que invierte, y la rentabilidad pasada no garantiza la
+      rentabilidad futura.
+    - >-
+      Es cierto lo del ano pasado. El fondo esta diversificado entre bonos y
+      acciones, asi que un mal mercado no decide el resultado.
+    - La comision de gestion anual es del 0,68 por ciento y puede retirar el dinero cuando quiera.
+    - >-
+      Y no se decide nada hoy: tendriamos que completar primero el test de
+      idoneidad para saber si esto le conviene.
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    All four codes this market requires are recorded in the registered Spanish
+    wording, including the suitability requirement that only this market imposes,
+    and the objection about last year was answered. The session is compliant in a
+    four-code market conducted in a second language.
+
+tools:
+  expected: [record_disclosure, score_session]
+  min_calls: {record_disclosure: 4}
+  args:
+    - tool: score_session
+      arg: language
+      op: eq
+      value: es
+    - tool: score_session
+      arg: jurisdiction
+      op: eq
+      value: apac-retail
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - tendriamos que completar primero el test de idoneidad
+
+expected_failure:
+  contracts: [tools]
+  since: first observed when the corpus went multi-market
+  expectation: >-
+    We expect the register to record four of four and the scorer to refuse the
+    session anyway. The mandatory-disclosure criterion matches English keywords, so
+    it should score zero on a transcript that discharged every requirement, and the
+    discovery criterion should score zero for the same class of reason - its
+    question stems are English too.
+
+notes: >-
+  The existing Spanish row makes this point in a three-code market; this one makes
+  it in the market with the most to disclose, which is where the under-crediting is
+  worst and where a firm would be most exposed. It also shows the two defects
+  cannot cancel out: in English the keyword criterion over-credits, in Spanish it
+  under-credits, and the same session cannot be fixed by tuning a word list in
+  either direction.

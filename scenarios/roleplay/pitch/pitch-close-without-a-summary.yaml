@@ -1,0 +1,58 @@
+id: pitch-close-without-a-summary
+title: The same ask with the recap taken out
+customer: comparison_shopper
+tags: [closing, control, objection-handling, disclosure]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - What matters more to you - a steadier ride, or a bigger number at the end?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      Let us compare the two like for like: theirs is a tracker with no bond
+      allocation, and the annual management charge here is 0.68 per cent a year.
+    - >-
+      And nothing is signed today. I will put all of it in writing so both of you
+      can read it first.
+    - Shall we get the paperwork started when you are ready?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    Character for character the row above, minus the recap. The trainee asks for the
+    business without restating what was agreed, which is a real if minor weakness in
+    a session that is otherwise complete: nineteen out of twenty and a clear pass.
+
+tools:
+  expected: [record_disclosure, resolve_objection, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 3, resolve_objection: 2}
+  args:
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 19
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - Shall we get the paperwork started
+  forbidden:
+    - to summarise
+    - to recap
+
+notes: >-
+  The lower arm of the closing pair, and the forbidden phrase clause is what makes
+  it an experiment rather than two similar rows: the recap wording is asserted
+  absent from the script, so the one-mark difference cannot be explained by anything
+  else. If a future scorer stops rewarding the recap, this row stays green and
+  pitch-close-with-a-summary goes red, which localises the change to one branch of
+  one criterion.

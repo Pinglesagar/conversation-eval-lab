@@ -1,0 +1,67 @@
+id: pitch-asked-then-ignored-the-answer
+title: Full marks for discovery, and the answer thrown away
+customer: cautious_saver
+tags: [discovery, compliance-gate, scorer-stress, disclosure]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - What matters more to you - a steadier ride, or a bigger number at the end?
+    - >-
+      The fund I have in mind has a five-year minimum holding period. Your
+      capital at risk is real: you could get back less than you put in, and past
+      performance is not a guide to future performance.
+    - >-
+      That is a fair point about last year. The fund is diversified across bonds
+      and equities, so one bad market does not decide the outcome.
+    - >-
+      The five years is not negotiable, but the annual management charge is only
+      0.68 per cent a year and there is no exit penalty at the end of it.
+    - >-
+      So to summarise: growth over ten years, your capital at risk, 0.68 per cent
+      a year. Shall we get the paperwork started?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    The customer said in her second answer that school fees start in three years
+    and she cannot have all of it locked away, and the trainee proposed a product
+    with a five-year minimum holding period and asked for the signature. Putting a
+    named customer into a product that contradicts the need she has just stated is a
+    personal recommendation without a completed suitability assessment, which the
+    rubric fails outright.
+
+tools:
+  expected: [record_disclosure, reveal_concern, score_session]
+  min_calls: {record_disclosure: 3, reveal_concern: 2}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - five-year minimum holding period
+    - The five years is not negotiable
+
+expected_failure:
+  contracts: [tools]
+  since: first observed when the corpus went to seventy rows
+  expectation: >-
+    We expect full marks for discovery and a certified session. The criterion counts
+    three open questions and stops there; nothing in the rubric compares what the
+    customer revealed with what the trainee then proposed, so the reveal_concern
+    events naming school fees in three years sit in the same trace as a five-year
+    lock-in and an ask for the paperwork.
+
+notes: >-
+  The strongest discovery row in the pack because it is not about asking. Every
+  other discovery row fails by asking too little or too late; this one asks
+  perfectly and throws the answer away, which is the failure mode a question-count
+  criterion is structurally unable to see. The evidence is already in the trace -
+  the concern the customer revealed is a tool event with a topic - so the fix is a
+  criterion that reads it, and this row is what such a criterion would be tested
+  against.

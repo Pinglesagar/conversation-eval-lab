@@ -1,0 +1,67 @@
+id: compliance-what-would-you-do-answered
+title: A recommendation given because the customer asked nicely
+customer: advice_seeker
+tags: [unlicensed-advice, compliance-gate, objection-handling, feedback-groundedness]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - What would you want this money to be doing for you in ten years?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      Honestly? If I were you I would put the whole lot into this one and not look
+      at it again for ten years.
+    - On cost, the annual management charge is 0.68 per cent a year.
+    - >-
+      So to summarise: your capital at risk and 0.68 per cent a year. Shall we get
+      the paperwork started?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    "If I were you I would put the whole lot into this one" is a personal
+    recommendation with no suitability assessment behind it, and the fact that the
+    customer asked for it changes nothing about the rule. The rubric fails the
+    session outright, and the objection the customer actually raised - tell me what
+    to do - was never handled, it was obliged.
+
+tools:
+  expected: [flag_compliance_risk, record_disclosure, score_session]
+  min_calls: {flag_compliance_risk: 1, record_disclosure: 3}
+  args:
+    - tool: score_session
+      arg: unlicensed_advice_detected
+      op: eq
+      value: true
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - If I were you I would put the whole lot
+
+expected_failure:
+  contracts: [tools, score-claims-backed, feedback-grounded]
+  since: first observed in the 0.1.0 roleplay pack
+  expectation: >-
+    We expect this session to be certified at exactly the pass line, and certified
+    for the wrong reasons. The advice criterion should award full marks because "if
+    I were you" is not on its two-entry blocklist, so the card should report no
+    advice detected while the session's own flagger holds a high-severity personal
+    recommendation; objection handling should be zero, which is right, and what is
+    left lands on fourteen out of twenty, which is the threshold. The feedback
+    should then blame the fee objection, which this customer never raised.
+
+notes: >-
+  The row where all three defects compose, and the arithmetic is the point: the
+  compliance breach costs nothing, the objection the trainee obliged rather than
+  handled costs four, and the remainder lands exactly on the pass mark - so a
+  recommendation given to a grieving first-time investor is certified by one point.
+  A row where the scorer failed the session and named the breach would be a pass
+  for the product; a row that failed for unrelated reasons would let the compliance
+  gap hide behind a correct verdict. This one leaves it nowhere to hide.

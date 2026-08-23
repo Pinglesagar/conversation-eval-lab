@@ -1,0 +1,421 @@
+# The calibration label pack — sessions that exist to measure the scorer.
+#
+# WHY THIS FILE IS NOT THE SCENARIO CORPUS
+# ----------------------------------------
+# `scenarios/roleplay/` is a regression suite: fifteen rows, each carrying
+# contracts, expected failures and a reviewer's prose verdict. It is the right
+# artefact for "did this build change behaviour" and the wrong one for "is the
+# instrument accurate", for two reasons that pull in opposite directions.
+#
+#   *   A calibration set needs to be BIGGER than a regression suite and each row
+#       needs to be CHEAPER. Fifteen rows is nine decidable labels (see
+#       `roleplay/labels.py`), and a rate over nine items is not a measurement.
+#   *   A regression row earns its keep by being interesting — it sits on a
+#       boundary, or it is the control for one that does. A calibration row earns
+#       its keep by being UNAMBIGUOUS. Those are different selection criteria, and
+#       a single file selected on both would be worse at each.
+#
+# So the labelled set is the corpus rows PLUS this pack. The corpus rows are not
+# duplicated here and their declared `human_verdict` is not restated here; it is
+# read from the corpus and cross-checked. Nothing in this file can contradict the
+# corpus because nothing in this file repeats it.
+#
+# WHERE THE LABEL COMES FROM, AND WHY NOT FROM THIS FILE
+# ------------------------------------------------------
+# A label written by the person who wrote the session is a label that says what
+# the author intended, and a scorer measured against author intent is measured
+# against a guess. So the label is DERIVED, by `roleplay.labels.rule_label`, from
+# the session's own ledgers — the disclosure register the product wrote and the
+# compliance flags its own flagger raised. The rules are stated in one place and
+# applied mechanically:
+#
+#   R1  a required disclosure code is missing from the register        -> fail
+#   R2  the in-session flagger raised a compliance flag                -> fail
+#   R3  register complete, no flag, business asked for, every objection
+#       raised was also resolved                                       -> pass
+#   R4  anything else                                                  -> AMBIGUOUS
+#
+# `asserts.label` below is therefore NOT the label. It is the author's prediction
+# of what the rule will produce, and `roleplay.labels` refuses to build the set if
+# a prediction is wrong. That inverts the usual failure: a row whose script drifts
+# away from the situation it was written to create becomes a load error instead of
+# a quietly mislabelled item sitting in a confusion matrix.
+#
+# `asserts.rule` names which rule is expected to decide it, so a row that reaches
+# the right verdict for the wrong reason is also a load error. On row 9 that is
+# the whole point: the register is complete and the session must still fail, so if
+# R1 decided it the row is not testing what it claims to test.
+#
+# WHY THE CORPUS ROWS ARE LISTED BY NAME BELOW
+# --------------------------------------------
+# A calibration set has to be a FIXED population. "Every row in the corpus" is not
+# a population, it is a query, and its answer changes whenever anybody adds a
+# scenario — at which point the labelled set silently grows, every committed
+# recording is short by however many rows were added, and the report's
+# `labels_sha256` no longer refers to anything a reader can reconstruct.
+#
+# So the corpus rows in this study are enumerated. Adding a scenario to
+# `scenarios/roleplay/` does not change this measurement; extending the
+# measurement is a deliberate edit to this list followed by a re-record. A row
+# named here that has left the corpus is a load error rather than a silent
+# shrink, which is the same rule pointing the other way.
+#
+# The corpus had exactly these rows when the recordings in
+# `roleplay/scorer_study/` were made. It has more now. That is not drift — it is
+# the roster doing its job.
+
+corpus_rows:
+  - pitch-cold-scorer-single-run-control
+  - pitch-exemplary-eu-retail-run
+  - pitch-feature-dump-no-discovery
+  - pitch-terse-customer-patient-probing
+  - compliance-explicit-unlicensed-advice
+  - compliance-guaranteed-return-caught
+  - compliance-missing-risk-disclosure
+  - compliance-no-real-risk-reassurance
+  - objection-aggressive-fee-challenge
+  - objection-lock-in-left-unanswered
+  - objection-praise-for-unasked-question
+  - consistency-borderline-transcript-warm-k5
+  - consistency-identical-transcript-warm-k5
+  - locale-amer-commission-completes-the-set
+  - locale-amer-past-performance-not-required-here
+  - locale-apac-suitability-disclosure
+  - locale-crossmarket-commission-script-in-apac-market
+  - locale-es-mx-registered-spanish-disclosure
+  - locale-parity-baseline-in-amer-market
+  - locale-parity-baseline-in-apac-market
+  - locale-parity-baseline-in-eu-market
+
+sessions:
+  # ----------------------------------------------------------------- pass rows
+
+  - id: label-amer-conflict-declared-and-closed
+    title: Remuneration declared, in a market that requires it
+    customer: cautious_saver
+    jurisdiction: amer-retail
+    asserts: { label: pass, rule: R3 }
+    notes: >-
+      The amer-retail requirement set swaps past-performance for a conflict-of-
+      interest declaration. Same trainee behaviour, different obligation, and the
+      register is the only thing that knows.
+    turns:
+      - What would you want this money to be doing for you in ten years?
+      - How much of it would you need to be able to reach at short notice?
+      - >-
+        The fund I have in mind is a balanced growth fund. Your capital at risk
+        is real, the annual management charge is 0.68 per cent a year, and I
+        should say plainly that we receive a commission on this product.
+      - >-
+        That is a fair point about last year. The fund is diversified across
+        bonds and equities precisely so that one bad market does not decide the
+        outcome.
+      - >-
+        On access there is no lock-in at all. You can withdraw at any time, with
+        no notice period.
+      - >-
+        So to summarise: growth over ten years, the money reachable when you need
+        it, 0.68 per cent a year, our commission declared, and your capital at
+        risk. Shall we get the paperwork started?
+
+  - id: label-apac-suitability-review-completed
+    title: A fourth requirement, satisfied before the ask
+    customer: cautious_saver
+    jurisdiction: apac-retail
+    asserts: { label: pass, rule: R3 }
+    notes: >-
+      apac-retail requires four codes rather than three. A trainee who does
+      everything the eu-retail rows do is short one disclosure here, and this row
+      is the one where they do not stop at three.
+    turns:
+      - What would you want this money to be doing for you in ten years?
+      - How much of it would you need to be able to reach at short notice?
+      - >-
+        The fund I have in mind is a balanced growth fund. Your capital at risk
+        is real: you could get back less than you put in, and past performance is
+        not a guide to future performance. The annual management charge is 0.68
+        per cent a year.
+      - >-
+        That is a fair point about last year. The fund is diversified across
+        bonds and equities, so one bad market does not decide the outcome.
+      - >-
+        On access you can withdraw at any time. Before anything is bought we
+        would need to complete a suitability review first.
+      - >-
+        So to summarise: growth over ten years, the money reachable, 0.68 per
+        cent a year, and the suitability work done before we commit anything.
+        Shall we get the paperwork started?
+
+  - id: label-aggressive-both-objections-answered
+    title: A combative customer, both objections engaged
+    customer: aggressive_challenger
+    asserts: { label: pass, rule: R3 }
+    notes: >-
+      The aggressive profile re-raises whatever is still unhandled, so an
+      unresolved objection stays visible in the ledger. This row answers both,
+      which is what makes it a pass rather than an R4 exclusion.
+    turns:
+      - What brought you in today, and what would you want this money to do?
+      - >-
+        The fund I have in mind is a balanced growth fund. Your capital at risk
+        is real: you could get back less than you put in, and past performance is
+        not a guide to future performance.
+      - >-
+        On cost, the annual management charge is 0.68 per cent a year and there
+        is nothing else on top - that is the total cost of holding it.
+      - >-
+        You are right to ask. We receive a commission on this product, and there
+        is no obligation on you today either way.
+      - >-
+        So to summarise: capital at risk, 0.68 per cent a year all in, and our
+        commission declared. Shall we get the paperwork started?
+
+  - id: label-reluctant-two-probes-then-close
+    title: A monosyllabic customer, asked twice
+    customer: reluctant_minimal
+    asserts: { label: pass, rule: R3 }
+    notes: >-
+      This profile needs two open probes before a concern surfaces. The row is
+      here for the register and the ask, not for the discovery criterion, but it
+      is written so the discovery a reviewer would credit actually happened.
+    turns:
+      - What would you want this money to be doing for you in a few years?
+      - How would you feel if it dropped ten per cent in a bad year?
+      - >-
+        Understood. The fund I have in mind is a balanced growth fund: your
+        capital at risk is real, past performance is not a guide to future
+        performance, and the annual management charge is 0.68 per cent a year.
+      - >-
+        It is one fund rather than a portfolio to manage - that is the whole of
+        it, in plain terms.
+      - >-
+        So to summarise: one fund, 0.68 per cent a year, capital at risk, and you
+        can leave whenever you want. Shall we get the paperwork started?
+
+  - id: label-cautious-register-complete-second-wording
+    title: The register's alternate phrasings, all three
+    customer: cautious_saver
+    asserts: { label: pass, rule: R3 }
+    notes: >-
+      Every disclosure here uses the second or third registered phrasing rather
+      than the one the other rows use. A register that only ever matched its first
+      entry would pass every other row in this pack and fail this one.
+    turns:
+      - What would you want this money to be doing for you in ten years?
+      - How much of it would you need to be able to reach at short notice?
+      - >-
+        The fund I have in mind is a balanced growth fund. You may get back less
+        than you invest, past performance is no guarantee of future returns, and
+        the ongoing charges figure is 0.68 per cent a year.
+      - >-
+        That is a fair point about last year. The fund is diversified across
+        bonds and equities, so one bad market does not decide the outcome.
+      - On access there is no lock-in. You can withdraw at any time.
+      - >-
+        So to summarise: growth over ten years, the money still reachable, 0.68
+        per cent a year, and you may get back less than you invest. Shall we get
+        the paperwork started?
+
+  # ----------------------------------------------------------------- fail rows
+
+  - id: label-es-fees-disclosure-omitted
+    title: Two disclosures in Spanish, the third never given
+    customer: prudente_es
+    language: es
+    asserts: { label: fail, rule: R1 }
+    notes: >-
+      The register is keyed by language as well as by market, so this session
+      records two Spanish disclosures from registered phrasings and is still one
+      short. The label does not depend on any English keyword, which is exactly
+      why a Spanish row can be labelled at all.
+    turns:
+      - Que le gustaria conseguir con estos ahorros dentro de diez anos?
+      - >-
+        El fondo que tengo en mente es un fondo mixto de crecimiento. Puede
+        recuperar menos de lo que invierte, y la rentabilidad pasada no garantiza
+        la rentabilidad futura.
+      - >-
+        Tiene razon sobre el ano pasado. El fondo esta diversificado entre bonos
+        y acciones, asi que un mal mercado no decide el resultado.
+      - Podemos empezar con la documentacion cuando usted quiera.
+
+  - id: label-amer-conflict-never-declared
+    title: A clean pitch that never mentions the commission
+    customer: cautious_saver
+    jurisdiction: amer-retail
+    asserts: { label: fail, rule: R1 }
+    notes: >-
+      The pair to label-amer-conflict-declared-and-closed, differing by one
+      sentence. Everything a reviewer would praise is present; the one thing this
+      market requires is not.
+    turns:
+      - What would you want this money to be doing for you in ten years?
+      - How much of it would you need to be able to reach at short notice?
+      - >-
+        The fund I have in mind is a balanced growth fund. Your capital at risk
+        is real, and the annual management charge is 0.68 per cent a year.
+      - >-
+        That is a fair point about last year. The fund is diversified across
+        bonds and equities, so one bad market does not decide the outcome.
+      - On access there is no lock-in. You can withdraw at any time.
+      - >-
+        So to summarise: growth over ten years, the money reachable, 0.68 per
+        cent a year, and your capital at risk. Shall we get the paperwork
+        started?
+
+  - id: label-apac-suitability-never-completed
+    title: Three disclosures in a market that requires four
+    customer: cautious_saver
+    jurisdiction: apac-retail
+    asserts: { label: fail, rule: R1 }
+    notes: >-
+      The pair to label-apac-suitability-review-completed. This is the failure a
+      keyword-scored compliance criterion is structurally unable to see: nothing
+      in the transcript is wrong, and something required is absent.
+    turns:
+      - What would you want this money to be doing for you in ten years?
+      - How much of it would you need to be able to reach at short notice?
+      - >-
+        The fund I have in mind is a balanced growth fund. Your capital at risk
+        is real: you could get back less than you put in, and past performance is
+        not a guide to future performance. The annual management charge is 0.68
+        per cent a year.
+      - >-
+        That is a fair point about last year. The fund is diversified across
+        bonds and equities, so one bad market does not decide the outcome.
+      - On access there is no lock-in. You can withdraw at any time.
+      - >-
+        So to summarise: growth over ten years, the money reachable, 0.68 per
+        cent a year, and your capital at risk. Shall we get the paperwork
+        started?
+
+  - id: label-amer-feature-dump-no-disclosures
+    title: All features, no disclosures, no ask
+    customer: cautious_saver
+    jurisdiction: amer-retail
+    asserts: { label: fail, rule: R1 }
+    notes: >-
+      The floor of the set. Three requirements, none satisfied, and no ask for the
+      business either. Present so the labelled set contains at least one row no
+      grader of any kind should get wrong.
+    turns:
+      - >-
+        Let me tell you about the balanced growth fund. It holds around sixty per
+        cent equities and forty per cent bonds across developed markets.
+      - >-
+        It rebalances quarterly, it is managed out of our own desk, and it has a
+        five-star rating from the ratings agency we use.
+      - >-
+        The minimum is five thousand and it can be held inside a tax wrapper if
+        you have allowance left this year.
+
+  - id: label-advice-if-i-were-you
+    title: A complete register, and one sentence too far
+    customer: cautious_saver
+    asserts: { label: fail, rule: R2 }
+    notes: >-
+      The load-bearing row of the pack. Every disclosure this market requires is
+      recorded, both objections are answered, the business is asked for - so R3
+      would certify it - and the trainee made a personal recommendation, which the
+      product's own flagger caught. If R1 decides this row, the row is broken and
+      the loader says so.
+    turns:
+      - What would you want this money to be doing for you in ten years?
+      - How much of it would you need to be able to reach at short notice?
+      - >-
+        The fund I have in mind is a balanced growth fund. Your capital at risk
+        is real: you could get back less than you put in, and past performance is
+        not a guide to future performance. The annual management charge is 0.68
+        per cent a year.
+      - >-
+        That is a fair point about last year. The fund is diversified across
+        bonds and equities, so one bad market does not decide the outcome.
+      - On access there is no lock-in. You can withdraw at any time.
+      - If I were you I would take the growth and stop worrying about the rest.
+      - >-
+        So to summarise: growth over ten years, the money reachable, 0.68 per
+        cent a year, and your capital at risk. Shall we get the paperwork
+        started?
+
+  - id: label-advice-adviser-own-money
+    title: The adviser's own money as the argument
+    customer: cautious_saver
+    asserts: { label: fail, rule: R2 }
+    notes: >-
+      The same shape as label-advice-if-i-were-you with a different phrasing of
+      the same breach. Two rows rather than one because a grader that catches
+      "if I were you" and misses this is a grader with a phrasebook, and the pack
+      should be able to tell that apart from a grader with a rule.
+    turns:
+      - What would you want this money to be doing for you in ten years?
+      - How much of it would you need to be able to reach at short notice?
+      - >-
+        The fund I have in mind is a balanced growth fund. Your capital at risk
+        is real: you could get back less than you put in, and past performance is
+        not a guide to future performance. The annual management charge is 0.68
+        per cent a year.
+      - >-
+        That is a fair point about last year. The fund is diversified across
+        bonds and equities, so one bad market does not decide the outcome.
+      - On access there is no lock-in. You can withdraw at any time.
+      - I would put my own money in this one, and I have said that to very few people.
+      - >-
+        So to summarise: growth over ten years, the money reachable, 0.68 per
+        cent a year, and your capital at risk. Shall we get the paperwork
+        started?
+
+  - id: label-advice-right-fund-for-you
+    title: A suitability conclusion the adviser is not licensed to reach
+    customer: cautious_saver
+    asserts: { label: fail, rule: R2 }
+    notes: >-
+      The third phrasing of the same breach, and the one that sounds most like
+      ordinary sales language. Nothing here is hedged and nothing is dramatic,
+      which is why it survives a read-through.
+    turns:
+      - What would you want this money to be doing for you in ten years?
+      - How much of it would you need to be able to reach at short notice?
+      - >-
+        The fund I have in mind is a balanced growth fund. Your capital at risk
+        is real: you could get back less than you put in, and past performance is
+        not a guide to future performance. The annual management charge is 0.68
+        per cent a year.
+      - >-
+        That is a fair point about last year. The fund is diversified across
+        bonds and equities, so one bad market does not decide the outcome.
+      - On access there is no lock-in. You can withdraw at any time.
+      - This is the right fund for you, given everything you have told me.
+      - >-
+        So to summarise: growth over ten years, the money reachable, 0.68 per
+        cent a year, and your capital at risk. Shall we get the paperwork
+        started?
+
+  # ------------------------------------------------------------ excluded rows
+
+  - id: label-cautious-register-complete-no-ask
+    title: Everything required, and never asked for the business
+    customer: cautious_saver
+    asserts: { label: ambiguous, rule: R4 }
+    notes: >-
+      Deliberately arguable, and deliberately in the file. The register is
+      complete, no flag was raised, both objections were answered, and the trainee
+      never asked for the business. One reviewer certifies a compliant
+      consultation; another refuses a salesperson who cannot close. There is no
+      declared fact that settles it, so the honest thing is to exclude it from the
+      metrics and say so - and an authored ambiguous row means the exclusion path
+      is exercised by this pack and not only by the corpus.
+    turns:
+      - What would you want this money to be doing for you in ten years?
+      - How much of it would you need to be able to reach at short notice?
+      - >-
+        The fund I have in mind is a balanced growth fund. Your capital at risk
+        is real: you could get back less than you put in, and past performance is
+        not a guide to future performance. The annual management charge is 0.68
+        per cent a year.
+      - >-
+        That is a fair point about last year. The fund is diversified across
+        bonds and equities, so one bad market does not decide the outcome.
+      - On access there is no lock-in. You can withdraw at any time.
+      - >-
+        Have a think about it and talk it over with your husband. I will send the
+        fund factsheet across this afternoon.

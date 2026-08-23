@@ -1,0 +1,73 @@
+id: pitch-ask-the-scorer-cannot-see
+title: An ask for the business in words the criterion does not know
+customer: comparison_shopper
+tags: [closing, scorer-stress, objection-handling, disclosure]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - What matters more to you - a steadier ride, or a bigger number at the end?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      Let us compare the two like for like: theirs is a tracker with no bond
+      allocation, and the annual management charge here is 0.68 per cent a year.
+    - >-
+      And nothing is signed today. I will put all of it in writing so both of you
+      can read it first.
+    - Can I take that as a yes?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    The trainee did ask for the business - "can I take that as a yes?" is an ask by
+    any reading - so the closing criterion should award three of four for an ask
+    without a recap, and the session is worth nineteen out of twenty. Everything
+    else is identical to the rest of the closing family.
+
+tools:
+  expected: [record_disclosure, resolve_objection, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 3, resolve_objection: 2}
+  args:
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 19
+      label: three of four for an ask with no recap
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - Can I take that as a yes
+  forbidden:
+    - Shall we
+    - paperwork
+    - get started
+
+expected_failure:
+  contracts: [tools]
+  since: first observed when the corpus went to seventy rows
+  expectation: >-
+    We expect sixteen out of twenty. The closing criterion recognises an ask by a
+    short list of phrasings - shall we, proceed, get started, paperwork, open the
+    account, sign - and "can I take that as a yes?" is on none of them, so a turn
+    that is unmistakably an ask is classified as an ordinary closed question and the
+    criterion scores zero. The verdict does not move, which is why the assertion is
+    on the total.
+
+notes: >-
+  The closing criterion's version of the compliance keyword defect, and worth having
+  precisely because the consequence is small: the trainee loses three marks rather
+  than being certified for something they did not do. It is the same root cause -
+  a fixed phrase list standing in for a judgement about what a turn did - and it
+  makes the pattern hard to dismiss as a one-off in the compliance criterion. The
+  forbidden clauses pin the script to the unrecognised wording so the row cannot
+  accidentally start passing.

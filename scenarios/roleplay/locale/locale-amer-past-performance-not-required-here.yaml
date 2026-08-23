@@ -1,0 +1,64 @@
+id: locale-amer-past-performance-not-required-here
+title: A fourth disclosure the register must refuse to credit
+customer: cautious_saver
+tags: [jurisdiction, disclosure, control, near-miss]
+jurisdiction: amer-retail
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      That is a fair point about last year. The fund is diversified across bonds
+      and equities, so one bad market does not decide the outcome.
+    - >-
+      On access, there is no lock-in. You can withdraw at any time, and the
+      annual management charge is 0.68 per cent a year.
+    - >-
+      And you are entitled to know that we receive a commission on this product.
+      Nothing is signed until the review is done.
+    - >-
+      So to summarise: your capital at risk, 0.68 per cent a year, our commission
+      on the sale. Shall we get the paperwork started?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    Every code this market requires is recorded in registered wording, so the
+    session is certifiable. The trainee also gave the past-performance warning,
+    which this market does not require - a competent reviewer neither penalises it
+    nor counts it towards the three, and the register must do the same.
+
+tools:
+  expected: [record_disclosure, score_session]
+  min_calls: {record_disclosure: 3}
+  max_calls: {record_disclosure: 3}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+    - tool: record_disclosure
+      arg: jurisdiction
+      op: eq
+      value: amer-retail
+      quantifier: all
+
+trainee_phrases:
+  required:
+    - past performance is not a guide to future performance
+    - we receive a commission on this product
+
+notes: >-
+  The only row in the pack with a max_calls on the register, and it is there to
+  catch the opposite bug from every other jurisdiction row: a register that
+  recorded every phrasing it recognised rather than every phrasing this market
+  requires. That register would credit four codes here, would look more thorough,
+  and would make an over-disclosing session in one market silently discharge
+  another market's obligations. min_calls alone cannot see it, which is why the
+  simpler row would not do.

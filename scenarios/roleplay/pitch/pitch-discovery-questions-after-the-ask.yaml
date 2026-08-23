@@ -1,0 +1,51 @@
+id: pitch-discovery-questions-after-the-ask
+title: Three good questions, asked after the paperwork was offered
+customer: cautious_saver
+tags: [discovery, closing, known-gap, disclosure]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      That is a fair point about last year. The fund is diversified across bonds
+      and equities, so one bad market does not decide the outcome.
+    - >-
+      On access, there is no lock-in. You can withdraw at any time, and the
+      annual management charge is 0.68 per cent a year.
+    - >-
+      So to summarise: your capital at risk, 0.68 per cent a year, and the money
+      reachable when you need it. Shall we get the paperwork started?
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    Everything the rubric asks for is present and in the wrong order: the product
+    was chosen, the objections answered and the business asked for before a single
+    question about the customer, and the two good questions arrive after the ask.
+    Nothing here triggers an outright fail, so the arithmetic passes it at nineteen
+    and a reviewer writes the order on the sheet.
+
+tools:
+  expected: [record_disclosure, resolve_objection, reveal_concern, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 3}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+notes: >-
+  The discovery criterion counts open questions and does not care where they sit,
+  so this session scores the same as one that opened with them. The gap is in the
+  rubric rather than in the scorer, and it is the cheapest possible demonstration
+  of it: the concerns the customer reveals are recorded in the ledger after the
+  close, so the evidence that the ordering was wrong is in the trace and no
+  criterion reads it. A row that simply asked no questions would score badly and
+  prove nothing about position.

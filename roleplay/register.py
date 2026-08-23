@@ -23,6 +23,29 @@ the output. Once the requirement lives in a table, the only question left for th
 model is a question about the transcript, and the answer can be diffed against
 the ledger. `roleplay.contracts.ScoreClaimContract` is that diff.
 
+WHY A LIVE TRAINEE CHANGES NOTHING HERE
+---------------------------------------
+`roleplay.live` can put a real model in the trainee's chair. That model produces
+fluent, plausible, *unregistered* sentences about risk all day long, and the
+temptation is to loosen the matcher so the good ones get credit. Loosening it is
+the one change this file must not accept: the register is the instrument the
+scorer's compliance claims are measured against, and an instrument that credits
+"there is some risk, of course" has no way to catch a scorer that credits it too.
+
+What the live path adds instead is the other side of the comparison —
+`keyword_shadow_codes`, the lax check a reasonable engineer writes in an
+afternoon, kept here on purpose so the gap between the two is a *number* rather
+than an anecdote. Same discipline as the naive control in `lab.voice.calibration`,
+which exists to be wrong by a measured margin. A live session where the shadow
+credits three disclosures and the register records none is the finding.
+
+`compliance_brief` is the counterweight that keeps the strictness honest. A firm
+that requires exact wording issues that wording to its advisers, so the exemplary
+competence level is briefed with it and the weaker levels are not. Without that,
+every live session would score zero on disclosure, the criterion would have no
+spread, and "the register is strict" would be indistinguishable from "the register
+is broken".
+
 WHAT IS DELIBERATELY CRUDE
 --------------------------
 Matching is substring-over-normalised-text against a closed list of registered
@@ -40,13 +63,20 @@ from __future__ import annotations
 import re
 import unicodedata
 from dataclasses import dataclass, field
+from typing import Sequence
 
 __all__ = [
     "DISCLOSURE_CODES",
     "JURISDICTIONS",
     "REGISTERED_PHRASINGS",
+    "KEYWORD_SHADOW_TERMS",
     "DisclosureRecord",
     "DisclosureRegister",
+    "ShadowComparison",
+    "approved_wording",
+    "compliance_brief",
+    "keyword_shadow_codes",
+    "compare_with_keyword_check",
     "normalise",
     "required_codes",
 ]
@@ -131,6 +161,27 @@ REGISTERED_PHRASINGS: dict[str, dict[str, tuple[str, ...]]] = {
             "el banco recibe una comision cuando usted compra este producto",
         ),
     },
+}
+
+#: ------------------------------------------------------------------- CONTROL
+#: The naive instrument, kept beside the real one so the difference can be
+#: measured rather than asserted. These are the words a keyword check looks for
+#: when someone is asked to "check the risk warning was given" and has an
+#: afternoon to do it. It is wrong in both directions and both directions matter:
+#:
+#:   over-credits  "there is no real risk to your capital here" contains `risk`
+#:                 and `capital`, and satisfies nothing at all;
+#:   under-credits the list is English, so a correctly disclosed Spanish session
+#:                 scores zero.
+#:
+#: Nothing in the product consults this table. It exists to be compared against,
+#: and `compare_with_keyword_check` is the comparison.
+KEYWORD_SHADOW_TERMS: dict[str, tuple[str, ...]] = {
+    "capital_at_risk": ("risk", "capital", "value can go", "ups and downs"),
+    "past_performance": ("past performance", "last year", "track record", "historic"),
+    "fees_and_charges": ("fee", "charge", "cost", "per cent", "%"),
+    "product_suitability": ("suitab", "assessment", "review"),
+    "conflict_of_interest": ("commission", "we are paid", "we get paid", "incentive"),
 }
 
 _WHITESPACE = re.compile(r"\s+")
@@ -259,3 +310,153 @@ class DisclosureRegister:
             f"recorded for {self.jurisdiction} in {self.language}"
             + (f"; missing: {', '.join(self.missing_codes())}" if self.missing_codes() else "")
         )
+
+
+# --------------------------------------------------------------------------- #
+# The approved wording — what a firm actually gives its advisers
+# --------------------------------------------------------------------------- #
+
+
+def approved_wording(jurisdiction: str, language: str = "en") -> dict[str, str]:
+    """The one registered phrasing per required code, in requirement order.
+
+    The register holds several accepted phrasings per code; a firm's compliance
+    handbook holds one. This returns the first, which is the canonical one, so a
+    trainee briefed from it and a register reading its transcript are working from
+    the same table. Deriving the brief from `REGISTERED_PHRASINGS` rather than
+    restating it is the whole point: a brief that drifted from the register would
+    train an adviser to say a sentence the register no longer accepts, and the
+    resulting failure would look like a model problem.
+
+    Raises on an unknown jurisdiction or language, for the reason `required_codes`
+    does: a silently empty brief is indistinguishable from a compliant one.
+    """
+    try:
+        phrasings = REGISTERED_PHRASINGS[language]
+    except KeyError:
+        raise KeyError(
+            f"no registered phrasings for language {language!r}; "
+            f"known: {sorted(REGISTERED_PHRASINGS)}"
+        ) from None
+    wording: dict[str, str] = {}
+    for code in required_codes(jurisdiction):
+        options = phrasings.get(code, ())
+        if not options:
+            raise KeyError(
+                f"{jurisdiction} requires {code!r} but {language!r} registers no "
+                "phrasing for it, so the requirement cannot be discharged in this "
+                "language and no brief should pretend otherwise"
+            )
+        wording[code] = options[0]
+    return wording
+
+
+def compliance_brief(jurisdiction: str, language: str = "en") -> str:
+    """The approved wording as briefing text for a trainee prompt.
+
+    Only the exemplary competence level is given this (see
+    `roleplay.live.TRAINEE_BRIEFS`). Handing it to every level would make the
+    disclosure criterion a copying exercise and destroy the spread the scorer is
+    supposed to be graded on; handing it to none of them would make a perfect
+    score unreachable and turn a strict instrument into a broken one.
+    """
+    lines = [
+        f"Your firm's approved disclosure wording for {jurisdiction} "
+        f"({language}). Use these sentences as written — compliance records them "
+        "verbatim and a paraphrase is not recorded:",
+    ]
+    for code, phrasing in approved_wording(jurisdiction, language).items():
+        lines.append(f'  - {code}: "{phrasing}"')
+    return "\n".join(lines)
+
+
+# --------------------------------------------------------------------------- #
+# The naive control
+# --------------------------------------------------------------------------- #
+
+
+def keyword_shadow_codes(
+    utterances: Sequence[str], *, jurisdiction: str
+) -> tuple[str, ...]:
+    """Which codes a keyword check would credit across these utterances.
+
+    Deliberately lax and deliberately English-only. This is not a fallback for
+    the register and must never be wired into one: it is the control arm, and its
+    only job is to be wrong in a way the register is not.
+    """
+    haystack = normalise(" ".join(utterances))
+    credited: list[str] = []
+    for code in required_codes(jurisdiction):
+        terms = KEYWORD_SHADOW_TERMS.get(code, ())
+        if any(normalise(term) in haystack for term in terms if term.strip("% ")):
+            credited.append(code)
+    return tuple(credited)
+
+
+@dataclass(frozen=True)
+class ShadowComparison:
+    """Register versus keyword check, per code, with both directions kept.
+
+    `over_credited` is the interesting column — a code the keyword check would
+    have passed and the register did not record. Every entry in it is a sentence
+    that sounds like a disclosure and is not one, which is exactly the failure a
+    compliance report must not contain.
+
+    `under_credited` is the honest other half: a code the register recorded and a
+    keyword check would have missed. It is not evidence that the register is
+    generous, it is evidence that vocabulary matching is not a subset of anything.
+    """
+
+    jurisdiction: str
+    required: tuple[str, ...]
+    recorded: tuple[str, ...]
+    keyword_credited: tuple[str, ...]
+
+    @property
+    def over_credited(self) -> tuple[str, ...]:
+        return tuple(c for c in self.keyword_credited if c not in self.recorded)
+
+    @property
+    def under_credited(self) -> tuple[str, ...]:
+        return tuple(c for c in self.recorded if c not in self.keyword_credited)
+
+    @property
+    def agreed(self) -> tuple[str, ...]:
+        return tuple(c for c in self.recorded if c in self.keyword_credited)
+
+    def summary(self) -> str:
+        """One line, with both denominators. A bare count here would be a defect."""
+        n = len(self.required)
+        return (
+            f"{self.jurisdiction}: register {len(self.recorded)}/{n}, "
+            f"keyword check {len(self.keyword_credited)}/{n}"
+            + (
+                f"; keyword over-credits {', '.join(self.over_credited)}"
+                if self.over_credited
+                else "; no over-credit"
+            )
+            + (
+                f"; keyword misses {', '.join(self.under_credited)}"
+                if self.under_credited
+                else ""
+            )
+        )
+
+
+def compare_with_keyword_check(
+    register: "DisclosureRegister", utterances: Sequence[str]
+) -> ShadowComparison:
+    """Score the same transcript both ways and return the disagreement.
+
+    `utterances` must be the trainee's turns only. Passing the customer's turns as
+    well would let the customer's own words about risk discharge the adviser's
+    obligation, which is the mistake that makes a compliance report worthless.
+    """
+    return ShadowComparison(
+        jurisdiction=register.jurisdiction,
+        required=required_codes(register.jurisdiction),
+        recorded=register.satisfied_codes(),
+        keyword_credited=keyword_shadow_codes(
+            utterances, jurisdiction=register.jurisdiction
+        ),
+    )

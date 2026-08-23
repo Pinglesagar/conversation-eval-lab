@@ -1,0 +1,61 @@
+id: objection-bank-cheaper-answered-like-for-like
+title: A cheaper lookalike at the bank, answered on the comparison
+customer: comparison_shopper
+tags: [objection-handling, disclosure, control, closing]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      Let us compare the two like for like. Theirs is a tracker with no bond
+      allocation, ours is diversified and rebalanced, and the annual management
+      charge is 0.68 per cent against their 0.45.
+    - >-
+      And of course nothing is signed today. I will put all of this in writing so
+      both of you can read it before you decide anything.
+    - >-
+      So to summarise: your capital at risk, 0.68 per cent a year for a different
+      fund from theirs, and nothing signed until you have both read it. Shall we
+      get the paperwork started when you are ready?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    Both objections were engaged with on their own terms - the bank comparison with
+    an actual like-for-like difference rather than a defence of the charge, and the
+    spouse objection by removing the pressure instead of arguing with it. Two open
+    questions, all three disclosures in registered wording, and a summary before the
+    ask: nineteen out of twenty.
+
+tools:
+  expected: [raise_objection, resolve_objection, record_disclosure, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 3, resolve_objection: 2}
+  args:
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 19
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - like for like
+    - in writing
+
+notes: >-
+  The control for the objection-depth family, and one of the few rows in the pack
+  that pins an exact total. The objection criterion is the one criterion with no
+  seeded defect - it reads the objection ledger rather than the transcript - so
+  pinning the number here is what makes the neighbouring rows diagnostic: if a
+  future scorer starts guessing at objections from prose, this row moves and the
+  compliance rows do not.

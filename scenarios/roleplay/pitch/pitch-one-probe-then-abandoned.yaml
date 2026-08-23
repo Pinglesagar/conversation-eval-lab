@@ -1,0 +1,54 @@
+id: pitch-one-probe-then-abandoned
+title: One question, then straight to the product
+customer: cautious_saver
+tags: [discovery, control, disclosure, closing]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - >-
+      Right. The fund I have in mind is a balanced growth fund. Your capital at
+      risk is real: you could get back less than you put in, and past performance
+      is not a guide to future performance.
+    - >-
+      That is a fair point about last year. The fund is diversified across bonds
+      and equities, so one bad market does not decide the outcome.
+    - >-
+      On access, there is no lock-in. You can withdraw at any time, and the
+      annual management charge is 0.68 per cent a year.
+    - >-
+      So to summarise: your capital at risk, 0.68 per cent a year, and the money
+      reachable when you need it. Shall we get the paperwork started?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    One open question surfaced one concern and the trainee moved to the product
+    without finding the second. Both objections were engaged with, all three
+    disclosures given in registered wording, and a summary preceded the ask:
+    eighteen out of twenty, and a reviewer passes it with "ask more" on the sheet.
+
+tools:
+  expected: [record_disclosure, resolve_objection, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 3, resolve_objection: 2}
+  max_calls: {reveal_concern: 1}
+  args:
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 18
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+notes: >-
+  The one-question rung of the discovery ladder, pinned. The criterion bands probe
+  counts at nought, one, two and three-or-more, and the pack now has a row on every
+  rung - this one at one, pitch-feature-dump-no-discovery at nought,
+  locale-amer-past-performance-not-required-here at two, and the exemplary rows
+  above three - so a change to the banding shows up as a specific row rather than as
+  a drifting average. The max_calls on reveal_concern is the other half of the
+  story: one question bought one concern, and the second one stayed hidden.

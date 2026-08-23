@@ -1,0 +1,63 @@
+id: pitch-closed-questions-only
+title: Four questions, none of them open
+customer: cautious_saver
+tags: [discovery, objection-handling, feedback-groundedness, closing]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Do you have a workplace pension already?
+    - Are you comfortable with a five-year horizon?
+    - Have you invested in funds before?
+    - Is sixty thousand the whole amount?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      On access, there is no lock-in. You can withdraw at any time, and the
+      annual management charge is 0.68 per cent a year.
+    - >-
+      So to summarise: your capital at risk, 0.68 per cent a year, and the money
+      reachable when you need it. Shall we get the paperwork started?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    Four questions and not one of them opens anything: every answer is yes or no,
+    so neither of the two things this customer is actually worried about ever
+    surfaced. Both objections were then raised and neither answered. Twelve out of
+    twenty is a fail, and the compliance record being complete is what makes it
+    interesting rather than what rescues it.
+
+tools:
+  expected: [raise_objection, record_disclosure, score_session]
+  forbidden: [reveal_concern, resolve_objection]
+  min_calls: {record_disclosure: 3, raise_objection: 2}
+  args:
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 12
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+expected_failure:
+  contracts: [feedback-grounded]
+  since: first observed in the 0.1.0 roleplay pack
+  expectation: >-
+    We expect the right verdict and the wrong objection named. Objection handling
+    scores zero, which triggers the template sentence about the customer raising
+    cost; the objections here were last year's losses and access to the money, and
+    the only mention of cost came from the trainee.
+
+notes: >-
+  The forbidden reveal_concern clause is the whole row: it asserts that no hidden
+  concern surfaced, which is what "closed questions only" actually costs a session
+  and is not visible in the score at all. It also records a property of the
+  customer that matters for reading every other row - objections are drawn by
+  statements, not by questions, so a session made entirely of closed questions
+  reaches the product with nothing on the table and both objections arrive at once
+  at the end.

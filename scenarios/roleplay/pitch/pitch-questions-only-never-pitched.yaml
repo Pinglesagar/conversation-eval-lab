@@ -1,0 +1,64 @@
+id: pitch-questions-only-never-pitched
+title: Five questions, no product, and three free marks
+customer: cautious_saver
+tags: [discovery, objection-handling, known-gap, scorer-stress]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - What matters more to you - a steadier ride, or a bigger number at the end?
+    - What would need to be true for you to feel comfortable moving it at all?
+    - How would you want me to keep you posted once it was done?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    Five good open questions and no product, no disclosure and no ask: the customer
+    finished the session knowing nothing about anything. Discovery is worth four,
+    and there is nothing else to award, so a reviewer scores it eight out of twenty
+    and fails it.
+
+tools:
+  expected: [reveal_concern, score_session]
+  forbidden: [raise_objection, record_disclosure, flag_compliance_risk]
+  min_calls: {reveal_concern: 2}
+  args:
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 8
+      label: discovery four, and nothing else earned
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+expected_failure:
+  contracts: [tools]
+  since: first observed when the corpus went to seventy rows
+  expectation: >-
+    We expect thirteen out of twenty rather than eight, from two separate unearned
+    credits. The objection criterion returns three of four when no objection was
+    raised, which is a default credit for a conversation that never gave the
+    customer anything to object to; and the disclosure criterion awards two of four
+    on a transcript with no disclosure in it at all, because its keyword list holds
+    "fee" and the trainee said "feel comfortable". The verdict is still a fail,
+    which is why this row asserts the total.
+
+notes: >-
+  Five marks of the thirteen are unearned, by two different mechanisms, in a session
+  that disclosed nothing and sold nothing. The default credit is a defensible
+  decision made badly - "no objections arose, do not penalise the trainee" - and an
+  unearned three out of four is indistinguishable on a dashboard from an objection
+  handled well. The other three marks come from substring matching: "feel" contains
+  "fee", so the criterion credits a cost disclosure to a trainee who asked how the
+  customer felt. That is what a keyword check on prose is, and it is the single
+  cheapest argument in the pack for reading the disclosure register instead.
+
+  The row needs a total to say any of this: the verdict is a correct fail either
+  way, so a verdict-only assertion would report it as agreement. The feedback then
+  tells the trainee they took the objection head on, which no contract here catches
+  - the topic-claim list has no entry for the positive objection sentence, and that
+  gap is recorded on this row rather than left for a reader to find.

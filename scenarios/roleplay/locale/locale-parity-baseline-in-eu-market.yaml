@@ -1,0 +1,63 @@
+id: locale-parity-baseline-in-eu-market
+title: The parity script in the market whose register it satisfies
+customer: cautious_saver
+tags: [jurisdiction, market-parity, disclosure, control]
+jurisdiction: eu-retail
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - What matters more to you - a steadier ride, or a bigger number at the end?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      That is a fair point about last year. The fund is diversified across bonds
+      and equities, so one bad market does not decide the outcome.
+    - >-
+      On access, there is no lock-in. You can withdraw at any time, and the
+      annual management charge is 0.68 per cent a year.
+    - >-
+      So to summarise: growth over ten years, the money reachable when you need
+      it, 0.68 per cent a year in charges, and your capital at risk. Shall we get
+      the paperwork started?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    This market's register requires three codes and all three are given in
+    registered wording, so the rule that fails a session outright for a missing
+    disclosure does not bite. Three open questions, both objections engaged with,
+    no recommendation, and a summary before the ask.
+
+tools:
+  expected: [record_disclosure, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 3, resolve_objection: 2}
+  args:
+    - tool: score_session
+      arg: jurisdiction
+      op: eq
+      value: eu-retail
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - capital at risk
+    - past performance is not a guide to future performance
+    - annual management charge
+
+notes: >-
+  Proves nothing on its own, and that is its job: it is the arm of the parity trio
+  that must stay green. The other two rows run this script character for character
+  in a different market and are expected to fail on the register alone, so the
+  reader can attribute the difference to the market and to nothing else. A single
+  jurisdiction row cannot make that argument - it can only show that some market's
+  requirements were met, which is what a hard-coded requirement set also looks
+  like.

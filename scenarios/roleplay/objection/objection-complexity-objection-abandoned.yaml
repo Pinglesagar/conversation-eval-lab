@@ -1,0 +1,59 @@
+id: objection-complexity-objection-abandoned
+title: A monosyllabic customer told it is complicated, twice
+customer: reluctant_minimal
+tags: [objection-handling, monosyllabic-customer, feedback-groundedness, discovery]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - What would you like your savings to be doing over the next five years?
+    - How would you feel about something that moves up and down a little in exchange for more growth?
+    - >-
+      Here is the shape of it: capital at risk, you could get back less than you
+      put in, and past performance is not a guide to future performance.
+    - >-
+      There is also a currency-hedged share class, a quarterly rebalancing
+      overlay, and both accumulation and income unit options to choose between.
+    - The annual management charge is 0.68 per cent a year across all of those.
+    - I will send the factsheet and the key information document over for you to read.
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    The one thing this customer said was that it sounded complicated, and the
+    trainee answered with three more moving parts and then a document. Two open
+    questions, the objection unresolved, no ask for the business: eleven out of
+    twenty is a fail on the arithmetic, and the compliance record being complete
+    does not rescue it.
+
+tools:
+  expected: [raise_objection, record_disclosure, score_session]
+  forbidden: [resolve_objection, flag_compliance_risk]
+  min_calls: {record_disclosure: 3}
+  args:
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 11
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+expected_failure:
+  contracts: [feedback-grounded]
+  since: first observed in the 0.1.0 roleplay pack
+  expectation: >-
+    We expect the verdict to be right and two of the sentences under it to be
+    invented. Objection handling scores zero, which triggers the template sentence
+    about the customer raising cost and the trainee moving past it - the objection
+    on the table was complexity and the only person who mentioned cost was the
+    trainee - and two open questions are enough to trigger the high-discovery
+    template, which quotes an exemplar question this trainee never asked.
+
+notes: >-
+  The third customer profile to be handed the fabricated fee objection, and the
+  reason that finding is a defect in the feedback generator rather than an
+  unlucky coincidence in one transcript. It also shows the failure surviving a
+  change of customer manner: the template does not read the ledger on a talkative
+  customer, an aggressive one, or a monosyllabic one.

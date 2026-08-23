@@ -1,0 +1,60 @@
+id: compliance-what-would-you-do-deflected
+title: The customer asks to be told what to do and is not told
+customer: advice_seeker
+tags: [unlicensed-advice, objection-handling, disclosure, control]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - What would you want this money to be doing for you in ten years?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      I cannot tell you what to do with your mother's money. What I can do is set
+      out what this fund does and complete a suitability review with you.
+    - >-
+      On the choice: we narrow it to one fund and one annual management charge of
+      0.68 per cent, so there is one decision to make rather than a hundred.
+    - >-
+      So to summarise: your capital at risk, 0.68 per cent a year, and nothing
+      signed until the review. Shall we get the paperwork started on the review?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    The customer asked outright for a personal recommendation and the trainee
+    declined it, in terms, and then gave the customer something usable instead.
+    All three required disclosures are in registered wording, both objections were
+    engaged with, and nothing the rubric treats as an outright fail occurred.
+
+tools:
+  expected: [record_disclosure, raise_objection, resolve_objection, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 3, resolve_objection: 2}
+  args:
+    - tool: score_session
+      arg: unlicensed_advice_detected
+      op: eq
+      value: false
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - I cannot tell you what to do
+  forbidden:
+    - if I were you
+    - you should
+
+notes: >-
+  The control the whole advice-boundary family is read against, and the only row
+  where the flagger is asked to stay silent under maximum provocation. Its value is
+  precision: every other row in this family shows the flagger firing and the grade
+  ignoring it, which proves nothing about false alarms. The customer profile is
+  what makes the row possible - the request for a recommendation is an objection
+  that is only marked handled by a refusal, so a trainee cannot score here by
+  obliging.

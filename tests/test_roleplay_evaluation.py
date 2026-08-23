@@ -14,6 +14,7 @@ product's own scorer, wired into `lab.judges` through the `Completion` protocol.
 from __future__ import annotations
 
 import math
+from collections import Counter
 
 import pytest
 
@@ -223,26 +224,45 @@ def test_the_judge_is_stamped_with_the_rubric_it_measured(calibration) -> None:
 
 
 def test_the_measured_rates(calibration) -> None:
-    """Pinned. A change in the scorer's agreement should be a diff to review."""
+    """Pinned. A change in the scorer's agreement should be a diff to review.
+
+    These are rates on a targeted probe set, not field rates: the corpus was
+    written to make this product's weakest paths reachable, so adding
+    jurisdiction rows would move the TPR without anything about the scorer
+    changing. `roleplay.corpus` states that at length, and it has to be repeated
+    anywhere the number is quoted.
+    """
     report, _, _ = calibration
-    assert report.n == 15
+    assert report.n == 70
     confusion = report.confusion
-    assert (confusion.true_positive, confusion.false_positive) == (3, 1)
-    assert (confusion.false_negative, confusion.true_negative) == (3, 8)
-    assert report.true_positive_rate.value == pytest.approx(0.5, abs=0.001)
-    assert report.true_negative_rate.value == pytest.approx(8 / 9, abs=0.001)
-    assert report.cohens_kappa == pytest.approx(0.412, abs=0.002)
+    assert (confusion.true_positive, confusion.false_positive) == (9, 2)
+    assert (confusion.false_negative, confusion.true_negative) == (23, 36)
+    assert report.true_positive_rate.value == pytest.approx(9 / 32, abs=0.001)
+    assert report.true_negative_rate.value == pytest.approx(36 / 38, abs=0.001)
+    assert report.cohens_kappa == pytest.approx(0.241, abs=0.002)
     assert report.parse_errors == 0
 
 
-def test_every_missed_defect_is_a_compliance_miss(calibration) -> None:
-    """The composition of the errors is the finding, not the rate."""
+def test_the_composition_of_the_errors(calibration) -> None:
+    """The composition of the errors is the finding, not the rate.
+
+    Every missed defect is a compliance miss - a disclosure the register does not
+    hold, or a personal recommendation the session's own flagger caught - and the
+    two false alarms are both compliant Spanish sessions. Two suites, two
+    mechanisms, and the two directions do not cancel: the English rows are
+    over-credited by the same keyword list that under-credits the Spanish ones,
+    which is why the fix is to read the register rather than to extend the list.
+    """
     report, _, _ = calibration
     misses = [d.item_id for d in report.disagreements if d.kind == "false_negative"]
-    assert len(misses) == 3
-    assert all(m.startswith("compliance-") for m in misses)
-    alarms = [d.item_id for d in report.disagreements if d.kind == "false_positive"]
-    assert alarms == ["locale-es-mx-registered-spanish-disclosure"]
+    assert len(misses) == 23
+    by_suite = Counter(m.split("-")[0] for m in misses)
+    assert by_suite == {"locale": 12, "compliance": 9, "objection": 1, "pitch": 1}
+    alarms = sorted(d.item_id for d in report.disagreements if d.kind == "false_positive")
+    assert alarms == [
+        "locale-es-apac-suitability-in-spanish",
+        "locale-es-mx-registered-spanish-disclosure",
+    ]
 
 
 def test_the_gate_refuses_the_scorer(calibration) -> None:
@@ -263,9 +283,16 @@ def test_the_registry_really_raises_in_ci_mode(calibration) -> None:
 
 
 def test_a_lenient_threshold_would_admit_it(calibration) -> None:
-    """Shows the refusal is about a stated standard rather than about the code."""
+    """Shows the refusal is about a stated standard rather than about the code.
+
+    The numbers here are deliberately below anything a certification programme
+    would accept - a detector that misses seven failures in ten - and that is the
+    point: the gate is a parameter printed next to the verdict, so the only thing
+    standing between this scorer and a green report is a number somebody has to
+    write down and defend.
+    """
     report, _, _ = calibration
-    ok, failures = report.meets(CalibrationThresholds(min_tpr=0.4, min_tnr=0.8))
+    ok, failures = report.meets(CalibrationThresholds(min_tpr=0.25, min_tnr=0.90))
     assert ok and not failures
 
 
@@ -321,7 +348,7 @@ def test_the_demo_runs_clean_with_red_findings(capsys) -> None:
     outcome = run_demo()
     assert outcome.ok, "\n".join(outcome.surprises)
     assert not outcome.gate_cleared
-    assert len(outcome.results) == 15
+    assert len(outcome.results) == 70
 
     printed = capsys.readouterr().out
     assert "regression gate: PASS" in printed

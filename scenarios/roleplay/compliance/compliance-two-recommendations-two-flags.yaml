@@ -1,0 +1,65 @@
+id: compliance-two-recommendations-two-flags
+title: Two recommendations, two flags, one clean compliance line
+customer: cautious_saver
+tags: [unlicensed-advice, compliance-gate, disclosure, closing]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - What matters more to you - a steadier ride, or a bigger number at the end?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - You should switch the whole savings account into it, in my view.
+    - >-
+      On access, there is no lock-in. You can withdraw at any time, and the
+      annual management charge is 0.68 per cent a year.
+    - >-
+      And if I were you I would do it before the end of the tax year. Shall we get
+      the paperwork started?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    Two separate personal recommendations - switch the whole account, and do it
+    before the tax year ends - neither with a suitability assessment behind it.
+    Either one fails the session outright under the rubric; the complete disclosure
+    record does not offset them.
+
+tools:
+  expected: [flag_compliance_risk, record_disclosure, score_session]
+  min_calls: {flag_compliance_risk: 2, record_disclosure: 3}
+  args:
+    - tool: score_session
+      arg: unlicensed_advice_detected
+      op: eq
+      value: true
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - You should switch the whole savings account
+    - if I were you I would do it before the end of the tax year
+
+expected_failure:
+  contracts: [tools, score-claims-backed]
+  since: first observed in the 0.1.0 roleplay pack
+  expectation: >-
+    We expect two high-severity flags in the ledger and a card that reports no
+    advice detected, which is the same defect as the single-recommendation rows with
+    the count doubled. The point of the count is that the flagger is per turn: a
+    session with two recommendations is distinguishable from one slip in the ledger
+    and identical to it on the score card.
+
+notes: >-
+  min_calls of two on the flagger is the only assertion in the pack about how much
+  compliance evidence a session produced rather than whether it produced any. It
+  matters because the repair someone will reach for is "flag the session, not the
+  turn", and a session-level flag would keep every other compliance row green while
+  destroying the ability to say where in a conversation an adviser went wrong.

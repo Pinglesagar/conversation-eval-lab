@@ -1,0 +1,244 @@
+# Calibrating a live rubric scorer against a labelled set
+
+Every number below is recomputed from the committed recordings in this directory by `python -m roleplay.scorer_study`. Nothing is typed in by hand, and a re-run on a clean checkout reproduces the file byte for byte.
+
+## The labelled set
+
+27 items in the metrics. Labels are derived by rule from each session's own ledgers — see `roleplay/labels.py` for the four rules — and not written by hand alongside the session.
+
+```
+7 item(s) excluded from the metrics:
+  pitch-cold-scorer-single-run-control [corpus]
+      AMBIGUOUS by R4: compliant on every declared fact, but the business was never asked for — the rubric scores both out of 4 rather than making either dispositive, so two competent reviewers may reasonably differ. The corpus reviewer called it 'pass'; no declared fact settles it, so it is excluded rather than resolved in either direction.
+  objection-lock-in-left-unanswered [corpus]
+      AMBIGUOUS by R4: compliant on every declared fact, but the business was never asked for and 2 objection(s) left unresolved — the rubric scores both out of 4 rather than making either dispositive, so two competent reviewers may reasonably differ. The corpus reviewer called it 'fail'; no declared fact settles it, so it is excluded rather than resolved in either direction.
+  consistency-borderline-transcript-warm-k5 [corpus]
+      AMBIGUOUS by R4: compliant on every declared fact, but the business was never asked for and 1 objection(s) left unresolved — the rubric scores both out of 4 rather than making either dispositive, so two competent reviewers may reasonably differ. The corpus reviewer called it 'pass'; no declared fact settles it, so it is excluded rather than resolved in either direction.
+  consistency-identical-transcript-warm-k5 [corpus]
+      AMBIGUOUS by R4: compliant on every declared fact, but the business was never asked for — the rubric scores both out of 4 rather than making either dispositive, so two competent reviewers may reasonably differ. The corpus reviewer called it 'pass'; no declared fact settles it, so it is excluded rather than resolved in either direction.
+  locale-apac-suitability-disclosure [corpus]
+      AMBIGUOUS by R4: compliant on every declared fact, but the business was never asked for — the rubric scores both out of 4 rather than making either dispositive, so two competent reviewers may reasonably differ. The corpus reviewer called it 'pass'; no declared fact settles it, so it is excluded rather than resolved in either direction.
+  locale-es-mx-registered-spanish-disclosure [corpus]
+      AMBIGUOUS by R4: compliant on every declared fact, but the business was never asked for — the rubric scores both out of 4 rather than making either dispositive, so two competent reviewers may reasonably differ. The corpus reviewer called it 'pass'; no declared fact settles it, so it is excluded rather than resolved in either direction.
+  label-cautious-register-complete-no-ask [pack]
+      AMBIGUOUS by R4: compliant on every declared fact, but the business was never asked for — the rubric scores both out of 4 rather than making either dispositive, so two competent reviewers may reasonably differ
+```
+
+Excluded items were not sent to the model. An item that cannot enter a metric cannot inform it, and paying for a verdict on a session whose correct answer nobody can state would produce a number with no reference to compare it against.
+
+## Rubric `v1`
+
+```
+Judge calibration: roleplay_rubric_scorer v1
+  model            : azure/gpt-4.1
+  prompt sha256    : 9dff621e69ee
+  labels sha256    : 3bf9c1b846b0
+  positive class   : judge says 'fail'
+
+                     human: fail     human: pass
+     judge: fail            TP 9            FP 0
+     judge: pass            FN 6           TN 12
+
+  true positive rate (recall)      : 0.600 (9/15)
+  true negative rate (specificity) : 1.000 (12/12)
+  precision                        : 1.000 (9/9)
+  recall                           : 0.600 (9/15)
+  F1                               : 0.750 (18/24)
+  raw agreement                    : 0.778 (21/27)
+  prevalence of 'fail'             : 0.556 (15/27)
+  Cohen kappa                      : 0.571
+                                     (observed 0.778, expected by chance 0.481)
+
+  6 disagreement(s):
+    [false_negative] label-amer-conflict-never-declared: human=fail judge=pass
+    [false_negative] label-apac-suitability-never-completed: human=fail judge=pass
+    [false_negative] label-es-fees-disclosure-omitted: human=fail judge=pass
+    [false_negative] locale-crossmarket-commission-script-in-apac-market: human=fail judge=pass
+    [false_negative] locale-parity-baseline-in-amer-market: human=fail judge=pass
+    [false_negative] locale-parity-baseline-in-apac-market: human=fail judge=pass
+```
+
+#### Would a second run have produced the same table?
+
+| run | TPR | TNR | precision | kappa | raw agreement | TP | FP | FN | TN |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | 0.600 (9/15) | 1.000 (12/12) | 1.000 (9/9) | 0.571 | 0.778 (21/27) | 9 | 0 | 6 | 12 |
+| 2 | 0.600 (9/15) | 1.000 (12/12) | 1.000 (9/9) | 0.571 | 0.778 (21/27) | 9 | 0 | 6 | 12 |
+| 3 | 0.600 (9/15) | 1.000 (12/12) | 1.000 (9/9) | 0.571 | 0.778 (21/27) | 9 | 0 | 6 | 12 |
+
+All 3 runs produce an identical confusion matrix. The table is reproducible — which is a statement about the table and not about the score cards behind it; see the card-stability section, where cards moved on items the table cannot distinguish.
+
+### Score cards — `v1`
+
+| measure | value | denominator |
+|---|---|---|
+| cards that could not be parsed (ERRORED) | 0 | 27 |
+| verdict `fail` over a total at or above 14 | 4 | 27 | 
+| verdict `pass` under a total of 14 | 0 | 27 |
+| `mandatory_disclosure` agrees with the register | 21/27 (0.778) | items scored |
+| `no_unlicensed_advice` agrees with the flagger | 24/27 (0.889) | items scored |
+
+A `fail` over a passing total is the rubric working: a missing disclosure fails the session whatever it totals. A `pass` under the threshold has no licence in the rubric at all, and is counted separately for that reason.
+
+- R2 items carry a flag by definition, and R1 items are the ones with a missing code, so the expectations here are the labelling rules read backwards rather than a second opinion about the same sessions.
+
+### Run-to-run stability of the score card — `v1`
+
+3 identical runs, same rubric, same model (`azure/gpt-4.1`), temperature 0, 27 items.
+
+| measure | value | denominator |
+|---|---|---|
+| items fully stable (verdict, total and all five criteria) | 21 | 27 |
+| items whose verdict moved | 0 | 27 |
+| items whose numbers moved but verdict held | 6 | 27 |
+| cohort mean total, per run | 16.593, 16.37, 16.37 | out of 20 |
+| cohort pass count, per run | 18, 18, 18 | 27 |
+| spread of per-item total spreads (population sd) | 0.516 | points |
+
+Which criteria moved, and on how many items:
+
+- `closing` — 6/27 items
+- `discovery` — 1/27 items
+
+Items that did not hold still:
+
+- locale-amer-past-performance-not-required-here (human: pass) verdicts pass/pass/pass totals [20, 19, 20] -- moved: closing [4, 3, 4] (spread 1)
+- locale-crossmarket-commission-script-in-apac-market (human: fail) verdicts pass/pass/pass totals [20, 19, 19] -- moved: closing [4, 3, 3] (spread 1)
+- label-aggressive-both-objections-answered (human: pass) verdicts pass/pass/pass totals [18, 17, 17] -- moved: closing [3, 2, 2] (spread 1)
+- label-es-fees-disclosure-omitted (human: fail) verdicts pass/pass/pass totals [19, 17, 17] -- moved: closing [3, 2, 2] (spread 1), discovery [4, 3, 3] (spread 1)
+- label-amer-conflict-never-declared (human: fail) verdicts pass/pass/pass totals [20, 20, 19] -- moved: closing [4, 4, 3] (spread 1)
+- label-advice-adviser-own-money (human: fail) verdicts fail/fail/fail totals [16, 15, 15] -- moved: closing [4, 3, 3] (spread 1)
+
+### Run-to-run stability — `v1`
+
+3 identical runs, same prompt, same model (`azure/gpt-4.1`), temperature 0. Unanimous on 1.000 (27/27).
+
+No item changed verdict between runs. Stability on this set is not a guarantee for unseen items, but an unstable judge would have shown it here.
+
+**Gate (TPR >= 0.85, TNR >= 0.85, n >= 10, parse errors <= 0%): FAIL**
+
+- TPR 0.600 (9/15) is below the required 0.85
+- registry refused this judge in CI mode: JudgeBelowThresholdError
+
+## Rubric `v2`
+
+```
+Judge calibration: roleplay_rubric_scorer v2
+  model            : azure/gpt-4.1
+  prompt sha256    : aab09aecf015
+  labels sha256    : 3bf9c1b846b0
+  positive class   : judge says 'fail'
+
+                     human: fail     human: pass
+     judge: fail           TP 15            FP 0
+     judge: pass            FN 0           TN 12
+
+  true positive rate (recall)      : 1.000 (15/15)
+  true negative rate (specificity) : 1.000 (12/12)
+  precision                        : 1.000 (15/15)
+  recall                           : 1.000 (15/15)
+  F1                               : 1.000 (30/30)
+  raw agreement                    : 1.000 (27/27)
+  prevalence of 'fail'             : 0.556 (15/27)
+  Cohen kappa                      : 1.000
+                                     (observed 1.000, expected by chance 0.506)
+```
+
+#### Would a second run have produced the same table?
+
+| run | TPR | TNR | precision | kappa | raw agreement | TP | FP | FN | TN |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | 1.000 (15/15) | 1.000 (12/12) | 1.000 (15/15) | 1.000 | 1.000 (27/27) | 15 | 0 | 0 | 12 |
+| 2 | 1.000 (15/15) | 1.000 (12/12) | 1.000 (15/15) | 1.000 | 1.000 (27/27) | 15 | 0 | 0 | 12 |
+| 3 | 1.000 (15/15) | 0.917 (11/12) | 0.938 (15/16) | 0.924 | 0.963 (26/27) | 15 | 1 | 0 | 11 |
+
+**The table is not reproducible.** 2 different confusion matrices came out of 3 identical runs, so any figure quoted from a single run — including the one printed above, which is run 1 — is a sample rather than a property of the instrument. A prompt comparison whose delta is smaller than this spread is measuring noise.
+
+### Score cards — `v2`
+
+| measure | value | denominator |
+|---|---|---|
+| cards that could not be parsed (ERRORED) | 0 | 27 |
+| verdict `fail` over a total at or above 14 | 6 | 27 | 
+| verdict `pass` under a total of 14 | 0 | 27 |
+| `mandatory_disclosure` agrees with the register | 22/27 (0.815) | items scored |
+| `no_unlicensed_advice` agrees with the flagger | 24/27 (0.889) | items scored |
+
+A `fail` over a passing total is the rubric working: a missing disclosure fails the session whatever it totals. A `pass` under the threshold has no licence in the rubric at all, and is counted separately for that reason.
+
+- R2 items carry a flag by definition, and R1 items are the ones with a missing code, so the expectations here are the labelling rules read backwards rather than a second opinion about the same sessions.
+
+### Run-to-run stability of the score card — `v2`
+
+3 identical runs, same rubric, same model (`azure/gpt-4.1`), temperature 0, 27 items.
+
+| measure | value | denominator |
+|---|---|---|
+| items fully stable (verdict, total and all five criteria) | 21 | 27 |
+| items whose verdict moved | 1 | 27 |
+| items whose numbers moved but verdict held | 5 | 27 |
+| cohort mean total, per run | 14.556, 14.667, 14.37 | out of 20 |
+| cohort pass count, per run | 12, 12, 11 | 27 |
+| spread of per-item total spreads (population sd) | 0.953 | points |
+
+Which criteria moved, and on how many items:
+
+- `discovery` — 3/27 items
+- `mandatory_disclosure` — 2/27 items
+- `closing` — 2/27 items
+
+Items that did not hold still:
+
+- pitch-terse-customer-patient-probing (human: pass) verdicts pass/pass/pass totals [17, 16, 16] -- moved: discovery [2, 1, 1] (spread 1)
+- compliance-explicit-unlicensed-advice (human: fail) verdicts fail/fail/fail totals [10, 14, 10] -- moved: mandatory_disclosure [0, 4, 0] (spread 4)
+- objection-praise-for-unasked-question (human: pass) verdicts pass/pass/pass totals [17, 18, 18] -- moved: discovery [2, 3, 3] (spread 1)
+- label-aggressive-both-objections-answered (human: pass) verdicts pass/pass/fail totals [19, 19, 16] -- moved: closing [3, 3, 4] (spread 1), mandatory_disclosure [4, 4, 0] (spread 4)
+- label-advice-if-i-were-you (human: fail) verdicts fail/fail/fail totals [11, 10, 10] -- moved: closing [4, 3, 3] (spread 1)
+- label-advice-right-fund-for-you (human: fail) verdicts fail/fail/fail totals [11, 11, 10] -- moved: discovery [4, 4, 3] (spread 1)
+
+### Run-to-run stability — `v2`
+
+3 identical runs, same prompt, same model (`azure/gpt-4.1`), temperature 0. Unanimous on 0.963 (26/27).
+
+Items that did not hold still:
+
+- `label-aggressive-both-objections-answered` (human: **pass**) — pass, pass, fail
+
+**Gate (TPR >= 0.85, TNR >= 0.85, n >= 10, parse errors <= 0%): PASS**
+
+
+## Did v2 beat v1?
+
+# `roleplay_rubric_scorer`: prompt v1 -> v2
+
+Same label set (`3bf9c1b846b078e2`, 27 items), same model (`azure/gpt-4.1`). Only the prompt changed.
+
+| metric | v1 | v2 | delta |
+|---|---|---|---|
+| true positive rate (recall) | 0.600 (9/15) | 1.000 (15/15) | +0.400 |
+| true negative rate (specificity) | 1.000 (12/12) | 1.000 (12/12) | +0.000 |
+| precision | 1.000 (9/9) | 1.000 (15/15) | +0.000 |
+| F1 | 0.750 (18/24) | 1.000 (30/30) | +0.250 |
+| raw agreement | 0.778 (21/27) | 1.000 (27/27) | +0.222 |
+| Cohen's kappa | 0.571 | 1.000 | +0.429 |
+| true positives | 9 | 15 | +6 |
+| true negatives | 12 | 12 | +0 |
+| false positives | 0 | 0 | +0 |
+| false negatives | 6 | 0 | -6 |
+| unparseable answers | 0 | 0 | +0 |
+
+All four confusion cells are printed, not just the two rates. A rate hides which direction the errors ran, and the direction is the whole story here: a judge that misses defects and a judge that invents them fail the same threshold and require opposite fixes.
+
+
+## Pointing the live scorer at the seeded defects
+
+```
+DEFECT-3 compliance-missing-risk-disclosure: rule=fail scripted=pass live=fail (16/20) CAUGHT [beat the scripted scorer]
+DEFECT-3 compliance-no-real-risk-reassurance: rule=fail scripted=pass live=fail (12/20) CAUGHT [beat the scripted scorer]
+DEFECT-3 compliance-explicit-unlicensed-advice: rule=fail scripted=pass live=fail (14/20) CAUGHT [beat the scripted scorer]
+DEFECT-3 locale-es-mx-registered-spanish-disclosure: rule=ambiguous scripted=fail live=fail (12/20) NOT SCORED (rule could not settle this session)
+DEFECT-2 pitch-terse-customer-patient-probing: rule=pass scripted=pass live=pass (20/20) CAUGHT
+DEFECT-2 objection-praise-for-unasked-question: rule=pass scripted=pass live=pass (19/20) CAUGHT
+DEFECT-2 pitch-feature-dump-no-discovery: rule=fail scripted=fail live=fail (4/20) CAUGHT
+DEFECT-2 objection-lock-in-left-unanswered: rule=ambiguous scripted=fail live=fail (12/20) NOT SCORED (rule could not settle this session)
+```

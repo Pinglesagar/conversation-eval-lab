@@ -8,6 +8,10 @@ jurisdiction: eu-retail
 terse: true
 probes_to_reveal: 2
 
+risk_appetite: cautious
+budget: thirty thousand or so
+suspicion: 0.4
+
 concerns:
   - key: redundancy
     topic: redundancy

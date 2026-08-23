@@ -1,0 +1,53 @@
+id: pitch-paraphrase-pair-first-wording
+title: One consultative session, worded one way
+customer: cautious_saver
+tags: [scorer-stress, control, disclosure, objection-handling]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - How long could you leave the bulk of it untouched?
+    - What would a good outcome look like to you in five years?
+    - >-
+      Here is the fund: a balanced growth fund. Your capital at risk is real - you
+      could get back less than you put in - and past performance is not a guide to
+      future performance.
+    - >-
+      You are right about last year, it was poor. The fund is diversified across
+      bonds and equities, so one bad market does not decide the outcome.
+    - >-
+      There is no lock-in either: you can withdraw at any time, and the annual
+      management charge is 0.68 per cent a year.
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    Three open questions, both objections engaged with, all three disclosures in
+    registered wording, and no ask for the business - a complete consultative
+    session that ends without a decision. Sixteen out of twenty.
+
+tools:
+  expected: [record_disclosure, resolve_objection, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 3, resolve_objection: 2}
+  args:
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 16
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+notes: >-
+  Half of the paraphrase pair. pitch-paraphrase-pair-second-wording is the same
+  session in different words - same questions, same objections engaged, same three
+  registered phrasings, same absence of an ask - and both rows assert sixteen. Two
+  sessions a human would grade identically must be graded identically, and because
+  the assertion is a number rather than a verdict, a scorer that started paying
+  attention to phrasing would turn exactly one of the two rows red. This is the
+  cheapest available test for a class of instability that a verdict-only suite
+  cannot see, and it costs no repeats at all - unlike the consistency suite, which
+  needs five runs to say something about one row.

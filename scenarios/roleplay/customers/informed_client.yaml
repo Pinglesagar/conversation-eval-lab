@@ -1,0 +1,44 @@
+# The customer who knows the rules. Says the words "suitability review" out loud,
+# which is exactly why this profile exists: the disclosure register observes the
+# trainee and nobody else, and a session where the customer named the requirement
+# and the adviser never gave it must still record nothing.
+key: informed_client
+display_name: Ms Lai
+situation: I have read the documents and I have done this once before with another firm.
+language: en
+jurisdiction: apac-retail
+probes_to_reveal: 1
+
+concerns:
+  - key: currency_exposure
+    topic: currency exposure
+    reveal: >-
+      The part I actually worry about is currency. Half of what I owe is not in
+      this currency at all, so a good year in the fund can still leave me short.
+
+objections:
+  - key: suitability_expected
+    topic: the suitability review
+    says: >-
+      My last adviser told me we would need to complete a suitability review
+      first. Is that not required here?
+    handled_by: ["suitability assessment", "suitability review", "before anything is signed"]
+  - key: all_in_cost
+    topic: the all-in charge
+    says: >-
+      And what is the all-in cost? Not the headline number - the all-in.
+    handled_by: ["all in", "nothing else", "no other charges", "net of", "total cost of holding"]
+
+notes: >-
+  `handled_by` for the first objection matches any mention of a suitability
+  review, while the register only accepts the two phrasings in
+  `roleplay.register`. That gap is intentional and is what makes the near-miss
+  rows possible: a trainee can satisfy the customer, be credited with handling
+  the objection, and still discharge no requirement. A profile whose objection was
+  only marked handled by the registered wording would collapse the two into one
+  measurement and hide it.
+
+  The all-in objection is written the same way from the other direction: stating
+  the annual management charge discharges the cost requirement and does not answer
+  this customer, who asked what else there is. A trainee has to say that there is
+  nothing else.

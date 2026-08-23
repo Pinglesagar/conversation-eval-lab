@@ -1,0 +1,45 @@
+# The customer who has already been quoted. Two objections that cannot be
+# acknowledged and abandoned: a cheaper lookalike at their own bank, and a
+# husband who is not in the room. Both are things a trainee must actually answer,
+# and neither is answered by talking about the fund.
+key: comparison_shopper
+display_name: Mrs Okafor
+situation: My own bank has already offered me something like this and I want to compare it properly.
+language: en
+jurisdiction: eu-retail
+probes_to_reveal: 1
+
+concerns:
+  - key: decision_deadline
+    topic: a deadline of the end of the month
+    reveal: >-
+      What I have not said is that I have to decide by the end of the month. The
+      bonus is sitting in the current account until then and after that it goes.
+
+objections:
+  - key: bank_cheaper
+    topic: a cheaper lookalike at the bank
+    says: >-
+      My bank offers what sounds like the same fund for half the charge. Why
+      would I pay you more for the same thing?
+    handled_by: ["like for like", "compare the two", "not the same fund", "what you get for it"]
+  - key: spouse_signoff
+    topic: my husband has to agree first
+    says: >-
+      And I would not sign anything like this without my husband. He handles this
+      side of things and he is not here.
+    handled_by: ["in writing", "both of you", "take it away", "nothing to sign today", "come back together"]
+
+notes: >-
+  The two objections are deliberately of different kinds. The bank comparison is
+  answered by a like-for-like comparison; the spouse objection cannot be answered
+  with a number at all, and a trainee who reaches for one is visibly handling the
+  wrong objection. A profile with two price objections would let a single rehearsed
+  cost answer close both.
+
+  `handled_by` for the bank comparison deliberately does not match a trainee who
+  merely states their own charge. Quoting your own annual management charge is a
+  disclosure, not an answer to "the bank is cheaper", and if the pattern accepted
+  it then every row that discharges the cost requirement would silently score as
+  having handled the objection too - which would make the objection criterion and
+  the disclosure register the same measurement wearing two names.

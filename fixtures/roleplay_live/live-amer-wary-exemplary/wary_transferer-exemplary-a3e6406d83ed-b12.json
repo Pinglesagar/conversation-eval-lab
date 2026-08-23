@@ -1,0 +1,139 @@
+{
+  "identity": {
+    "competence": "exemplary",
+    "customer_model": "azure-openai/gpt-4.1",
+    "jurisdiction": "amer-retail",
+    "language": "en",
+    "persona": "wary_transferer",
+    "prompt_sha256": "a3e6406d83ed2c87c6f81c27cf6abc5bec5c447cc5b83f2d3931232fac74afe7",
+    "scenario_id": "live-amer-wary-exemplary",
+    "temperature": 0.0,
+    "trainee_model": "azure-openai/gpt-4.1",
+    "turn_budget": 12
+  },
+  "recorded_with": {
+    "live_customer": true,
+    "max_turns": 12,
+    "note": "Generated turns. The trainee is the system under test; the customer's moves are decided by roleplay.persona and only worded by the model.",
+    "temperature": 0.0
+  },
+  "turns": [
+    {
+      "context_sha256": "b053776f2fbc353d82c0835ce5b88f1343eecb82bcc7aeff0c8820f75a568a94",
+      "index": 0,
+      "role": "trainee",
+      "utterance": "Good morning, Ms Fenwick. Thank you for coming in today. Before we discuss any investment options, I\u2019d like to understand your goals, your timeframe, and how you feel about risk. Could you tell me a bit about what you\u2019re hoping to achieve with your investments?"
+    },
+    {
+      "context_sha256": "47234fb225a6793407385e0f83ed710b72971e921068f3b75fc5664446d3f02d",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 0,
+      "role": "customer",
+      "utterance": "Okay, I understand you want to know about my goals and risk."
+    },
+    {
+      "context_sha256": "d882d57f230661a7385bdd1b1ec559a9a5877ba896905766ea7b2bcb5e4a7313",
+      "index": 1,
+      "role": "trainee",
+      "utterance": "That\u2019s right, Ms Fenwick. It\u2019s important for me to understand your objectives so I can outline options that fit your needs. Are you investing for something specific, like retirement, a major purchase, or general growth? And do you have a particular timeframe in mind for when you might need to access this money?"
+    },
+    {
+      "context_sha256": "0e9af14a6097c7301f4bdd2ce37faed714af2942034df67aa5bc3e736deeb30c",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 1,
+      "role": "customer",
+      "utterance": "Alright, I see you need to know what I\u2019m investing for and when I might need the money."
+    },
+    {
+      "context_sha256": "58034b6accb9a1bb846c1fef52de0e1cfc7a46fe3a5f735760b7610767831716",
+      "index": 2,
+      "role": "trainee",
+      "utterance": "Exactly, thank you. It\u2019s also important to know if there\u2019s any money you need to keep available for emergencies or short-term needs, so we don\u2019t tie up funds you might need quickly. How do you generally feel about the possibility of your investments going up and down in value\u2014are you comfortable with some risk, or do you prefer to avoid it as much as possible?"
+    },
+    {
+      "context_sha256": "fd8fcc62fdec5db7f37e4b61a4d4a8a896b510742b2c9a147419a23d7b3ab9af",
+      "direction": "The adviser has asked you an open question. Answer it by telling them this, and only this: The thing I keep coming back to is that the old scheme has some kind of guarantee on it. Nobody has ever explained to me what I lose if I move.",
+      "index": 2,
+      "role": "customer",
+      "utterance": "The thing I keep coming back to is that the old scheme has some kind of guarantee on it. Nobody has ever explained to me what I lose if I move."
+    },
+    {
+      "context_sha256": "e4f691be84924b957dcd6afd2d4a40ff04b62b2759d40579e3afaadba4723ba7",
+      "index": 3,
+      "role": "trainee",
+      "utterance": "That\u2019s a very important concern, Ms Fenwick, and I appreciate you raising it. If your current scheme has a guarantee, such as a guaranteed return or capital protection, moving to a new investment could mean giving up that certainty. With most investments, including those we offer, your capital is at risk, which means the value can go down as well as up. Would you like to discuss in detail what guarantees your current scheme provides before we look at alternatives?"
+    },
+    {
+      "context_sha256": "75bfdc90bfbd8055a28c75412cd8b0cca57e642acf9e8ee70a696ebf72b459da",
+      "direction": "Raise this objection now, in your own words: Before anything else - how do you get paid on this? Because I assume you do, and I would rather you said so.",
+      "index": 3,
+      "role": "customer",
+      "utterance": "Before anything else\u2014how do you get paid on this? Because I assume you do, and I would rather you said so."
+    },
+    {
+      "context_sha256": "01d3e2db233ee2ebc11db5f3220c8d4909533982d6c410b8d86544d2228828f0",
+      "index": 4,
+      "role": "trainee",
+      "utterance": "Thank you for asking, Ms Fenwick. For transparency, we receive a commission on this product. There is also an annual management charge associated with the investment. If you\u2019d like, I can provide a full breakdown of all fees and charges before we discuss any options."
+    },
+    {
+      "context_sha256": "d2108a711435ad20d84e45fce700414ed309433bc67ecba95bb42758d0fd4e81",
+      "direction": "Raise this objection now, in your own words: And what does the move itself cost me? Not the fund - the moving of it.",
+      "index": 4,
+      "role": "customer",
+      "utterance": "And what does the move itself cost me? Not the fund\u2014the moving of it."
+    },
+    {
+      "context_sha256": "cf170ecd6161aa60bbb1617de54c1edaea536c22681097ddf1da2f39e3b2ab0c",
+      "index": 5,
+      "role": "trainee",
+      "utterance": "That\u2019s a great question. The cost of moving your money depends on any exit fees or penalties your current scheme might charge, as well as any potential tax implications. I recommend we review your current scheme\u2019s terms together to identify any charges or guarantees you\u2019d be giving up before making any decisions. Would you like to bring in your scheme documents for us to go through them in detail?"
+    },
+    {
+      "context_sha256": "3712eadf5dab9351a7179b7dbeb507e301c8be4f3dce5a6b1eef3e06c7e028e6",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 5,
+      "role": "customer",
+      "utterance": "Alright, I understand you want to look at the scheme documents with me."
+    },
+    {
+      "context_sha256": "41e9f6889a7c9b09da4f2f7205c5c76672ca1f66ec9a8444a5836514c4c0c0a3",
+      "index": 6,
+      "role": "trainee",
+      "utterance": "Yes, that\u2019s correct. Reviewing your scheme documents together will help us clearly identify any guarantees, fees, or restrictions, so you have all the information before making a decision. Once we\u2019ve done that, we can discuss whether moving your investment aligns with your goals and comfort with risk. Would you like to schedule a follow-up meeting to go through your documents, or would you prefer to send them to me in advance?"
+    },
+    {
+      "context_sha256": "985d0ee3dc240f067ccbda5d62d70656796583d7edf1ea6d54e885120f821b4a",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 6,
+      "role": "customer",
+      "utterance": "Okay, I see you\u2019re suggesting we review the documents before deciding."
+    },
+    {
+      "context_sha256": "7526820a2a1e5a41c2323ee7f9540b4a9012f2f222262037b35c5164d3d2b0c0",
+      "index": 7,
+      "role": "trainee",
+      "utterance": "Exactly, Ms Fenwick. That way, you\u2019ll have a clear understanding of what you might be giving up and what you\u2019d be gaining, so you can make an informed choice. Once we\u2019ve reviewed everything, I\u2019ll outline your options and the trade-offs involved, and you can decide what feels right for you. Shall we agree on a time for our next meeting to review your documents together?"
+    },
+    {
+      "context_sha256": "e6a00a03711344991a5aaba31786f6ecd73c86b8986cfe9a0328b11840f9b1b1",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 7,
+      "role": "customer",
+      "utterance": "Alright, I understand we\u2019ll set a time to go through the documents together."
+    },
+    {
+      "context_sha256": "a592ef115740dfb59d6201ab3289624f809de45fd07100727d20a17153cd8d95",
+      "index": 8,
+      "role": "trainee",
+      "utterance": "Thank you, Ms Fenwick. I\u2019ll wait for you to confirm a convenient time, and if you have any questions before then, please feel free to contact me. I look forward to our next meeting and helping you make the best decision for your circumstances. [END OF SESSION]"
+    },
+    {
+      "context_sha256": "2119e0d0108e23c737f98b9daf450355c63f1dc23fdb0a038a4e0bb335a1024f",
+      "direction": "You already raised this and the adviser talked past it. Put it back on the table, less patiently this time: And what does the move itself cost me? Not the fund - the moving of it.",
+      "index": 8,
+      "role": "customer",
+      "utterance": "I\u2019m asking again\u2014what does the move itself cost me? Not the fund, the actual moving of it."
+    }
+  ]
+}

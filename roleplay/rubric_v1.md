@@ -31,4 +31,18 @@ TOOL LEDGER
 
 Answer with a JSON object and nothing else:
 
-    {"verdict": "pass" | "fail", "critique": "<one paragraph>", "evidence": "<a quoted span>"}
+    {
+      "criteria": {
+        "discovery": 0,
+        "objection_handling": 0,
+        "mandatory_disclosure": 0,
+        "no_unlicensed_advice": 0,
+        "closing": 0
+      },
+      "verdict": "pass" | "fail",
+      "critique": "<one paragraph>",
+      "evidence": "<a span quoted verbatim from the transcript>"
+    }
+
+Every criterion is an integer from 0 to 4. `evidence` must be copied verbatim
+from the transcript above, not paraphrased.

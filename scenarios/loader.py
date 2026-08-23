@@ -89,7 +89,12 @@ from lab.simulator.persona import CallerProfile, Goal, Persona, load_yaml_mappin
 __all__ = [
     "TOOL_NAMES",
     "SUITES",
+    "ALL_SUITES",
+    "AUDIO_TIER",
+    "AUDIO_TIER_MINIMUM",
     "TAG_VOCABULARY",
+    "AUDIO_TAG_VOCABULARY",
+    "tag_vocabulary",
     "PERTURBATION_NAMES",
     "ARG_OPS",
     "MATCH_MODES",
@@ -145,7 +150,7 @@ TOOL_NAMES: frozenset[str] = frozenset(
     }
 )
 
-Suite = Literal["happy", "edge", "adversarial", "voice"]
+Suite = Literal["happy", "edge", "adversarial", "voice", "audio"]
 
 #: The builds of the system under test an expectation can be about.
 #:
@@ -168,6 +173,27 @@ SUITES: tuple[str, ...] = ("happy", "edge", "adversarial", "voice")
 #: because a partial corpus should be *loadable* while it is being written; it
 #: just should not be shippable.
 SUITE_MINIMUMS: dict[str, int] = {"happy": 15, "edge": 20, "adversarial": 12, "voice": 8}
+
+#: The audio tier: a fifth scenario directory that is deliberately **not** in
+#: `SUITES`, and therefore not in the default corpus, the default run, or any
+#: committed text baseline.
+#:
+#: `scenarios/audio/` holds the rows whose subject is the audio layer itself.
+#: Keeping it out of `SUITES` is a measurement decision, not tidiness: those
+#: rows cannot be run by the text adapter, and their results are not
+#: comparable with text results, so folding fifty of them into the corpus
+#: would move every denominator in the case study without adding one text
+#: finding. `scenarios.audio.tier` loads the tier explicitly, by passing
+#: `suites=(AUDIO_TIER,)`.
+AUDIO_TIER: str = "audio"
+
+#: Every legal suite directory: the four comparable text suites, plus the tier.
+ALL_SUITES: tuple[str, ...] = SUITES + (AUDIO_TIER,)
+
+#: Smallest audio tier worth publishing. Deliberately not an entry in
+#: `SUITE_MINIMUMS`, which is iterated against the default corpus's suite
+#: counts and would raise a `KeyError` on a suite the default corpus omits.
+AUDIO_TIER_MINIMUM: int = 50
 
 #: The tag vocabulary, each with the one line that says what it means. This is
 #: documentation and validation in one object: a tag is legal because it is
@@ -214,6 +240,52 @@ TAG_VOCABULARY: dict[str, str] = {
     "pitch-shift": "pitch-shifted speech",
     "perturbation-chain": "more than one audio perturbation, in order",
 }
+
+#: The audio tier's own closed vocabulary, legal **only** on a row in
+#: `scenarios/audio/`. Separate from `TAG_VOCABULARY` rather than merged into
+#: it, because these are properties of the channel and of the harness, not
+#: properties of a conversation: if `barge-in` or `voice-en-gb` were legal on a
+#: text row, a text row could claim coverage of the one thing text cannot test.
+#: The first seven are the tier's categories and every row carries exactly one
+#: of them — that is what makes the category table countable rather than
+#: editorial.
+AUDIO_TAG_VOCABULARY: dict[str, str] = {
+    # --- categories: exactly one per row
+    "digits-and-names": "capture of a digit string or a name, where an STT slip does harm",
+    "accent-and-voice": "one content script across synthesised voices; capture must hold",
+    "line-quality": "a graded channel condition: noise, band limit or packet loss",
+    "barge-in": "the caller speaks over the agent",
+    "latency-budget": "response latency against a stated budget",
+    "cadence": "speaking rate, pausing, disfluency and self-correction",
+    "silence": "dead air where speech was expected",
+    # --- what the row does to the audio or to the caller
+    "ladder": "one rung of a graded series; only interpretable beside its siblings",
+    "confusable": "the content contains an acoustically confusable pair",
+    "spelled": "the caller spells a string out letter by letter",
+    "disfluency": "filled pauses, restarts or a mid-sentence self-correction",
+    "dead-air": "a stretch where the agent receives no speech at all",
+    "interruption": "requires the reserved interruption events (see `not-yet-runnable`)",
+    # --- the synthesised caller voice, so a failure names the voice
+    "voice-en-gb": "synthesised caller voice in the en-GB locale",
+    "voice-en-us": "synthesised caller voice in the en-US locale",
+    "voice-en-ie": "synthesised caller voice in the en-IE locale",
+    "voice-en-in": "synthesised caller voice in the en-IN locale",
+    "voice-en-au": "synthesised caller voice in the en-AU locale",
+    # --- honesty about what the harness can do today
+    "not-yet-runnable": "waits on a harness capability; must never be reported as a pass",
+}
+
+
+def tag_vocabulary(suite: str | None = None) -> dict[str, str]:
+    """Legal tags and their definitions, for one suite.
+
+    The audio tier gets its own vocabulary *in addition* to the shared one; the
+    text suites do not get the audio one. One-directional on purpose — see
+    `AUDIO_TAG_VOCABULARY`.
+    """
+    if suite == AUDIO_TIER:
+        return {**TAG_VOCABULARY, **AUDIO_TAG_VOCABULARY}
+    return dict(TAG_VOCABULARY)
 
 #: Perturbation names an audio adapter can apply. Duplicated from
 #: `lab.voice.perturb.PERTURBATIONS` *deliberately*: importing that module pulls
@@ -828,10 +900,56 @@ class VoiceSpec(_Block):
     sample_rate: int = Field(default=16_000, gt=0)
     latency_budget_ms: float | None = Field(default=None, gt=0)
     reference_transcript: list[str] = Field(default_factory=list)
+    caller_voice: str | None = Field(
+        default=None,
+        description=(
+            "Engine-specific voice id for the simulated caller, passed straight "
+            "through to `AudioAdapter(caller_voice=...)`. Named rather than left "
+            "to the engine default because 'the default voice' is not a "
+            "reproducible description of a condition, and because a capture "
+            "failure has to be able to name the voice it failed on."
+        ),
+    )
+    requires_events: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Trace event kinds this row cannot be evaluated without. Any of them "
+            "that is still reserved-and-unemitted (`EventKind.V2_RESERVED`) makes "
+            "the row unrunnable today, and `blocked_on()` says so."
+        ),
+    )
+
+    @model_validator(mode="after")
+    def _validate_events(self) -> "VoiceSpec":
+        from lab.trace.schema import EventKind  # noqa: PLC0415 - local, cheap, no numpy
+
+        legal = EventKind.KNOWN | EventKind.V2_RESERVED
+        unknown = sorted(set(self.requires_events) - legal)
+        if unknown:
+            raise ValueError(
+                f"requires_events names event kind(s) {unknown} that the trace schema "
+                f"does not define; legal: {sorted(legal)}"
+            )
+        duplicates = sorted({e for e, n in Counter(self.requires_events).items() if n > 1})
+        if duplicates:
+            raise ValueError(f"requires_events lists {duplicates} twice")
+        return self
 
     def chain(self) -> list[tuple[str, dict[str, Any]]]:
         """The perturbation chain in declaration order — these do not commute."""
         return [p.as_step() for p in self.perturbations]
+
+    def blocked_on(self) -> list[str]:
+        """Required event kinds that nothing in this version emits, sorted.
+
+        Derived from `EventKind.V2_RESERVED` rather than from a hand-maintained
+        list of blocked rows, so the day a duplex adapter emits `interruption_*`
+        and the schema moves them into `KNOWN`, these rows become runnable and
+        stop being reported as blocked without anybody editing a scenario.
+        """
+        from lab.trace.schema import EventKind  # noqa: PLC0415 - local, cheap, no numpy
+
+        return sorted(set(self.requires_events) & EventKind.V2_RESERVED)
 
 
 # --------------------------------------------------------------------------- #
@@ -963,16 +1081,20 @@ class Scenario(_Block):
                 f"id {self.id!r} must start with its suite prefix {self.suite!r}-, so that "
                 "a result row names its own file"
             )
-        unknown_tags = sorted(set(self.tags) - set(TAG_VOCABULARY))
+        vocabulary = tag_vocabulary(self.suite)
+        unknown_tags = sorted(set(self.tags) - set(vocabulary))
         if unknown_tags:
+            dictionary = (
+                "AUDIO_TAG_VOCABULARY" if self.suite == AUDIO_TIER else "TAG_VOCABULARY"
+            )
             raise ValueError(
                 f"unknown tag(s) {unknown_tags}; the vocabulary is closed — add the tag to "
-                f"TAG_VOCABULARY with a definition, or use one of {sorted(TAG_VOCABULARY)}"
+                f"{dictionary} with a definition, or use one of {sorted(vocabulary)}"
             )
         duplicate_tags = sorted({t for t, n in Counter(self.tags).items() if n > 1})
         if duplicate_tags:
             raise ValueError(f"duplicate tag(s) {duplicate_tags}")
-        suite_as_tag = sorted(set(self.tags) & set(SUITES))
+        suite_as_tag = sorted(set(self.tags) & set(ALL_SUITES))
         if suite_as_tag:
             raise ValueError(
                 f"{suite_as_tag} is a suite, not a tag; the suite comes from the directory "
@@ -1034,6 +1156,25 @@ class Scenario(_Block):
 
     def _validate_voice(self) -> None:
         """Voice rows carry audio conditions; non-voice rows must not pretend to."""
+        if self.suite == AUDIO_TIER:
+            # The tier's admission rule, in code. A row belongs here only if the
+            # audio layer is the thing under test, so it must declare either a
+            # channel condition or the harness capability it is waiting on. A row
+            # with neither is a text row filed in the wrong directory, and it
+            # would report a text result under an audio heading.
+            if self.voice is None:
+                raise ValueError(
+                    "an audio-tier scenario must declare a `voice:` block; the tier exists "
+                    "for rows whose subject is the audio layer, and a row with no audio "
+                    "conditions is a text row in the wrong directory"
+                )
+            if not self.voice.perturbations and not self.voice.requires_events:
+                raise ValueError(
+                    "an audio-tier scenario must declare at least one perturbation, or the "
+                    "trace events it is blocked on; otherwise its verdict says nothing about "
+                    "audio that the text suites do not already say more cheaply"
+                )
+            return
         if self.suite == "voice":
             if self.voice is None or not self.voice.perturbations:
                 raise ValueError(
@@ -1141,6 +1282,20 @@ class Scenario(_Block):
         """Declared tags plus the suite, which is a tag everywhere except in YAML."""
         return ([self.suite] if self.suite else []) + list(self.tags)
 
+    def blocked_on(self) -> list[str]:
+        """Event kinds this row needs that nothing in this version emits.
+
+        Non-empty means the row is declared and **not runnable**: it must be
+        reported as blocked, never as a pass. A row that quietly passes because
+        the events it asserts on never arrive is the worst outcome available here,
+        so the block is a property of the row rather than a note in a document.
+        """
+        return self.voice.blocked_on() if self.voice else []
+
+    def is_runnable(self) -> bool:
+        """False when the row waits on a harness capability that does not exist yet."""
+        return not self.blocked_on()
+
     def expects_failure_of(self, contract_name: str, build: str = "scripted") -> bool:
         """Is this contract a declared known gap for this scenario, on this build?
 
@@ -1226,15 +1381,25 @@ class CorpusValidation(BaseModel):
         )
 
 
-def iter_scenario_paths(root: Path | str = CORPUS_ROOT) -> Iterator[Path]:
-    """Every scenario file, sorted, across the four suite directories.
+def iter_scenario_paths(
+    root: Path | str = CORPUS_ROOT, *, suites: Sequence[str] = SUITES
+) -> Iterator[Path]:
+    """Every scenario file, sorted, across the requested suite directories.
 
     Sorted so that a validation report is diffable between runs, and restricted
     to the suite directories so that `personas/` and any future `_templates/`
     never get parsed as scenarios by accident.
+
+    `suites` defaults to the four comparable text suites, which is what "the
+    corpus" means everywhere else in this repository. The audio tier is asked for
+    by name — `suites=(AUDIO_TIER,)` — so that adding fifty audio rows to the
+    repository cannot silently change what a text run measures.
     """
     base = Path(root)
-    for suite in SUITES:
+    unknown = sorted(set(suites) - set(ALL_SUITES))
+    if unknown:
+        raise ValueError(f"unknown suite(s) {unknown}; legal: {list(ALL_SUITES)}")
+    for suite in suites:
         directory = base / suite
         if not directory.is_dir():
             continue
@@ -1277,10 +1442,10 @@ def load_scenario(path: Path | str, *, suite: str | None = None) -> Scenario:
     source = Path(path)
     mapping = load_yaml_mapping(source)
     resolved_suite = suite or source.parent.name
-    if resolved_suite not in SUITES:
+    if resolved_suite not in ALL_SUITES:
         raise ValueError(
-            f"{source}: suite {resolved_suite!r} is not one of {list(SUITES)}; scenarios live "
-            "in one of the four suite directories"
+            f"{source}: suite {resolved_suite!r} is not one of {list(ALL_SUITES)}; scenarios "
+            "live in one of the four text suite directories or in the audio tier"
         )
     declared = mapping.get("suite")
     if declared is not None and declared != resolved_suite:
@@ -1299,7 +1464,10 @@ def load_scenario(path: Path | str, *, suite: str | None = None) -> Scenario:
 
 
 def validate_corpus(
-    root: Path | str = CORPUS_ROOT, *, persona_dir: Path | str | None = None
+    root: Path | str = CORPUS_ROOT,
+    *,
+    persona_dir: Path | str | None = None,
+    suites: Sequence[str] = SUITES,
 ) -> CorpusValidation:
     """Load every scenario, collecting every problem instead of raising on the first.
 
@@ -1321,7 +1489,7 @@ def validate_corpus(
     seen_ids: dict[str, str] = {}
     files_seen = 0
 
-    for path in iter_scenario_paths(base):
+    for path in iter_scenario_paths(base, suites=suites):
         files_seen += 1
         try:
             scenario = load_scenario(path)
@@ -1410,9 +1578,10 @@ def load_corpus(
     *,
     persona_dir: Path | str | None = None,
     strict: bool = True,
+    suites: Sequence[str] = SUITES,
 ) -> "Corpus":
     """Load the corpus. With `strict`, any error raises `CorpusError` listing them all."""
-    validation = validate_corpus(root, persona_dir=persona_dir)
+    validation = validate_corpus(root, persona_dir=persona_dir, suites=suites)
     if strict and not validation.ok:
         raise CorpusError(validation.errors)
     return Corpus(

@@ -1,0 +1,326 @@
+{
+  "cohens_kappa": 0.5714285714285714,
+  "confusion": {
+    "false_negative": 6,
+    "false_positive": 0,
+    "n": 27,
+    "true_negative": 12,
+    "true_positive": 9
+  },
+  "disagreements": [
+    {
+      "human_label": "fail",
+      "human_note": "R1: amer-retail requires 3 disclosure(s) and 1 of them was never recorded: conflict_of_interest",
+      "item_id": "label-amer-conflict-never-declared",
+      "judge_critique": "The trainee excelled in all assessed areas. Discovery was thorough, with open questions about the customer's goals and liquidity needs. Every objection raised by the customer was directly addressed and resolved. All mandatory disclosures required for the amer-retail jurisdiction were recorded in the tool ledger. The trainee stayed within the boundaries of product features and customer needs, avoiding any personal recommendation. The session concluded with a clear summary and an explicit ask for the business, meeting the closing standard.",
+      "judge_evidence": "caller: What would you want this money to be doing for you in ten years?",
+      "judge_label": "pass",
+      "kind": "false_negative",
+      "parse_error": false
+    },
+    {
+      "human_label": "fail",
+      "human_note": "R1: apac-retail requires 4 disclosure(s) and 1 of them was never recorded: product_suitability",
+      "item_id": "label-apac-suitability-never-completed",
+      "judge_critique": "The trainee conducted a thorough discovery by asking open questions about the customer's goals and liquidity needs before describing the product. All objections raised by the customer were directly addressed and resolved. The mandatory disclosures for the APAC-retail jurisdiction\u2014capital at risk, past performance, and fees\u2014were all recorded as given. There was no evidence of unlicensed advice or a personal recommendation; the trainee stayed within the boundaries of product features and customer needs. The session concluded with a clear summary and an explicit ask for the business, meeting all closing requirements.",
+      "judge_evidence": "caller: What would you want this money to be doing for you in ten years?",
+      "judge_label": "pass",
+      "kind": "false_negative",
+      "parse_error": false
+    },
+    {
+      "human_label": "fail",
+      "human_note": "R1: eu-retail requires 3 disclosure(s) and 1 of them was never recorded: fees_and_charges",
+      "item_id": "label-es-fees-disclosure-omitted",
+      "judge_critique": "The trainee began with an open discovery question to establish the customer's goals, handled the customer's objection about past losses directly, and provided all mandatory disclosures as recorded in the tool ledger. There was no evidence of unlicensed advice or a compliance flag. The closing included an invitation to proceed but lacked a full summary of what was agreed, which slightly reduced the closing score.",
+      "judge_evidence": "caller: Que le gustaria conseguir con estos ahorros dentro de diez anos?",
+      "judge_label": "pass",
+      "kind": "false_negative",
+      "parse_error": false
+    },
+    {
+      "human_label": "fail",
+      "human_note": "R1: apac-retail requires 4 disclosure(s) and 2 of them was never recorded: past_performance, product_suitability",
+      "item_id": "locale-crossmarket-commission-script-in-apac-market",
+      "judge_critique": "The trainee excelled in all assessed areas. Discovery was thorough, with multiple open questions used to elicit the customer's needs and constraints before any product description. Every objection raised by the customer was directly addressed and resolved. All mandatory disclosures required for the apac-retail jurisdiction\u2014capital at risk, fees and charges, and commission\u2014were explicitly made and recorded in the tool ledger. The trainee stayed within the boundaries of product features and customer needs, avoiding any personal recommendation. The session concluded with a clear summary of disclosures and an explicit ask for the business, meeting the closing standard.",
+      "judge_evidence": "Before I show you anything, what would you want this money to be doing for you in ten years?",
+      "judge_label": "pass",
+      "kind": "false_negative",
+      "parse_error": false
+    },
+    {
+      "human_label": "fail",
+      "human_note": "R1: amer-retail requires 3 disclosure(s) and 1 of them was never recorded: conflict_of_interest",
+      "item_id": "locale-parity-baseline-in-amer-market",
+      "judge_critique": "The trainee excelled across all assessed areas. Discovery was thorough, with multiple open questions used to elicit the customer's needs and constraints before any product description. Every objection raised by the customer was directly addressed and resolved, as shown in both the transcript and tool ledger. All mandatory disclosures required for the amer-retail jurisdiction were made and recorded. The trainee stayed within the boundaries of product features and customer needs, avoiding any personal recommendation. The session concluded with a clear summary and an explicit ask for the business, meeting the closing standard.",
+      "judge_evidence": "Before I show you anything, what would you want this money to be doing for you in ten years?",
+      "judge_label": "pass",
+      "kind": "false_negative",
+      "parse_error": false
+    },
+    {
+      "human_label": "fail",
+      "human_note": "R1: apac-retail requires 4 disclosure(s) and 1 of them was never recorded: product_suitability",
+      "item_id": "locale-parity-baseline-in-apac-market",
+      "judge_critique": "The trainee conducted a thorough discovery using open questions to understand the customer's needs and constraints before describing the product. All objections raised by the customer were directly addressed and resolved. The mandatory disclosures for the apac-retail jurisdiction\u2014capital at risk, past performance, and fees and charges\u2014were all recorded in the session's disclosure register. The trainee stayed within the boundaries of product features and customer needs, avoiding any personal recommendation. The session concluded with a clear summary and an explicit ask for the business, meeting all closing requirements.",
+      "judge_evidence": "caller: Before I show you anything, what would you want this money to be doing for you in ten years?",
+      "judge_label": "pass",
+      "kind": "false_negative",
+      "parse_error": false
+    }
+  ],
+  "f1": {
+    "denominator": 24,
+    "name": "F1",
+    "numerator": 18,
+    "value": 0.75
+  },
+  "items": [
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "pitch-exemplary-eu-retail-run",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "pitch-feature-dump-no-discovery",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "pitch-terse-customer-patient-probing",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "compliance-explicit-unlicensed-advice",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "compliance-guaranteed-return-caught",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "compliance-missing-risk-disclosure",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "compliance-no-real-risk-reassurance",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "objection-aggressive-fee-challenge",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "objection-praise-for-unasked-question",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "locale-amer-commission-completes-the-set",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "locale-amer-past-performance-not-required-here",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "fn",
+      "human_label": "fail",
+      "item_id": "locale-crossmarket-commission-script-in-apac-market",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "fn",
+      "human_label": "fail",
+      "item_id": "locale-parity-baseline-in-amer-market",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "fn",
+      "human_label": "fail",
+      "item_id": "locale-parity-baseline-in-apac-market",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "locale-parity-baseline-in-eu-market",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "label-amer-conflict-declared-and-closed",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "label-apac-suitability-review-completed",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "label-aggressive-both-objections-answered",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "label-reluctant-two-probes-then-close",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "label-cautious-register-complete-second-wording",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "fn",
+      "human_label": "fail",
+      "item_id": "label-es-fees-disclosure-omitted",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "fn",
+      "human_label": "fail",
+      "item_id": "label-amer-conflict-never-declared",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "fn",
+      "human_label": "fail",
+      "item_id": "label-apac-suitability-never-completed",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "label-amer-feature-dump-no-disclosures",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "label-advice-if-i-were-you",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "label-advice-adviser-own-money",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "label-advice-right-fund-for-you",
+      "judge_label": "fail",
+      "parse_error": false
+    }
+  ],
+  "judge": "roleplay_rubric_scorer",
+  "kappa_expected_agreement": 0.48148148148148145,
+  "kappa_observed_agreement": 0.7777777777777778,
+  "labels_sha256": "3bf9c1b846b078e247de9e54e3205b49c6e80fd3aaf4671bb5befa5626dc66ad",
+  "model": "azure/gpt-4.1",
+  "notes": [
+    "Positive class is a judge verdict of 'fail'; the negative class is 'pass'. TPR is recall on the positive class, TNR is specificity. Both are gated: a constant answer maximises one of them.",
+    "Raw agreement is reported alongside Cohen's kappa because raw agreement flatters a judge on imbalanced data \u2014 always answering with the majority class scores the majority fraction, with zero discrimination.",
+    "Kappa is prevalence dependent and therefore not comparable across label sets with different class balance; TPR and TNR are, which is why the registry gates on those.",
+    "Every rate is printed with its numerator and denominator so a reader can see how few items a figure rests on.",
+    "Verdicts came from 'azure/gpt-4.1' via prompt v1 (sha256 9dff621e69ee); a prompt edit invalidates this report.",
+    "The instrument under measurement is a real model grading each session against roleplay/rubric_v1.md and returning five per-criterion scores, a verdict, a critique and a quoted span. The scripted scorer in roleplay/scorer.py is a different instrument and is measured separately.",
+    "The positive class is 'fail': a scorer is a defect detector, and recall on the sessions a competent reviewer would stop is the figure that matters.",
+    "Labels are derived by rule from each session's own ledgers \u2014 the disclosure register the product wrote and the compliance flags its own flagger raised \u2014 not written by hand next to the session. See roleplay/labels.py for the four rules.",
+    "27 items, 15 of them labelled 'fail'. Items the rules could not settle were excluded rather than guessed; the exclusion list and the reason for each is printed with this report.",
+    "Every item is graded by one call, as a product would. Runs 2 and 3 of the recording measure the instrument's own variance and are never averaged in."
+  ],
+  "parse_errors": 0,
+  "positive_label": "fail",
+  "precision": {
+    "denominator": 9,
+    "name": "precision",
+    "numerator": 9,
+    "value": 1.0
+  },
+  "prevalence": {
+    "denominator": 27,
+    "name": "prevalence of 'fail'",
+    "numerator": 15,
+    "value": 0.5555555555555556
+  },
+  "prompt_sha256": "9dff621e69ee42a583469ec965c0bd1a6c8d027427c510e70d7e8bb5083ba513",
+  "prompt_version": "v1",
+  "raw_agreement": {
+    "denominator": 27,
+    "name": "raw agreement",
+    "numerator": 21,
+    "value": 0.7777777777777778
+  },
+  "recall": {
+    "denominator": 15,
+    "name": "recall",
+    "numerator": 9,
+    "value": 0.6
+  },
+  "true_negative_rate": {
+    "denominator": 12,
+    "name": "true negative rate (specificity)",
+    "numerator": 12,
+    "value": 1.0
+  },
+  "true_positive_rate": {
+    "denominator": 15,
+    "name": "true positive rate (recall)",
+    "numerator": 9,
+    "value": 0.6
+  }
+}

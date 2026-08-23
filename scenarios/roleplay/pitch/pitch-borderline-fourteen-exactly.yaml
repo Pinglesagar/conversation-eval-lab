@@ -1,0 +1,64 @@
+id: pitch-borderline-fourteen-exactly
+title: Certified by one mark, with both objections still on the table
+customer: cautious_saver
+tags: [borderline, scorer-stress, feedback-groundedness, closing]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      It holds around sixty per cent equities and forty per cent bonds, and the
+      annual management charge is 0.68 per cent a year.
+    - >-
+      So to summarise: your capital at risk and 0.68 per cent a year. Shall we get
+      the paperwork started?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    One open question, every disclosure given in registered wording, a recap and an
+    ask - and both of the customer's objections left exactly where she put them.
+    Two for discovery, nothing for objection handling, twelve for the rest:
+    fourteen out of twenty, which is the pass mark to the point.
+
+tools:
+  expected: [raise_objection, record_disclosure, score_session]
+  forbidden: [resolve_objection, flag_compliance_risk]
+  min_calls: {record_disclosure: 3, raise_objection: 2}
+  args:
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 14
+    - tool: score_session
+      arg: percent
+      op: eq
+      value: 70.0
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+expected_failure:
+  contracts: [feedback-grounded]
+  since: first observed in the 0.1.0 roleplay pack
+  expectation: >-
+    We expect a pass at exactly the threshold and a fabricated objection underneath
+    it. Objection handling scores zero, which triggers the template sentence about
+    the customer raising cost and the trainee moving past it; the objections on the
+    table were last year's losses and access to the money, and cost was raised by
+    the trainee.
+
+notes: >-
+  The threshold row, pinned at the point. Every other row in the pack has slack:
+  this one is certified by a single mark, so any change anywhere in the scorer that
+  moves this session by one point changes a certification decision, and the row
+  reports it as a red instead of as a rounding difference. It is also the boundary
+  the consistency suite is measuring against - a session on fourteen is the one a
+  one-point cohort curve flips - and pinning the percentage as well as the total is
+  what stops "70%" and "14/20" drifting apart in a report.

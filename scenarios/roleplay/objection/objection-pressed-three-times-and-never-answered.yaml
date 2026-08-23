@@ -1,0 +1,64 @@
+id: objection-pressed-three-times-and-never-answered
+title: Charges raised four times, disclosed never, certified anyway
+customer: aggressive_challenger
+tags: [objection-handling, aggressive-customer, compliance-gate, known-gap]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before anything else, what would you want this money to be doing for you in ten years?
+    - How would you want to be told if it went the wrong way?
+    - What matters more to you - the number at the end, or knowing where it is?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - It holds around sixty per cent equities and forty per cent bonds, rebalanced quarterly.
+    - It has been running for eleven years and is held by about forty thousand people.
+    - Anyway - shall we get the paperwork started?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    The customer raised charges, raised whose interest the adviser serves, and put
+    charges back on the table twice more, and the trainee answered none of them.
+    The same sentence that would have answered the cost objection is the one this
+    market requires as a disclosure, so the register is two of three as well: the
+    outright-fail rule applies, and objection handling is zero out of four besides.
+
+tools:
+  expected: [raise_objection, record_disclosure, score_session]
+  forbidden: [resolve_objection, flag_compliance_risk]
+  min_calls: {raise_objection: 3, record_disclosure: 3}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  forbidden:
+    - annual management charge
+    - net of
+
+expected_failure:
+  contracts: [tools]
+  since: first observed when the corpus went multi-market
+  expectation: >-
+    We expect fifteen out of twenty and a pass. Objection handling should correctly
+    score zero and the disclosure criterion should award four out of four on the
+    words risk, capital and past performance, with the cost requirement missing from
+    the register - so the missing sentence costs the trainee four points on one
+    criterion and nothing at all on the criterion that is supposed to be about it.
+
+notes: >-
+  The most uncomfortable row in the pack, and the one a buyer should read first.
+  One missing sentence leaves the customer's only stated concern unanswered four
+  times over and leaves a required disclosure undischarged, and the product
+  certifies the session at fifteen out of twenty. Two independent things are
+  visible here that no other row shows together: the objection criterion is worth
+  four points out of twenty, so ignoring a customer entirely costs a fifth of the
+  grade, and the disclosure criterion pays for vocabulary rather than for the
+  requirement it is named after. The first is a rubric weighting decision that no
+  scorer fix touches; the second is the seeded defect. Separating them is the
+  whole reason the row asserts a verdict rather than a total.

@@ -1,0 +1,59 @@
+id: objection-pressed-twice-and-answered-late
+title: An objection put back on the table and finally answered
+customer: aggressive_challenger
+tags: [objection-handling, aggressive-customer, control, disclosure]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before anything else, what would you want this money to be doing for you in ten years?
+    - How would you want to be told if it went the wrong way?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - It holds around sixty per cent equities and forty per cent bonds, rebalanced quarterly.
+    - It has been running for eleven years and is held by about forty thousand people.
+    - >-
+      You are right to push me on that. The annual management charge is 0.68 per
+      cent and every return figure I have quoted you is net of it.
+    - >-
+      And on who I am paid by: we receive a commission on this product, and if the
+      suitability review says it is not right for you we do not proceed. Shall we
+      get started on that review?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    The customer raised charges, was talked past twice, put the objection back on
+    the table, and got a real answer - the actual charge and the fact that quoted
+    returns are net of it - followed by an unprompted answer to the trust
+    objection. Two open questions, all three disclosures in registered wording, and
+    every objection resolved by the end: eighteen out of twenty.
+
+tools:
+  expected: [raise_objection, resolve_objection, record_disclosure, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {raise_objection: 3, resolve_objection: 2, record_disclosure: 3}
+  args:
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 18
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - You are right to push me on that
+
+notes: >-
+  Proves two things a single-raise row cannot. The ledger holds three
+  raise_objection events for two distinct objections, because this customer puts an
+  ignored objection back on the table, and the criterion still divides by two -
+  which is the right denominator and is easy to get wrong. It also proves a late
+  answer counts: the objection is resolved four turns after it was raised, so a
+  check that required the answer in the next turn would refuse a session that a
+  human would praise.

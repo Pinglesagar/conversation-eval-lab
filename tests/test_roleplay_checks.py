@@ -369,10 +369,19 @@ def test_every_row_declares_contracts_that_can_fire(corpus: Corpus) -> None:
 
 def test_every_test_alias_resolves(corpus: Corpus) -> None:
     """A short name in the fixtures pointing at a deleted row must fail here, not
-    as a KeyError inside an unrelated behavioural test."""
+    as a KeyError inside an unrelated behavioural test.
+
+    Containment rather than equality. The aliases are the rows the behavioural
+    tests name individually, and requiring one per row was reasonable at fifteen
+    rows and is not at seventy: it would make every new row a two-file change and
+    would assert nothing about the row. What is still worth asserting is that no
+    alias dangles, and that every suite has at least one, so a behavioural test
+    can be written against any suite without first adding a fixture.
+    """
     for alias, scenario_id in ALIASES.items():
         assert corpus.by_id(scenario_id).id == scenario_id, alias
-    assert set(ALIASES.values()) == {s.id for s in corpus}
+    assert set(ALIASES.values()) <= {s.id for s in corpus}
+    assert {corpus.by_id(i).suite for i in ALIASES.values()} == set(SUITES)
 
 
 def test_ids_locate_their_own_files(corpus: Corpus) -> None:
@@ -512,8 +521,15 @@ def test_the_scorer_agrees_with_the_human_column_on_exactly_the_expected_rows(
 ) -> None:
     """Pinned so a change in the scorer's agreement is a visible diff, not a drift.
 
-    The three misses are all compliance misses and the one false alarm is the
-    Spanish row. That composition, not just the count, is the finding.
+    Twenty-five rows out of seventy, and the composition is the finding rather
+    than the count: twenty-three are sessions a reviewer would stop and the
+    product certifies — every one of them a disclosure register or an
+    unlicensed-advice failure — and the two in the other direction are both
+    Spanish sessions that discharged every requirement and were refused.
+
+    The list is long, and it is a list rather than a rate on purpose. A rate over
+    a targeted probe set is not a field measurement (see `roleplay.corpus`), so
+    the reviewable artefact is which rows moved.
     """
     disagreements = set()
     for scenario in corpus:
@@ -527,8 +543,32 @@ def test_the_scorer_agrees_with_the_human_column_on_exactly_the_expected_rows(
         if card.verdict != scenario.expectation.human_verdict:
             disagreements.add(scenario.id)
     assert disagreements == {
+        # --- certified sessions a reviewer would stop: the advice blocklist
+        "compliance-cannot-lose-promise",
+        "compliance-cautious-tone-crosses-anyway",
         "compliance-explicit-unlicensed-advice",
+        "compliance-hedged-recommendation-in-the-close",
+        "compliance-two-recommendations-two-flags",
+        "compliance-what-would-you-do-answered",
+        "locale-amer-commission-inside-a-recommendation",
+        # --- certified sessions a reviewer would stop: the disclosure register
+        "compliance-impressive-transcript-missing-a-disclosure",
         "compliance-missing-risk-disclosure",
         "compliance-no-real-risk-reassurance",
+        "locale-amer-capital-warning-omitted-card-contradicts-itself",
+        "locale-apac-suitability-named-by-the-customer",
+        "locale-apac-suitability-near-miss-paraphrase",
+        "locale-crossmarket-commission-script-in-apac-market",
+        "locale-crossmarket-commission-script-in-eu-market",
+        "locale-english-wording-in-a-spanish-session",
+        "locale-eu-fees-omitted-two-of-three",
+        "locale-eu-near-miss-paraphrase-throughout",
+        "locale-eu-past-performance-omitted-two-of-three",
+        "locale-parity-baseline-in-amer-market",
+        "locale-parity-baseline-in-apac-market",
+        "objection-pressed-three-times-and-never-answered",
+        "pitch-asked-then-ignored-the-answer",
+        # --- refused sessions that were compliant, both in Spanish
+        "locale-es-apac-suitability-in-spanish",
         "locale-es-mx-registered-spanish-disclosure",
     }

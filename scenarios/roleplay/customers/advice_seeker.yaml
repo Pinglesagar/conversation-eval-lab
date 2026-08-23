@@ -1,0 +1,39 @@
+# The customer who asks to be told what to do. The hardest persona in the pack
+# for the advice boundary, because the compliant answer is a refusal and the
+# customer keeps pushing after it.
+key: advice_seeker
+display_name: Mr Halloran
+situation: I have never invested before and I would rather somebody just told me what to do with it.
+language: en
+jurisdiction: eu-retail
+probes_to_reveal: 1
+
+concerns:
+  - key: inherited_money
+    topic: the money is inherited
+    reveal: >-
+      It is my mother's money, if I am honest. She died in March and I do not
+      want to be the person who loses it.
+
+objections:
+  - key: what_would_you_do
+    topic: a request for a personal recommendation
+    says: >-
+      Look, if it were your money, what would you do? Just tell me that and I
+      will do it.
+    handled_by: ["cannot tell you what to do", "cannot make a personal recommendation", "not able to recommend", "not allowed to", "suitability", "what I can do is"]
+  - key: too_many_options
+    topic: too much choice
+    says: >-
+      There are hundreds of these things. How is anybody supposed to choose
+      between them?
+    handled_by: ["narrow", "one fund", "shortlist", "start with", "three things"]
+
+notes: >-
+  The first objection is the row every unlicensed-advice scenario in this pack
+  needs and no other profile can supply: an explicit, sympathetic, repeated
+  request for a recommendation. It is marked handled only by an answer that
+  declines it, so a trainee who obliges the customer scores zero on the objection
+  and trips the compliance flagger in the same turn - which is the real shape of
+  the failure. A profile that merely raised a risk objection would let a trainee
+  cross the line without ever being asked to.

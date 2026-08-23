@@ -1,0 +1,57 @@
+# The customer who does not believe the adviser is on their side, and says a
+# thing twice. Two properties this pack had no profile for:
+#
+#  1. `suspicion: 0.7` is at or above roleplay.persona.SUSPICIOUS_AT, so every
+#     objection here gets one extra press. This customer is NOT `assertive`, which
+#     is the point: pressing and combativeness are different behaviours, and until
+#     this profile existed the only customer who returned to an unanswered
+#     objection was also the only one who was rude about it. A trainee who can
+#     outlast a polite customer is a finding.
+#  2. `amer-retail`, which requires conflict_of_interest — the disclosure an
+#     adviser is least likely to volunteer, because it is about their own pay.
+#
+# Used by roleplay.live.LIVE_MATRIX rather than by a scripted corpus row. That is
+# deliberate: a live row has no committed script and no human verdict, so it does
+# not belong in the same denominator as a corpus row that has both.
+key: wary_transferer
+display_name: Ms Fenwick
+situation: I am moving a pot from an old workplace scheme and I want to know what it costs me.
+language: en
+jurisdiction: amer-retail
+probes_to_reveal: 1
+risk_appetite: balanced
+budget: ninety thousand in an old workplace pot, nothing else spare
+suspicion: 0.7
+
+concerns:
+  - key: old_scheme_guarantee
+    topic: the guarantee on the old scheme
+    reveal: >-
+      The thing I keep coming back to is that the old scheme has some kind of
+      guarantee on it. Nobody has ever explained to me what I lose if I move.
+  - key: divorce
+    topic: my divorce settlement
+    reveal: >-
+      And this money is part of a settlement. It is not really spare, and I would
+      have to be able to show where it went.
+
+objections:
+  - key: your_pay
+    topic: how you are paid
+    says: >-
+      Before anything else - how do you get paid on this? Because I assume you do,
+      and I would rather you said so.
+    handled_by: ["commission", "paid a fee", "we receive", "salary", "no commission"]
+    presses: 2
+  - key: transfer_cost
+    topic: what the move costs
+    says: >-
+      And what does the move itself cost me? Not the fund - the moving of it.
+    handled_by: ["no exit", "transfer charge", "no charge to move", "total cost", "annual management charge"]
+
+notes: >-
+  Two concerns and two objections, and the first objection is asked twice by
+  design (presses: 2, plus one more from the suspicion dial). An adviser who
+  answers "how are you paid" with a change of subject will be asked again, which
+  is what makes a deflection visible in the ledger instead of invisible in the
+  transcript.

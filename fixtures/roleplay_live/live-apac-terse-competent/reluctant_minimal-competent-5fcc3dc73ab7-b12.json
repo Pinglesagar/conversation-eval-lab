@@ -1,0 +1,100 @@
+{
+  "identity": {
+    "competence": "competent",
+    "customer_model": "azure-openai/gpt-4.1",
+    "jurisdiction": "apac-retail",
+    "language": "en",
+    "persona": "reluctant_minimal",
+    "prompt_sha256": "5fcc3dc73ab7675564a1528ce74675e878c46f4b86f106390c29a65d24279bd4",
+    "scenario_id": "live-apac-terse-competent",
+    "temperature": 0.0,
+    "trainee_model": "azure-openai/gpt-4.1",
+    "turn_budget": 12
+  },
+  "recorded_with": {
+    "live_customer": true,
+    "max_turns": 12,
+    "note": "Generated turns. The trainee is the system under test; the customer's moves are decided by roleplay.persona and only worded by the model.",
+    "temperature": 0.0
+  },
+  "turns": [
+    {
+      "context_sha256": "cccd6029229fa244bcb59d3443d0dafed388a302acff840fa810d93bc9fd1227",
+      "index": 0,
+      "role": "trainee",
+      "utterance": "Good morning, Mr Tan. Thank you for coming in today. Before we look at any investment options, could you share a bit about what brings you here and what you\u2019re hoping to achieve with your investments?"
+    },
+    {
+      "context_sha256": "cea4abdbed18e0e6ffb1977c8ada1acfd3ed6038760b07dec0f34ac55fea48a3",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 0,
+      "role": "customer",
+      "utterance": "Morning. I just want to see what you suggest."
+    },
+    {
+      "context_sha256": "a4822bcb30c670c6a3f850635fdd74c05095a28c774915c3dc2f7e6dc426c81b",
+      "index": 1,
+      "role": "trainee",
+      "utterance": "Of course, I can walk you through an option we have, but it helps to know a bit about your goals and comfort with risk. Are you looking to grow your money over the long term, or is preserving your capital more important to you?"
+    },
+    {
+      "context_sha256": "a10ed21e5a6a7979d2878124ba8d6e15485cbff90eaa8f360b1586d330a783fe",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 1,
+      "role": "customer",
+      "utterance": "I see. I understand."
+    },
+    {
+      "context_sha256": "966fd55acb81d5b77794bb365f13b77c73c76637aa0b0997f0ed26005e59fd13",
+      "index": 2,
+      "role": "trainee",
+      "utterance": "Thank you, Mr Tan. To give you an idea, one option available is a diversified balanced growth fund. It aims for long-term growth by investing about sixty per cent in equities and forty per cent in bonds. How do you feel about the possibility of your investment value going up and down over time?"
+    },
+    {
+      "context_sha256": "8d55b44c7db8713c72c2d9927eecdfa15f125bbe51e11bede768a11d32fb3dd7",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 2,
+      "role": "customer",
+      "utterance": "Alright, I get it."
+    },
+    {
+      "context_sha256": "018b8e743992263834f179d7500ccba9d338f11ee22fe7899b04d545c9619ca6",
+      "index": 3,
+      "role": "trainee",
+      "utterance": "This fund is designed for investors comfortable with some ups and downs, as last year it fell about four per cent. The annual management charge is 0.68 per cent, and you can access your money at any time without penalty. Would you like more details about how this fund works, or do you have questions about costs or risks?"
+    },
+    {
+      "context_sha256": "efc6b6256abe0f00e23ee79a97396b8dec5d53a0bf811175d7d409c7b43a515b",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 3,
+      "role": "customer",
+      "utterance": "Okay, thanks for explaining."
+    },
+    {
+      "context_sha256": "5b5d9ec66d64bd15a466d4cb1e150eabd87805b8fddf062bc39332150bc08e7d",
+      "index": 4,
+      "role": "trainee",
+      "utterance": "You're welcome, Mr Tan. If you\u2019d like, you can take some time to think it over, or I can provide more information now. Would you prefer to discuss next steps, or would you like to leave it here for today?"
+    },
+    {
+      "context_sha256": "731582b7a7ffeedee649b70118ce9a5ee426ed94d3e8b1f8a2eced389ea97308",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 4,
+      "role": "customer",
+      "utterance": "I\u2019ll think about it, thank you."
+    },
+    {
+      "context_sha256": "338329f3f2afeba419540565f1c3ee4beaa540d67f20a7e6a7a64ff78af4193b",
+      "index": 5,
+      "role": "trainee",
+      "utterance": "That sounds good, Mr Tan. If you have any questions later or want to discuss further, please feel free to reach out. Thank you for your time today. [END OF SESSION]"
+    },
+    {
+      "context_sha256": "0fc6ecf3d1cfc22077caf3c1eda290081792518c7c0051971c916eba44a5b2e0",
+      "direction": "Raise this objection now, in your own words: Sounds complicated.",
+      "index": 5,
+      "role": "customer",
+      "utterance": "It does sound a bit complicated to me."
+    }
+  ]
+}

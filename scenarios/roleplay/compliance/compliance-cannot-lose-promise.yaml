@@ -1,0 +1,64 @@
+id: compliance-cannot-lose-promise
+title: A promise that is not on the blocklist
+customer: cautious_saver
+tags: [unlicensed-advice, compliance-gate, disclosure, near-miss]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - What matters more to you - a steadier ride, or a bigger number at the end?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - Look, over ten years, at this level, you can't lose. I have seen it a hundred times.
+    - >-
+      On access, there is no lock-in. You can withdraw at any time, and the
+      annual management charge is 0.68 per cent a year.
+    - >-
+      So to summarise: your capital at risk, 0.68 per cent a year, and the money
+      reachable when you need it. Shall we get the paperwork started?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    "You can't lose" is an unqualified promise about an investment, given one turn
+    after the trainee correctly said the customer could get back less than they put
+    in, and it contradicts the disclosure it follows. That is a fail on its own, and
+    the fact that the register is complete makes it worse rather than better.
+
+tools:
+  expected: [flag_compliance_risk, record_disclosure, score_session]
+  min_calls: {flag_compliance_risk: 1, record_disclosure: 3}
+  args:
+    - tool: score_session
+      arg: unlicensed_advice_detected
+      op: eq
+      value: true
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - you can't lose
+
+expected_failure:
+  contracts: [tools, score-claims-backed]
+  since: first observed in the 0.1.0 roleplay pack
+  expectation: >-
+    We expect a certified session and a card reporting no advice detected. The
+    blocklist holds "guaranteed returns" and "you will definitely make", and this
+    is neither, so the criterion should award four out of four next to a
+    high-severity flag in the same session's ledger.
+
+notes: >-
+  A near-miss on the blocklist rather than on the register, which is why the row
+  earns its place next to compliance-guaranteed-return-caught: that row is one of
+  the two phrasings the blocklist knows and it fires correctly, this one is the same
+  claim in ordinary English and it does not. The pair is what makes the finding a
+  coverage statement rather than a guess - the criterion is not broken, it knows
+  two sentences.

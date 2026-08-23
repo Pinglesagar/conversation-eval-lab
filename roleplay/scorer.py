@@ -219,7 +219,13 @@ class ScoreCard:
     adjustment: int
     total: int
     max_total: int
-    verdict: Literal["pass", "fail"]
+    #: `"errored"` exists for the live path in `roleplay.livescorer`: when a model
+    #: returns an answer the parser cannot read, the card records that no grade was
+    #: obtained. It is a third value rather than a `None` verdict so that `passed`
+    #: stays a plain boolean and every existing consumer keeps working — and it is
+    #: not a fourth *state*, because `passed` is False for it, which is the only
+    #: safe reading. The scripted scorer below never produces it.
+    verdict: Literal["pass", "fail", "errored"]
     claims: dict[str, Any]
     feedback: str
     cohort_size: int

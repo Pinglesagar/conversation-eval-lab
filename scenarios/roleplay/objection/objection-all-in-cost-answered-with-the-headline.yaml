@@ -1,0 +1,58 @@
+id: objection-all-in-cost-answered-with-the-headline
+title: A complete cost disclosure and an unanswered cost question
+customer: informed_client
+tags: [objection-handling, disclosure, known-gap, jurisdiction]
+jurisdiction: apac-retail
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - What would you want this money to be doing for you over the next ten years?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      You are right, and nothing is decided today: once we have completed the
+      suitability assessment I can tell you whether this fits at all.
+    - On cost, the headline annual management charge is 0.68 per cent a year.
+    - >-
+      So to summarise: your capital at risk, 0.68 per cent a year, and the review
+      before anything is signed. Shall we get the paperwork started on the review?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    All four codes this market requires are recorded in registered wording, the
+    suitability objection was answered in the customer's own terms, and the
+    question she actually asked - what is the all-in cost, not the headline - was
+    never answered. Two of four on objection handling, sixteen out of twenty, and a
+    pass under this rubric.
+
+tools:
+  expected: [raise_objection, resolve_objection, record_disclosure, score_session]
+  min_calls: {record_disclosure: 4}
+  max_calls: {resolve_objection: 1}
+  args:
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 16
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+    - tool: score_session
+      arg: mandatory_disclosure_given
+      op: eq
+      value: true
+
+notes: >-
+  The row where the two ledgers disagree about the same fact. The disclosure
+  register says the cost requirement is discharged, because the registered wording
+  was used; the objection ledger says the customer's cost question is still open,
+  because she asked what else there is and was told the headline number again. Both
+  are right, and the score card reports only the first. A row where the cost
+  disclosure was simply missing would collapse the two into one finding and lose
+  the interesting part - a requirement can be fully discharged and leave the
+  customer no better informed.

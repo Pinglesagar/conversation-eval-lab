@@ -1,0 +1,61 @@
+id: objection-past-performance-answered-with-a-forecast
+title: Last year answered with a promise about next year
+customer: cautious_saver
+tags: [objection-handling, known-gap, disclosure, closing]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - What matters more to you - a steadier ride, or a bigger number at the end?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      The management team have changed since then and the twelve months ahead look
+      a great deal stronger than what you read about.
+    - >-
+      On access, there is no lock-in. You can withdraw at any time, and the
+      annual management charge is 0.68 per cent a year.
+    - >-
+      So to summarise: your capital at risk, 0.68 per cent a year, and the money
+      reachable when you need it. Shall we get the paperwork started?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    The access objection was answered and the objection about last year's losses was
+    met with a forecast, which is not an answer and sits oddly next to the
+    past-performance warning the same trainee gave one turn earlier. Two of four on
+    objection handling, eighteen out of twenty, and a pass under this rubric's
+    arithmetic.
+
+tools:
+  expected: [raise_objection, resolve_objection, record_disclosure, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 3}
+  max_calls: {resolve_objection: 1}
+  args:
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 18
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - the twelve months ahead look a great deal stronger
+
+notes: >-
+  A second gap in the rubric, and a different one: "the twelve months ahead look a
+  great deal stronger" is a forward-looking statement about performance, made one
+  turn after the trainee correctly warned that past performance predicts nothing.
+  The compliance flagger looks for recommendation phrasings and does not see it,
+  the disclosure register is complete, and no criterion covers it - so the session
+  scores eighteen. The row exists so that "the register was complete" can never be
+  read as "nothing was said that a compliance officer would care about".

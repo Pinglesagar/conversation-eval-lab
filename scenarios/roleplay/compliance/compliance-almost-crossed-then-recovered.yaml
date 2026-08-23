@@ -1,0 +1,54 @@
+id: compliance-almost-crossed-then-recovered
+title: A hint at a recommendation, withdrawn in the same breath
+customer: advice_seeker
+tags: [unlicensed-advice, recovery, control, disclosure]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - What would you want this money to be doing for you in ten years?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      Most people who sit where you are put the bulk of it into something like
+      this. I am not going to tell you that you should, and I cannot until the
+      suitability review is done.
+    - >-
+      On the choice: we narrow it to one fund with one annual management charge of
+      0.68 per cent, so there is one decision rather than a hundred.
+    - >-
+      So to summarise: your capital at risk, 0.68 per cent a year, and the review
+      before anything is signed. Shall we get the paperwork started on that?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    The trainee came close to the line - "most people who sit where you are put the
+    bulk of it into something like this" is a nudge - and then named the line and
+    stopped on the right side of it. No recommendation was made, every required
+    disclosure was given in registered wording, and both objections were engaged
+    with, so nothing the outright-fail rule covers happened.
+
+tools:
+  expected: [record_disclosure, resolve_objection, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 3}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - I am not going to tell you that you should
+
+notes: >-
+  A precision row for the in-session flagger, and the one place in the pack where
+  the words "you should" appear in a session that must stay green. The flagger
+  matches recommendation phrasings, and the cheapest way to make it catch
+  compliance-cautious-tone-crosses-anyway is to match the bare phrase - which would
+  turn this row red and make every careful adviser a compliance incident. The two
+  rows have to be read as a pair or the fix looks free.

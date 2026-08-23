@@ -1,0 +1,53 @@
+id: pitch-paraphrase-pair-second-wording
+title: The same session, worded the other way
+customer: cautious_saver
+tags: [scorer-stress, control, disclosure, objection-handling]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - How long would you be happy to leave most of it alone?
+    - What would success look like for you five years from now?
+    - >-
+      So, the fund. It is a balanced growth fund, your capital at risk is real -
+      you could get back less than you put in - and past performance is not a
+      guide to future performance.
+    - >-
+      Last year was poor, you are right. It is diversified across bonds and
+      equities, so a single bad market does not decide the outcome.
+    - >-
+      No lock-in either - withdraw at any time - and the annual management charge
+      is 0.68 per cent a year.
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    The same three open questions in different words, the same two objections
+    engaged with, the same three disclosures in registered wording, and the same
+    absence of an ask. A reviewer cannot tell the two sessions apart on the rubric,
+    so this row carries the same sixteen out of twenty.
+
+tools:
+  expected: [record_disclosure, resolve_objection, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 3, resolve_objection: 2}
+  args:
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 16
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+notes: >-
+  The other half of the pair. Only the registered disclosure phrasings are held
+  word for word, because those are a requirement rather than a style choice;
+  everything else is reworded, including the objection answers, which is where a
+  scorer reading prose rather than the objection ledger would come apart first. The
+  pair also documents the limit of what it can prove: two rows show that this
+  scorer is insensitive to these paraphrases, not that it is insensitive to
+  paraphrase in general. A live model-backed scorer needs the pass^k machinery in
+  roleplay.consistency, and this pair is what tells you whether you need it.

@@ -1,0 +1,66 @@
+id: compliance-hedged-recommendation-in-the-close
+title: Nothing is decided today, and here is what to decide
+customer: cautious_saver
+tags: [unlicensed-advice, compliance-gate, closing, disclosure]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      That is a fair point about last year. The fund is diversified across bonds
+      and equities, so one bad market does not decide the outcome.
+    - >-
+      On access, there is no lock-in. You can withdraw at any time, and the
+      annual management charge is 0.68 per cent a year.
+    - >-
+      Nothing is decided today, but this is the right fund for you and we can do
+      the paperwork whenever you like.
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    "This is the right fund for you" is a personal recommendation, and putting
+    "nothing is decided today" in front of it does not make it one. The rubric
+    fails the session outright on the recommendation; the disclosures were all
+    given and both objections were engaged with.
+
+tools:
+  expected: [flag_compliance_risk, record_disclosure, score_session]
+  min_calls: {flag_compliance_risk: 1, record_disclosure: 3}
+  args:
+    - tool: score_session
+      arg: unlicensed_advice_detected
+      op: eq
+      value: true
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - this is the right fund for you
+
+expected_failure:
+  contracts: [tools, score-claims-backed]
+  since: first observed in the 0.1.0 roleplay pack
+  expectation: >-
+    We expect a certified session, no advice detected on the card, and a closing
+    score of zero. The last turn is both a recommendation and an ask for the
+    business; it is classified as advice, which is the right compliance call, and
+    the effect is that the closing criterion never sees an ask at all - so the
+    feedback should tell a trainee who asked for the business that they never did.
+
+notes: >-
+  The third phrasing family in the advice group: not a nudge, not an instruction,
+  but an assertion of suitability inside a compliant-sounding frame. It also
+  exposes a coupling worth knowing about before a customer finds it: one sentence
+  can be an ask and a recommendation at once, and the rubric's five criteria
+  cannot represent that - the compliance reading silently overwrites the closing
+  reading, and the trainee is told something untrue about their own session.

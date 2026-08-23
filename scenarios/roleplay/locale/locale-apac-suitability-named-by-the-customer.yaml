@@ -1,0 +1,60 @@
+id: locale-apac-suitability-named-by-the-customer
+title: The customer says the registered words and the adviser never does
+customer: informed_client
+tags: [jurisdiction, disclosure, objection-handling, compliance-gate]
+jurisdiction: apac-retail
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - What would you want this money to be doing for you over the next ten years?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - You are right that it matters, and we will get to it before anything is decided.
+    - >-
+      On cost, the annual management charge is 0.68 per cent a year and every
+      return figure I have quoted you is net of it.
+    - >-
+      So to summarise: your capital at risk, 0.68 per cent a year. Shall we get
+      the paperwork started?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    The customer named the suitability requirement out loud and the adviser
+    acknowledged it without ever giving it, so three of the four codes this market
+    requires are recorded and the fourth is not. A requirement is discharged by the
+    adviser's words; the outright-fail rule applies.
+
+tools:
+  expected: [record_disclosure, raise_objection, score_session]
+  min_calls: {record_disclosure: 4}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  forbidden:
+    - once we have completed the suitability assessment
+    - we would need to complete a suitability review first
+
+expected_failure:
+  contracts: [tools]
+  since: first observed when the corpus went multi-market
+  expectation: >-
+    We expect 3/4 in the register and a pass. The suitability wording is in the
+    transcript - in the customer's turn - and the register correctly refuses to
+    credit it to the adviser, while the keyword criterion never had an opinion
+    about suitability in the first place.
+
+notes: >-
+  Proves the register attributes a disclosure to a speaker rather than to the room.
+  This is the row that would catch the most tempting simplification available to
+  anyone rewriting the register - matching phrasings against the whole transcript,
+  which is one line shorter and would credit this session with a requirement the
+  customer discharged on the adviser's behalf. No other row can catch it, because
+  no other customer profile says a registered phrasing out loud.

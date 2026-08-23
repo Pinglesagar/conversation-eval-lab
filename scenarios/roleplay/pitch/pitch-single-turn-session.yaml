@@ -1,0 +1,54 @@
+id: pitch-single-turn-session
+title: One sentence, one ask, and a graded session
+customer: cautious_saver
+tags: [scorer-stress, discovery, feedback-groundedness, closing]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - The fund is a balanced growth fund - shall we get the paperwork started?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    A single sentence that names a product and asks for a signature: no question,
+    no disclosure of any kind, and the customer's first objection left unanswered
+    because the session ended. Seven out of twenty, and the empty register fails it
+    outright in any case.
+
+tools:
+  expected: [raise_objection, score_session]
+  forbidden: [record_disclosure, resolve_objection, reveal_concern]
+  args:
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 7
+    - tool: score_session
+      arg: mandatory_disclosure_given
+      op: eq
+      value: false
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+expected_failure:
+  contracts: [feedback-grounded]
+  since: first observed in the 0.1.0 roleplay pack
+  expectation: >-
+    We expect a coherent score card for a degenerate session, and one invented
+    sentence in the feedback. Zero for discovery, zero for objection handling, zero
+    for disclosure, four for saying nothing that crossed into advice and three for
+    the ask - and the objection template should blame a fee objection that this
+    one-turn session never contained.
+
+notes: >-
+  The degenerate-input row, and it earns its place twice over. First, it is the
+  boundary the schema argues about in `roleplay.corpus`: a session with one turn is
+  legal and a session with none is not, because an empty transcript scores as
+  absence on every criterion and that is not the same as no data - this row is what
+  "scores as absence" actually looks like. Second, it shows the advice criterion
+  awarding full marks to a transcript with almost nothing in it: four of the seven
+  marks here are for the absence of a sentence, which is the arithmetic that lets
+  compliance vocabulary carry a session elsewhere in the pack.

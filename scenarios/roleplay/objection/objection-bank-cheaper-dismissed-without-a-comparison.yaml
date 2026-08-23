@@ -1,0 +1,64 @@
+id: objection-bank-cheaper-dismissed-without-a-comparison
+title: The cheaper bank fund waved away rather than compared
+customer: comparison_shopper
+tags: [objection-handling, disclosure, closing, scorer-stress]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      Honestly, what the bank sells is a different animal and I would not put my
+      own family in it. Ours is properly diversified and actively managed, and the
+      annual management charge is 0.68 per cent.
+    - >-
+      And nothing is signed today. I will put all of this in writing so both of
+      you can read it before anybody decides.
+    - >-
+      So to summarise: your capital at risk, 0.68 per cent a year, and nothing
+      signed until you have both read it. Shall we get the paperwork started when
+      you are ready?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    The spouse objection was handled well and the bank comparison was not handled at
+    all - the trainee asserted a difference instead of showing one, so the customer
+    still cannot tell whether she is being overcharged. Under this rubric that costs
+    two of four on objection handling and the session passes at seventeen: a
+    reviewer signs it off with a note, which is what the label records.
+
+tools:
+  expected: [raise_objection, resolve_objection, record_disclosure, score_session]
+  min_calls: {record_disclosure: 3, raise_objection: 2}
+  max_calls: {resolve_objection: 1}
+  args:
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 17
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  forbidden:
+    - like for like
+    - compare the two
+
+notes: >-
+  Read as a pair with objection-spouse-signoff-pushed-past-to-a-close, which
+  abandons the other objection and scores exactly the same seventeen. That is the
+  finding, and it is about the rubric rather than about the scorer: the criterion
+  is a fraction of objections resolved, so it cannot distinguish a customer who
+  still does not know whether she is overpaying from a customer who was pushed to
+  sign without her husband. A single abandoned-objection row would look like a
+  correctly deducted mark; the pair shows what the mark cannot express. Note too
+  that "I would not put my own family in it" is close to a recommendation and the
+  flagger does not fire on it, which is a coverage line worth having on the record.

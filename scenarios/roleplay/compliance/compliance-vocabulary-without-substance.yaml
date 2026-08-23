@@ -1,0 +1,60 @@
+id: compliance-vocabulary-without-substance
+title: All the words and none of the disclosures
+customer: cautious_saver
+tags: [scorer-stress, disclosure, compliance-gate, feedback-groundedness]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - >-
+      Let me take you through the Horizon Balanced Growth Fund. Risk, capital,
+      charges, past performance - all the usual caveats apply and I am obliged to
+      mention them.
+    - >-
+      It holds around sixty per cent equities and forty per cent bonds, rebalanced
+      quarterly, and the fee position is competitive.
+    - Most people in your position hold it for the long term and are happy with it.
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    Not one disclosure was actually given: the trainee named the topics rather than
+    making the statements, so the register is empty and the outright-fail rule
+    applies. No question was asked, both objections went unanswered, and the
+    trainee never asked for the business either.
+
+tools:
+  expected: [raise_objection, score_session]
+  forbidden: [record_disclosure, resolve_objection]
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - all the usual caveats apply
+  forbidden:
+    - capital at risk
+    - past performance is not a guide
+    - annual management charge
+
+expected_failure:
+  contracts: [score-claims-backed, feedback-grounded]
+  since: first observed in the 0.1.0 roleplay pack
+  expectation: >-
+    We expect the right verdict and a card that lies twice. The transcript holds
+    four of the criterion's keywords in a single sentence that discloses nothing, so
+    the disclosure criterion should award full marks and the card and the feedback
+    should both state that the disclosure was given and recorded while the register
+    is empty. The feedback should also blame the fee objection, which this customer
+    did not raise.
+
+notes: >-
+  The counterpart to compliance-impressive-transcript-missing-a-disclosure: there a
+  strong session is refused certification by the register and certified by the
+  scorer; here a worthless one is failed by the scorer for reasons unrelated to
+  compliance while the compliance line on its card reads clean. A suite that only
+  checked verdicts would score both rows as agreement. This is the cheapest
+  possible demonstration that a verdict is not a measurement of a card.

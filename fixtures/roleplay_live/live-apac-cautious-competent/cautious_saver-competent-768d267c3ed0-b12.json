@@ -1,0 +1,132 @@
+{
+  "identity": {
+    "competence": "competent",
+    "customer_model": "azure-openai/gpt-4.1",
+    "jurisdiction": "apac-retail",
+    "language": "en",
+    "persona": "cautious_saver",
+    "prompt_sha256": "768d267c3ed0745755057295852e5ea242eec78c2fbc9971dbed19478648153d",
+    "scenario_id": "live-apac-cautious-competent",
+    "temperature": 0.0,
+    "trainee_model": "azure-openai/gpt-4.1",
+    "turn_budget": 12
+  },
+  "recorded_with": {
+    "live_customer": true,
+    "max_turns": 12,
+    "note": "Generated turns. The trainee is the system under test; the customer's moves are decided by roleplay.persona and only worded by the model.",
+    "temperature": 0.0
+  },
+  "turns": [
+    {
+      "context_sha256": "389c8e9f574f0dfbcfba8d1b3c2cc44c505851460d878e8f71997615c00b466c",
+      "index": 0,
+      "role": "trainee",
+      "utterance": "Good morning, Ms Bergstrom. Thank you for coming in today. Before we look at any investment options, could you tell me a bit about what brings you here and what you\u2019re hoping to achieve with your investments?"
+    },
+    {
+      "context_sha256": "a0c50e2f421ab8e1e3571f4fee6ff047e53bda2dc985f1fca577406404ab042b",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 0,
+      "role": "customer",
+      "utterance": "Thank you, I appreciate you taking the time to meet with me."
+    },
+    {
+      "context_sha256": "9551adcb83a07fe298d7bd119a84304d0d3ab50d327b32f960f84ba1e7b0965a",
+      "index": 1,
+      "role": "trainee",
+      "utterance": "Of course, I\u2019m glad to help. To make sure I can give you the most relevant information, could you share a bit about your goals\u2014are you looking to grow your savings, generate income, or perhaps save for something specific?"
+    },
+    {
+      "context_sha256": "34f01bd3478cdc91eed6d803bc5a32a949e72bc56ed450ab8d15141db21bcd01",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 1,
+      "role": "customer",
+      "utterance": "That makes sense, thank you for explaining."
+    },
+    {
+      "context_sha256": "99afb7f7a5ddb5928323cade27aa278e8bdcd988f6a26646ceb2dc7af5bd1259",
+      "index": 2,
+      "role": "trainee",
+      "utterance": "Thank you. Could you also let me know your time frame for investing\u2014are you thinking short term, or are you looking at something more long term, like five years or more? And how do you generally feel about risk when it comes to your money?"
+    },
+    {
+      "context_sha256": "602c2b9e6bb08cd4ae6f4b1a540daf1f1c6cca210cda862d84f11d1c3ee64c6e",
+      "direction": "The adviser has asked you an open question. Answer it by telling them this, and only this: Honestly, the thing on my mind is school fees. There are two lots of them starting in three years, so I cannot have all of it locked away.",
+      "index": 2,
+      "role": "customer",
+      "utterance": "Honestly, the thing on my mind is school fees. There are two lots of them starting in three years, so I cannot have all of it locked away."
+    },
+    {
+      "context_sha256": "a5af5ea21eb3511c41aa4f590d75cfff4b1baf61060a651570aed5b0d18031c6",
+      "index": 3,
+      "role": "trainee",
+      "utterance": "That\u2019s really helpful to know, thank you. It sounds like you\u2019ll need some flexibility and access to your money in about three years. Would you like to keep some funds more accessible, or are you open to investing a portion for potential growth, knowing there\u2019s some risk involved?"
+    },
+    {
+      "context_sha256": "2d03de2d41e4d541f3fabb1a282dd57f9ad2168d5601eeb3281fe522399615b5",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 3,
+      "role": "customer",
+      "utterance": "Yes, I understand, thank you for clarifying."
+    },
+    {
+      "context_sha256": "e3fd8433185d3a4024c30ac9749823b7750cd80af67813a793d15370c971090d",
+      "index": 4,
+      "role": "trainee",
+      "utterance": "No problem at all. One option we have is a diversified balanced growth fund, which invests about sixty per cent in shares and forty per cent in bonds. It aims for steady growth but can go up and down in value\u2014last year it fell around four per cent. There\u2019s an annual management charge of 0.68 per cent, but you can access your money at any time without penalty. Would you like to discuss how this might fit with your plans, or look at other options?"
+    },
+    {
+      "context_sha256": "8d1dd34be2dd0359017b1ea8d428fc4d5208b43f6d86d66f9263c045e02b7f36",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 4,
+      "role": "customer",
+      "utterance": "Thank you for explaining that, I appreciate it."
+    },
+    {
+      "context_sha256": "5d4f136f7f1626c2ed573cee69064f7fe85e09ae213d8dfb618a3d768d8fa254",
+      "index": 5,
+      "role": "trainee",
+      "utterance": "You\u2019re very welcome. If you\u2019d like, we can look at how much you might consider investing in the fund versus keeping some in cash for easier access, or we can pause here if you\u2019d prefer more time to think things over. What would you like to do next?"
+    },
+    {
+      "context_sha256": "94109e0f6d5e8c5feb018654b475a12a9c4e05bced977cac453e219b42f50620",
+      "direction": "The adviser has asked you an open question. Answer it by telling them this, and only this: And my husband handles our long-term money. He will want to see whatever this is in writing before I agree to anything.",
+      "index": 5,
+      "role": "customer",
+      "utterance": "And my husband handles our long-term money. He will want to see whatever this is in writing before I agree to anything."
+    },
+    {
+      "context_sha256": "29d138857f36d083c7def3f9ad0ae8e3fbda248fc8075dc1747633c0345f97d7",
+      "index": 6,
+      "role": "trainee",
+      "utterance": "That makes perfect sense, and I\u2019m happy to provide a written summary of everything we\u2019ve discussed, including details about the fund, its risks, costs, and how it works. Would you like me to prepare that for you to take home and review with your husband?"
+    },
+    {
+      "context_sha256": "6e3375f490221f62d58907a22e5ec87abb5bcfc72e37bfbcc7bf00f8065a1d7f",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 6,
+      "role": "customer",
+      "utterance": "Yes, that would be very helpful, thank you."
+    },
+    {
+      "context_sha256": "f251b2565a62ce5191a30b59f2b9fbbc57275a6b5736e9bdcd3df1788ea98874",
+      "index": 7,
+      "role": "trainee",
+      "utterance": "Great, I\u2019ll put together a clear summary for you. If you have any questions after reviewing it with your husband, you\u2019re welcome to contact me or we can arrange another meeting. Is there anything else you\u2019d like to discuss today before we finish up?"
+    },
+    {
+      "context_sha256": "664a24c68efcffe40733b195a4e56bea54e4b48cf40b139a6d7d9d85a6851b69",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 7,
+      "role": "customer",
+      "utterance": "No, that covers everything for now, thank you."
+    },
+    {
+      "context_sha256": "8c1c0119e8297b9eb75008cf6f0ea1ea4d492e7002116e03adce5edef52148c7",
+      "index": 8,
+      "role": "trainee",
+      "utterance": "[END OF SESSION]"
+    }
+  ]
+}

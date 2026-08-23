@@ -28,6 +28,36 @@ The cost is honest and worth stating: this customer is not a realistic language
 model, and nothing in this pack claims that testing against it substitutes for
 testing against the real one. What it substitutes for is the *fixture* — the
 recorded, reproducible conversation a real pipeline would replay.
+
+WHAT THE LIVE PATH CHANGES, AND WHAT IT MUST NOT
+------------------------------------------------
+`roleplay.live` can put a model behind this customer's voice. When it does, the
+state machine below still decides **what** the customer does — which concern
+surfaces, which objection is raised, whether an objection is pressed again — and
+the model only decides the **words**. The split is not a convenience. The whole
+reason a trainee who never runs discovery can be caught failing is that a concern
+is released by `respond()` after an open probe and at no other time; a customer
+whose disclosure discipline was only *requested*, in a prompt, would leak a need
+in its opening line and quietly make the discovery criterion unmeasurable. The
+prompt asks; this file guarantees.
+
+THE COMMERCIAL DIALS
+--------------------
+`risk_appetite`, `budget` and `suspicion` describe a retail customer rather than
+a conversational puppet, and each has a stated consequence:
+
+    risk_appetite   a closed vocabulary; prompt text, and the ground truth a
+                    suitability claim would have to match
+    budget          what they actually have to invest, in their own words
+    suspicion       >= SUSPICIOUS_AT buys every objection one extra press
+
+`Objection.presses` is the deterministic half of that: an objection with
+`presses: 2` is raised, and then *raised again* if the trainee talked past it,
+which is what a real customer with a live worry does. Mentioning a concern once
+and dropping it forever is the behaviour that lets a weak trainee look adequate,
+because an objection nobody has to answer twice is an objection nobody has to
+answer. Both dials default to the old behaviour (`presses: 1`, `suspicion: 0.0`),
+so every committed fixture in this pack still reproduces byte for byte.
 """
 
 from __future__ import annotations
@@ -41,6 +71,8 @@ import yaml
 
 __all__ = [
     "TurnKind",
+    "RISK_APPETITES",
+    "SUSPICIOUS_AT",
     "Concern",
     "Objection",
     "CustomerProfile",
@@ -97,6 +129,25 @@ _ADVICE_STEMS = (
     r"\bno real risk\b",
 )
 
+#: The declared risk appetites. A closed vocabulary, like every other in this
+#: pack: `"unstated"` is a member rather than an empty string, because a customer
+#: whose appetite was never declared and a customer who is genuinely indifferent
+#: are different people, and a suitability claim about the first one is a claim
+#: about nothing. Profiles written before this field existed read as `unstated`,
+#: and the live prompt then says nothing about appetite rather than inventing one.
+RISK_APPETITES: tuple[str, ...] = (
+    "unstated",
+    "cautious",
+    "balanced",
+    "adventurous",
+)
+
+#: Suspicion at or above this buys every objection one extra press. A single
+#: named threshold, for the reason `lab.simulator.persona` names its two: an
+#: author raising a dial is entitled to know the value at which behaviour
+#: changes, and to know that nothing changes anywhere else.
+SUSPICIOUS_AT: float = 0.6
+
 _OPEN_RE = tuple(re.compile(p, re.IGNORECASE) for p in _OPEN_STEMS)
 _CLOSE_RE = tuple(re.compile(p, re.IGNORECASE) for p in _CLOSE_STEMS)
 _ADVICE_RE = tuple(re.compile(p, re.IGNORECASE) for p in _ADVICE_STEMS)
@@ -151,6 +202,12 @@ class Objection:
     #: explicit list rather than a similarity score, so "the objection was
     #: handled" is a claim a reader can check by eye against the transcript.
     handled_by: tuple[str, ...] = ()
+    #: How many times the customer will put this objection on the table if it
+    #: keeps going unanswered — 1 is "says it once and lets it go", 2 is "asks
+    #: again". An objection nobody has to answer twice is an objection a trainee
+    #: can simply outlast, and a trainee who outlasts it should not be scoring the
+    #: same as one who addressed it.
+    presses: int = 1
 
     def line(self, *, terse: bool) -> str:
         return self.says_terse if terse and self.says_terse else self.says
@@ -176,6 +233,15 @@ class CustomerProfile:
         probes_to_reveal: How many open probes it takes to surface a concern.
         concerns: Hidden worries, revealed in order.
         objections: The objection bank, raised in order.
+        risk_appetite: One of `RISK_APPETITES`. Prompt text for a live voice, and
+            the ground truth any suitability claim about this customer would have
+            to be consistent with.
+        budget: What they have to invest, in their own words. A string because it
+            is a thing a person says out loud, and because "about sixty thousand,
+            but I need some of it back in three years" is the answer a real
+            discovery question gets and a number is not.
+        suspicion: 0.0-1.0. At or above `SUSPICIOUS_AT` every objection gets one
+            extra press. Below it, nothing changes.
     """
 
     key: str
@@ -188,6 +254,36 @@ class CustomerProfile:
     probes_to_reveal: int = 1
     concerns: tuple[Concern, ...] = ()
     objections: tuple[Objection, ...] = ()
+    risk_appetite: str = "unstated"
+    budget: str = ""
+    suspicion: float = 0.0
+
+    def __post_init__(self) -> None:
+        """Validate the closed vocabulary and the dial's range at construction.
+
+        Here rather than in the loader, so a profile built in Python by a test or
+        a live matrix row is held to the same vocabulary as one read from YAML. A
+        validation that only runs on the file format is a validation with a hole
+        in it exactly where the code paths differ.
+        """
+        if self.risk_appetite not in RISK_APPETITES:
+            raise ValueError(
+                f"{self.key}: risk_appetite {self.risk_appetite!r} is not one of "
+                f"{list(RISK_APPETITES)}"
+            )
+        if not 0.0 <= self.suspicion <= 1.0:
+            raise ValueError(
+                f"{self.key}: suspicion must be between 0.0 and 1.0, got {self.suspicion}"
+            )
+
+    @property
+    def suspicious(self) -> bool:
+        """True when this customer presses each objection one extra time."""
+        return self.suspicion >= SUSPICIOUS_AT
+
+    def presses_allowed(self, objection: Objection) -> int:
+        """Total times `objection` may be put on the table by this customer."""
+        return max(1, objection.presses + (1 if self.suspicious else 0))
 
     def summary(self) -> str:
         return (
@@ -195,6 +291,8 @@ class CustomerProfile:
             f"{len(self.objections)} objection(s), {self.jurisdiction}/{self.language}"
             + (", terse" if self.terse else "")
             + (", assertive" if self.assertive else "")
+            + (f", {self.risk_appetite}" if self.risk_appetite != "unstated" else "")
+            + (f", suspicion {self.suspicion:.1f}" if self.suspicion else "")
         )
 
 
@@ -213,6 +311,26 @@ class PersonaTurn:
     revealed: tuple[Concern, ...] = ()
     raised: tuple[Objection, ...] = ()
     handled: tuple[Objection, ...] = ()
+    #: Set when this turn is a *repeat* of an objection the trainee talked past.
+    #: A subset of `raised` rather than a replacement for it: the objection ledger
+    #: must still see one raise, and the customer's voice needs to know it is
+    #: asking again — a live voice that phrased a second press as a first mention
+    #: would erase the only signal that the trainee ignored it.
+    pressed: tuple[Objection, ...] = ()
+
+    @property
+    def is_press(self) -> bool:
+        return bool(self.pressed)
+
+    def spoken_intent(self) -> str:
+        """What this turn is doing, for a live voice's per-turn instruction."""
+        if self.pressed:
+            return f"press the unanswered objection about {self.pressed[0].topic} again"
+        if self.raised:
+            return f"raise the objection about {self.raised[0].topic}"
+        if self.revealed:
+            return f"reveal the concern about {self.revealed[0].topic}"
+        return "acknowledge without adding anything new"
 
 
 @dataclass
@@ -231,6 +349,13 @@ class CustomerPersona:
     raised: list[str] = field(default_factory=list)
     handled: list[str] = field(default_factory=list)
     turns: int = 0
+    #: Times each objection has been put on the table, first raise included. Kept
+    #: separately from `raised` because that list answers "was it ever raised",
+    #: which is what the objection ledger and the scorer read, and this counter
+    #: answers "has this customer finished asking", which only the press rule
+    #: reads. One list doing both jobs is how a re-raise ends up counted as two
+    #: objections in a report.
+    press_counts: dict[str, int] = field(default_factory=dict)
 
     # ---------------------------------------------------------------- reading
 
@@ -247,6 +372,25 @@ class CustomerPersona:
             if o.key in self.raised and o.key not in self.handled
         )
 
+    def presses_used(self, objection: Objection) -> int:
+        """How many times this objection has been put on the table so far."""
+        return self.press_counts.get(objection.key, 0)
+
+    def will_press(self, objection: Objection) -> bool:
+        """Will the customer raise this unanswered objection again?
+
+        True while the objection's press budget is unspent. An `assertive`
+        customer is handled separately in `respond` and keeps its pre-existing
+        behaviour — it returns to the oldest unhandled item indefinitely — so this
+        rule adds pressing to customers that did not have it and changes nothing
+        for the one that did.
+        """
+        return self.presses_used(objection) < self.profile.presses_allowed(objection)
+
+    def pressed_objections(self) -> tuple[str, ...]:
+        """Keys of objections this customer had to raise more than once."""
+        return tuple(k for k, n in self.press_counts.items() if n > 1)
+
     # ---------------------------------------------------------------- speaking
 
     def respond(self, trainee_turn: str) -> PersonaTurn:
@@ -261,8 +405,10 @@ class CustomerPersona:
         2.  An open probe surfaces the next concern, once enough probes have
             landed. A terse customer needs two; a talkative one needs one.
         3.  A pitch, a close attempt, or a piece of advice draws the next
-            objection. An assertive customer also re-raises anything still
-            unhandled instead of letting it go.
+            objection. With the bank empty, an unhandled objection is put back on
+            the table if it still has a press left (`Objection.presses`, plus one
+            for a suspicious customer), and an assertive customer returns to the
+            oldest unhandled item however many times it takes.
         4.  Otherwise the customer acknowledges and says nothing new.
         """
         self.turns += 1
@@ -295,6 +441,7 @@ class CustomerPersona:
             if pending:
                 objection = pending[0]
                 self.raised.append(objection.key)
+                self.press_counts[objection.key] = self.presses_used(objection) + 1
                 return PersonaTurn(
                     text=objection.line(terse=terse),
                     kind=kind,
@@ -302,13 +449,16 @@ class CustomerPersona:
                     handled=handled_now,
                 )
             stale = self.unhandled_objections()
-            if self.profile.assertive and stale:
-                objection = stale[0]
+            pressable = [o for o in stale if self.will_press(o)]
+            if stale and (self.profile.assertive or pressable):
+                objection = stale[0] if self.profile.assertive else pressable[0]
+                self.press_counts[objection.key] = self.presses_used(objection) + 1
                 return PersonaTurn(
                     text=f"You still have not answered me on that. {objection.line(terse=terse)}",
                     kind=kind,
                     raised=(objection,),
                     handled=handled_now,
+                    pressed=(objection,),
                 )
 
         return PersonaTurn(text=self._acknowledge(terse=terse), kind=kind, handled=handled_now)
@@ -352,6 +502,9 @@ def _profile_from_mapping(data: dict[str, Any], *, source: str) -> CustomerProfi
         "probes_to_reveal",
         "concerns",
         "objections",
+        "risk_appetite",
+        "budget",
+        "suspicion",
         "notes",
     }
     if unknown:
@@ -373,10 +526,17 @@ def _profile_from_mapping(data: dict[str, Any], *, source: str) -> CustomerProfi
             says=str(o["says"]),
             says_terse=str(o.get("says_terse", "")),
             handled_by=tuple(str(p) for p in o.get("handled_by", ())),
+            presses=int(o.get("presses", 1)),
         )
         for o in data.get("objections", ())
     )
     for objection in objections:
+        if objection.presses < 1:
+            raise ValueError(
+                f"{source}: objection {objection.key!r} declares presses="
+                f"{objection.presses}; an objection raised zero times can never be "
+                "handled and never be unhandled, so it scores as absent either way"
+            )
         for pattern in objection.handled_by:
             try:
                 re.compile(pattern)
@@ -403,6 +563,9 @@ def _profile_from_mapping(data: dict[str, Any], *, source: str) -> CustomerProfi
         probes_to_reveal=int(data.get("probes_to_reveal", 1)),
         concerns=concerns,
         objections=objections,
+        risk_appetite=str(data.get("risk_appetite", "unstated")),
+        budget=str(data.get("budget", "")),
+        suspicion=float(data.get("suspicion", 0.0)),
     )
 
 

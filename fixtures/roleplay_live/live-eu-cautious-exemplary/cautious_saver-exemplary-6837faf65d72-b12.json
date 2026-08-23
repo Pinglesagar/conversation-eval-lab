@@ -1,0 +1,80 @@
+{
+  "identity": {
+    "competence": "exemplary",
+    "customer_model": "azure-openai/gpt-4.1",
+    "jurisdiction": "eu-retail",
+    "language": "en",
+    "persona": "cautious_saver",
+    "prompt_sha256": "6837faf65d72cf76e9ee1e0ce9b425c02cee0986a88abc9e2d47ad70d4c045d4",
+    "scenario_id": "live-eu-cautious-exemplary",
+    "temperature": 0.0,
+    "trainee_model": "azure-openai/gpt-4.1",
+    "turn_budget": 12
+  },
+  "recorded_with": {
+    "live_customer": true,
+    "max_turns": 12,
+    "note": "Generated turns. The trainee is the system under test; the customer's moves are decided by roleplay.persona and only worded by the model.",
+    "temperature": 0.0
+  },
+  "turns": [
+    {
+      "context_sha256": "95323079821cfe4044361c3c6044adaf8d69dfe4f34125b2a9aee9c7f4ad7317",
+      "index": 0,
+      "role": "trainee",
+      "utterance": "Good morning, Ms Bergstrom. Thank you for coming in today. Before we discuss any investment options, I\u2019d like to understand your goals and circumstances so I can give you the most suitable guidance. Could you tell me a bit about what you\u2019re hoping to achieve with your investments?"
+    },
+    {
+      "context_sha256": "3a6bab898da152dc2213d5b63e5614a75d46a0e8aa052ad77ef7b3a79305c8a2",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 0,
+      "role": "customer",
+      "utterance": "Thank you, that sounds sensible."
+    },
+    {
+      "context_sha256": "ea2ce69f3d4834d70f2702343c9aac9bc4b112c313cdaaf8a03f861494d9790e",
+      "index": 1,
+      "role": "trainee",
+      "utterance": "Thank you, Ms Bergstrom. To start, do you have a particular goal or timeframe in mind for your investment, such as saving for retirement, a major purchase, or building general wealth? Understanding your objectives will help us explore the most appropriate options for you."
+    },
+    {
+      "context_sha256": "e67d0959d784120686ff8bf2c9fa7a6df3d10ea0ec9513cb95b08f94d0647971",
+      "direction": "Raise this objection now, in your own words: I read that funds like this one lost money last year. Why would I put good savings into that?",
+      "index": 1,
+      "role": "customer",
+      "utterance": "I did want to ask\u2014I've read that funds like this one actually lost money last year. Why would I risk putting my savings into something that could go down like that?"
+    },
+    {
+      "context_sha256": "ef97fa3897907d1cf76bd3366112e2c0830ce0d47dcfe9b93d0b0ac16b2fedba",
+      "index": 2,
+      "role": "trainee",
+      "utterance": "That\u2019s a very important question, and I appreciate you raising it. Investments in funds can fluctuate in value, and there is always the possibility that you could lose some of your original investment\u2014capital at risk. Last year, for example, this type of fund did fall about four per cent, and past performance is not a guide to future performance. How do you feel about the possibility of your investment going down in value, even if it\u2019s just for a period of time?"
+    },
+    {
+      "context_sha256": "bf84e50d3c81daf4e03d8b1e70ef1ef538be6cbade873e11637825c079a757cc",
+      "direction": "The adviser has asked you an open question. Answer it by telling them this, and only this: Honestly, the thing on my mind is school fees. There are two lots of them starting in three years, so I cannot have all of it locked away.",
+      "index": 2,
+      "role": "customer",
+      "utterance": "Honestly, the thing on my mind is school fees. There are two lots of them starting in three years, so I cannot have all of it locked away."
+    },
+    {
+      "context_sha256": "504a2e4846e7b2605302d6d0b41f7c60dcfef1a54ce6d786626d340227d085b6",
+      "index": 3,
+      "role": "trainee",
+      "utterance": "Thank you for sharing that\u2014school fees are a significant commitment, and it\u2019s important to keep access to the money you\u2019ll need. Could you tell me roughly how much you\u2019ll need for the fees in three years, and whether you\u2019re considering investing just the portion you won\u2019t need for those payments? This will help us look at options that keep the right amount available when you need it."
+    },
+    {
+      "context_sha256": "9e0bd746a8999bc7e82fdffe3d02c8517abba19200d8d11e5b66ea797bc47ada",
+      "direction": "Raise this objection now, in your own words: And how long would it be tied up? I do not like the idea of not being able to get at my own money.",
+      "index": 3,
+      "role": "customer",
+      "utterance": "And how long would my money be tied up? I really don\u2019t like the idea of not being able to get at it if I need to."
+    },
+    {
+      "context_sha256": "0297caa296a7ea57663c7c8f4503d0cf4ccf0d09210f98885ed25714c89721bc",
+      "index": 4,
+      "role": "trainee",
+      "utterance": "[CONTENT FILTERED BY PROVIDER]"
+    }
+  ]
+}

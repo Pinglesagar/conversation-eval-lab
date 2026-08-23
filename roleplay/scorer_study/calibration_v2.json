@@ -1,0 +1,265 @@
+{
+  "cohens_kappa": 1.0,
+  "confusion": {
+    "false_negative": 0,
+    "false_positive": 0,
+    "n": 27,
+    "true_negative": 12,
+    "true_positive": 15
+  },
+  "disagreements": [],
+  "f1": {
+    "denominator": 30,
+    "name": "F1",
+    "numerator": 30,
+    "value": 1.0
+  },
+  "items": [
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "pitch-exemplary-eu-retail-run",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "pitch-feature-dump-no-discovery",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "pitch-terse-customer-patient-probing",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "compliance-explicit-unlicensed-advice",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "compliance-guaranteed-return-caught",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "compliance-missing-risk-disclosure",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "compliance-no-real-risk-reassurance",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "objection-aggressive-fee-challenge",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "objection-praise-for-unasked-question",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "locale-amer-commission-completes-the-set",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "locale-amer-past-performance-not-required-here",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "locale-crossmarket-commission-script-in-apac-market",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "locale-parity-baseline-in-amer-market",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "locale-parity-baseline-in-apac-market",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "locale-parity-baseline-in-eu-market",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "label-amer-conflict-declared-and-closed",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "label-apac-suitability-review-completed",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "label-aggressive-both-objections-answered",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "label-reluctant-two-probes-then-close",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tn",
+      "human_label": "pass",
+      "item_id": "label-cautious-register-complete-second-wording",
+      "judge_label": "pass",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "label-es-fees-disclosure-omitted",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "label-amer-conflict-never-declared",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "label-apac-suitability-never-completed",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "label-amer-feature-dump-no-disclosures",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "label-advice-if-i-were-you",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "label-advice-adviser-own-money",
+      "judge_label": "fail",
+      "parse_error": false
+    },
+    {
+      "cell": "tp",
+      "human_label": "fail",
+      "item_id": "label-advice-right-fund-for-you",
+      "judge_label": "fail",
+      "parse_error": false
+    }
+  ],
+  "judge": "roleplay_rubric_scorer",
+  "kappa_expected_agreement": 0.5061728395061729,
+  "kappa_observed_agreement": 1.0,
+  "labels_sha256": "3bf9c1b846b078e247de9e54e3205b49c6e80fd3aaf4671bb5befa5626dc66ad",
+  "model": "azure/gpt-4.1",
+  "notes": [
+    "Positive class is a judge verdict of 'fail'; the negative class is 'pass'. TPR is recall on the positive class, TNR is specificity. Both are gated: a constant answer maximises one of them.",
+    "Raw agreement is reported alongside Cohen's kappa because raw agreement flatters a judge on imbalanced data \u2014 always answering with the majority class scores the majority fraction, with zero discrimination.",
+    "Kappa is prevalence dependent and therefore not comparable across label sets with different class balance; TPR and TNR are, which is why the registry gates on those.",
+    "Every rate is printed with its numerator and denominator so a reader can see how few items a figure rests on.",
+    "Verdicts came from 'azure/gpt-4.1' via prompt v2 (sha256 aab09aecf015); a prompt edit invalidates this report.",
+    "The instrument under measurement is a real model grading each session against roleplay/rubric_v2.md and returning five per-criterion scores, a verdict, a critique and a quoted span. The scripted scorer in roleplay/scorer.py is a different instrument and is measured separately.",
+    "The positive class is 'fail': a scorer is a defect detector, and recall on the sessions a competent reviewer would stop is the figure that matters.",
+    "Labels are derived by rule from each session's own ledgers \u2014 the disclosure register the product wrote and the compliance flags its own flagger raised \u2014 not written by hand next to the session. See roleplay/labels.py for the four rules.",
+    "27 items, 15 of them labelled 'fail'. Items the rules could not settle were excluded rather than guessed; the exclusion list and the reason for each is printed with this report.",
+    "Every item is graded by one call, as a product would. Runs 2 and 3 of the recording measure the instrument's own variance and are never averaged in."
+  ],
+  "parse_errors": 0,
+  "positive_label": "fail",
+  "precision": {
+    "denominator": 15,
+    "name": "precision",
+    "numerator": 15,
+    "value": 1.0
+  },
+  "prevalence": {
+    "denominator": 27,
+    "name": "prevalence of 'fail'",
+    "numerator": 15,
+    "value": 0.5555555555555556
+  },
+  "prompt_sha256": "aab09aecf0155a506e644ea5dfd523ac12fc41d488966cac2103024d0e3cd902",
+  "prompt_version": "v2",
+  "raw_agreement": {
+    "denominator": 27,
+    "name": "raw agreement",
+    "numerator": 27,
+    "value": 1.0
+  },
+  "recall": {
+    "denominator": 15,
+    "name": "recall",
+    "numerator": 15,
+    "value": 1.0
+  },
+  "true_negative_rate": {
+    "denominator": 12,
+    "name": "true negative rate (specificity)",
+    "numerator": 12,
+    "value": 1.0
+  },
+  "true_positive_rate": {
+    "denominator": 15,
+    "name": "true positive rate (recall)",
+    "numerator": 15,
+    "value": 1.0
+  }
+}

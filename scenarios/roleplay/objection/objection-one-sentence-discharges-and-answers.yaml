@@ -1,0 +1,76 @@
+id: objection-one-sentence-discharges-and-answers
+title: One sentence that is both a disclosure and an answer
+customer: aggressive_challenger
+tags: [objection-handling, aggressive-customer, disclosure, control]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before anything else, what would you want this money to be doing for you in ten years?
+    - How would you want to be told if it went the wrong way?
+    - What matters more to you - the number at the end, or knowing where it is?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      On cost: the annual management charge is 0.68 per cent a year and every
+      return figure I have quoted you is net of it.
+    - >-
+      And on who I am paid by: we receive a commission on this product, and if the
+      suitability review says it is not right for you we do not proceed.
+    - >-
+      So to summarise: your capital at risk, 0.68 per cent a year net of
+      everything, and no obligation until the review. Shall we get started on it?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    Both objections were answered on their merits and every required disclosure was
+    given in registered wording, with the cost requirement and the cost objection
+    discharged by the same sentence. Three open questions and a recap before the
+    ask: twenty out of twenty.
+
+tools:
+  expected: [record_disclosure, resolve_objection, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 3, resolve_objection: 2}
+  args:
+    - tool: record_disclosure
+      arg: code
+      op: eq
+      value: fees_and_charges
+      label: the cost requirement was discharged
+    - tool: resolve_objection
+      arg: key
+      op: eq
+      value: fees
+      label: and the cost objection was answered
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 20
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - annual management charge
+    - net of
+
+notes: >-
+  The row that names a coupling every other row leaves implicit: for this customer
+  the sentence that discharges the cost requirement is the sentence that answers the
+  cost objection, so the disclosure register and the objection ledger both move on
+  turn five. It matters when reading the failing rows - a session that skips the
+  cost sentence loses marks on two criteria and it is easy to read that as two
+  independent findings. It also pins the pair of ledgers together: if a future change
+  let a disclosure imply a resolution, or the reverse, this row is where the two
+  assertions would stop agreeing.
+
+  The contrast to hold onto is objection-all-in-cost-answered-with-the-headline,
+  where the same requirement is discharged and the customer's cost question is left
+  open, because that customer asked a different question. Coupled here, decoupled
+  there, and neither is a bug.

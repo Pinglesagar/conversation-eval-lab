@@ -1,0 +1,60 @@
+id: pitch-no-questions-full-disclosure
+title: A word-perfect compliance record and no conversation
+customer: cautious_saver
+tags: [discovery, objection-handling, feedback-groundedness, disclosure]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - >-
+      Let me take you through the Horizon Balanced Growth Fund. Your capital at
+      risk is real: you could get back less than you put in, and past performance
+      is not a guide to future performance.
+    - >-
+      It holds around sixty per cent equities and forty per cent bonds, rebalanced
+      quarterly, and the annual management charge is 0.68 per cent a year.
+    - >-
+      So to summarise: a balanced fund, your capital at risk, 0.68 per cent a
+      year. Shall we get the paperwork started?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    Every required disclosure is present in registered wording and nothing else
+    about the session is: no question is asked, so nothing is known about the
+    customer, and both objections are raised and left where they land. Twelve out of
+    twenty is a fail.
+
+tools:
+  expected: [raise_objection, record_disclosure, score_session]
+  forbidden: [reveal_concern, resolve_objection]
+  min_calls: {record_disclosure: 3, raise_objection: 2}
+  args:
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 12
+    - tool: score_session
+      arg: mandatory_disclosure_given
+      op: eq
+      value: true
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+expected_failure:
+  contracts: [feedback-grounded]
+  since: first observed in the 0.1.0 roleplay pack
+  expectation: >-
+    We expect a correct fail with a fabricated reason. Objection handling scores
+    zero and triggers the template sentence about the customer raising cost, which
+    this customer never did.
+
+notes: >-
+  The disclosure half of pitch-feature-dump-no-discovery, which fails on every
+  criterion at once and therefore cannot show which one is doing the work. Here the
+  compliance record is complete and correct, the disclosure claim on the card is
+  true for once, and the session still fails - so this is the row that shows a
+  complete register is not a proxy for a competent session, in the direction
+  opposite to compliance-vocabulary-without-substance.

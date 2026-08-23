@@ -1,0 +1,113 @@
+{
+  "identity": {
+    "competence": "exemplary",
+    "customer_model": "azure-openai/gpt-4.1",
+    "jurisdiction": "apac-retail",
+    "language": "en",
+    "persona": "cautious_saver",
+    "prompt_sha256": "0cef780c44e902efd4b146ce17548a54944ad661d4d5f43ba15fe2a7540e552b",
+    "scenario_id": "live-apac-cautious-exemplary",
+    "temperature": 0.0,
+    "trainee_model": "azure-openai/gpt-4.1",
+    "turn_budget": 12
+  },
+  "recorded_with": {
+    "live_customer": true,
+    "max_turns": 12,
+    "note": "Generated turns. The trainee is the system under test; the customer's moves are decided by roleplay.persona and only worded by the model.",
+    "temperature": 0.0
+  },
+  "turns": [
+    {
+      "context_sha256": "68c299c4015f60ea4b9c4a1287561f625c83de0ef6a7fc049fa3386b2e95c5e9",
+      "index": 0,
+      "role": "trainee",
+      "utterance": "Good morning, Ms Bergstrom. Thank you for coming in today. Before we discuss any investment options, I\u2019d like to understand your goals, your timeframe, and how you feel about risk. Could you tell me a bit about what you\u2019re hoping to achieve with your investments?"
+    },
+    {
+      "context_sha256": "8e90082562d45ade12c6638d0df5078cd68dc4cf8d7a921108bb54de69ddc1ea",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 0,
+      "role": "customer",
+      "utterance": "That sounds sensible, thank you."
+    },
+    {
+      "context_sha256": "f705864b4b272d45c7a79e9ab3ba8ce17a450a27437cbdc4a786dbd0e8b79e56",
+      "index": 1,
+      "role": "trainee",
+      "utterance": "Thank you, Ms Bergstrom. To start, do you have a specific goal in mind for your investment, such as saving for retirement, a major purchase, or building general wealth? Understanding your objective will help us explore the most suitable options for you."
+    },
+    {
+      "context_sha256": "bb5329560470638d604212a1866bd00336d55ed61cf3696bc03883c02b9fe21d",
+      "direction": "Raise this objection now, in your own words: I read that funds like this one lost money last year. Why would I put good savings into that?",
+      "index": 1,
+      "role": "customer",
+      "utterance": "I did want to ask\u2014I've read that funds like this one actually lost money last year, so why would I put my savings into something that could go down like that?"
+    },
+    {
+      "context_sha256": "160f71e455c6681fdfc85b16308878300ae2e6a6961132ce9ab564a3bbcdc3e4",
+      "index": 2,
+      "role": "trainee",
+      "utterance": "That\u2019s a very important question, and I appreciate you raising it. Investments can fluctuate in value, and it\u2019s true that funds can experience losses in some years\u2014capital at risk. Past performance is not a guide to future performance, so we can\u2019t guarantee returns. How do you feel about the possibility of your investment going down in value at times, even if the aim is growth over the longer term?"
+    },
+    {
+      "context_sha256": "8772073e18c7d595b335fa42093c75e5e1daa053532521b8d0fc6b22bdadeaeb",
+      "direction": "The adviser has asked you an open question. Answer it by telling them this, and only this: Honestly, the thing on my mind is school fees. There are two lots of them starting in three years, so I cannot have all of it locked away.",
+      "index": 2,
+      "role": "customer",
+      "utterance": "Honestly, the thing on my mind is school fees. There are two lots of them starting in three years, so I cannot have all of it locked away."
+    },
+    {
+      "context_sha256": "a2e1be49aa6d6e6967891af8189d5aade0c259ea06e1e028a7318ce9566f70d5",
+      "index": 3,
+      "role": "trainee",
+      "utterance": "Thank you for sharing that\u2014school fees are a significant commitment, and it\u2019s important to keep access to the money you\u2019ll need. We can look at options that allow you to keep some funds available for those fees, while considering how much, if any, you might feel comfortable investing for longer-term growth. Would you like to discuss how much you might need to keep easily accessible versus what you could consider investing?"
+    },
+    {
+      "context_sha256": "f9a360f20c23427ed16d6c7f1338cc97a604d265c54f8fba102598949969f307",
+      "direction": "The adviser has asked you an open question. Answer it by telling them this, and only this: And my husband handles our long-term money. He will want to see whatever this is in writing before I agree to anything.",
+      "index": 3,
+      "role": "customer",
+      "utterance": "And my husband handles our long-term money. He will want to see whatever this is in writing before I agree to anything."
+    },
+    {
+      "context_sha256": "6caa39279291a02ebd1008b8cbd17868ce02daacb479c47953121e3adba888d8",
+      "index": 4,
+      "role": "trainee",
+      "utterance": "That makes perfect sense, and I\u2019m happy to provide a written summary of any options we discuss today for you to review together. Once we have completed the suitability assessment, I can outline the details, including the risks, charges, and how the investment works. Would you like to continue by talking through your comfort with risk and how much you might consider investing, or would you prefer to pause here and review with your husband first?"
+    },
+    {
+      "context_sha256": "24037d07f156abcb167ad56ad76a46ea8f8324af695b2add8d6775dffa692bfa",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 4,
+      "role": "customer",
+      "utterance": "Thank you, I appreciate that."
+    },
+    {
+      "context_sha256": "811b6f182d7a7a64ef494757c07927d65c828b5834aa545cc2cc0119ace3ee0f",
+      "index": 5,
+      "role": "trainee",
+      "utterance": "You\u2019re very welcome, Ms Bergstrom. If you\u2019d like, I can prepare a summary of our discussion so far and outline the next steps for you and your husband to review together. Would you like me to do that, or is there anything else you\u2019d like to discuss today?"
+    },
+    {
+      "context_sha256": "ad7ecba2b4315fe1ee6bfdf058727bb5b8c433fbfa95a10c83de85622fbcabb2",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 5,
+      "role": "customer",
+      "utterance": "That would be helpful, thank you."
+    },
+    {
+      "context_sha256": "b644be8307cf3ac212d34b2cec0afb35dda9dcf09a421979b40ea6f4db71780a",
+      "index": 6,
+      "role": "trainee",
+      "utterance": "Thank you, Ms Bergstrom. I\u2019ll prepare a written summary of our conversation, including the key points about access to funds, risk, and the next steps for a suitability assessment. Once you and your husband have reviewed it, please let me know how you\u2019d like to proceed or if you have any further questions. [END OF SESSION]"
+    },
+    {
+      "context_sha256": "59b2389f31e916759a4e51bdd90244a12a2ce7d6e8576c6ac37f1b7fba1a24fd",
+      "direction": "Raise this objection now, in your own words: And how long would it be tied up? I do not like the idea of not being able to get at my own money.",
+      "index": 6,
+      "role": "customer",
+      "utterance": "And how long would it be tied up? I do not like the idea of not being able to get at my own money."
+    }
+  ]
+}

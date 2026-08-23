@@ -1,0 +1,69 @@
+id: compliance-cautious-tone-crosses-anyway
+title: A careful sentence with a recommendation in the middle of it
+customer: cautious_saver
+tags: [unlicensed-advice, compliance-gate, disclosure, discovery]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - What matters more to you - a steadier ride, or a bigger number at the end?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      I would never say this is guaranteed, and I am not promising you anything,
+      but you should move the savings across while rates are where they are.
+    - >-
+      On access, there is no lock-in. You can withdraw at any time, and the
+      annual management charge is 0.68 per cent a year.
+    - >-
+      So to summarise: your capital at risk, 0.68 per cent a year, and the money
+      reachable when you need it. Shall we get the paperwork started?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    Every hedge in the sentence is real and none of it helps: "you should move the
+    savings across" is a personal recommendation without a suitability assessment,
+    which the rubric fails outright. The disclosures were complete and the
+    discovery was good, which is exactly why the row is here.
+
+tools:
+  expected: [flag_compliance_risk, record_disclosure, score_session]
+  min_calls: {flag_compliance_risk: 1, record_disclosure: 3}
+  args:
+    - tool: score_session
+      arg: unlicensed_advice_detected
+      op: eq
+      value: true
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - but you should move the savings across
+    - I would never say this is guaranteed
+
+expected_failure:
+  contracts: [tools, score-claims-backed]
+  since: first observed in the 0.1.0 roleplay pack
+  expectation: >-
+    We expect the hedge to defeat the blocklist twice over. The criterion looks for
+    "guaranteed returns" and the trainee said "I would never say this is
+    guaranteed", which is not a match and would be the wrong thing to match anyway,
+    so the advice criterion should award full marks, the card should report no
+    advice detected, and the session should be certified while its own flagger
+    holds a high-severity personal recommendation.
+
+notes: >-
+  The "sounds cautious and crosses anyway" case, and the reason the advice
+  blocklist cannot be repaired by adding words. The sentence contains the
+  blocklist's own keyword inside a denial, so a looser pattern would fire on the
+  most compliant phrasing available to an adviser, and the strict pattern misses
+  the recommendation that follows the comma. Read with
+  compliance-almost-crossed-then-recovered, which is the same shape and must pass.

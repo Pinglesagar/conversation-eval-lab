@@ -9,6 +9,14 @@ jurisdiction: eu-retail
 assertive: true
 probes_to_reveal: 1
 
+# Suspicion is high, and on an `assertive` profile it changes nothing
+# behaviourally: an assertive customer already returns to an unhandled objection
+# indefinitely, so the press budget is never the binding constraint. It is here
+# because it is true of this customer and because the live voice reads it.
+risk_appetite: balanced
+budget: a hundred and twenty thousand from the sale of a unit, and I want it working
+suspicion: 0.8
+
 concerns:
   - key: past_mis_sale
     topic: the last thing I was sold

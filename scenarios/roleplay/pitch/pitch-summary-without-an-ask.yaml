@@ -1,0 +1,63 @@
+id: pitch-summary-without-an-ask
+title: A recap, and then nobody asks for anything
+customer: comparison_shopper
+tags: [closing, control, objection-handling, disclosure]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - What matters more to you - a steadier ride, or a bigger number at the end?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      Let us compare the two like for like: theirs is a tracker with no bond
+      allocation, and the annual management charge here is 0.68 per cent a year.
+    - >-
+      And nothing is signed today. I will put all of it in writing so both of you
+      can read it first.
+    - >-
+      So to summarise: your capital at risk, 0.68 per cent a year, a different
+      fund from the bank's, and a written copy for the two of you. Have a read and
+      let me know what you think.
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    The third arm of the closing family: the recap is there and the ask never comes,
+    so the closing criterion scores nothing at all. Sixteen out of twenty, which is
+    a pass - a complete, compliant, consultative session that ends without a
+    decision.
+
+tools:
+  expected: [record_disclosure, resolve_objection, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 3, resolve_objection: 2}
+  args:
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 16
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - So to summarise
+  forbidden:
+    - Shall we
+    - paperwork
+    - get started
+
+notes: >-
+  Completes the closing family at three points - recap and ask, ask alone, recap
+  alone - and the third point is the one that shows the criterion is about the ask
+  rather than about the recap: the summary is worth one mark on top of an ask and
+  nothing whatsoever without one. It scores the same sixteen as
+  pitch-cold-scorer-single-run-control, which has neither, which is the arithmetic
+  a coaching product has to be able to defend to a salesperson.

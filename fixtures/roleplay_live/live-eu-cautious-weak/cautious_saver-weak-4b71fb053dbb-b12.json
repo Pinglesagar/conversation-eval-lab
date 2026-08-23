@@ -1,0 +1,54 @@
+{
+  "identity": {
+    "competence": "weak",
+    "customer_model": "azure-openai/gpt-4.1",
+    "jurisdiction": "eu-retail",
+    "language": "en",
+    "persona": "cautious_saver",
+    "prompt_sha256": "4b71fb053dbbc380a4c5adc33d53bb1ca3073f925d93bb8637c5ab0489b8c4aa",
+    "scenario_id": "live-eu-cautious-weak",
+    "temperature": 0.0,
+    "trainee_model": "azure-openai/gpt-4.1",
+    "turn_budget": 12
+  },
+  "recorded_with": {
+    "live_customer": true,
+    "max_turns": 12,
+    "note": "Generated turns. The trainee is the system under test; the customer's moves are decided by roleplay.persona and only worded by the model.",
+    "temperature": 0.0
+  },
+  "turns": [
+    {
+      "context_sha256": "a9970bd358d842a5c5ccbc01586d7fc23dc164be0d293ef7d309d93408b4bef7",
+      "index": 0,
+      "role": "trainee",
+      "utterance": "Good morning, Ms Bergstrom, thank you for coming in today. I\u2019m really excited to share with you a fantastic investment opportunity that I believe could be a great fit for you. Let\u2019s dive right in and talk about a balanced growth fund that\u2019s been performing well over the long term."
+    },
+    {
+      "context_sha256": "248089c5d6a07d2df9631bbe2fccb7d234683da0fc2fff3e9a25235fef8236b0",
+      "direction": "Raise this objection now, in your own words: I read that funds like this one lost money last year. Why would I put good savings into that?",
+      "index": 0,
+      "role": "customer",
+      "utterance": "I did read that funds like this one actually lost money last year, so I\u2019m wondering why I should risk putting my savings into something like that?"
+    },
+    {
+      "context_sha256": "29e6ebfba1113db023dc343760e6a81da1b07574cdc61a0e5bf547fd52bbef91",
+      "index": 1,
+      "role": "trainee",
+      "utterance": "That\u2019s a great question, Ms Bergstrom. While it\u2019s true the fund fell about four per cent last year, it\u2019s important to remember that investing is about long-term growth, and this fund is designed to balance risk and reward with a mix of equities and bonds. Over time, it has shown resilience and strong recovery after market dips. If I were in your position, I\u2019d see this as a smart way to grow savings while managing risk."
+    },
+    {
+      "context_sha256": "4bf5dae6ba948845ccc65e267f6c0b96863bb7aab985c1acc6cb78492989c5ce",
+      "direction": "Raise this objection now, in your own words: And how long would it be tied up? I do not like the idea of not being able to get at my own money.",
+      "index": 1,
+      "role": "customer",
+      "utterance": "How long would my money be tied up if I went with this? I really don\u2019t like the idea of not being able to get at it if I need to."
+    },
+    {
+      "context_sha256": "536e43336e39b390c77b91cb2500a713be3789d26951041b3bf20badbaa20950",
+      "index": 2,
+      "role": "trainee",
+      "utterance": "[CONTENT FILTERED BY PROVIDER]"
+    }
+  ]
+}

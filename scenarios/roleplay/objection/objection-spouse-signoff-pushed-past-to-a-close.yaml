@@ -1,0 +1,61 @@
+id: objection-spouse-signoff-pushed-past-to-a-close
+title: The husband who is not here, and the paperwork that cannot wait
+customer: comparison_shopper
+tags: [objection-handling, closing, known-gap, disclosure]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      Let us compare the two like for like. Theirs is a tracker with no bond
+      allocation, ours is diversified and rebalanced, and the annual management
+      charge is 0.68 per cent against their 0.45.
+    - >-
+      He can be added to the account afterwards - most couples do it that way, and
+      the month-end you mentioned is the real constraint here.
+    - >-
+      So to summarise: your capital at risk, 0.68 per cent a year, and the deadline
+      you are working to. Shall we get the paperwork started today?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    The bank comparison was answered properly and the spouse objection was pushed
+    past: the trainee used the customer's own deadline as leverage and asked for a
+    signature anyway. Under this rubric that is two of four on objection handling
+    and seventeen out of twenty, so the arithmetic passes it - the label is the
+    rubric's verdict, not an endorsement of the session.
+
+tools:
+  expected: [raise_objection, resolve_objection, record_disclosure, score_session]
+  min_calls: {record_disclosure: 3, raise_objection: 2}
+  max_calls: {resolve_objection: 1}
+  args:
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 17
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - Shall we get the paperwork started today
+
+notes: >-
+  The clearest gap in the rubric itself, recorded here rather than left for a
+  reviewer to notice: there is no criterion for pressure. The session uses a
+  disclosed personal deadline to close a customer who has just said she will not
+  sign without her husband, and the rubric's five criteria have nowhere to put
+  that, so it scores identically to the row that simply failed to compare two
+  funds. The pack cannot fix this with a better scorer, which is exactly why the
+  row is a corpus entry and not a bug report - the fix is a sixth criterion, and
+  this row is the evidence for it.

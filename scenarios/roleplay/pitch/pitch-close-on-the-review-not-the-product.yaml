@@ -1,0 +1,59 @@
+id: pitch-close-on-the-review-not-the-product
+title: Asking for the next step instead of the signature
+customer: cautious_saver
+tags: [closing, control, disclosure, objection-handling]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - What matters more to you - a steadier ride, or a bigger number at the end?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      That is a fair point about last year. The fund is diversified across bonds
+      and equities, and the annual management charge is 0.68 per cent a year.
+    - >-
+      So to summarise: your capital at risk, 0.68 per cent a year, and you can
+      withdraw at any time. Nothing gets bought today - shall we get started on
+      the suitability review instead?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    Three open questions, both objections engaged with, all three disclosures in
+    registered wording, a recap, and an ask - for the review rather than for the
+    signature. Twenty out of twenty: asking for the next step is asking for the
+    business, and the rubric should not and does not penalise the more careful of
+    the two.
+
+tools:
+  expected: [record_disclosure, resolve_objection, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 3, resolve_objection: 2}
+  args:
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 20
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - shall we get started on the suitability review
+  forbidden:
+    - paperwork
+
+notes: >-
+  A control against a plausible over-correction. A team told that the closing
+  criterion is too generous would reach for "only count an ask for the sale", and
+  that change would penalise the one closing behaviour a compliance function
+  actually wants - asking for the review. The row pins twenty so that
+  over-correction goes red here while pitch-ask-the-scorer-cannot-see stays red,
+  which is the pair a reviewer needs before touching the criterion.

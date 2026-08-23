@@ -11,6 +11,14 @@ language: en
 jurisdiction: eu-retail
 probes_to_reveal: 1
 
+# The commercial dials. risk_appetite and budget are read by the live customer's
+# prompt and recorded in the trace; suspicion is deliberately below
+# roleplay.persona.SUSPICIOUS_AT (0.6), so this profile's scripted behaviour — and
+# every committed expectation that depends on it — is unchanged.
+risk_appetite: cautious
+budget: about sixty thousand, but I need to be able to reach some of it in three years
+suspicion: 0.3
+
 concerns:
   - key: school_fees
     topic: school fees

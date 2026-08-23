@@ -1,0 +1,67 @@
+id: locale-english-wording-in-a-spanish-session
+title: The approved wording read out in the wrong language
+customer: prudente_es
+tags: [multilingual, jurisdiction, disclosure, compliance-gate]
+jurisdiction: eu-retail
+language: es
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Antes de ensenarle nada, que le gustaria que hiciera este dinero en diez anos?
+    - >-
+      El fondo que tengo en mente es un fondo mixto de crecimiento. Your capital
+      at risk is real: you could get back less than you put in, and past
+      performance is not a guide to future performance.
+    - >-
+      Es cierto lo del ano pasado. El fondo esta diversificado entre bonos y
+      acciones, asi que un mal mercado no decide el resultado.
+    - The annual management charge is 0.68 per cent, y puede retirar el dinero cuando quiera.
+    - >-
+      En resumen: crecimiento a diez anos y su dinero disponible. Shall we get
+      the paperwork started?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    The conversation is in Spanish and all three disclosures were read out in
+    English, so this market's Spanish register records none of them. A customer
+    who was sold to in one language and warned in another has not been warned, and
+    the outright-fail rule for a missing mandatory disclosure applies.
+
+tools:
+  expected: [score_session]
+  forbidden: [record_disclosure]
+  args:
+    - tool: score_session
+      arg: language
+      op: eq
+      value: es
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - Your capital at risk is real
+    - The annual management charge
+
+expected_failure:
+  contracts: [tools, score-claims-backed]
+  since: first observed when the corpus went multi-market
+  expectation: >-
+    We expect a certified session with an empty register. The criterion's keyword
+    list is English, and this transcript is the one case where that helps it: risk,
+    capital, past performance and charge are all present, so the criterion should
+    award four out of four and the card should assert a disclosure the register
+    never recorded.
+
+notes: >-
+  The exact inverse of the two Spanish rows, and the pair is what makes the
+  argument complete. There, a compliant Spanish session scores zero because the
+  keyword list is English; here, a non-compliant Spanish session scores full marks
+  for the same reason. One defect, two opposite symptoms, and no word list can be
+  extended to fix both - which is the case for reading the register instead. The
+  register is keyed by language as well as by market, and this is the only row that
+  proves the language half.

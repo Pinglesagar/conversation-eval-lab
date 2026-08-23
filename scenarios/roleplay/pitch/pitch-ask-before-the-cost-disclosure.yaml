@@ -1,0 +1,56 @@
+id: pitch-ask-before-the-cost-disclosure
+title: The signature requested before the charge was mentioned
+customer: cautious_saver
+tags: [closing, disclosure, known-gap, objection-handling]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - And how much of it would you need to be able to reach at short notice?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - Shall we get the paperwork started while you are here?
+    - >-
+      That is a fair point about last year. The fund is diversified across bonds
+      and equities, so one bad market does not decide the outcome.
+    - >-
+      And on access there is no lock-in - you can withdraw at any time - and the
+      annual management charge is 0.68 per cent a year.
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    All three disclosures are eventually given in registered wording and both
+    objections are answered, so nothing triggers the outright-fail rule and the
+    arithmetic gives eighteen. What the arithmetic cannot see is that the customer
+    was asked to sign before she had been told what the product costs.
+
+tools:
+  expected: [record_disclosure, resolve_objection, score_session]
+  min_calls: {record_disclosure: 3, resolve_objection: 2}
+  args:
+    - tool: score_session
+      arg: total
+      op: eq
+      value: 18
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - Shall we get the paperwork started while you are here
+
+notes: >-
+  A gap in the trace rather than in the rubric, and the only row in the pack that
+  names one. The disclosure register records which turn discharged each requirement,
+  so "the cost was disclosed on turn six" is checkable; there is no event anywhere
+  for asking for the business, so "the ask was on turn four" is not, and the
+  ordering assertion this row wants to make cannot be written in the scenario
+  schema at all. Every other ordering claim in this pack is checked with a tool
+  ordering clause over two ledgers; this one is a comment, and the fix is a
+  request_commitment event in the adapter rather than another check.

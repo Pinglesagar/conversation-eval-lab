@@ -40,6 +40,54 @@ what makes `roleplay.calibration` possible: the scorer is the instrument, the
 human column is the reference, and the disagreement between them is the finding.
 A rubric product without a human column somewhere is a product whose accuracy is
 unmeasured by construction.
+
+WHAT THE 70 ROWS ARE, AND WHAT THEY ARE NOT
+-------------------------------------------
+The corpus is a **targeted probe set**, not a sample of anything. Rows were
+written to make specific failures reachable — a disclosure register keyed by
+market, an advice blocklist with two entries, a feedback template with a
+hard-coded exemplar — so the composition is deliberately adversarial in the
+places the product is weakest. Two consequences have to be stated wherever these
+numbers are quoted, because a reader who assumes otherwise will over-read them:
+
+*   The rates in `roleplay.calibration` (TPR, TNR, kappa) are measurements of the
+    scorer **on this set**. They are not field rates and they are not prevalence
+    estimates. Doubling the number of jurisdiction rows would move the TPR
+    without anything about the product changing.
+*   The pass/fail balance of the human column is a design choice, kept close to
+    even so that neither rate is computed over a handful of items.
+
+THE LABELLING RULE, STATED ONCE
+-------------------------------
+Two rules decide `human_verdict` and both are applied to every row, because a
+label that is argued case by case is not a reference:
+
+1.  **A required disclosure is discharged only in registered wording.** A
+    paraphrase that a sympathetic reviewer would accept is labelled a fail, and
+    the row's `notes` say so. The register is deliberately strict (see
+    `roleplay.register`) and the human column is strict with it, so that any
+    disagreement between them is about the *scorer* and not about how generous
+    two instruments happen to be.
+2.  **Otherwise the label is the rubric's own arithmetic**, threshold included.
+    Several rows are therefore labelled `pass` on sessions nobody would want to
+    certify — a customer ignored four times, a spouse objection steamrollered,
+    a forecast offered in place of an answer. Those rows carry the `known-gap`
+    tag and their reasons say plainly that the label is the rubric's verdict and
+    not an endorsement. They are the pack's evidence for what five criteria
+    cannot express, and softening them into fails would hide the argument by
+    making the scorer look worse than it is.
+
+ROW FAMILIES
+------------
+    locale       three disclosure registers, one script run across markets,
+                 near-miss paraphrases, and the two multilingual directions
+    compliance   the advice boundary, from an explicit request for a
+                 recommendation to a cautious sentence that crosses anyway
+    objection    objections that must be engaged rather than acknowledged,
+                 including one raised four times
+    pitch        discovery failure modes, the closing family, and the
+                 scorer-stress rows that exist to catch a bad grader
+    consistency  the same transcript graded k times, warm service against cold
 """
 
 from __future__ import annotations
@@ -111,11 +159,11 @@ SUITES: tuple[str, ...] = ("pitch", "compliance", "objection", "consistency", "l
 #: Smallest shippable corpus per suite. Asserted by the tests rather than here, so
 #: a partial corpus is loadable while it is being written and simply not shippable.
 SUITE_MINIMUMS: dict[str, int] = {
-    "pitch": 4,
-    "compliance": 4,
-    "objection": 3,
+    "pitch": 18,
+    "compliance": 12,
+    "objection": 12,
     "consistency": 2,
-    "locale": 2,
+    "locale": 18,
 }
 
 #: The tag vocabulary, each with the line that says what it means: documentation
@@ -142,6 +190,12 @@ TAG_VOCABULARY: dict[str, str] = {
     "cohort-curve": "the row exercises the scorer's cross-session state",
     "control": "the row must stay green; it is the counterpart to a failing row",
     "borderline": "sits deliberately next to the pass threshold",
+    "scorer-stress": "the row is built to catch a bad scorer, not a bad trainee",
+    # --- how the disclosure register is being probed
+    "market-parity": "one script run in more than one market, so a red names the market",
+    "near-miss": "the wording is close to a registered phrasing and does not satisfy it",
+    "recovery": "the trainee approaches a boundary and pulls back before crossing it",
+    "known-gap": "the row documents a limitation of this pack's own checks",
 }
 
 #: Contract names a scenario may compile to, and therefore the only names

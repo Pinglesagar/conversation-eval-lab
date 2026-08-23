@@ -1,0 +1,145 @@
+{
+  "identity": {
+    "competence": "competent",
+    "customer_model": "azure-openai/gpt-4.1",
+    "jurisdiction": "eu-retail",
+    "language": "en",
+    "persona": "cautious_saver",
+    "prompt_sha256": "2594fc5d2b3f17f738db30cb95b5242220424e30af85f4ed48808d7f9cc09c6f",
+    "scenario_id": "live-eu-cautious-competent",
+    "temperature": 0.0,
+    "trainee_model": "azure-openai/gpt-4.1",
+    "turn_budget": 12
+  },
+  "recorded_with": {
+    "live_customer": true,
+    "max_turns": 12,
+    "note": "Generated turns. The trainee is the system under test; the customer's moves are decided by roleplay.persona and only worded by the model.",
+    "temperature": 0.0
+  },
+  "turns": [
+    {
+      "context_sha256": "2deab37b2649540e7c0db49c769d8af2a001f223eedbae27f3ef0218030101b8",
+      "index": 0,
+      "role": "trainee",
+      "utterance": "Good morning, Ms Bergstrom. Thank you for coming in today. Before we talk about any investment options, could you tell me a bit about what you\u2019re hoping to achieve with your money, and any goals or concerns you have?"
+    },
+    {
+      "context_sha256": "46ce7ce295da3457b24490d7651379e89e1da820f00debd2fa4644705171fcf6",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 0,
+      "role": "customer",
+      "utterance": "Thank you, yes, I appreciate you taking the time to meet with me."
+    },
+    {
+      "context_sha256": "ef882dfdd50266d0023646a770ec5cca2a40dda99e0625c442deb765fab48ab2",
+      "index": 1,
+      "role": "trainee",
+      "utterance": "Of course, it\u2019s my pleasure. To help you best, could you share whether you\u2019re looking for growth, income, or something else? Also, do you have a timeframe in mind for your investment, or any particular risk level you\u2019re comfortable with?"
+    },
+    {
+      "context_sha256": "9db7b7d4416edc52f2e85c2d0524adf5d2283905e6fdf2eabe1b0df171e42927",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 1,
+      "role": "customer",
+      "utterance": "Yes, I understand, thank you for asking."
+    },
+    {
+      "context_sha256": "706bc9b774f552a654ed7e750da4f238a2fa3f4eec6d982ea7bc6e5a134d4d2a",
+      "index": 2,
+      "role": "trainee",
+      "utterance": "Thank you for clarifying. If you\u2019re comfortable, could you tell me whether you\u2019ve invested before, or if this would be your first time? That helps me understand what information might be most useful for you."
+    },
+    {
+      "context_sha256": "77cb4da67d78f31c382faf0d98316b24607ca00b78e86df828edcad273164685",
+      "direction": "Raise this objection now, in your own words: I read that funds like this one lost money last year. Why would I put good savings into that?",
+      "index": 2,
+      "role": "customer",
+      "utterance": "I actually read that funds like this one lost money last year, so I\u2019m wondering why I would put good savings into something that could go down like that?"
+    },
+    {
+      "context_sha256": "124346d47d10bedbb936b16c695c858efc2bd483716063ebdb03c02c0bdfe75b",
+      "index": 3,
+      "role": "trainee",
+      "utterance": "That\u2019s a very fair question. The fund I can offer did fall about four per cent last year, and it can go up or down depending on the markets. Over the long term, balanced funds aim for growth, but there\u2019s always some risk of loss, especially in the short term. Would you like to talk more about how risk and returns work, or would you prefer to look at safer options?"
+    },
+    {
+      "context_sha256": "25e22033a930dc145703785f82525ccfde02faaf0d5c9c144f56df4f8e7dce37",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 3,
+      "role": "customer",
+      "utterance": "Thank you, I appreciate you explaining that."
+    },
+    {
+      "context_sha256": "345781da2b332cc681c8e796ee614a6d98ac38a1a006c3a964d618dc3a35d233",
+      "index": 4,
+      "role": "trainee",
+      "utterance": "You\u2019re welcome, Ms Bergstrom. If you\u2019d like, I can show you how this fund works in more detail, including its mix of equities and bonds, and the costs involved. Or, if you prefer, we can discuss alternatives with lower risk. What would you like to focus on next?"
+    },
+    {
+      "context_sha256": "337a025e366fe0b034668099a7ecbf25a6a8cb0beb7bd0ab484f388fb38f9ac6",
+      "direction": "The adviser has asked you an open question. Answer it by telling them this, and only this: Honestly, the thing on my mind is school fees. There are two lots of them starting in three years, so I cannot have all of it locked away.",
+      "index": 4,
+      "role": "customer",
+      "utterance": "Honestly, the thing on my mind is school fees. There are two lots of them starting in three years, so I cannot have all of it locked away."
+    },
+    {
+      "context_sha256": "386fa925ae9564d2b4874f6002abc3074afc93c5d1afd9b50fb56474208dd409",
+      "index": 5,
+      "role": "trainee",
+      "utterance": "That\u2019s important to know, thank you for sharing it. The fund I mentioned doesn\u2019t have an exit penalty, so you can access your money at any time, but the value can fluctuate. If you need certainty for school fees in three years, we might want to consider options with less risk or more predictable returns. Would you like to explore those, or learn more about the balanced fund\u2019s flexibility?"
+    },
+    {
+      "context_sha256": "1416acfd17471bb3b877e9842e88a88cf7bc6e7170e97bbc152a76581b5f17fa",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 5,
+      "role": "customer",
+      "utterance": "Thank you, that makes sense."
+    },
+    {
+      "context_sha256": "3c28d29dde681851213c268fbdcb1a5cc3ad0f0170b7a79d82ba1d15c7910164",
+      "index": 6,
+      "role": "trainee",
+      "utterance": "Glad to hear that. If you\u2019d like, I can outline some lower-risk alternatives, such as savings accounts or short-term bond funds, which may offer more stability for your school fee timeline. Or, if you want to keep your options open, we can compare these with the balanced fund. How would you like to proceed?"
+    },
+    {
+      "context_sha256": "de631e160ced7cfb029a6cdd176bfe6f60df6514887887bfbdd01fd63511b96f",
+      "direction": "The adviser has asked you an open question. Answer it by telling them this, and only this: And my husband handles our long-term money. He will want to see whatever this is in writing before I agree to anything.",
+      "index": 6,
+      "role": "customer",
+      "utterance": "And my husband handles our long-term money. He will want to see whatever this is in writing before I agree to anything."
+    },
+    {
+      "context_sha256": "602dcdaba15cf6409134c1e293326127ff04940eaf8306012d285fb029494600",
+      "index": 7,
+      "role": "trainee",
+      "utterance": "That\u2019s absolutely fine, and it\u2019s wise to review everything together. I can prepare a written summary of the balanced fund, including its risk profile, costs, and flexibility, as well as information on any alternatives we discuss. Would you like me to send this to you by email, or would you prefer a printed copy?"
+    },
+    {
+      "context_sha256": "71d9e8af2add56a6a6a3460cd1096da0f3b6726af5de68527f57943e49400c08",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 7,
+      "role": "customer",
+      "utterance": "Thank you, I appreciate that."
+    },
+    {
+      "context_sha256": "49a6adcb4036526851f89000423b14f6865405957b7da1369b624e1717f35c15",
+      "index": 8,
+      "role": "trainee",
+      "utterance": "You\u2019re very welcome, Ms Bergstrom. I\u2019ll prepare the summary for you, and you can review it with your husband at your convenience. If you have any questions after looking it over, please feel free to contact me or we can arrange another meeting. Is there anything else you\u2019d like to discuss today?"
+    },
+    {
+      "context_sha256": "68e0bee759213c3912263e740a0ee9995a4756b183f78ed00973d33b5eb76d11",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 8,
+      "role": "customer",
+      "utterance": "No, that covers everything for now, thank you."
+    },
+    {
+      "context_sha256": "9f33b66c1413c1a1a4149993dd9c9c2e96ab32155082a57d955db696693f4c3d",
+      "index": 9,
+      "role": "trainee",
+      "utterance": "[END OF SESSION]"
+    }
+  ]
+}

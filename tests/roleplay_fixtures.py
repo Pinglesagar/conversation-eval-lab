@@ -23,8 +23,14 @@ from roleplay.scorer import RubricScorer
 __all__ = ["ALIASES", "corpus", "profiles", "coach", "script"]
 
 #: Short names for the rows the tests refer to. Every alias must resolve, and
-#: `test_roleplay_corpus.py` asserts it — an alias pointing at a deleted row would
+#: `test_roleplay_checks.py` asserts it — an alias pointing at a deleted row would
 #: otherwise fail as a KeyError inside an unrelated test.
+#:
+#: Not one alias per row. The corpus is seventy rows and these are the dozen or so
+#: that behavioural tests name individually; the rest are exercised by the tests
+#: that iterate the whole corpus, which is the right way round — a fixture list
+#: that had to grow with every row would make adding a row a two-file change and
+#: would say nothing about the row that was added.
 ALIASES: dict[str, str] = {
     "exemplary": "pitch-exemplary-eu-retail-run",
     "terse": "pitch-terse-customer-patient-probing",
@@ -41,6 +47,14 @@ ALIASES: dict[str, str] = {
     "borderline": "consistency-borderline-transcript-warm-k5",
     "apac": "locale-apac-suitability-disclosure",
     "spanish": "locale-es-mx-registered-spanish-disclosure",
+    # --- the multi-market rows: one script, three registers
+    "parity_eu": "locale-parity-baseline-in-eu-market",
+    "parity_apac": "locale-parity-baseline-in-apac-market",
+    "parity_amer": "locale-parity-baseline-in-amer-market",
+    # --- the pair that must score the same, and the row on the threshold
+    "pair_a": "pitch-paraphrase-pair-first-wording",
+    "pair_b": "pitch-paraphrase-pair-second-wording",
+    "threshold": "pitch-borderline-fourteen-exactly",
 }
 
 
