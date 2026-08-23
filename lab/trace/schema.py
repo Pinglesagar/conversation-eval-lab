@@ -46,9 +46,48 @@ EVENT KINDS EMITTED IN v1
     agent_audio_first_byte   first byte of the agent's audio response — the
                              timestamp that time-to-first-response is built on
     agent_audio_complete     the agent finished speaking
+    audio_delivered          the agent's audio ARRIVED at the far participant,
+                             observed at the receiving end of a real transport
     transcript_in            STT output for inbound caller audio
     transcript_out           text handed to TTS for synthesis
+    transport_connected      a participant joined the session's transport
+    transport_disconnected   a participant left it, gracefully or otherwise
     session_end              the session finished
+
+WHY `audio_delivered` IS A SEPARATE KIND FROM `agent_audio_first_byte`
+---------------------------------------------------------------------
+Because they are two different instants, and the difference between them is a
+product risk rather than a rounding error.
+
+`agent_audio_first_byte` is agent-side: it fires when the response exists at the
+harness boundary. Every in-process adapter in this repo emits it, and for those
+adapters it is the only instant there is — the "network" is a function call. It
+is also the instant a voice framework's own `e2e_latency` is built on, which is
+why a dashboard can report a healthy number while a caller waits.
+
+`audio_delivered` is receiver-side: it fires when that audio arrives at the other
+participant, measured by a harness sitting where the listener sits. Pairing the
+two gives the delivery gap::
+
+    trace.event_pairs("agent_audio_first_byte", "audio_delivered")
+
+Measured over real WebRTC on this repo's own transport tier, that gap is tens of
+milliseconds and stable — see `docs/AUDIO_TRANSPORT.md`. It is not visible to
+any in-process adapter, by construction. Keeping it as its own kind means a
+report can never quietly present one as the other, and a trace from an
+in-process adapter is *honestly* missing the receiver-side event rather than
+silently reusing the agent-side one.
+
+`transport_connected` / `transport_disconnected` exist for the same reason one
+level down: a turn can be lost because a participant dropped, and a trace that
+cannot say "the transport went away here" has to blame the agent for it. Both
+carry `participant`, and `transport_connected` carries `attempt` so a reconnect
+is a second connect rather than a third event kind.
+
+All three are attributed to the `system` actor, deliberately. Nobody *said*
+them: the agent had already finished generating when its audio arrived, so
+attributing the arrival to the agent would put an agent action at an instant the
+agent was not acting. The transport is the thing that acted.
 
 DECLARED BUT NOT EMITTED IN v1 — PLANNED FOR v2
 -----------------------------------------------
@@ -110,8 +149,11 @@ class EventKind:
     AUDIO_EMITTED = "audio_emitted"
     AGENT_AUDIO_FIRST_BYTE = "agent_audio_first_byte"
     AGENT_AUDIO_COMPLETE = "agent_audio_complete"
+    AUDIO_DELIVERED = "audio_delivered"
     TRANSCRIPT_IN = "transcript_in"
     TRANSCRIPT_OUT = "transcript_out"
+    TRANSPORT_CONNECTED = "transport_connected"
+    TRANSPORT_DISCONNECTED = "transport_disconnected"
     SESSION_END = "session_end"
 
     # Declared for v2. Nothing in v1 emits or consumes these — see module docstring.
@@ -129,8 +171,11 @@ class EventKind:
             AUDIO_EMITTED,
             AGENT_AUDIO_FIRST_BYTE,
             AGENT_AUDIO_COMPLETE,
+            AUDIO_DELIVERED,
             TRANSCRIPT_IN,
             TRANSCRIPT_OUT,
+            TRANSPORT_CONNECTED,
+            TRANSPORT_DISCONNECTED,
             SESSION_END,
         }
     )
@@ -153,8 +198,11 @@ PAYLOAD_KEYS: dict[str, tuple[str, ...]] = {
     EventKind.AUDIO_EMITTED: ("num_bytes", "duration_s"),
     EventKind.AGENT_AUDIO_FIRST_BYTE: ("turn",),
     EventKind.AGENT_AUDIO_COMPLETE: ("turn", "num_bytes"),
+    EventKind.AUDIO_DELIVERED: ("turn", "participant"),
     EventKind.TRANSCRIPT_IN: ("text", "confidence"),
     EventKind.TRANSCRIPT_OUT: ("text",),
+    EventKind.TRANSPORT_CONNECTED: ("participant", "attempt"),
+    EventKind.TRANSPORT_DISCONNECTED: ("participant", "reason"),
     EventKind.SESSION_END: ("reason", "turns"),
 }
 

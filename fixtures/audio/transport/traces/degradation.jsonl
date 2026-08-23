@@ -1,0 +1,10 @@
+{"actor": "system", "engine": null, "kind": "session_start", "payload": {"adapter": "voice:transport", "onset_threshold_rms": 0.02, "scenario_id": "audio-transport-degradation", "session_id": "lab-transport-41848a60", "transport": "webrtc:livekit", "url_digest": "236755554af0"}, "ts": 0.7139907500240952}
+{"actor": "system", "engine": "transport:webrtc/livekit", "kind": "transport_connected", "payload": {"attempt": 1, "observer": "receiver", "participant": "receiver"}, "ts": 0.7139907500240952}
+{"actor": "system", "engine": "transport:webrtc/livekit", "kind": "transport_connected", "payload": {"attempt": 1, "observer": "publisher", "participant": "agent"}, "ts": 1.3489257080946118}
+{"actor": "agent", "engine": "clip:agent-4133d85a3343.opus", "kind": "agent_audio_first_byte", "payload": {"turn": 1}, "ts": 2.5732577082235366}
+{"actor": "system", "engine": "transport:webrtc/livekit", "kind": "audio_delivered", "payload": {"frames": 132, "participant": "receiver", "turn": 1}, "ts": 2.6626948330085725}
+{"actor": "agent", "engine": "clip:agent-4133d85a3343.opus", "kind": "agent_audio_complete", "payload": {"num_bytes": 45440, "turn": 1}, "ts": 3.932765917154029}
+{"actor": "agent", "engine": "clip:agent-4133d85a3343.opus", "kind": "agent_audio_first_byte", "payload": {"turn": 2}, "ts": 4.393080708105117}
+{"actor": "system", "engine": "transport:webrtc/livekit", "kind": "audio_delivered", "payload": {"frames": 134, "participant": "receiver", "turn": 2}, "ts": 4.4830569580663}
+{"actor": "agent", "engine": "clip:agent-4133d85a3343.opus", "kind": "agent_audio_complete", "payload": {"num_bytes": 33920, "turn": 2}, "ts": 5.75287179206498}
+{"actor": "system", "engine": "transport:webrtc/livekit", "kind": "session_end", "payload": {"reason": "completed", "runs_delivered": 2, "turns": 2}, "ts": 5.75287179206498}

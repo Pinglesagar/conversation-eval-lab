@@ -80,6 +80,29 @@ audio = [
 charts = [
   "matplotlib>=3.8",
 ]
+# The WebRTC transport tier's client, and the one extra deliberately NOT folded
+# into [dev].
+#
+# Every other optional dependency in this file is in [dev] on the argument that a
+# test which skips itself is not a verdict a reviewer can read. That argument does
+# not reach here, and the reason is the cardinal rule rather than taste: the
+# livekit client is a real-time networking stack that ships a prebuilt native
+# binary per platform, and it is useless without a credential and a reachable
+# server. Putting it in [dev] would make the documented install heavier for
+# everybody and buy nothing, because the tests it enables still could not run —
+# `LAB_LIVE_TRANSPORT` and three LiveKit variables gate them, and CI sets none of
+# those.
+#
+# What keeps the tier honest instead is that its *measurements* need none of this.
+# `lab/voice/transport/{records,measure,trace,report,rows}.py` are pure, the three
+# live sessions are committed as recordings, and the offline suite recomputes every
+# reported figure from them. So `pip install -e ".[dev]" && pytest` exercises the
+# whole measurement path on a machine that has never heard of WebRTC; this extra is
+# only needed to record a *new* session. See docs/AUDIO_TRANSPORT.md.
+transport = [
+  "livekit>=1.1",
+  "livekit-api>=1.2",
+]
 
 [project.scripts]
 # One entry point. `evallab --help` is the first thing a reviewer runs, and every

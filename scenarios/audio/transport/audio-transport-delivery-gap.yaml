@@ -1,0 +1,41 @@
+# Row 1 of 3 in the WebRTC transport tier. See docs/AUDIO_TRANSPORT.md.
+#
+# This is the most valuable measurement in the audio suite, and it is one
+# subtraction. Everything else in this repository can tell you when a response
+# existed. Only this row can tell you when somebody heard it.
+id: audio-transport-delivery-gap
+title: The delivery gap — the same response timed agent-side and receiver-side
+category: delivery-gap
+tags: [webrtc, receiver-side, real-time, non-gating]
+
+measures: >-
+  The interval between this harness handing an utterance's first energetic frame
+  to the transport and that audio arriving at the far participant, over twelve
+  turns, reported as a distribution beside the 0 ms an agent-side figure implies.
+
+why_transport: >-
+  An in-process adapter cannot produce this number at all, and not because it is
+  imprecise — because the quantity does not exist there. Its "network" is a
+  function call, so the instant the response exists and the instant it arrives are
+  the same instant, and the gap is exactly zero by construction rather than by
+  measurement. Two participants and a real connection are the minimum apparatus in
+  which the two instants can differ.
+
+duration_cap_s: 90
+fixture: fixtures/audio/transport/delivery-gap.json
+
+delivery_gap:
+  min_samples: 10
+  min_gap_ms: 5.0
+  max_gap_ms: 500.0
+  max_stdev_ms: 60.0
+
+notes: >-
+  A documented claim — that a voice framework's e2e_latency is agent-side and
+  excludes network delivery — turned into a measurement. Read the reported mean
+  against the row's own budget thinking: for live in-call coaching, a correction
+  that arrives after the adviser has moved on is a failure rather than a slow
+  success, so this gap is not a performance detail, it is the product risk. The
+  min_gap_ms floor is the assertion that matters: a gap of zero would mean the
+  harness never measured delivery and had accidentally reproduced the agent-side
+  figure it exists to contradict.

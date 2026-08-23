@@ -1,0 +1,42 @@
+# Row 2 of 3 in the WebRTC transport tier. See docs/AUDIO_TRANSPORT.md.
+#
+# This row audits an instrument rather than a product. lab/voice/perturb.py grades
+# audio in a file and the voice suite reads verdicts off that ladder; whether a
+# rung of it resembles the thing it stands for is a question about every one of
+# those verdicts.
+id: audio-transport-degradation
+title: Real loss over a live connection, against the same loss in a file
+category: transport-degradation
+tags: [webrtc, injected-loss, same-session-control, real-time, non-gating]
+
+measures: >-
+  Silent-frame fraction and inter-arrival pacing of a clip delivered over real
+  WebRTC with one frame in four withheld at the sender, beside a loss-free control
+  arm from the same session and beside lab.voice.perturb.packet_loss applied to
+  the same clip at the same nominal rate.
+
+why_transport: >-
+  A file perturbation deletes samples and nothing intervenes. A real transport
+  conceals a gap, re-paces what survives, and adds a time axis that a file does
+  not have — so jitter, the thing that actually degrades a live call, cannot be
+  expressed in the file ladder at any rate. Whether one is a valid stand-in for
+  the other cannot be established from either side alone.
+
+duration_cap_s: 60
+fixture: fixtures/audio/transport/degradation.json
+
+degradation:
+  min_injected_loss: 0.10
+  max_control_excess: 0.05
+  min_transport_excess: 0.02
+  require_control_arm: true
+
+notes: >-
+  The agreement verdict is a finding and is reported whichever way it comes out;
+  what this row asserts is that the comparison is admissible. The control arm is
+  the load-bearing part: without a loss-free arm recorded in the same session, a
+  silent-frame fraction under loss cannot be told apart from the codec's
+  behaviour, the threshold's placement, or the harness starving the channel. If
+  the two instruments disagree, that belongs in the report rather than in a
+  footnote, because the file-based ladder is what the rest of the voice suite
+  grades against.

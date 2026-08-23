@@ -293,10 +293,19 @@ class TraceBuilder:
         """First byte of the agent's audio response arrived at the harness.
 
         The right edge of the response-latency window, and the single most
-        important timestamp in a voice evaluation: it is when the caller starts
-        hearing an answer, which is what a caller actually experiences. Time to
-        *completed* utterance is a property of how long the answer is, not of how
-        responsive the system is.
+        important timestamp in a voice evaluation. Time to *completed* utterance
+        is a property of how long the answer is, not of how responsive the system
+        is.
+
+        It is **not** when the caller starts hearing an answer, and an earlier
+        version of this docstring said it was. It is when the first byte exists at
+        the harness boundary — agent-side. Over a real transport the listener is
+        still waiting at this instant: measured over WebRTC on this repo's own
+        transport tier, by a mean of 87 ms (`docs/AUDIO_TRANSPORT.md`). For an
+        in-process adapter the two are the same instant and the distinction costs
+        nothing; for a live product it is the difference between a coaching
+        prompt that lands and one that arrives after the moment. `audio_delivered`
+        is the receiver-side event, and the pair of them is the gap.
         """
         return self.emit(
             EventKind.AGENT_AUDIO_FIRST_BYTE, "agent", ts=ts, engine=engine, turn=turn, **extra
@@ -358,6 +367,97 @@ class TraceBuilder:
         """Text handed to TTS for synthesis — what the agent meant to say."""
         return self.emit(
             EventKind.TRANSCRIPT_OUT, "agent", ts=ts, engine=engine, text=text, **extra
+        )
+
+    def audio_delivered(
+        self,
+        *,
+        turn: int | None = None,
+        participant: str | None = None,
+        ts: float | None = None,
+        engine: str | None = None,
+        **extra: Any,
+    ) -> TraceEvent:
+        """The agent's audio ARRIVED at the far participant, receiver-side.
+
+        The counterpart to `agent_audio_first_byte`, and only meaningful when
+        something real sits between the two: a transport, not a function call.
+        Pairing the two kinds gives the delivery gap — the interval a framework's
+        agent-side `e2e_latency` cannot see, because it stops its stopwatch at
+        the moment this event has not happened yet.
+
+        Attributed to `system` rather than to `agent`: the agent had finished
+        generating well before this instant, and putting an agent action here
+        would misattribute a transport fact to a speaker. `participant` names
+        *whose* receiving end observed it, so a multi-listener session can say
+        which listener waited.
+
+        Emit it only from an adapter that genuinely measured arrival at a
+        receiver. An in-process adapter must leave it out: a trace honestly
+        missing this event is a trace that cannot be misread, whereas one that
+        re-emits the agent-side instant under this kind reports a delivery gap of
+        zero and looks like good news.
+        """
+        return self.emit(
+            EventKind.AUDIO_DELIVERED,
+            "system",
+            ts=ts,
+            engine=engine,
+            turn=turn,
+            participant=participant,
+            **extra,
+        )
+
+    def transport_connected(
+        self,
+        *,
+        participant: str | None = None,
+        attempt: int = 1,
+        ts: float | None = None,
+        engine: str | None = None,
+        **extra: Any,
+    ) -> TraceEvent:
+        """A participant joined the session's transport.
+
+        `attempt` is 1 for the initial join and increments on each reconnect, so
+        a recovery is a second connect rather than a separate event kind, and
+        "did it come back?" is answered by counting rather than by parsing a
+        reason string.
+        """
+        return self.emit(
+            EventKind.TRANSPORT_CONNECTED,
+            "system",
+            ts=ts,
+            engine=engine,
+            participant=participant,
+            attempt=attempt,
+            **extra,
+        )
+
+    def transport_disconnected(
+        self,
+        *,
+        participant: str | None = None,
+        reason: str = "unknown",
+        ts: float | None = None,
+        engine: str | None = None,
+        **extra: Any,
+    ) -> TraceEvent:
+        """A participant left the transport, gracefully or otherwise.
+
+        `reason` defaults to `"unknown"` rather than to `"closed"`, because a
+        transport that vanished and a transport that was closed on purpose lead
+        to opposite conclusions about the agent, and defaulting to the benign one
+        would make every unexplained drop look intentional.
+        """
+        return self.emit(
+            EventKind.TRANSPORT_DISCONNECTED,
+            "system",
+            ts=ts,
+            engine=engine,
+            participant=participant,
+            reason=reason,
+            **extra,
         )
 
     def session_end(

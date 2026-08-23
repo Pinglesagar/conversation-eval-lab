@@ -30,6 +30,7 @@ def _full_trace() -> Trace:
         clock=clock,
     )
     builder.session_start()
+    builder.transport_connected(participant="agent", attempt=1)
     clock.advance(0.1)
     builder.transcript_in("table for six at seven", confidence=0.93, engine="stt-a")
     builder.caller_utterance("table for six at seven")
@@ -45,11 +46,14 @@ def _full_trace() -> Trace:
     builder.transcript_out("that is booked for you", engine="tts-b")
     builder.agent_audio_first_byte(turn=1, engine="tts-b")
     builder.audio_emitted(num_bytes=4096, duration_s=1.4, engine="tts-b")
+    clock.advance(0.087)
+    builder.audio_delivered(turn=1, participant="caller", engine="transport:webrtc")
     clock.advance(1.4)
     builder.agent_audio_complete(turn=1, num_bytes=4096, engine="tts-b")
     builder.agent_utterance("that is booked for you", agent="BookingAgent")
     clock.advance(0.1)
     builder.tool_result("create_booking", None, ok=False, error="upstream timeout")
+    builder.transport_disconnected(participant="agent", reason="closed")
     builder.session_end(reason="completed", turns=1)
     return builder.build()
 

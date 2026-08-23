@@ -41,11 +41,14 @@ is the difference between "the agent is slow" and "one voice is slow".
 | `audio_emitted` | either | `num_bytes`, `duration_s` |
 | `agent_audio_first_byte` | agent | `turn` |
 | `agent_audio_complete` | agent | `turn`, `num_bytes` |
+| `audio_delivered` | system | `turn`, `participant` |
 | `transcript_in` | caller | `text`, `confidence` |
 | `transcript_out` | agent | `text` |
+| `transport_connected` | system | `participant`, `attempt` |
+| `transport_disconnected` | system | `participant`, `reason` |
 | `session_end` | system | `reason`, `turns` |
 
-Four of those exist for reasons that are easy to miss:
+Five of those exist for reasons that are easy to miss:
 
 **`transcript_in` is not `caller_utterance`.** One is what the caller said, the
 other is what the agent heard. On a text adapter they are identical; on a voice
@@ -54,13 +57,29 @@ a failure to be attributed to speech recognition instead of to the model — and
 is why the text adapter emits both anyway, so one analysis works on both shapes.
 
 **`agent_audio_first_byte` is the right edge of the latency window**, not
-`agent_utterance`. Time to *first byte* is when the caller starts hearing an
-answer; time to completion is mostly a statement about how long the answer was.
-The reference run's p50 and p95 are both first-byte figures, and the definition is
-printed in the report next to the numbers.
+`agent_utterance`. Time to *first byte* is when the answer exists; time to
+completion is mostly a statement about how long the answer was. The reference
+run's p50 and p95 are both first-byte figures, and the definition is printed in
+the report next to the numbers.
+
+**`audio_delivered` is the right edge of the *delivery* window, and it is a
+different instant.** `agent_audio_first_byte` is agent-side — the answer exists at
+the harness boundary. `audio_delivered` is receiver-side — it arrived where
+somebody is listening. Only an adapter with a real transport under it can emit
+the second, and pairing the two is the delivery gap: measured at a mean of 87 ms
+over real WebRTC (`docs/AUDIO_TRANSPORT.md`), invisible to every in-process
+adapter, and excluded from the agent-side figure a voice framework reports. An
+in-process adapter leaves the event out rather than re-emitting the agent-side
+instant under it, because a delivery gap of zero reads as good news.
 
 **`call_id` correlates a call with its result** rather than relying on adjacency,
 so interleaved or parallel tool calls stay analysable.
+
+**`transport_connected.attempt`** makes a reconnect countable. It is 1 on the
+initial join and increments on each recovery, so "did the participant come back?"
+is a count rather than a parse of a reason string — and a turn that was in flight
+when `transport_disconnected` fired can be shown to have died there rather than
+being blamed on the agent.
 
 **`session_end.reason`** records *how* a call ended — `caller_hung_up`,
 `agent_ended`, `max_turns`. A trace with a `max_turns` reason is a conversation

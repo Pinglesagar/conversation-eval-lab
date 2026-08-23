@@ -21,7 +21,7 @@ PY_OK := $(shell $(PYTHON) -c 'import sys; print(1 if sys.version_info[:2] >= (3
 PY_HAVE := $(shell $(PYTHON) -c 'import sys; print("%d.%d" % sys.version_info[:2])' 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help python-ok install test demo calibrate report validate replay errors reference live-replay live-score live-record audio-fixtures audio-check audio-suite audio-suite-plan audio-suite-record audio-suite-evidence audio-setup roleplay-demo roleplay-validate advisory-verdicts clean
+.PHONY: help python-ok install test demo calibrate report validate replay errors reference live-replay live-score live-record audio-fixtures audio-check audio-suite audio-suite-plan audio-suite-record audio-suite-evidence audio-setup transport-report transport-record roleplay-demo roleplay-validate advisory-verdicts clean
 
 help:  ## Show this help.
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -112,6 +112,26 @@ live-record: python-ok  ## Draw a new live run from a provider. Spends money; ne
 	$(PYTHON) -m lab.cli run -k 3 --live-agent --live-caller --live-judge --record \
 		--out fixtures/live_full --baseline fixtures/live_full/run_report.json
 	@git --no-pager diff --stat -- fixtures/live_full
+
+# The WebRTC transport tier. Three rows, because three things only exist in
+# transport; everything else in this harness runs in process.
+#
+# `transport-report` is offline and needs no key: it recomputes every figure from
+# the committed recordings, which is the whole point of the split between
+# recording a live session and measuring one. `transport-record` opens real rooms
+# and is the only way to produce new recordings — it needs LAB_LIVE_TRANSPORT, the
+# three LiveKit variables and `pip install -e ".[transport]"`. It spends no
+# synthesis characters at all: the tier publishes a clip this repository already
+# committed.
+#
+# Neither target gates a build. A network test that blocks a merge trains people
+# to bypass the gate, so the tier reports and the offline suite gates.
+transport-report: python-ok  ## Recompute the transport tier from its committed recordings. No key needed.
+	$(PYTHON) -m lab.voice.transport.report --out reports/transport_report.md
+
+transport-record: python-ok  ## Record new live WebRTC sessions. Needs LAB_LIVE_TRANSPORT + the LiveKit variables.
+	$(PYTHON) -m scripts.make_transport_fixtures
+	@git --no-pager diff --stat -- fixtures/audio/transport
 
 # The roleplay pack is a second domain on the same framework: a BFSI sales-coach
 # whose scorer is the system under test. It shares `lab/` and nothing else, which

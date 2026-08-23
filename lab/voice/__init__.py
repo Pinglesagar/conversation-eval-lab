@@ -24,6 +24,12 @@ through speech. This package holds the timing and audio machinery.
     lab.voice.adapter       the audio adapter: speech in, speech out, and two
                             refusals — no latency without a passing calibration
                             gate, no word error rate against reference text
+    lab.voice.transport     three rows over real WebRTC, for the three things that
+                            only exist in transport: the delivery gap between an
+                            agent-side response and its arrival at a listener,
+                            real loss and pacing against the file-based ladder,
+                            and a participant dropping mid-utterance. Non-gating
+                            in CI; see docs/AUDIO_TRANSPORT.md
 
 Every one of these computes from a `Trace`, so the same code serves the voice
 adapters and the text adapter; only `perturb` touches audio samples, and it is

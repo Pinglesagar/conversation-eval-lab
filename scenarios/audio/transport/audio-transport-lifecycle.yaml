@@ -1,0 +1,39 @@
+# Row 3 of 3 in the WebRTC transport tier. See docs/AUDIO_TRANSPORT.md.
+#
+# A production failure mode nothing else in this repository touches: the
+# connection goes away in the middle of a sentence and comes back.
+id: audio-transport-lifecycle
+title: A participant drops mid-utterance and rejoins — does the turn survive?
+category: connection-lifecycle
+tags: [webrtc, mid-utterance, characterisation, real-time, non-gating]
+
+measures: >-
+  What a mid-utterance disconnect and rejoin cost: how much of the interrupted
+  turn had been delivered, how long the listener received nothing, how many
+  connection attempts it took, and whether the connection recovering and the turn
+  recovering are the same event.
+
+why_transport: >-
+  There is no connection to lose in process, so the failure cannot be staged
+  there — a simulated drop is a branch in the harness, and what makes this row
+  worth running is precisely the parts nobody wrote: renegotiation, the far side's
+  subscription state, and whether audio published after a rejoin reaches a
+  listener that was subscribed to a track which no longer exists.
+
+duration_cap_s: 90
+fixture: fixtures/audio/transport/lifecycle.json
+
+lifecycle:
+  expected_verdict: recovered-turn-lost
+  max_listener_silence_ms: 6000
+  min_frames_before_drop: 10
+
+notes: >-
+  The pinned verdict is recovered-turn-lost, and the distinction it draws is the
+  whole row. The transport comes back; the utterance that was in flight does not,
+  because nothing retransmits it — not this harness, and not a production voice
+  agent either. A reconnect metric that stops at "the participant came back"
+  scores a lost sentence as a success, which is how this failure survives in
+  production dashboards. Pinning the observed behaviour means a change in it —
+  a hang, a slower recovery, or somebody adding replay — fails the row and gets
+  read by a person.
