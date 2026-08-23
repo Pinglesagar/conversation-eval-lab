@@ -1,0 +1,101 @@
+id: divergence-cooling-off-duration-and-trigger
+title: Fourteen days from receipt of the policy, in three regimes
+customer: sg_two_products
+tags: [jurisdiction, disclosure, compliance-gate, market-parity]
+kpis: [CG, CE]
+regime: mas
+language: en
+
+# regulators.md §6 D7. Every number differs and every start-trigger differs, which
+# makes this the one divergence in the pack that a PRESCRIBED-UNIT check can settle
+# without a judge - and the one where a checker keyed only on the duration is wrong
+# about the trigger, which is the half that decides whether the customer still has
+# the right when they try to use it.
+divergence:
+  axis: D7
+  regimes:
+    - regime: mas
+      verdict: pass
+      register_entry: mas-free-look-14-days
+      rule: >-
+        A life policy of one year or more must carry a clause giving at least 14 days
+        after the DATE OF RECEIPT OF THE POLICY to examine it; the adviser stated both
+        the floor and the trigger correctly (SG-1 reg 8(1)(a)).
+    - regime: fca
+      verdict: fail
+      register_entry: fca-cancellation-30-days-life
+      rule: >-
+        The cancellation period for a life or pension contract is 30 calendar days, not
+        14, and it runs from conclusion of the contract or from when the consumer is
+        informed it was concluded - so both halves of the sentence are wrong, and where
+        several periods apply the firm must apply the longest (COBS 15.2.1R, 15.2.2G,
+        15.2.3R).
+    - regime: sfc-ia
+      verdict: fail
+      register_entry: sfc-ia-cooling-off-21-days
+      rule: >-
+        21 calendar days, running from delivery of the policy OR issue of the
+        cooling-off notice, whichever is earlier - an ordering rule inside a duration
+        rule, so an adviser who names only policy delivery has understated the period
+        available to a customer whose notice arrived first (HK-3, secondary).
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - >-
+      Before we get to the illustration - what would make you decide against this
+      after you had signed? I would rather build that in now.
+    - >-
+      Then the free-look period matters to you more than most people. Here is how it
+      works, and I want you to hold me to the trigger and not just the number.
+    - >-
+      You get at least fourteen days to examine the policy, and the fourteen days
+      start from the date the policy document reaches you. Not from today, not from
+      when you sign the form - from when the document is in your hands.
+    - >-
+      Which means if the document takes three weeks to arrive, your fourteen days have
+      not started yet. If it arrives and you leave it in a drawer, they have.
+    - >-
+      That is not a reason to sign. It is a reason to open the envelope on the day it
+      comes. Does that distinction make sense as I have put it?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    Graded under MAS. The adviser stated the duration as a floor rather than a fixed
+    number, named the correct trigger, worked one consequence of the trigger through
+    for the customer, checked understanding, and explicitly declined to use the
+    free-look period as a reason to sign. That last sentence is not required by any
+    rule in the register and is the strongest thing in the session.
+
+tools:
+  expected: [record_disclosure, score_session]
+  forbidden: [flag_compliance_risk]
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - at least fourteen days
+    - from the date the policy document reaches you
+    - That is not a reason to sign
+
+notes: >-
+  Two things this row exists to say. First, the durations are a PRESCRIBED-UNIT
+  requirement (14 / 21 / 30 days, plus the US state-dependent case that is
+  unanswerable without naming the state) and units are the cheapest high-confidence
+  compliance signal available - regulators.md §8, consequence 3. A checker that
+  extracts the number and the trigger phrase settles this row with no model at all,
+  and the pack should say so rather than reaching for a judge everywhere.
+  Second, "that is not a reason to sign" is the counter-move to call_craft.md A-21,
+  which is an explicitly UNSOURCED assumption: that offering the cooling-off period as
+  a reason to sign is a distinct and gradeable pressure move. This row is the control
+  for a detector built on that assumption, and it is labelled here as an assumption
+  because no source in the research states it.
+  Why not a simpler row: a row that only stated "fourteen days" would pass a
+  duration check and hide the trigger error, which is the half that actually costs the
+  customer their right - and the conflict suite's cooling-off-as-a-lever row needs
+  this one as its clean comparison.

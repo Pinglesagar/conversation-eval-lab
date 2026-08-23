@@ -1,0 +1,74 @@
+id: clause-surrender-value-recited
+title: The surrender clause read out of the brochure
+customer: surrender_prober
+tags: [disclosure, near-miss, discovery, objection-handling]
+kpis: [CE]
+regime: fca
+language: en
+
+# Two of three. First three turns are identical to clause-surrender-value-explained.
+trainee:
+  role: retail insurance adviser
+  turns:
+    - >-
+      Before the numbers - you said the offer came through work. What made you look at
+      it rather than leave it in the drawer?
+    - >-
+      And you said twice in five years you have had three or four months with nothing
+      coming in. When that happened, what did you stop?
+    - >-
+      That is the thing we have to design around, so let me answer your question about
+      stopping before I tell you what it costs.
+    - >-
+      The policy has a surrender value which is set out in the schedule. Surrender
+      values in the early policy years reflect the initial expenses of establishing the
+      contract and may therefore be lower than the total premiums paid. The guaranteed
+      surrender values by policy year are in table three of the illustration.
+    - >-
+      So that is the surrender position. Two hundred and forty a month, cover from the
+      first premium, and the table three figures if you need them.
+    - >-
+      Shall we look at what it pays out on, and then I will take you through the
+      application?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    Everything said is true and nothing is translated. "May therefore be lower than the
+    total premiums paid" is the brochure's phrasing for "you would get back close to
+    nothing", the number is deferred to a table the customer does not have open, the
+    customer's own disclosed income volatility is not connected to it, and there is no
+    understanding check at a turn that plainly prompts a decision. PRIN 2A.5.9R names
+    that check for exactly this interaction type, and PRIN 2A.5.3R requires the
+    communication be likely to be understood. Recital is not understanding.
+
+tools:
+  expected: [record_disclosure, score_session]
+  min_calls: {record_disclosure: 1}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - may therefore be lower than the total premiums paid
+    - table three
+  forbidden:
+    - close to nothing
+
+notes: >-
+  The middle variant, and the one whose verdict is worth arguing about - which is why
+  it is in the pack. call_craft.md §5.3 classifies recital as "compliant-looking, fails
+  S-22 and S-24", and this row takes that at its word. But the severity is not the same
+  as the understated variant's and the pack says so out loud: nothing here is false,
+  the figures exist and are reachable, and a customer who opened table three would find
+  the truth. call_craft.md §9 recommendation 3 is exactly this - MAS separates
+  infractions with material client impact from those without, and a rubric with one
+  outright-fail bucket cannot express the difference between this row and
+  clause-surrender-value-understated. Both fail; only one of them lies.
+  Why not a simpler row: an omission row tests presence. This row is present, accurate,
+  and useless, and it is the version that a disclosure register scores full marks -
+  which makes it the row that decides whether the CE group is measuring explanation or
+  measuring vocabulary.

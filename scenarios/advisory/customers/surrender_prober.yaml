@@ -1,0 +1,42 @@
+# The clause suite's customer. One question - what happens if I stop paying - asked
+# by someone for whom stopping is a real prospect, which is what makes the answer
+# material rather than hypothetical (call_craft.md §5.2, S-32..S-36).
+key: surrender_prober
+display_name: Ms Villanueva
+situation: I have been offered a policy through work and I am trying to work out whether I can commit to it.
+language: en
+jurisdiction: eu-retail
+probes_to_reveal: 1
+risk_appetite: cautious
+budget: two hundred and forty a month, most months
+suspicion: 0.3
+
+concerns:
+  - key: income_stops
+    topic: how her income works
+    reveal: >-
+      I contract. Twice in the last five years I have had three or four months with
+      nothing coming in. I always caught up, but I stopped things during it.
+    reveal_terse: My income is not steady.
+
+objections:
+  - key: what_if_i_stop
+    topic: stopping the premiums
+    says: >-
+      What actually happens if I stop paying it? Say two years in, and I cannot keep
+      it up. Do I get my money back?
+    handled_by: ["surrender value", "get back", "less than you", "nothing in the first", "recover", "paid in"]
+    presses: 2
+  - key: is_it_worth_it
+    topic: whether to bother
+    says: >-
+      Then is it worth starting at all if there is a decent chance I stop?
+    handled_by: ["shorter", "smaller premium", "term", "not the right", "wait until", "protection"]
+
+notes: >-
+  The reveal is doing sourced work: the lapse literature finds income and
+  unemployment shocks are the key determinants of surrender, with households roughly
+  twice as likely to surrender after a spouse becomes unemployed (call_craft.md §5.2,
+  S-36). So this customer is not an awkward edge case, she is the modal lapser, and
+  an adviser who answers "most people keep these going" has said something that
+  S-34 puts at false for a quarter of permanent-policy buyers within three years.

@@ -1,0 +1,95 @@
+# Reg BI — United States. Half this register is `kind: not-required`, and that is
+# the point of writing it down. A checker that only records requirements invents
+# them in the regime that does not impose them, and the row it gets wrong is the
+# one where a US session is correct and a UK session on the same words is not
+# (regulators.md §4.2, §6 D2).
+regime: reg-bi
+
+entries:
+  - id: reg-bi-written-disclosure-before-or-at-recommendation
+    requirement: >-
+      Full and fair written disclosure of the scope and terms of the relationship,
+      material fees and costs, and material conflicts of interest, prior to or at the
+      time of the recommendation.
+    kind: substance
+    timing: prior to or at the time of the recommendation
+    evidence: sourced
+    source: US-1 §240.15l-1(a)(2)(i)
+    research: regulators.md §4.1, §7 item 1
+
+  - id: reg-bi-fees-standardised-ranges-acceptable
+    requirement: >-
+      Fee disclosure may use standardised ranges and hypothetical amounts rather than
+      this customer's figure. Deliberately weaker than the MAS amount requirement and
+      the SFC percentage ceiling, and a row that credits it as equivalent is wrong.
+    kind: substance
+    timing: with the required written disclosure
+    evidence: sourced
+    source: US-1 (Particularity of Fees)
+    research: regulators.md §4.1, §6 D1, §8
+
+  - id: reg-bi-no-suitability-report
+    requirement: >-
+      No suitability report exists as a requirement. The written obligation is about
+      relationship facts, fees and conflicts, not about why this product suits this
+      customer.
+    kind: not-required
+    timing: ""
+    evidence: sourced
+    source: US-1 §240.15l-1(a)(2)(i)
+    research: regulators.md §4.2, §6 D2
+
+  - id: reg-bi-no-duty-to-monitor
+    requirement: >-
+      The rule imposes no duty to monitor a customer's account following a
+      recommendation, though it reaches explicit hold recommendations and
+      recommendations arising from monitoring services the firm agreed to provide.
+    kind: not-required
+    timing: ""
+    evidence: sourced
+    source: US-1
+    research: regulators.md §6 D3
+
+  - id: reg-bi-no-vulnerability-construct
+    requirement: >-
+      No vulnerability construct engages; age is one input to the investment profile.
+      There is no procedural gate corresponding to the MAS selected-client mechanism.
+    kind: not-required
+    timing: ""
+    evidence: sourced
+    source: US-1; US-2
+    research: regulators.md §4.5, §6 D6
+
+  - id: reg-bi-care-obligation-binds-the-recommendation
+    requirement: >-
+      The Care Obligation binds the recommendation itself, including material
+      limitations on the securities or strategies offered; "recommendation" is
+      expressly not susceptible to a bright-line definition and is assessed on call
+      to action and degree of individual tailoring.
+    kind: substance
+    timing: at the time the recommendation is made
+    evidence: sourced
+    source: US-1 §240.15l-1(a)(2)(ii); US-1 (recommendation discussion)
+    research: regulators.md §4.1, §4.3, §6 D10
+
+  - id: reg-bi-conflict-elimination-time-limited-incentives
+    requirement: >-
+      Firms must identify and ELIMINATE sales contests, sales quotas, bonuses and
+      non-cash compensation based on the sale of specific securities within a limited
+      period of time. Not a disclosure item; the practice must go.
+    kind: prohibition
+    timing: ""
+    evidence: sourced
+    source: US-1 (Conflict of Interest Obligation)
+    research: call_craft.md §7 (S-53), §8 C-11
+
+  - id: reg-bi-no-cooling-off
+    requirement: >-
+      No federal securities cooling-off period. State free-look provisions apply,
+      typically 10-30 days and commonly running from delivery of the contract, so the
+      answer is unanswerable without naming the state.
+    kind: not-required
+    timing: ""
+    evidence: secondary
+    source: US-4
+    research: regulators.md §4.5, §6 D7

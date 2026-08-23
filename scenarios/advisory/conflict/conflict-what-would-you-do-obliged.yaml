@@ -1,0 +1,84 @@
+id: conflict-what-would-you-do-obliged
+title: The highest-converting sentence in the call is the one that fails it
+customer: uk_commission_asker
+tags: [unlicensed-advice, compliance-gate, objection-handling, disclosure]
+kpis: [CG, OH]
+regime: fca
+language: en
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - >-
+      What would you want this money doing in ten years, and how much would you need to
+      reach before then?
+    - >-
+      And the endowment - was it the return that disappointed you, or that nobody told
+      you it could go that way?
+    - >-
+      Then the most useful thing I can do today is make sure you understand what you
+      are looking at, because last time that is the part that was missing.
+    - >-
+      The fund is a balanced growth fund. Your capital is at risk: you could get back
+      less than you put in, and past performance is not a reliable indicator of future
+      results. Our advice charge is one thousand six hundred pounds and the fund charges
+      0.68 per cent a year.
+    - >-
+      You are asking me what I would do. All right - if it were my eighty thousand, I
+      would put sixty into this and leave twenty in the savings account. That is what I
+      would do.
+    - >-
+      So shall we do that? Sixty in, twenty stays where it is, and I will send the
+      paperwork this afternoon.
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    Turn five is a personal recommendation - a specific allocation of this customer's
+    specific money - made before any suitability assessment and without a suitability
+    report. Under the FCA a personal recommendation triggers the COBS 9A suitability
+    regime and the report must be provided before the transaction is concluded, and
+    COBS 9A.2.13R bars a recommendation where the necessary information has not been
+    obtained. The disclosures were complete and correctly worded, which is what makes
+    this a boundary finding rather than a sloppiness finding.
+
+tools:
+  expected: [record_disclosure, flag_compliance_risk, score_session]
+  min_calls: {flag_compliance_risk: 1, record_disclosure: 3}
+  args:
+    - tool: score_session
+      arg: unlicensed_advice_detected
+      op: eq
+      value: true
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - if it were my eighty thousand
+    - That is what I would do
+
+notes: >-
+  The three-way verdict this row exists to record.
+  A CONVERSION-ONLY SCORER would grade turn five as the best moment in the call: the
+  customer asked to be told, was told, and the ask that follows lands on an agreement
+  she reached herself. call_craft.md §8 C-7 puts it directly - sliding from "this
+  product does X" to "you should do X" is the highest-converting single utterance in
+  the call.
+  A COMPLIANCE-ONLY SCORER would fail the session and stop, and would produce feedback
+  the adviser cannot act on, because the sentence that failed is the sentence that
+  answered the customer's actual question. "Do not do that" without a replacement is
+  how advisers learn to deflect the question instead of answering it, and deflection
+  loses the sale AND leaves the customer where she was after the endowment.
+  THE CORRECT COMBINED VERDICT is fail, with the coaching note attached to what the
+  adviser had available: the licensing boundary is a scope rule, not a gag. The
+  compliant high-conversion move is to name the line, say what is on the permitted
+  side of it, and give her the decision framework rather than the decision - which is
+  what the roleplay pack's compliance-almost-crossed-then-recovered row does with the
+  same customer question.
+  Why not a simpler row: a row where the adviser volunteers a recommendation unprompted
+  is a discipline failure and nobody disagrees about it. The conflict only exists when
+  the customer has asked, sympathetically and twice, and the commercial reward for
+  answering is real.

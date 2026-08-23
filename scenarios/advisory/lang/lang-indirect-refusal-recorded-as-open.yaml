@@ -1,0 +1,103 @@
+id: lang-indirect-refusal-recorded-as-open
+title: I will consider it and revert, filed as still in play
+customer: deferring_client
+tags: [multilingual, closing, objection-handling, known-gap]
+kpis: [LL, OH, CL]
+regime: sfc-ia
+language: en
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - >-
+      Ten minutes is enough. What would you want this to have done by the time you
+      retire?
+    - >-
+      That is clear. The fund is a balanced growth fund: your capital is at risk, you
+      could get back less than you put in, and the monetary benefit we receive is capped
+      at two per cent of the amount you invest.
+    - >-
+      On the access question - no lock-in, and the charge is 0.9 per cent a year.
+    - >-
+      So: capital at risk, 0.9 per cent a year, two per cent to us, and the money
+      reachable. Shall I send the application over?
+    - >-
+      Of course - take your time with it. I will call you in the second week of January
+      then, and I will send the illustration across today so you have it in front of you
+      when we speak. Thank you for the ten minutes.
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    The disclosures are complete and correctly formed, including the SFC's percentage-
+    ceiling unit, and the close carries a summary before the ask. The failure is the
+    last turn: the customer delivered a refusal as non-commitment - "I will consider it
+    and revert, perhaps call me again after the new year" - and the adviser accepted the
+    proposed trajectory, scheduled a follow-up, and thereby recorded the outcome as
+    open. No diagnostic question was asked. The behaviour that is gradeable without
+    resolving what the customer meant is whether the adviser asked which kind of
+    deferral this was, and it was not asked.
+
+tools:
+  expected: [record_disclosure, raise_objection, score_session]
+  min_calls: {record_disclosure: 3}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - take your time with it
+    - I will call you in the second week of January
+  forbidden:
+    - is that a no
+
+expected_failure:
+  contracts: [tools, score-claims-backed]
+  since: first written for the advisory pack
+  expectation: >-
+    We expect a pass with a high closing score. Every surface feature of a good close is
+    present - summary, ask, a courteous response to the answer, a concrete next step -
+    and the objection ledger will show the final objection as handled, because a
+    follow-up commitment reads as an accommodation. The session will enter the corpus as
+    a live opportunity.
+    
+notes: >-
+  This is the only row in the pack whose consequence is arithmetic rather than
+  conversational, and the chain is worth writing out because it is the reason the LL
+  group exists at all. The adviser asks for the close; the client indirectly refuses; a
+  scorer calibrated on direct Anglophone refusal labels the outcome OPEN rather than
+  LOST; the session enters the "still in play" denominator; pipeline-conversion and
+  positioning-readiness are then computed over a denominator containing dead calls; and
+  the coaching recommendation produced is "follow up", when the correct recommendation
+  is "you lost this at the objection and did not notice". Every conversion metric
+  inherits the error, which means a scorer that misreads this turn silently corrupts the
+  manager-analytics surface - the one the product sells as "not just what they sold, but
+  how and why". markets_languages.md §3.4 traces exactly that chain.
+  ASSUMPTION, labelled loudly because it is the most consequential inference in the
+  research file it comes from: the mapping "I will consider it" / "call me after the new
+  year" = a settled no is a real and widely reported feature of high-context business
+  communication, and markets_languages.md §3.4 could find no source quantifying it for a
+  financial-advisory setting. The strength of the convention varies by market,
+  relationship and product. So this row does NOT assert that the customer said no
+  because he is from Hong Kong. It asserts that the adviser had a cheap diagnostic
+  available and did not use it, which is call_craft.md A-11's own resolution of the same
+  problem: the gradeable behaviour that does not depend on the mapping being true is
+  whether the adviser asked which it was.
+  The forbidden phrase is the crude version of the diagnostic. "Is that a no" is the
+  right question asked in the wrong register, and a market-specific refusal judge that
+  rewarded it would be teaching advisers to be blunt in the markets where bluntness is
+  the reason the customer would not say no in the first place. What the research
+  recommends building instead is a refusal-taxonomy judge with labels direct-no,
+  conventional-indirect-no, genuine-defer and open, calibrated SEPARATELY PER MARKET
+  against human labels and published per market rather than pooled - because pooling
+  hides precisely the disparity that matters, and because the repo already has the
+  instrument for it in lab/judges.calibrate() and the registry that raises below
+  threshold.
+  Why not a simpler row: a row where the customer says no plainly tests nothing - every
+  scorer gets it right. The failure only exists where the refusal is well-formed,
+  courteous, and indistinguishable on surface features from a genuine deferral, and
+  where the adviser's response is indistinguishable on surface features from good
+  manners.

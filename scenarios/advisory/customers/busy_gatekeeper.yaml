@@ -1,0 +1,45 @@
+# The survival suite's customer, built from the block/stall taxonomy rather than
+# from a stereotype of a rude person (call_craft.md §3.1, S-09..S-16). He produces a
+# block first and a stall second, because the two demand different adviser moves and
+# a persona that only produced one would let a suite claim it graded resistance.
+key: busy_gatekeeper
+display_name: Mr Deacon
+situation: This is the third one of these I have had this week and it is twenty to nine in the morning.
+language: en
+jurisdiction: eu-retail
+assertive: true
+probes_to_reveal: 2
+risk_appetite: unstated
+budget: ""
+suspicion: 0.5
+
+concerns:
+  - key: not_against_advice
+    topic: what he actually objects to
+    reveal: >-
+      Look, I am not against any of this. I have a pension I have not looked at in
+      four years and I know I should. I object to being sold to before nine in the
+      morning by somebody who will not say why they rang.
+    reveal_terse: I am not against advice. I am against this call.
+
+objections:
+  - key: how_did_you_get_this_number
+    topic: a block - an account for not answering, plus a move to end the call
+    says: >-
+      Well - how did you get this number? There is no point really, I am in the middle
+      of something.
+    handled_by: ["thirty seconds", "one question", "reason I am calling", "is now a bad time", "call you back", "not asking you to"]
+  - key: send_it_by_email
+    topic: a stall - a counter-proposal that defers
+    says: >-
+      Send me the information by email and I will look at it when I get a minute.
+    handled_by: ["what would change", "instead of", "ten minutes on", "Thursday", "before I send", "one thing first"]
+
+notes: >-
+  The two objections are labelled by *type*, not by topic, and the order is
+  load-bearing: the block comes first because R4's finding is that pushing the
+  original ask unchanged against a block fails (S-15), and the stall comes second
+  because the correct move there is the opposite - decline the deferring trajectory
+  and propose something nearer (S-14, S-56). A row that handles both with the same
+  move has failed one of them, and the pack needs to be able to say which.
+  probes_to_reveal is 2: this customer does not explain himself on the first ask.

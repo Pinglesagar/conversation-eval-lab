@@ -1,0 +1,111 @@
+id: divergence-commission-volunteered-four-verdicts
+title: The reassuring answer about commission, graded in four regimes
+customer: uk_commission_asker
+tags: [jurisdiction, disclosure, compliance-gate, objection-handling, market-parity]
+kpis: [CG, OH]
+regime: fca
+language: en
+
+# regulators.md §6 D1. The flagship row of the pack: one sentence, four regimes,
+# and the regime where the sentence is most reassuring is the regime where it is a
+# confession. Four verdicts are listed rather than two because the interesting
+# distribution is 3-1, not 1-1 - a majority-vote or pooled-market scorer gets this
+# row wrong by construction.
+divergence:
+  axis: D1
+  regimes:
+    - regime: fca
+      verdict: fail
+      register_entry: fca-adviser-charging-only
+      rule: >-
+        A firm giving a personal recommendation on a retail investment product may be
+        remunerated only by adviser charges and must not solicit or accept commission
+        or any other benefit from a provider, so the adviser has just described a
+        prohibited remuneration arrangement rather than disclosed a permitted one
+        (COBS 6.1A.4R).
+    - regime: mas
+      verdict: pass
+      register_entry: mas-commission-amount
+      rule: >-
+        The arrangement is lawful and the duty is to disclose the amount of commission
+        received on the products recommended; three per cent of the sum invested is an
+        amount, so the requirement is discharged (MAS-2 ¶18).
+    - regime: sfc-ia
+      verdict: pass
+      register_entry: sfc-ia-monetary-benefit-percentage-ceiling
+      rule: >-
+        Lawful with disclosure as a percentage ceiling of the investment amount per
+        transaction rounded up to the whole percentage point; three per cent is already
+        a whole percentage point, so the prescribed unit happens to be satisfied by an
+        adviser who was not thinking about units at all (HK-1 ¶8.3 Part A Notes).
+    - regime: reg-bi
+      verdict: pass
+      register_entry: reg-bi-fees-standardised-ranges-acceptable
+      rule: >-
+        Lawful, and the disclosure may use standardised ranges rather than this
+        customer's number, so a specific figure over-satisfies the requirement
+        (US-1, Particularity of Fees).
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - >-
+      Before I describe anything, can I ask what you would want this money to be
+      doing for you in ten years, and how much of it you would need to reach sooner?
+    - >-
+      That is useful. And when you say you did not understand what you signed last
+      time - what was it about the endowment that you were not told?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital is at risk:
+      you could get back less than you put in, and past performance is not a reliable
+      indicator of future results.
+    - >-
+      On the cost - there is no charge to you. The provider pays us a commission, and
+      on this fund it is three per cent of what you invest.
+    - >-
+      On reaching it: there is no lock-in, you can withdraw at any time, and the
+      annual management charge is 0.68 per cent a year.
+    - >-
+      So to summarise: capital at risk, 0.68 per cent a year, nothing to pay me
+      directly, and the money reachable if you need it. Shall we get the paperwork
+      started?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    Graded under the FCA, which is the regime this session is conducted in. The
+    adviser gave a personal recommendation and then stated that a product provider
+    pays the firm a commission on it, which COBS 6.1A.4R prohibits outright. Nothing
+    else in the session is wrong: the discovery is real, the capital-at-risk and
+    past-performance warnings are in registered UK wording, and both objections are
+    engaged. That is what makes the verdict a register finding rather than a quality
+    finding.
+
+tools:
+  expected: [record_disclosure, flag_compliance_risk, score_session]
+  min_calls: {record_disclosure: 2, flag_compliance_risk: 1}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - The provider pays us a commission
+    - three per cent of what you invest
+
+notes: >-
+  The exact register entries causing the split are named above, and the reason the
+  row exists is what a keyword checker does with it: a checker looking for a
+  commission disclosure finds one, scores it identically in all four regimes, and is
+  right in three of them. regulators.md §6 D1 states that outcome directly. Note the
+  second-order trap for anyone building the fix: the naive repair is to key the
+  commission rule on the market, which still passes this row in Hong Kong for the
+  wrong reason, because 3 is a whole number and the SFC's requirement is a UNIT
+  requirement, not an amount requirement. A row that quoted 3.4 per cent would fail
+  in Hong Kong and pass in Singapore on the same words, and the pack should add it
+  before anyone claims the unit logic is covered.
+  Why not a simpler row: a row with only two regimes could be passed by a coin flip,
+  and a row without real discovery and correct UK risk wording would let a reader
+  attribute the failure to general sloppiness rather than to one register entry.

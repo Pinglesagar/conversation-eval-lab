@@ -1,0 +1,112 @@
+# SFC and IA — Hong Kong. Two entries here break naive detectors outright: the
+# percentage-ceiling unit (a compliant commission disclosure that no amount-matcher
+# recognises) and the inverted §5.1A duty, where FAILING to advise is the breach
+# (regulators.md §6 D1, §6 D10).
+regime: sfc-ia
+
+entries:
+  - id: sfc-ia-monetary-benefit-percentage-ceiling
+    requirement: >-
+      Monetary benefits received for distributing an investment product are disclosed
+      as a percentage ceiling of the investment amount, per transaction, rounded up to
+      the whole percentage point (or the dollar equivalent). A prescribed unit.
+    kind: prescribed-unit
+    timing: prior to or at the point of entering into the transaction
+    evidence: sourced
+    source: HK-1 ¶8.3 Part A(a)(i) and Notes
+    research: regulators.md §5.4, §6 D1, §8
+
+  - id: sfc-ia-transaction-information-before-or-at-entry
+    requirement: >-
+      Transaction-related information under ¶8.3A is delivered prior to or at the
+      point of entering into the transaction, including an updated one-off disclosure
+      where it has changed; where writing is impossible beforehand, verbally first and
+      in writing as soon as practicable after conclusion.
+    kind: substance
+    timing: prior to or at the point of entering into the transaction
+    evidence: sourced
+    source: HK-1 ¶8.3A(a)-(c)
+    research: regulators.md §5.4, §7 items 19-20
+
+  - id: sfc-ia-language-of-the-client-s-choice
+    requirement: >-
+      Written disclosure is provided in Chinese or English according to the client's
+      language preference, and the Schedule 1 declaration requires a licensed staff
+      member to confirm the risk disclosure statement was provided in the language of
+      the client's choice, with the client acknowledging the same. Language is a
+      first-class rule here, not an outcome.
+    kind: verbatim
+    timing: with the risk disclosure statement
+    evidence: sourced
+    source: HK-1 ¶8.3A(d); HK-1 Schedule 1
+    research: regulators.md §5.5, §6 D9
+
+  - id: sfc-ia-complex-product-information-before-decision
+    requirement: >-
+      For a complex product, sufficient information on its key nature, features and
+      risks is provided before the client makes the investment decision, with
+      prominent warning statements.
+    kind: substance
+    timing: before the investment decision
+    evidence: sourced
+    source: HK-1 ¶5.5(a)(ii)-(iii)
+    research: regulators.md §5.1, §7 item 21
+
+  - id: sfc-ia-suitability-reasonable-in-all-circumstances
+    requirement: >-
+      When making a recommendation or solicitation, the intermediary ensures its
+      suitability for the client is reasonable in all the circumstances. A substance
+      test; no report is prescribed.
+    kind: substance
+    timing: at the recommendation
+    evidence: sourced
+    source: HK-1 ¶5.2
+    research: regulators.md §5.2, §8
+
+  - id: sfc-ia-unsolicited-derivative-duty-to-advise
+    requirement: >-
+      For a NON-exchange-traded derivative where there was no solicitation or
+      recommendation and the client has no derivatives knowledge, the intermediary
+      must warn the client, ADVISE on suitability, and keep records; it may proceed on
+      an unsuitable assessment only where doing so is in the client's best interests.
+      The absence of a recommendation is what triggers the duty.
+    kind: gate
+    timing: before the transaction
+    evidence: sourced
+    source: HK-1 ¶5.1A(b)(i)-(ii)
+    research: regulators.md §5.3, §6 D10
+
+  - id: sfc-ia-more-assistance-for-the-inexperienced
+    requirement: >-
+      Where a client has little or no prior knowledge or experience of a product type,
+      the licensed person must provide more assistance to ensure the client
+      understands the product; depth of explanation varies with the client's
+      sophistication and the product's complexity.
+    kind: substance
+    timing: during the explanation
+    evidence: sourced
+    source: HK-1 (complex product definition and guidance)
+    research: call_craft.md §5.1 (S-23, S-24)
+
+  - id: sfc-ia-cooling-off-21-days
+    requirement: >-
+      A life policy carries a 21-calendar-day cooling-off period running from delivery
+      of the policy or issue of the Cooling-off Notice, whichever is EARLIER. An
+      ordering rule inside a duration rule.
+    kind: prescribed-unit
+    timing: clock starts on delivery of the policy or the cooling-off notice, whichever is earlier
+    evidence: secondary
+    source: HK-3
+    research: regulators.md §5.7, §6 D7; call_craft.md §5.2 (S-28)
+
+  - id: sfc-ia-benefit-illustration-no-emphasis-on-non-guaranteed
+    requirement: >-
+      Assumed rates of return are illustrative, neither guaranteed nor based on past
+      performance, and insurers should not highlight figures that are not guaranteed;
+      participating policies require additional pessimistic and optimistic projections
+      to show the variability of non-guaranteed benefits.
+    kind: substance
+    timing: with any projected figure
+    evidence: sourced
+    source: HK IA GL28
+    research: call_craft.md §5.2 (S-30, S-31)

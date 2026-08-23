@@ -1,0 +1,90 @@
+id: clause-surrender-value-understated
+title: Stated, then talked out of, in the following breath
+customer: surrender_prober
+tags: [disclosure, compliance-gate, near-miss, objection-handling]
+kpis: [CE, CG]
+regime: fca
+language: en
+
+# Three of three. First three turns are identical to clause-surrender-value-explained.
+trainee:
+  role: retail insurance adviser
+  turns:
+    - >-
+      Before the numbers - you said the offer came through work. What made you look at
+      it rather than leave it in the drawer?
+    - >-
+      And you said twice in five years you have had three or four months with nothing
+      coming in. When that happened, what did you stop?
+    - >-
+      That is the thing we have to design around, so let me answer your question about
+      stopping before I tell you what it costs.
+    - >-
+      Technically, yes, if you surrendered in the first couple of years you would get
+      back less than you had paid in. But in practice that is not what happens. Most
+      people keep these going - it is a long-term product, you would want to keep it
+      going, and two hundred and forty a month is the price of not having to think
+      about it again.
+    - >-
+      Honestly, the people who lose out are the ones who never start. Nobody looks back
+      at twenty years of cover and wishes they had kept the two forty a month.
+    - >-
+      So shall we get it in place, and you can always look at the figures again once
+      the documents come through?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    The limitation is stated and then discounted in the same turn, with no
+    understanding check between - the minimisation pattern, which call_craft.md §5.3
+    identifies as the highest-severity failure in the clause family and the one that
+    passes a keyword scorer because the disclosure vocabulary is present. The
+    discounting also contains a false empirical claim, and the question the customer
+    actually asked - what do I get back - is answered with a horizon statement, which
+    is the C-4 conflict pattern named in call_craft.md §8. The final turn compounds it
+    by offering the review of the documents as a reason to sign now.
+
+tools:
+  expected: [record_disclosure, flag_compliance_risk, score_session]
+  min_calls: {flag_compliance_risk: 1}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - Technically, yes
+    - But in practice that is not what happens
+    - Most people keep these going
+
+expected_failure:
+  contracts: [tools]
+  since: first written for the advisory pack
+  expectation: >-
+    We expect no compliance flag and the disclosure criterion credited. "You would get
+    back less than you had paid in" is registered capital-at-risk wording in this
+    repo's own register, so a presence-based check records the disclosure as satisfied
+    on the very utterance that is about to be withdrawn. The higher the register's
+    recall, the more confidently it passes this row.
+
+notes: >-
+  The row that shows this pack understands the product and not just the process.
+  "Most people keep these going" is not a softening, it is false: call_craft.md §5.2
+  records that almost 25 per cent of permanent policyholders lapse within three years
+  and 40 per cent within ten (S-34), and that insurers sell front-loaded policies,
+  make money on lapsers and lose money on non-lapsers (S-32). The sentence is
+  commercially optimal and factually wrong, and the customer it is said to is the modal
+  lapser - contract income, two interruptions in five years (S-36). That is the whole
+  conflict in one turn, and it is the reason this variant fails harder than
+  clause-surrender-value-recited even though both fail.
+  The detector this row is written for is adjacency: a limitation turn followed within
+  one or two turns by a minimising construction, with no understanding check between.
+  call_craft.md A-16 labels that detector an ASSUMPTION and names its false-positive
+  mode - legitimate proportionality statements - so it needs a calibrated TNR before it
+  gates anything, and clause-surrender-value-explained is the nearest negative
+  available for that calibration.
+  Why not a simpler row: a row that omitted the surrender position is caught by any
+  presence check. This row is the same defect with the vocabulary intact, and it is the
+  version a conversion-trained adviser actually produces.

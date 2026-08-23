@@ -1,0 +1,112 @@
+id: divergence-two-products-one-meeting-mas-carveout
+title: One meeting, two products, two commission standards
+customer: sg_two_products
+tags: [jurisdiction, disclosure, compliance-gate, objection-handling, near-miss]
+kpis: [CG]
+regime: mas
+language: en
+
+# regulators.md §6 D8, the intra-jurisdiction divergence. Almost every divergence in
+# the research is between countries; this one is inside a single conversation, which
+# is why it is the hardest of the five to build a checker for. The register entries
+# on the two sides of the split are BOTH MAS entries, and the row is graded against
+# a second regime only to show that the asymmetry is a MAS artefact and not a
+# universal truth.
+divergence:
+  axis: D8
+  regimes:
+    - regime: mas
+      verdict: pass
+      register_entry: mas-life-policy-distribution-cost
+      rule: >-
+        For a life policy the adviser discloses the distribution cost item in the
+        policy illustration and is not required to disclose the amount and type of its
+        own remuneration, so declining to name a figure on the policy is the rule being
+        followed, not a gap - while the unit trust in the same meeting owes an amount
+        under MAS-2 ¶18 and got one (MAS-2 ¶22; MAS-4 ¶4).
+    - regime: sfc-ia
+      verdict: fail
+      register_entry: sfc-ia-monetary-benefit-percentage-ceiling
+      rule: >-
+        Hong Kong has no life-policy carve-out of this shape: monetary benefits are
+        disclosed as a percentage ceiling of the investment amount per transaction for
+        both products, so silence on the policy's own remuneration is a missing
+        disclosure rather than a respected exemption (HK-1 ¶8.3 Part A(a)(i)).
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - >-
+      Two different things then, and they do different jobs. Before either - what is
+      the fund for, and what is the policy for?
+    - >-
+      Your brother's policy is the right thing to raise, and I will come back to it,
+      because what he ran into has a name and a number attached to it.
+    - >-
+      On the fund: your capital is at risk, you could get back less than you put in,
+      and past performance is not necessarily indicative of future performance. The
+      source of those figures is the provider's own factsheet.
+    - >-
+      You asked what I make. On the fund, the commission I receive is one and a half
+      per cent of the amount you invest, paid by the fund house, plus a trailer of
+      0.3 per cent a year for as long as you hold it.
+    - >-
+      On the policy, I am going to answer that differently and tell you why. What I
+      can show you is the distribution cost line in the policy illustration, which is
+      here - that is what the distribution of this policy costs. I am not required to
+      disclose my own remuneration on a life policy and I am not going to pretend the
+      distribution cost is the same number as what I earn.
+    - >-
+      Do you want to go through the illustration line by line before we talk about
+      whether you need both? I would rather you asked me now than signed and asked
+      later.
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    Graded under MAS. The adviser owed two different disclosure standards in one
+    meeting and met both: an amount plus trailer on the unit trust under MAS-2 ¶18-¶19,
+    and the policy illustration's distribution cost item on the life policy under
+    MAS-2 ¶22, where its own remuneration is not required. It also said out loud that
+    the two numbers are not the same thing, which is the part a customer needs and no
+    rule demands.
+
+tools:
+  expected: [record_disclosure, resolve_objection, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 3}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - one and a half per cent of the amount you invest
+    - distribution cost line in the policy illustration
+
+expected_failure:
+  contracts: [tools]
+  since: first written for the advisory pack
+  expectation: >-
+    We expect a compliance flag on turn five and a session scored fail. Any checker
+    with one commission rule per jurisdiction reads "I am not required to disclose my
+    own remuneration" as a refusal to disclose, and the strictest possible reading -
+    require an amount on everything, everywhere - is the one an engineer reaches for
+    first because it never under-fires. It over-fires here, on the single row in the
+    pack where saying less is the rule.
+
+notes: >-
+  The row that shows the register cannot be keyed by jurisdiction alone: it has to be
+  keyed by jurisdiction AND product class, and this is the transcript that proves it
+  rather than asserting it. regulators.md §6 D8 states the consequence plainly - a
+  checker with one rule per jurisdiction gets one of the two products wrong whichever
+  rule it picks. Note also what the pass does NOT mean: nothing here says the customer
+  is well served by not knowing what the adviser earns on the policy. The pack's
+  labelling rule is the register's verdict, not the reviewer's preference, and a row
+  where those two come apart is worth more than a row where they agree.
+  Why not a simpler row: a single-product row cannot exhibit an asymmetry, and a row
+  where the adviser simply stayed silent on the policy would be indistinguishable
+  from an omission - the explicit "I am not required to, and here is what I can show
+  you instead" is what makes the correct behaviour observable.

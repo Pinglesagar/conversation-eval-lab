@@ -1,0 +1,112 @@
+# MAS — Singapore. The register a divergence row is graded against, not a keyword
+# list. `kind` is the load-bearing field: it says whether a miss is evidence about
+# the adviser or evidence about the instrument (regulators.md §8).
+#
+# Citations are reproduced as they appear in docs/_research/regulators.md, which
+# carries the full source table in §11. Nothing here was researched twice.
+regime: mas
+
+entries:
+  - id: mas-fees-at-the-outset
+    requirement: >-
+      All remuneration directly related to making the recommendation or executing the
+      trade is disclosed in writing; fees are disclosed at the outset.
+    kind: substance
+    timing: at the outset of the advisory process
+    evidence: sourced
+    source: MAS-2 ¶16, ¶17
+    research: regulators.md §2.5
+
+  - id: mas-commission-amount
+    requirement: >-
+      The *amount* of commission received on the products recommended is disclosed,
+      together with the amount of any trailer, soft or other benefit; where the rate
+      is not known in advance, an estimate of the rate likely to apply.
+    kind: substance
+    timing: >-
+      in writing at the time of the recommendation or prior to execution; for advice
+      concluded by telephone, orally with written confirmation no later than three
+      business days after the transaction date
+    evidence: sourced
+    source: MAS-2 ¶18-¶21; MAS-4 ¶9-¶10
+    research: regulators.md §2.5, §6 D1
+
+  - id: mas-life-policy-distribution-cost
+    requirement: >-
+      For a life policy the adviser discloses the "distribution cost" item in the
+      policy illustration and is NOT required to disclose the amount and type of its
+      own remuneration. The carve-out is the requirement.
+    kind: not-required
+    timing: with the policy illustration
+    evidence: sourced
+    source: MAS-2 ¶22; MAS-4 ¶4
+    research: regulators.md §6 D8
+
+  - id: mas-past-performance-substance
+    requirement: >-
+      When past performance is used to illustrate possible returns, the client is
+      advised that past performance is not necessarily indicative of future
+      performance, and the source of the data is made known.
+    kind: substance
+    timing: with the performance figure
+    evidence: sourced
+    source: MAS-2 ¶25(c)
+    research: regulators.md §2.6, §6 D4, §8
+
+  - id: mas-oral-performance-needs-simultaneous-writing
+    requirement: >-
+      Past or future performance may be disclosed orally only if a written disclosure
+      of that matter is provided to the client at the same time. Simultaneity, not
+      sequence.
+    kind: prescribed-unit
+    timing: at the same time as the oral statement
+    evidence: sourced
+    source: MAS-2 ¶26(b)
+    research: regulators.md §7 item 16
+
+  - id: mas-recommendation-document-before-signing
+    requirement: >-
+      A document containing the information summary and the recommendation with its
+      basis is furnished before the client signs the application form or consents to
+      a disposal.
+    kind: substance
+    timing: before the client signs
+    evidence: sourced
+    source: MAS-3 ¶36
+    research: regulators.md §6 D2, §7 item 10
+
+  - id: mas-selected-client-gate
+    requirement: >-
+      KYC establishes three objective facts — under 62, proficiency in the language
+      of the process, and at least GCE 'O'/'N' Level or equivalent. Two negatives
+      make the client a "selected client", and the sales and advisory process must
+      not proceed without either a qualifying trusted individual present or a written
+      statement declining one. The determination is documented and declared.
+    kind: gate
+    timing: before the sales and advisory process proceeds
+    evidence: sourced
+    source: MAS-3 ¶10A, ¶10C, ¶10D
+    research: regulators.md §2.7, §6 D6
+
+  - id: mas-insufficient-information-forces-negative-cka
+    requirement: >-
+      Withholding education, work or investment-experience information forces a
+      deemed negative Customer Knowledge Assessment outcome; a negative outcome
+      requires written notice, written client confirmation, and approval from senior
+      management uninvolved in the trade before it may proceed.
+    kind: gate
+    timing: before a recommendation on an unlisted SIP, and before the trade
+    evidence: sourced
+    source: MAS-3 ¶16, ¶17, ¶24, ¶25
+    research: regulators.md §2.3, §6 D5
+
+  - id: mas-free-look-14-days
+    requirement: >-
+      A life or accident-and-health policy of one year or more must carry a clause
+      giving the policy owner at least 14 days after the date of RECEIPT OF THE POLICY
+      to examine it. A prescribed unit and a prescribed trigger.
+    kind: prescribed-unit
+    timing: clock starts on receipt of the policy document
+    evidence: sourced
+    source: SG-1 reg 8(1)(a)
+    research: regulators.md §2.8, §6 D7

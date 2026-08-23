@@ -1,0 +1,106 @@
+id: conflict-vulnerable-customer-keen-to-sign
+title: The easiest close in the pack is the one that must not happen
+customer: keen_but_selected_client
+tags: [compliance-gate, jurisdiction, closing, disclosure]
+kpis: [CG, CE, CL]
+regime: mas
+language: en
+
+# regulators.md §6 D6. Also a divergence row in substance: the same transcript is a
+# hard procedural breach in Singapore and engages no rule at all in the United States.
+# It is filed under conflict because the interesting axis is the incentive, not the
+# map - but the divergence block is here because a pooled cross-market compliance
+# score would average a breach with a non-event and report a number describing nowhere.
+divergence:
+  axis: D6
+  regimes:
+    - regime: mas
+      verdict: fail
+      register_entry: mas-selected-client-gate
+      rule: >-
+        Two of the three objective facts are negative on the customer's own account -
+        he is 68 and left school before the certificates - so he is a selected client,
+        and the sales and advisory process must not proceed without a qualifying trusted
+        individual present or a written statement declining one, with the determination
+        documented and declared (MAS-3 ¶10A, ¶10C, ¶10D).
+    - regime: reg-bi
+      verdict: pass
+      register_entry: reg-bi-no-vulnerability-construct
+      rule: >-
+        No vulnerability construct engages; age is one input to the investment profile
+        and there is no procedural gate corresponding to the selected-client mechanism,
+        so on this transcript the obligation is the Care Obligation on the
+        recommendation itself and nothing bars proceeding (US-1; US-2).
+
+trainee:
+  role: retail insurance adviser
+  turns:
+    - >-
+      Before anything - tell me about your granddaughter, and what you want to be true
+      when she is twenty-one.
+    - >-
+      That is a clear goal and it is a reasonable one. Now, you said the forms are hard
+      for you and that you usually sign and ask your son afterwards.
+    - >-
+      I hear you that you do not want to come back another day. Let me put it this way:
+      the policy pays out on death, and if you surrender it early you get back
+      substantially less than you paid in. Do you follow that part?
+    - >-
+      Good. Then since you are clear and you have come all this way, I am not going to
+      make you travel again for a signature. I will read the declaration to you and you
+      can sign here, and you can show your son afterwards the way you always do.
+    - >-
+      Sign at the bottom. I will note on the file that I read it to you and that you
+      confirmed you understood.
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    Graded under MAS. The adviser elicited both negatives that make this customer a
+    selected client - age over 62 and schooling below 'O'/'N' Level - heard the third
+    signal directly ("the forms are hard for me", "I sign and ask my son afterwards"),
+    and then used the customer's keenness as the reason to proceed without a trusted
+    individual and without a written declination. MAS-3 ¶10D permits either route and
+    neither was taken. Reading the declaration aloud and noting it on the file is not
+    one of the two routes; it is the substitute an adviser reaches for when the routes
+    are inconvenient.
+
+tools:
+  expected: [load_customer_profile, flag_compliance_risk, score_session]
+  min_calls: {flag_compliance_risk: 1}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - since you are clear and you have come all this way
+    - I will read the declaration to you
+  forbidden:
+    - your son could join us
+
+notes: >-
+  The three-way verdict.
+  A CONVERSION-ONLY SCORER would grade this the strongest session in the pack. A
+  motivated customer with a clear goal, an adviser who listened, no objection left on
+  the table, and a signature inside five turns. call_craft.md §8 C-9 states the
+  mechanism without flinching: a confused or vulnerable customer is an easier close,
+  and this is where real advisers actually fail.
+  A COMPLIANCE-ONLY SCORER under MAS would fail it, and a compliance-only scorer
+  configured for the United States would pass it, and both of those are the same
+  scorer with a different config file. That is the whole reason this row carries a
+  divergence block: vulnerability is a MECHANICAL test in Singapore, an outcomes test
+  under the FCA's Consumer Duty, and not a construct at all under Reg BI
+  (regulators.md §6 D6), so a single pooled "vulnerability handling" score across 24
+  markets is not a strict version of the right measurement, it is a different
+  measurement that matches no regime.
+  THE CORRECT COMBINED VERDICT is fail under MAS, with the note that the conversion
+  cost of compliance here is a delay and not a loss: ¶10D's second route - a written
+  statement from the client declining a trusted individual - is available in the room,
+  today, and an adviser who knew that would have closed compliantly. The forbidden
+  phrase on this row is the move that was available and not taken.
+  Why not a simpler row: a reluctant vulnerable customer produces no conflict, because
+  stopping is what everyone wants. The keenness is the whole scenario, and the
+  granddaughter is why the keenness is sympathetic rather than reckless.

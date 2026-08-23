@@ -1,0 +1,85 @@
+id: clause-surrender-value-explained
+title: What happens if you stop paying, answered in consequence terms
+customer: surrender_prober
+tags: [disclosure, control, discovery, objection-handling]
+kpis: [CE]
+regime: fca
+language: en
+
+# One of three. clause-surrender-value-explained / -recited / -understated share the
+# first three trainee turns verbatim and differ only in how the surrender clause is
+# handled, so a verdict difference between them is attributable to the clause turn and
+# to nothing else. That is the same controlled-comparison design as the market-parity
+# rows in the roleplay pack, applied to a behaviour rather than to a market.
+trainee:
+  role: retail insurance adviser
+  turns:
+    - >-
+      Before the numbers - you said the offer came through work. What made you look at
+      it rather than leave it in the drawer?
+    - >-
+      And you said twice in five years you have had three or four months with nothing
+      coming in. When that happened, what did you stop?
+    - >-
+      That is the thing we have to design around, so let me answer your question about
+      stopping before I tell you what it costs.
+    - >-
+      If you stopped at two years in, you would have paid about five thousand seven
+      hundred pounds and the surrender value would be close to nothing. Not a reduced
+      amount - close to nothing. The costs of setting the policy up come out of the
+      early years, so the early years are where you are furthest behind.
+    - >-
+      Put it against your own case: the second time your income stopped, if you had
+      been eighteen months into this, you would have been choosing between finding two
+      hundred and forty a month with nothing coming in, or walking away from five
+      thousand pounds. That is the real decision, and it is a decision about your
+      income, not about the fund.
+    - >-
+      Have I put that clearly? Because if any of it is fuzzy I would rather go again
+      now than have you find out at month eighteen.
+    - >-
+      There is a version of this at a hundred and twenty a month that you would be far
+      more likely to keep. Smaller cover, but cover you still have in year five. Do you
+      want me to price both, or does the whole thing feel like the wrong shape?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    The clause is restated in consequence terms for this specific customer, with a
+    number, with the mechanism named (front-loaded costs), worked through against the
+    customer's own disclosed income history, followed by an explicit understanding
+    check, and followed by the adviser volunteering a cheaper option they earn less on.
+    PRIN 2A.5.3R and 2A.5.9R are both discharged: the communication is tailored and the
+    customer is asked whether they understand at the turn that prompts the decision.
+
+tools:
+  expected: [record_disclosure, resolve_objection, reveal_concern, score_session]
+  forbidden: [flag_compliance_risk]
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - close to nothing
+    - Have I put that clearly?
+  forbidden:
+    - most people keep
+
+notes: >-
+  The control row of the triad, and the row that shows what "explained" means as a
+  behaviour rather than as a compliment. Three sourced elements are present and each
+  is separately detectable: a recoverable-value figure, the front-loading mechanism
+  that produces it (call_craft.md §5.2, S-32), and an understanding check at the
+  decision turn (S-22, FCA PRIN 2A.5.9R). The fourth element is not required by
+  anything - offering the smaller premium the customer is more likely to keep - and it
+  is in the script because call_craft.md §5.2 makes the point that an adviser
+  explaining early-surrender loss honestly is explaining the mechanism by which the
+  product makes money, so the honest version of this conversation has a commercial
+  cost and the pack should be able to show one adviser paying it.
+  Why not a simpler row: without a control that passes, the two failing variants only
+  demonstrate that the scorer can say no. The triad only becomes a measurement when
+  the same customer, the same clause and the same first three turns produce different
+  verdicts.

@@ -1,0 +1,107 @@
+id: divergence-verbal-close-nothing-in-writing
+title: A flawless call closed with nothing in writing
+customer: us_rollover_client
+tags: [jurisdiction, disclosure, compliance-gate, closing, market-parity]
+kpis: [CG, CL]
+regime: reg-bi
+language: en
+
+# regulators.md §6 D2 and §7 items 1, 3, 10. The row that stops the pack from
+# teaching that more paperwork is always more compliant: this session is compliant
+# in the United States precisely because no suitability report exists as a
+# requirement there, and a scorer that has learned "close without a document = fail"
+# from UK and Singapore rows has learned a market convention as a rule.
+divergence:
+  axis: D2
+  regimes:
+    - regime: reg-bi
+      verdict: pass
+      register_entry: reg-bi-no-suitability-report
+      rule: >-
+        No suitability report exists as a requirement; the written obligation is about
+        relationship scope, fees and conflicts, and it was discharged before the
+        recommendation was made, so a verbal recommendation closed on the call is
+        compliant (US-1 §240.15l-1(a)(2)(i)).
+    - regime: fca
+      verdict: fail
+      register_entry: fca-suitability-report-before-conclusion
+      rule: >-
+        A suitability report must be provided before the transaction is concluded, and
+        the distance-communication exception requires the client's consent and the
+        genuine option to delay, neither of which was sought here (COBS 9A.3.2R).
+    - regime: mas
+      verdict: fail
+      register_entry: mas-recommendation-document-before-signing
+      rule: >-
+        A document containing the information summary and the recommendation with its
+        basis must be furnished before the client signs the application form, and the
+        adviser here took the instruction on the call with nothing furnished
+        (MAS-3 ¶36).
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - >-
+      Before anything else, I am going to send you our disclosure document - it sets
+      out what we do for you, what it costs, and where our interests and yours are not
+      identical. I will wait until you have it in front of you before I recommend
+      anything.
+    - >-
+      Now: you said you want it somewhere you can see it. Is the problem the returns,
+      or the access?
+    - >-
+      So the actual complaint is that you have stopped looking at it. That changes what
+      I would suggest, because the cheapest plan in the world is worth nothing if you
+      never open it.
+    - >-
+      Moving it costs you nothing at the point of transfer. Ongoing, you are looking
+      at a range of forty to sixty basis points depending on which of the two options
+      you pick.
+    - >-
+      Before you decide - what you would give up is the old plan's institutional share
+      class, which is cheaper than either option here, and any loan facility against it.
+      That is the honest cost of moving.
+    - >-
+      So: a rollover into the option you can actually log into, forty to sixty basis
+      points a year, giving up the institutional pricing you are not currently using
+      because you cannot get into the account. Do you want me to start it today?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    Graded under Reg BI. The written relationship, fee and conflict disclosure was
+    delivered before the recommendation, the Care Obligation's material-limitations
+    element was addressed out loud - the institutional share class and the loan
+    facility being given up - and no suitability report is required. The close carries
+    a summary before the ask. There is nothing here to fail.
+
+tools:
+  expected: [record_disclosure, reveal_concern, score_session]
+  forbidden: [flag_compliance_risk]
+  ordering:
+    - first: record_disclosure
+      then: score_session
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - I will wait until you have it in front of you
+    - what you would give up
+
+notes: >-
+  This is the row that makes the divergence suite falsifiable in the useful
+  direction. Four of the five divergence rows fail somewhere; this one passes in the
+  regime it is graded in and fails in two others, so a scorer that has drifted toward
+  "document everything" shows up here as a false positive rather than staying hidden
+  inside a generally stricter-is-safer bias. regulators.md §6 D2 puts it exactly:
+  an adviser who conducts a flawless discovery, gives a well-reasoned verbal
+  recommendation and closes on the call is compliant under Reg BI and in breach under
+  both the FCA and MAS, on the same transcript with the same words.
+  Why not a simpler row: a row where the adviser was also sloppy would let a reader
+  believe the two failing regimes are objecting to the sloppiness. The discovery here
+  is deliberately excellent - the adviser hears a usability complaint and does not
+  pitch performance at it - so the only thing left to fail on is the artefact.

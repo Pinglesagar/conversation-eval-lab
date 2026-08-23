@@ -1,0 +1,88 @@
+id: survival-graceful-exit-is-the-pass
+title: The call that should end, ended, and scored as a pass
+customer: busy_gatekeeper
+tags: [control, closing, objection-handling, aggressive-customer]
+kpis: [CS, CL]
+regime: fca
+language: en
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - >-
+      Your number came from the pension provider's referral list, and I will take you
+      off it at the end of this call either way.
+    - >-
+      One question and then I will go: do you know what you are currently paying on the
+      pension you have not looked at?
+    - >-
+      Then the smallest useful thing I could do is send you the one figure, with nothing
+      attached to it and no call afterwards. Shall I?
+    - >-
+      Understood. Then I will not send it, I will not ring again, and I have taken you
+      off the list as I said. If you ever want that number you can get it from the
+      provider in about ten minutes without me - ask them for the ongoing charge figure
+      on the plan. Thanks for picking up.
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    The adviser shrank the ask to its smallest useful form, the customer declined the
+    shrunk ask, and the adviser closed cleanly with no fourth attempt, no manufactured
+    urgency, and no cost attached to leaving. It also left the customer better off than
+    before the call by telling him how to get the figure without an adviser. That is
+    the correct outcome, and there is nothing here to fail.
+
+tools:
+  expected: [raise_objection, score_session]
+  forbidden: [flag_compliance_risk]
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+    - tool: score_session
+      arg: closing
+      op: gte
+      value: 3
+
+trainee_phrases:
+  required:
+    - I will not send it, I will not ring again
+    - you can get it from the provider in about ten minutes without me
+  forbidden:
+    - before you go
+    - one last thing
+
+expected_failure:
+  contracts: [tools]
+  since: first written for the advisory pack
+  expectation: >-
+    We expect the closing criterion scored at or near zero and quite possibly a failed
+    session. The rubric's closing criterion asks whether the trainee asked for the
+    business and whether a summary preceded the ask; here the ask was made, declined,
+    and correctly not repeated, and there is no product summary because there is no
+    product. A criterion that scores "asked for the business" as a presence check
+    cannot distinguish this row from an adviser who lost their nerve.
+
+notes: >-
+  This row exists to make an argument about the suite rather than about the adviser, and
+  the argument is worth stating in one line: a suite that only rewards persistence
+  teaches persistence, and a scorer that cannot pass a graceful exit is broken. If the
+  only sessions that score well are the ones that end in a next step, then every
+  adviser coached by this product learns to manufacture a next step - and the fourth
+  attempt after a clear decline is precisely the behaviour call_craft.md §3.2 identifies
+  as the failure mode against a genuine exit, and precisely the pressure pattern
+  Reg BI's Conflict of Interest Obligation is written about (S-53).
+  The two forbidden phrases are the ones that turn this row into its opposite. Both are
+  short, both are natural, and both are what a conversion-trained model produces when
+  asked to improve this transcript.
+  The declared expected failure is not a complaint about the rubric; it is the
+  measurement. call_craft.md §7 endorses keeping the summary-before-the-ask requirement
+  exactly as it is, and this row shows the price of that requirement is a false negative
+  on correctly abandoned calls. Both facts should be in the report, with the denominator
+  of correctly abandoned calls next to them, or the rate is uninterpretable.
+  Why not a simpler row: a row where the customer buys, or a row where the adviser is
+  rude, tells you nothing about the scorer's ability to reward stopping. The only way to
+  find out whether stopping can pass is to write a session in which stopping is the
+  best available behaviour and see what the instrument does with it.

@@ -1,0 +1,96 @@
+id: nearmiss-restricted-advice-buried-in-a-long-turn
+title: The prescribed term, said once, inside a hundred and forty words
+customer: uk_commission_asker
+tags: [near-miss, disclosure, compliance-gate, discovery]
+kpis: [CE, CG]
+regime: fca
+language: en
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - >-
+      Before anything else - what would you want this money doing in ten years, and
+      how much of it would you need to reach sooner?
+    - >-
+      So, a little about how we work and then I will get out of your way. We have been
+      going since 2009, mostly with clients who have come to us the way you have,
+      through family, and the reason people stay is that we do not churn portfolios to
+      look busy. There is a lot of noise in this industry about independence and I will
+      be honest with you, most of it is marketing. What matters is whether the person
+      in front of you understands the thing they are selling. We provide restricted
+      advice and we have a panel we work from, which we review every year with the same
+      committee that signs off our research, and between the panel and the research
+      process I would say we look at more of the market than most people who use the
+      other label. Anyway. You did not ring me to hear about us.
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital is at risk: you
+      could get back less than you put in, and past performance is not a reliable
+      indicator of future results.
+    - >-
+      Our advice charge on eighty thousand is one thousand six hundred pounds, and the
+      fund's annual management charge is 0.68 per cent a year. Both are in the
+      illustration I will send you before you sign anything.
+    - >-
+      So: capital at risk, one thousand six hundred pounds to me, 0.68 per cent a year
+      to the fund, and the money reachable if you need it. Shall we get the paperwork
+      started?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    The literal prescribed term "restricted advice" is in the transcript, in good time
+    before the advice, spoken aloud as COBS 6.2B.38R requires for spoken interaction -
+    so the timing is right and the form of words is right. It is delivered inside a
+    hundred and forty words of firm biography, immediately after the adviser has told
+    the customer that talk about independence is mostly marketing, and immediately
+    before "you did not ring me to hear about us". It was said and it was not conveyed:
+    PRIN 2A.5.3R requires communications likely to be understood, and the surrounding
+    turn is constructed to make this one not be.
+
+tools:
+  expected: [record_disclosure, flag_compliance_risk, score_session]
+  min_calls: {record_disclosure: 3, flag_compliance_risk: 1}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - We provide restricted advice
+    - most of it is marketing
+    - You did not ring me to hear about us
+
+expected_failure:
+  contracts: [tools]
+  since: first written for the advisory pack
+  expectation: >-
+    We expect no compliance flag and a session scored pass, and this is the one row in
+    the pack where a STRICTER check passes it more confidently. COBS 6.2B.33R(2)
+    requires the literal term, so a verbatim matcher is the correct instrument for this
+    requirement, and the verbatim matcher finds an exact hit.
+
+notes: >-
+  Why a keyword matcher passes this row: because for once the keyword matcher is the
+  right tool. regulators.md §8 lists the literal terms "independent advice" and
+  "restricted advice" among the requirements satisfiable only by a specific form of
+  words, and a substring check on a prescribed form of words is a correct
+  implementation of that requirement. The row is here to show that a correct
+  implementation of a verbatim rule still cannot see prominence, and prominence is
+  named as the thing that matters: call_craft.md §5.1 records, as FCA-cited poor
+  practice, risk warnings "placed at the end of long mobile journeys or displayed in
+  small or low contrast formats", and as good practice, limitations given equal
+  prominence with features (S-26). Turn length and adjacency are the spoken-call
+  equivalent, and both are measurable without a model - words in the turn, position
+  within it, and what the neighbouring clauses do to it.
+  ASSUMPTION, labelled: the specific threshold at which a turn is long enough to bury
+  a disclosure is not established by anything in the research. A detector built on it
+  needs a calibrated TNR before it gates, for the same reason call_craft.md A-16 gives
+  for the minimisation detector - the legitimate case (a genuinely informative long
+  answer) looks identical on a length feature alone.
+  Why not a simpler row: a row where the term was omitted tests nothing that is not
+  already tested, and a row where the term appeared in a short turn would pass
+  correctly. The defect only exists in the interaction between a satisfied verbatim
+  rule and an unsatisfied understanding rule, which needs both to be present.

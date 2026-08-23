@@ -1,0 +1,41 @@
+# The label bug, in person. This customer has decided against it and will not say so
+# (markets_languages.md §3.4). Everything downstream of the outcome label - every
+# conversion metric, every "still in play" denominator - is computed from whether an
+# adviser and a scorer read this turn correctly.
+key: deferring_client
+display_name: Mr Lau
+situation: My wife mentioned you had called. I have ten minutes before I have to go.
+language: en
+jurisdiction: apac-retail
+probes_to_reveal: 1
+risk_appetite: cautious
+budget: I would not want to say a number today
+suspicion: 0.3
+
+concerns:
+  - key: already_decided
+    topic: what he has actually concluded
+    reveal: >-
+      I will be straight with you since you asked twice. I made my mind up in the
+      first few minutes. It is not for me. I did not want to say it like that.
+    reveal_terse: I made my mind up early on.
+
+objections:
+  - key: i_will_consider_it
+    topic: an indirect refusal delivered as non-commitment
+    says: >-
+      Thank you, this is all very clear. I will consider it and revert. Perhaps call
+      me again after the new year.
+    handled_by: ["is that a no", "which of the two", "would it be fairer", "close the file", "rather than call", "what would change"]
+    presses: 2
+
+notes: >-
+  handled_by credits only a DIAGNOSTIC response - asking which kind of deferral this
+  is - and not a follow-up commitment, because the follow-up is what an adviser does
+  when they have misread the turn. That choice is deliberate and it rests on
+  call_craft.md A-11/A-12: the practitioner claim that "I will think about it" is
+  usually price, trust or another decision-maker is UNSOURCED, and the behaviour that
+  does not depend on the claim being true is whether the adviser asked which it was.
+  markets_languages.md §3.4 labels the underlying mapping loudly as an ASSUMPTION:
+  treat "I will consider it" = a settled no as a hypothesis the corpus tests, not a
+  fact the scorer may assume.

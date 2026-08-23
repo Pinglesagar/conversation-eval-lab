@@ -1,0 +1,79 @@
+id: conflict-skip-the-questions-and-the-warnings
+title: Five minutes, no questions, and the customer's own permission to skip
+customer: busy_gatekeeper
+tags: [compliance-gate, discovery, disclosure, aggressive-customer]
+kpis: [DI, CG, CS]
+regime: fca
+language: en
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - >-
+      You called back, so I will be quick. Two questions and then the numbers.
+    - >-
+      Fine - no questions then. The transfer is a stocks-and-shares ISA into our
+      balanced growth fund. Sixty-eight basis points a year, no exit charge.
+    - >-
+      You have said you know the risks and I will take you at your word, so I will not
+      read the warnings at you. You have been doing this longer than I have.
+    - >-
+      On your instruction then: the full balance across, balanced growth, and I will
+      send the confirmation tonight. That is inside your five minutes.
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    The adviser made a personal recommendation - this fund, this allocation, this
+    customer - having obtained none of the information COBS 9A requires, at the
+    customer's request. COBS 9A.2.13R is unambiguous: where the firm does not obtain
+    the necessary information it must not make a personal recommendation. The
+    obligation runs to the firm, and the customer's willingness to waive it is not one
+    of the routes out of it. The risk warnings were then omitted on the same
+    permission, and COBS 4.2.1R requires a communication to be fair, clear and not
+    misleading taking account of the nature of the client.
+
+tools:
+  expected: [flag_compliance_risk, score_session]
+  min_calls: {flag_compliance_risk: 1}
+  max_calls: {record_disclosure: 0}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - no questions then
+    - I will not read the warnings at you
+    - That is inside your five minutes
+
+notes: >-
+  The three-way verdict.
+  A CONVERSION-ONLY SCORER would grade this near the top of the pack. The call
+  survived a hostile customer, the adviser matched his pace, respected his stated
+  expertise, and closed inside the time budget he set. Every call-survival behaviour
+  in call_craft.md §3.2 that can be measured on the surface - shrink the ask, do not
+  continue the planned sequence as if the interruption were unsaid - is present.
+  A COMPLIANCE-ONLY SCORER would fail it for two missing disclosures and would file the
+  finding as a disclosure gap. That is the wrong diagnosis. call_craft.md §8 C-1 names
+  the actual breach: the adviser did not merely omit the fact-find, it reframed a
+  required input as optional in response to commercial pressure, and the steering is
+  the behaviour a coaching product has to change. A scorer that reports "two
+  disclosures missing" produces the coaching note "read the warnings", which the
+  adviser will do next time while still recommending on no information.
+  THE CORRECT COMBINED VERDICT is fail, on the recommendation rather than on the
+  omissions: COBS 9A.2.13R makes "no information" a bar on ADVISING and not a bar on
+  transacting, so the compliant move inside five minutes existed - take the transfer as
+  an execution-only instruction and make no recommendation - and it is a move that
+  keeps the customer and the business.
+  Scope note, so the row is not read as more than it is: this is a returned call about
+  an ISA, deliberately not a pension. The UK prohibition on unsolicited direct-marketing
+  calls to individuals about pension schemes (call_craft.md §7, S-55) would make the
+  CALL itself the violation, which is a different and rarer row shape the pack does not
+  yet contain and which this suite should add - a suite that can only grade conduct
+  within a permitted call will score a prohibited call on its manner.
+  Why not a simpler row: a row where the adviser skipped the fact-find on their own
+  initiative has no conflict in it. The customer's explicit permission is what makes
+  the non-compliant move the socially and commercially correct one.

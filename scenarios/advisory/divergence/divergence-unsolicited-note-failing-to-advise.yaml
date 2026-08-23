@@ -1,0 +1,127 @@
+id: divergence-unsolicited-note-failing-to-advise
+title: The customer asked for no advice, and not giving any is the breach
+customer: hk_self_directed
+tags: [jurisdiction, compliance-gate, unlicensed-advice, discovery, known-gap]
+kpis: [CG, DI]
+regime: sfc-ia
+language: en
+
+# regulators.md §6 D10 and §6 D5. The row that inverts the detector. Every plausible
+# unlicensed-advice check in this repo - and in the product category being modelled -
+# fires when an adviser GIVES a recommendation. Here the adviser gives none, at the
+# customer's explicit request, and two of the four regimes fail the session for
+# opposite reasons.
+divergence:
+  axis: D10
+  regimes:
+    - regime: sfc-ia
+      verdict: fail
+      register_entry: sfc-ia-unsolicited-derivative-duty-to-advise
+      rule: >-
+        For a non-exchange-traded derivative where there was no solicitation and the
+        client has no derivatives knowledge, the intermediary must warn the client,
+        ADVISE on suitability and keep records, and may proceed on an unsuitable
+        assessment only where doing so is in the client's best interests. The absence
+        of a recommendation is what triggers the duty, so declining to advise is the
+        breach (HK-1 ¶5.1A(b)(ii)).
+    - regime: mas
+      verdict: fail
+      register_entry: mas-insufficient-information-forces-negative-cka
+      rule: >-
+        A structured note is not an Excluded Investment Product, so the factual-
+        information carve-out does not reach it; the client's own account of his
+        experience produces a negative Customer Knowledge Assessment outcome, and a
+        negative outcome requires written notice, written client confirmation and
+        senior-management approval before the trade may proceed - a different breach on
+        the same transcript (MAS-3 ¶16, ¶24, ¶25).
+    - regime: reg-bi
+      verdict: pass
+      register_entry: reg-bi-care-obligation-binds-the-recommendation
+      rule: >-
+        The Care Obligation binds the recommendation, and no recommendation was made:
+        no call to action, no individual tailoring. A self-directed order taken without
+        advice does not engage the obligation (US-1 §240.15l-1(a)(2)(ii)).
+    - regime: fca
+      verdict: pass
+      register_entry: fca-must-not-recommend-on-insufficient-information
+      rule: >-
+        The suitability regime attaches to giving a personal recommendation, and the
+        firm's duty on insufficient information is a bar on ADVISING rather than a bar
+        on transacting - so an execution-only order placed without a recommendation is
+        outside COBS 9A (COBS 9A.2.13R).
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - >-
+      Before I place anything - what have you held before? I am asking because it
+      changes what I am allowed to do, not because I am stalling you.
+    - >-
+      Funds and inherited shares, and no notes. Understood.
+    - >-
+      You have said you do not want advice, and I will respect that. I will place the
+      order as an execution-only instruction and I will note on the file that you
+      declined an explanation of the product.
+    - >-
+      For the record, so nobody says later that I sold it to you: this was your idea,
+      you named the product, and I have not recommended it.
+    - >-
+      Confirming the order now. Five hundred thousand, the note your colleague holds.
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    Graded under the SFC. The adviser established exactly the fact that triggers the
+    duty - no prior knowledge or experience of the product type - and then treated the
+    customer's waiver as discharging it. For a non-exchange-traded derivative with no
+    solicitation, ¶5.1A(b)(ii) requires the intermediary to warn, to advise on
+    suitability and to keep records, and permits proceeding on an unsuitable
+    assessment only where that is in the client's best interests. Careful
+    record-keeping about not having advised is not a substitute for the advice the
+    rule requires.
+
+tools:
+  expected: [load_customer_profile, flag_compliance_risk, score_session]
+  min_calls: {flag_compliance_risk: 1}
+  args:
+    - tool: score_session
+      arg: unlicensed_advice_detected
+      op: eq
+      value: false
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - I have not recommended it
+  forbidden:
+    - you should
+
+expected_failure:
+  contracts: [tools]
+  since: first written for the advisory pack
+  expectation: >-
+    We expect no compliance flag and a session scored pass. The advice detector is
+    built to fire on prescription - a modal shift to second-person "you should" - and
+    this transcript is the cleanest possible negative for it: the adviser says out loud
+    that no recommendation was made, and it is true. The detector's polarity is wrong
+    for this market, and no amount of calibration on UK or US sessions would surface
+    it, because in three of the four regimes the polarity is right.
+
+notes: >-
+  The `known-gap` tag is doing real work here. The failure is not that the scorer
+  mis-scored a behaviour; it is that the instrument has no concept in it for
+  "omission of advice as a breach", so there is nothing for a threshold to be tuned
+  to. That is a coverage statement about the design and it is the kind of finding a
+  calibration table cannot produce, because a calibration table only measures
+  agreement on the labels it already has.
+  Note the two failing regimes fail for OPPOSITE reasons, which is worth more than
+  either alone: Hong Kong fails the session for not advising, and Singapore fails it
+  because the knowledge assessment gate was never cleared. A single "was this
+  compliant" boolean pooled across markets cannot represent that, and averaging the
+  two would produce a number describing nowhere.
+  Why not a simpler row: a row where the adviser gave bad advice tests the detector
+  in the direction it was built for. Only a row where the adviser correctly gave none
+  can show that the detector is pointed the wrong way.

@@ -1,0 +1,116 @@
+# FCA — United Kingdom (COBS and PRIN). The register with both drafting traditions
+# in it: COBS 4.5A.10R is a sentence, PRIN 2A.5.3R is an outcome, and an instrument
+# that treats them the same way is wrong about one of them (regulators.md §8).
+regime: fca
+
+entries:
+  - id: fca-adviser-charging-only
+    requirement: >-
+      A firm giving a personal recommendation on a retail investment product may be
+      remunerated only by adviser charges, and must not solicit or accept commission
+      or any other benefit from a product provider. Not a disclosure item — a ban.
+    kind: prohibition
+    timing: ""
+    evidence: sourced
+    source: FCA-3 COBS 6.1A.4R
+    research: regulators.md §3.4, §6 D1
+
+  - id: fca-charging-structure-in-writing-before
+    requirement: >-
+      The firm's charging structure is disclosed in writing in good time before the
+      personal recommendation.
+    kind: substance
+    timing: in good time before the personal recommendation
+    evidence: sourced
+    source: FCA-3 COBS 6.1A.17R
+    research: regulators.md §3.4, §7 item 6
+
+  - id: fca-adviser-charge-cash-terms
+    requirement: >-
+      The total adviser charge is expressed in cash terms, as early as practicable.
+      A prescribed unit rather than a prescribed sentence, and therefore one of the
+      cheapest high-confidence compliance signals available.
+    kind: prescribed-unit
+    timing: as early as practicable
+    evidence: sourced
+    source: FCA-3 COBS 6.1A.24R
+    research: regulators.md §3.4, §8
+
+  - id: fca-past-performance-verbatim
+    requirement: >-
+      The prominent past-performance warning must state that the figures refer to the
+      past and that "past performance is not a reliable indicator of future results".
+      The words, not the meaning.
+    kind: verbatim
+    timing: with the performance figure, prominently
+    evidence: sourced
+    source: FCA-10 COBS 4.5A.10R
+    research: regulators.md §3.5, §6 D4, §8
+
+  - id: fca-suitability-report-before-conclusion
+    requirement: >-
+      A suitability report is provided before the transaction is concluded;
+      deliverable immediately after only where the client consents and could have
+      delayed the transaction, in distance communications.
+    kind: substance
+    timing: before the transaction is concluded
+    evidence: sourced
+    source: FCA-5 COBS 9A.3.2R, 9A.3.2R(3)
+    research: regulators.md §3.2, §6 D2, §7 item 3
+
+  - id: fca-must-not-recommend-on-insufficient-information
+    requirement: >-
+      Where the firm does not obtain the necessary information it must not make a
+      personal recommendation. A bar on advising, not a bar on transacting — and not
+      waivable by a client who would rather skip the questions.
+    kind: gate
+    timing: before any personal recommendation
+    evidence: sourced
+    source: FCA-8 COBS 9A.2.13R
+    research: regulators.md §3.2, §6 D5
+
+  - id: fca-support-retail-customer-understanding
+    requirement: >-
+      Communications must be likely to be understood and tailored to the customer's
+      characteristics including vulnerability; in one-to-one interaction such as a
+      telephone conversation the firm must, where appropriate, ask the customer
+      whether they understand and whether they have further questions — particularly
+      where the information prompts a decision.
+    kind: substance
+    timing: at the turn that prompts a decision
+    evidence: sourced
+    source: FCA-12 PRIN 2A.5.3R, 2A.5.8R, 2A.5.9R
+    research: call_craft.md §5.1 (S-20, S-21, S-22); regulators.md §3.6
+
+  - id: fca-cancellation-30-days-life
+    requirement: >-
+      A 30-calendar-day cancellation period for life and pension contracts (14 for
+      other non-life cases), running from conclusion of the contract or, for life
+      policies, from when the consumer is informed it was concluded; where several
+      periods apply the firm applies the longest.
+    kind: prescribed-unit
+    timing: clock starts on conclusion or on the consumer being informed
+    evidence: sourced
+    source: FCA-14 COBS 15.2.1R, 15.2.2G, 15.2.3R
+    research: regulators.md §3.7, §6 D7
+
+  - id: fca-fair-clear-not-misleading
+    requirement: >-
+      A communication or financial promotion must be fair, clear and not misleading,
+      and in complying the firm must take into account the nature of the client.
+    kind: substance
+    timing: ""
+    evidence: sourced
+    source: FCA-8 COBS 4.2.1R(1), 4.2.1R(3)
+    research: call_craft.md §7 (S-54)
+
+  - id: fca-restricted-advice-oral-disclosure
+    requirement: >-
+      Independent or restricted status is disclosed in good time before advice, using
+      the literal terms "independent advice" or "restricted advice"; with spoken
+      interaction the restricted-advice disclosure must also be made orally.
+    kind: verbatim
+    timing: in good time before providing advice
+    evidence: sourced
+    source: FCA-2 COBS 6.2B.33R, 6.2B.33R(2), 6.2B.38R
+    research: regulators.md §3.3, §7 item 9, §8

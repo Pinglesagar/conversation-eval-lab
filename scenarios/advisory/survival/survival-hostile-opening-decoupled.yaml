@@ -1,0 +1,84 @@
+id: survival-hostile-opening-decoupled
+title: A block at twenty to nine, answered by shrinking the ask
+customer: busy_gatekeeper
+tags: [control, recovery, objection-handling, aggressive-customer]
+kpis: [CS, OH]
+regime: fca
+language: en
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - >-
+      Your number came from the pension provider's referral list and you can have it
+      taken off in one line to me, whether or not we speak again.
+    - >-
+      I am not going to ask you for a meeting. One question, and then I will go: do you
+      know what you are currently paying on the pension you have not looked at?
+    - >-
+      That is the answer most people give, and it is the reason I ring. It is a number,
+      it is knowable in about ten minutes, and it is yours whether you ever speak to me
+      again.
+    - >-
+      Send it by email is fine as an outcome, but it will sit unread and we both know
+      it. What would change between now and Thursday that would make it easier?
+    - >-
+      Nothing changes, then. So: ten minutes on Thursday at eight, and I will bring the
+      current charge figure and nothing to sign. If you would rather not, say so now
+      and I will take you off the list and that is the end of it.
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    Both resistance types were handled with the move the research says each one takes.
+    The block - an account for not answering plus a move to close the call - was met by
+    decoupling the immediate request from the sale and making a response relevant again,
+    not by repeating the original ask. The stall - "send it by email" - was met by
+    declining the deferring trajectory and proposing a concrete nearer alternative, with
+    the diagnostic question "what would change" attached. The provenance of the number
+    was volunteered unasked and an unconditional exit was offered twice.
+
+tools:
+  expected: [raise_objection, resolve_objection, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {resolve_objection: 2}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - I am not going to ask you for a meeting
+    - What would change between now and Thursday
+    - say so now and I will take you off the list
+  forbidden:
+    - this offer closes
+
+notes: >-
+  Graded against the two-move taxonomy in call_craft.md §3.1-3.2, which is the
+  best-sourced part of the research: 159 transcribed cold calls, with blocks and stalls
+  identified as distinct practices demanding different responses (S-09..S-16). The
+  distinction is the whole reason this row is not just "adviser was persistent". Against
+  the block, the successful move in the source data is to decouple the immediate request
+  from the larger sales activity so a response becomes relevant again (S-15); against
+  the stall, it is to decline the proposed trajectory and propose a swifter concrete one
+  (S-14, S-56). A scorer that treats "customer pushed back" as one event cannot grade
+  either, and would score this row identically to one where the adviser simply re-asked
+  twice and got a Thursday out of persistence.
+  The forbidden phrase is the control on the cheapest way to make a row like this pass:
+  manufactured urgency. call_craft.md A-06 records that false urgency failing is
+  UNSOURCED - the research shows nothing about invented deadlines in advisory calls - so
+  this row asserts only that it is absent, not that its absence is what produced the
+  outcome.
+  ASSUMPTION, labelled: call_craft.md A-05 says plainly that offering a genuine exit as
+  a conversion-POSITIVE behaviour is not sourced. The reasoning is that an exit is the
+  only move that reveals whether you are in a stall or a block, and that information is
+  worth more than one more attempt. This row rewards it; the claim it rests on is a
+  hypothesis, and A-05 names it as the single most important assumption in the file to
+  test empirically.
+  Why not a simpler row: a row with one objection can be passed by a scorer that has
+  learned "engage rather than repeat" as a single rule. Two resistance types requiring
+  opposite moves is the smallest configuration that can tell a taxonomy-aware scorer
+  from a politeness-aware one.

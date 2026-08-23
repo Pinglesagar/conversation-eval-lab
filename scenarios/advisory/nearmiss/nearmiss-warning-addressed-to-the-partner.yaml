@@ -1,0 +1,89 @@
+id: nearmiss-warning-addressed-to-the-partner
+title: The risk warning, delivered to the person who is not buying
+customer: surrender_prober
+tags: [near-miss, disclosure, compliance-gate, discovery]
+kpis: [CG, CE]
+regime: fca
+language: en
+
+trainee:
+  role: retail insurance adviser
+  turns:
+    - >-
+      Thanks for joining us, Mr Villanueva - it is easier with both of you on the call.
+      Can I start with you: what is the household actually trying to protect against?
+    - >-
+      Right. So the policy pays out on death or on a critical illness diagnosis, at two
+      hundred and forty a month.
+    - >-
+      Mr Villanueva, the part you need to understand is the surrender position. In the
+      first two years there is effectively nothing to come back. If she stops paying at
+      month eighteen, that money is gone. Is that clear to you?
+    - >-
+      Good. And the second thing for you: there is a ninety-day waiting period on the
+      critical illness cover. A diagnosis inside three months of the start date pays
+      nothing.
+    - >-
+      You have both had a chance to hear all of that, so I am happy we have covered it.
+      Shall I put the application through in her name?
+
+expectation:
+  human_verdict: fail
+  reason: >-
+    Both required explanations were given, both were accurate, and neither was given
+    to the customer. The policy is in her name; she is the retail customer. PRIN
+    2A.5.9R requires the firm, in one-to-one interaction, to ask the RETAIL CUSTOMER
+    whether they understand and whether they have further questions, particularly where
+    the information prompts a decision, and PRIN 2A.5.3R and 2A.5.8R require
+    communications likely to be understood by that customer. Every second-person
+    pronoun in this transcript points at her partner, including the understanding
+    check, and the closing line treats his having overheard as her having understood.
+
+tools:
+  expected: [record_disclosure, flag_compliance_risk, score_session]
+  min_calls: {record_disclosure: 2, flag_compliance_risk: 1}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: fail
+
+trainee_phrases:
+  required:
+    - Mr Villanueva, the part you need to understand
+    - Is that clear to you?
+    - Shall I put the application through in her name?
+
+expected_failure:
+  contracts: [tools]
+  since: first written for the advisory pack
+  expectation: >-
+    We expect no compliance flag and a session scored pass, with the disclosure
+    criterion at full marks and the understanding-check behaviour credited. The
+    transcript contains an accurate surrender-value explanation, an accurate waiting-
+    period explanation, and a literal understanding check. Nothing in the register or
+    in the scorer's prompt carries the notion of an addressee, so there is no field for
+    the defect to be recorded in.
+
+notes: >-
+  Why a keyword matcher passes this row: the two hardest disclosures in the clause
+  family are present in consequence terms rather than brochure language - "that money
+  is gone", "pays nothing" - which is exactly what call_craft.md §5.3 calls genuine
+  explanation rather than recital. There is even an explicit understanding check, the
+  behaviour that section recommends making a scored criterion. On content the session
+  is above average for the pack. The whole defect is the addressee, and the addressee
+  is not a field anywhere in the instrument.
+  The generalisation is the useful part: a disclosure has a RECIPIENT as well as a
+  timestamp and a form of words, and the register in this repo records the words and
+  now the timing and still not the recipient. That is a schema gap, not a threshold
+  problem, and it is stated here so it is watched rather than discovered.
+  ASSUMPTION, labelled because the research does not settle it: MAS's trusted-individual
+  mechanism (MAS-3 ¶10D) puts a third party in the room deliberately, and the research
+  in regulators.md §2.7 does not say whether a disclosure made to that individual
+  discharges the duty owed to the client. This row is therefore graded under the FCA,
+  where PRIN 2A.5.9R names the customer explicitly, and it must not be read as a
+  finding about the MAS mechanism.
+  Why not a simpler row: a row with the disclosure missing tests the disclosure check.
+  A row with the disclosure present, in good consequence-based language, with a real
+  understanding check, and still failing is the only shape that shows the check is
+  measuring the wrong object.

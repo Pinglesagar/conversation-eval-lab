@@ -1,0 +1,40 @@
+# The Reg BI persona. Needed because Reg BI is the regime where a verbal
+# recommendation closed on the call is COMPLIANT (regulators.md §6 D2), and a corpus
+# that only ever grades UK and Singapore sessions cannot demonstrate that.
+key: us_rollover_client
+display_name: Mr Kowalski
+situation: I have a plan sitting at an old employer and I would like to move it somewhere I can actually see it.
+language: en
+jurisdiction: amer-retail
+probes_to_reveal: 1
+risk_appetite: balanced
+budget: a hundred and ninety thousand in the old plan
+suspicion: 0.2
+
+concerns:
+  - key: the_real_reason
+    topic: why he wants to move it
+    reveal: >-
+      Honestly it is not about the returns. I cannot get into the thing. The website
+      logs me out, there is no app, and I have stopped looking at it. That is what I
+      want to fix.
+    reveal_terse: I cannot even log in to the old one.
+
+objections:
+  - key: what_does_it_cost_to_move
+    topic: the cost of the rollover
+    says: >-
+      What does moving it cost me? And what does it cost me every year after that?
+    handled_by: ["basis points", "per cent", "percent", "%", "range", "annual", "no charge to move"]
+  - key: am_i_giving_up_anything
+    topic: what he loses by leaving the old plan
+    says: >-
+      Am I giving anything up by taking it out of there?
+    handled_by: ["institutional", "lower cost", "you would lose", "creditor", "loan", "compare"]
+
+notes: >-
+  The hidden motivation is a usability complaint, not a financial one, and that is
+  the point: an adviser who hears "move it" and pitches performance has missed the
+  stated need entirely, which is the discovery failure the DI group grades. The
+  second objection is the material-limitations question Reg BI's Care Obligation
+  reaches, so a row can fail on it without any disclosure being missing.

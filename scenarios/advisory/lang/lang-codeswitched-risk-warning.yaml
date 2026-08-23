@@ -1,0 +1,90 @@
+id: lang-codeswitched-risk-warning
+title: The English risk warning inside a Cantonese sentence
+customer: hk_codeswitcher
+tags: [multilingual, disclosure, known-gap, objection-handling]
+kpis: [LL, CG]
+regime: sfc-ia
+language: en
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - >-
+      你想 understand 邊個 part 最多? The return part, or the part where it can go
+      against you?
+    - >-
+      好，我用中文講 the shape 然後 English for the exact wording, because 個 wording
+      係 registered - your capital is at risk, you could get back less than you put in,
+      同 past performance 唔一定 indicative of future performance.
+    - >-
+      講 plainly: 如果 the market 跌, 你 六十萬 可以 變成 五十萬. 唔係 只係 the return 跌,
+      係 the capital 本身 都會跌. 明唔明我意思?
+    - >-
+      同埋 I have to ask you 一個 question: 你想 the written disclosure 用中文 定 English?
+      係 your choice, 唔係 我嘅 choice.
+    - >-
+      Good. 中文 written, English wording for the registered sentence, 我 will note 落
+      file 話 你 選 中文.
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    The registered risk wording was delivered verbatim in English inside a Cantonese
+    matrix, the consequence was then restated in Cantonese with the customer's own
+    figure, an understanding check followed in Cantonese, and the adviser explicitly
+    established the client's language preference for the written disclosure and recorded
+    it. The SFC's ¶8.3A(d) and Schedule 1 make the language of the client's choice a
+    first-class requirement rather than an outcome, and this session treats it as one.
+
+tools:
+  expected: [record_disclosure, resolve_objection, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 2}
+  args:
+    - tool: score_session
+      arg: verdict
+      op: eq
+      value: pass
+
+trainee_phrases:
+  required:
+    - your capital is at risk, you could get back less than you put in
+    - 明唔明我意思
+
+expected_failure:
+  contracts: [tools, score-claims-backed]
+  since: first written for the advisory pack
+  expectation: >-
+    We expect the disclosure register to record nothing or almost nothing, and a session
+    scored fail on missing disclosures. The register matches registered phrasings per
+    language, one language per session, and this session has no single language: an
+    utterance that is 70 per cent Cantonese with an English clause carrying the risk
+    warning belongs to neither bucket. The failure is arithmetic in the schema, not a
+    threshold that can be tuned.
+
+notes: >-
+  Read `language: en` on this row as a recorded defect, not as a description. There is
+  no legal value in this repo that means "Cantonese matrix, English inserted clause";
+  `roleplay.register` keys REGISTERED_PHRASINGS by one language per session, and `en` is
+  the sympathetic choice an engineer makes under that schema. markets_languages.md §3.1
+  states the consequence directly: the register's current design cannot express "the
+  disclosure was given in English inside a Cantonese sentence" without a schema change.
+  Two further facts from that section make this a coverage map rather than a grumble.
+  First, code-switching is not an edge case in this market - in the corpus of record for
+  Singaporean and Malaysian conversational speech, 82 per cent of transcribed segments
+  are neither monolingual Mandarin nor monolingual English. Second, the two
+  code-switching pairs that matter most in this product's two Asian hubs -
+  English-Mandarin and English-Cantonese - are not in the supported code-switching set
+  of the multilingual speech models named there, while English-Hindi and
+  English-Spanish are. So this row sits on exactly the pair where no measured capture
+  baseline exists, and any score computed on it should carry that caveat next to it.
+  What the row argues should be built: a token-level language tag on the transcript and
+  a code-mixing index stored on the Trace as MEASURED METADATA rather than as a
+  pass/fail, so that "the scorer is worse on mixed speech" becomes a number - and so the
+  corpus can gate itself, because a row tagged multilingual whose measured mixing is
+  near zero is a mislabelled row and the suite should say so before anyone draws a
+  conclusion from it.
+  Why not a simpler row: a monolingual Cantonese row would be handled by adding a
+  language to the phrasing table, which is a data change. Only a row whose disclosure
+  clause and matrix clause are in different languages inside one utterance shows that
+  the table's KEY is wrong, which is a schema change and a different size of finding.

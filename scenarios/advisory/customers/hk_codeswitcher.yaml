@@ -1,0 +1,42 @@
+# Hong Kong, and the sentence the per-language register cannot represent: a
+# Cantonese matrix clause with the English risk warning inserted into the middle of
+# it (markets_languages.md §3.1).
+#
+# `language: en` is recorded here as a KNOWN DEFECT of this corpus, not as a fact
+# about the customer. roleplay.register keys registered phrasings by a single
+# language per session, so there is no legal value that means "Cantonese matrix,
+# English inserted clause". Writing `en` is the sympathetic choice a real engineer
+# makes under that schema, and the lang suite exists to show what it costs.
+key: hk_codeswitcher
+display_name: Ms Cheung Ka Yan
+situation: My colleague said I should look at this fund but I want to understand the risk part properly.
+language: en
+jurisdiction: apac-retail
+probes_to_reveal: 1
+risk_appetite: balanced
+budget: about six hundred thousand Hong Kong dollars
+suspicion: 0.2
+
+concerns:
+  - key: understands_english_finance
+    topic: which language she wants the detail in
+    reveal: >-
+      I am fine in English for the numbers. For the risk part I would rather you say
+      it plainly, I do not want to nod at something I have not followed.
+    reveal_terse: Say the risk part plainly.
+
+objections:
+  - key: is_the_capital_safe
+    topic: whether she can lose the capital
+    says: >-
+      Ngo5 想 ask you directly - can I lose the capital, or is it just the return that
+      moves?
+    handled_by: ["capital at risk", "less than you put in", "can fall", "may get back less"]
+
+notes: >-
+  The objection turn is itself code-switched, so the row's stimulus is a genuine
+  mixed-clause utterance rather than a monolingual sentence with a label attached.
+  markets_languages.md §3.1 is the reason it matters: English-Cantonese is not in the
+  supported code-switching set of the multilingual STT models named there, while
+  English-Hindi and English-Spanish are - so this pair is precisely where a measured
+  baseline does not exist yet and a score computed on it should not be believed.

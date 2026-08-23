@@ -1,0 +1,46 @@
+# The persona the MAS intra-jurisdiction divergence needs and no other can supply:
+# one customer, one meeting, two products with two different commission-disclosure
+# standards (regulators.md §6 D8). The hidden motivation is a test, not a worry —
+# he already knows what he wants and is watching whether the adviser volunteers
+# what it earns them.
+key: sg_two_products
+display_name: Mr Tan Wei Ming
+situation: I want to put some into a fund and I have been thinking about a whole-life policy for the children.
+language: en
+jurisdiction: apac-retail
+probes_to_reveal: 1
+risk_appetite: balanced
+budget: a hundred and twenty thousand for the fund, and whatever the policy costs a month
+suspicion: 0.5
+
+concerns:
+  - key: brother_s_policy
+    topic: my brother's policy
+    reveal: >-
+      My brother bought a policy about twelve years ago. He surrendered it after four
+      years and got back less than half of what he had paid in. Nobody had told him
+      that could happen.
+    reveal_terse: My brother lost money on one of these.
+
+objections:
+  - key: what_do_you_earn
+    topic: the adviser's own remuneration
+    says: >-
+      Before we go further - what do you make out of each of these? On the fund and
+      on the policy.
+    handled_by: ["per cent", "percent", "%", "commission", "distribution cost", "illustration"]
+    presses: 2
+  - key: two_things_at_once
+    topic: whether to buy both
+    says: >-
+      Do I actually need both? It feels like you are selling me two things where one
+      would do.
+    handled_by: ["different job", "one is", "the fund", "the policy", "instead of", "either"]
+
+notes: >-
+  suspicion 0.5 sits below roleplay.persona.SUSPICIOUS_AT (0.6) on purpose, so the
+  scripted press counts in this pack's rows are the ones written in the file and not
+  the ones the dial adds. The remuneration objection presses twice because the MAS
+  carve-out means a correct answer is *asymmetric* - an amount for the fund, a
+  distribution-cost line for the policy - and a single press lets an adviser answer
+  once and be scored as having answered.
