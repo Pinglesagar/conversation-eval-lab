@@ -21,7 +21,7 @@ PY_OK := $(shell $(PYTHON) -c 'import sys; print(1 if sys.version_info[:2] >= (3
 PY_HAVE := $(shell $(PYTHON) -c 'import sys; print("%d.%d" % sys.version_info[:2])' 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help python-ok install test demo calibrate report validate replay errors reference live-replay live-score live-record audio-fixtures audio-check audio-suite audio-suite-plan audio-suite-record audio-suite-evidence audio-setup transport-report transport-record roleplay-demo roleplay-validate advisory-verdicts clean
+.PHONY: help python-ok install test demo calibrate report validate replay errors reference live-replay live-score live-record audio-fixtures audio-check audio-suite audio-suite-plan audio-suite-record audio-suite-evidence audio-setup transport-report transport-record roleplay-demo roleplay-validate advisory-verdicts spoken-replay spoken-record clean
 
 help:  ## Show this help.
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -157,6 +157,28 @@ roleplay-validate: python-ok  ## Validate the roleplay corpus against its schema
 # not open. Zero API keys, like everything else here.
 advisory-verdicts: python-ok  ## Compute the 18 advisory rows' regime verdicts from the registers.
 	$(PYTHON) -m roleplay.regime_eval --divergence --shadow
+
+# The spoken call: the one place the audio tier and the conversation tier meet.
+# Every other audio entry point above scores single utterances; this one runs a
+# whole advisory conversation turn by turn through real synthesis and real
+# recognition, and grades what the recogniser HEARD.
+#
+# `spoken-replay` is offline and needs no key. It does not read a summary back:
+# the committed per-turn manifest drives the same conversation loop again, so the
+# trace, the disclosure register and the deterministic score are recomputed, and
+# the live scorer's answer replays from a recording held to its prompt digest.
+#
+# `spoken-record` is the only way to produce new recordings and it spends real
+# ElevenLabs characters. It needs LAB_LIVE_SPOKEN=1, both audio keys, a provider
+# key and the three model routes, and it refuses with all of the missing pieces
+# named at once. Synthesis is digest-cached, so re-recording an unchanged call
+# bills nothing.
+spoken-replay: python-ok  ## Replay the committed spoken call and re-grade it. No keys, no spend.
+	$(PYTHON) -m roleplay.spoken
+
+spoken-record: python-ok  ## Record a new spoken call. SPENDS ElevenLabs characters; needs LAB_LIVE_SPOKEN.
+	$(PYTHON) -m roleplay.spoken --record
+	@git --no-pager diff --stat -- fixtures/audio/spoken_call
 
 clean:  ## Remove caches and build output.
 	rm -rf build dist .pytest_cache .coverage htmlcov *.egg-info

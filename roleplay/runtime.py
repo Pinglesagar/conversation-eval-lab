@@ -219,6 +219,27 @@ def stop_reason_of(speaker: object, default: str) -> str:
     return str(reason) if reason else default
 
 
+def _take_audio_note(speaker: object) -> Any | None:
+    """The speaker's audio note for the turn just taken, or None.
+
+    The seam that lets a spoken session tell the trace the truth about its own
+    channel. A speaker whose words crossed a real TTS -> STT round trip exposes
+    `take_audio_note()` (see `roleplay.spoken`), and the note it returns emits the
+    turn's events itself — what was *sent* to the synthesiser, what the recogniser
+    *heard*, at what confidence, through which engines. A speaker without the
+    method — every scripted and text-live speaker in this repo — takes the
+    unchanged path below, so every committed fixture reproduces byte for byte.
+
+    Duck-typed rather than imported, on purpose: the dependency must keep running
+    `spoken -> runtime` and never back, for the same reason `roleplay.live` is
+    never imported here. The note is trusted to emit the right kinds because the
+    contract tests in `tests/test_roleplay_spoken.py` hold it to the same shape
+    this loop writes.
+    """
+    take = getattr(speaker, "take_audio_note", None)
+    return take() if callable(take) else None
+
+
 @dataclass
 class ScriptedTrainee:
     """A committed list of turns, delivered in order. The default, and unchanged.
@@ -416,12 +437,18 @@ class RoleplayCoach:
         trainee: Trainee | None = None,
         customer_voice: CustomerVoice | None = None,
         max_turns: int = DEFAULT_MAX_TURNS,
+        adapter: str | None = None,
     ) -> RoleplayConversation:
         """Run stage one only: the roleplay, with no scoring pass.
 
         The scorer is never consulted, so this method is independent of the
         scoring service's state — two calls with the same arguments produce
         byte-identical traces however many sessions the service has graded.
+
+        `adapter` overrides the trace's adapter label. It exists for
+        `roleplay.spoken`, whose sessions run the same loop through a real audio
+        channel: a spoken trace stamped `roleplay:text` would misfile itself in
+        every report that slices by adapter. Left unset, nothing changes.
         """
         stage = self._stage_one(
             scenario_id=scenario_id,
@@ -434,6 +461,7 @@ class RoleplayCoach:
             trainee=trainee,
             customer_voice=customer_voice,
             max_turns=max_turns,
+            adapter=adapter,
         )
         stage.builder.session_end(
             reason="roleplay_ended", turns=stage.turns, **stage.end_payload()
@@ -518,6 +546,7 @@ class RoleplayCoach:
         trainee: Trainee | None = None,
         customer_voice: CustomerVoice | None = None,
         max_turns: int = DEFAULT_MAX_TURNS,
+        adapter: str | None = None,
     ) -> "_StageOne":
         """The roleplay itself. Returns the live builder so stage two can append."""
         if trainee is not None and trainee_turns is not None:
@@ -544,7 +573,7 @@ class RoleplayCoach:
         effective_clock: Clock = clock if clock is not None else FakeClock()
         builder = TraceBuilder(
             scenario_id=scenario_id,
-            adapter=ADAPTER,
+            adapter=adapter or ADAPTER,
             session_id=session_id,
             clock=effective_clock,
         )
@@ -583,8 +612,19 @@ class RoleplayCoach:
                 stop_reason = "turn_budget"
                 break
             index += 1
-            builder.transcript_in(utterance, confidence=1.0, engine=in_engine)
-            builder.caller_utterance(utterance, turn=index)
+            audio_note = _take_audio_note(trainee)
+            if audio_note is None:
+                builder.transcript_in(utterance, confidence=1.0, engine=in_engine)
+                builder.caller_utterance(utterance, turn=index)
+            else:
+                # The trainee's words crossed a real audio channel. The note
+                # emits the honest version of the two events above — the heard
+                # text with its real engine and confidence, and the sent text
+                # beside it — plus the audio evidence. `utterance` from here on
+                # is what the channel delivered, which is the point: recognition
+                # errors flow into the register, the persona and the scorer
+                # exactly as they would in production.
+                audio_note.emit_caller(builder, turn=index, heard_text=utterance)
 
             tool_calls = 0
             if index == 1:
@@ -667,10 +707,20 @@ class RoleplayCoach:
             effective_clock.sleep(
                 self.latency.turn_seconds(text=reply.text, tool_calls=tool_calls)
             )
-            builder.agent_audio_first_byte(turn=index)
-            builder.agent_utterance(reply.text, agent=CUSTOMER_AGENT, turn=index)
-            builder.transcript_out(reply.text, engine=out_engine)
-            builder.agent_audio_complete(turn=index, num_bytes=len(reply.text) * 320)
+            audio_note = _take_audio_note(voice)
+            if audio_note is None:
+                builder.agent_audio_first_byte(turn=index)
+                builder.agent_utterance(reply.text, agent=CUSTOMER_AGENT, turn=index)
+                builder.transcript_out(reply.text, engine=out_engine)
+                builder.agent_audio_complete(turn=index, num_bytes=len(reply.text) * 320)
+            else:
+                # The customer's words crossed the audio channel too. See the
+                # trainee side above; the note writes the same four kinds with
+                # the sent/heard split named, so a reader diffing the two texts
+                # is reading the channel's error, not a formatting choice.
+                audio_note.emit_agent(
+                    builder, turn=index, agent=CUSTOMER_AGENT, heard_text=reply.text
+                )
 
             utterance = trainee.reply(reply.text)
             if utterance is None:

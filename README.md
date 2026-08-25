@@ -263,9 +263,13 @@ composed into chains.
 > is further along on audio: it drives bot-to-bot conversations end to end
 > through real speech, ships its own perturbation suite including combined
 > perturbations, and reports scored results across a dozen systems on a
-> 200-plus-scenario corpus. Its star count is small; its scope is not, and this
-> repository's committed run does not drive audio at all (see
-> [Limitations](#limitations)). Latency in the general-purpose tools is wall-clock
+> 200-plus-scenario corpus. Its star count is small; its scope is not, and on the
+> axis it leads on this repository has exactly **one** committed spoken call —
+> [`fixtures/audio/spoken_call/`](fixtures/audio/spoken_call/), a whole advisory
+> conversation through real synthesis and real recognition, graded on what the
+> recogniser heard — against `eva`'s suite across a 200-plus-scenario corpus. One
+> call is an existence proof, not a suite (see [Limitations](#limitations)).
+> Latency in the general-purpose tools is wall-clock
 > around a call. What I have not seen anywhere, `eva` included, is a *calibration
 > gate on the stopwatch itself* — a harness proving it can recover a delay it does
 > not know about before it is allowed to publish a p95 — and that is the claim in
@@ -400,10 +404,14 @@ lab/                    the reusable harness (destined for its own repository)
   report/               markdown + JSON rendering, heatmaps, interop
   cli.py                `evallab` — the one entry point
 tablemate/              the system under test: a multi-agent booking assistant
+roleplay/               the BFSI advisory pack, where the scorer is under test
+  live.py               the multi-turn loop with a model in both seats
+  spoken.py             that loop run through real TTS and STT, graded on what was heard
 scenarios/              55 rows of validated YAML, four suites, nine personas
 fixtures/               recordings, the calibration report, the reference run
 error_analysis/         the traces read by hand, coded, counted and written up
 docs/                   trace schema, CLI reference, how to add a scenario
+                        SPOKEN_CALL.md — the audio and conversation tiers, joined
 ```
 
 Design rationale: [DESIGN.md](DESIGN.md). The capability-to-question mapping:
@@ -476,6 +484,22 @@ Read this section as part of every number above.
 - **The voice suite has not been driven end to end here.** Eight rows are
   declared, validated and counted, and the committed run reports them as not
   driven rather than running them as text and calling the verdict an audio result.
+- **The spoken call is one call.** `roleplay/spoken.py` drives a whole advisory
+  conversation turn by turn through real ElevenLabs synthesis and real Deepgram
+  recognition and grades what was *heard*; the 181-second recording, the per-turn
+  manifest carrying `text_sent` beside `text_heard`, the trace and both score
+  cards are committed and replay with no keys. It is n=1 — one persona, one model,
+  one voice pair, one day — and the ElevenLabs free allowance is the reason it is
+  n=1 (3,014 characters for this call). **Nothing in it supports a rate.** What it
+  supports is an existence proof, and one finding that a text-only tier could not
+  have produced: the scored transcript is `smart_format=false` (as
+  [WER_NORMALISATION.md](lab/voice/engines/WER_NORMALISATION.md) requires) and
+  therefore carries no punctuation, while `classify_trainee_turn` detects a
+  question by a trailing `?`. Five of the eight adviser turns were reclassified
+  from questions to statements, and the `discovery` criterion went 2/4 → 0/4 —
+  on a call where the adviser did ask the questions. Both gradings still total
+  12/20, because `objection_handling` moved 2 → 4 the other way, so a check on
+  the total alone would have reported no effect at all.
 
 ## Make targets
 
@@ -493,6 +517,8 @@ Read this section as part of every number above.
 | `make live-record` | draw a *new* live run from a provider. Spends money; needs the `LAB_LIVE_*` variables |
 | `make errors` | recount the coded failure modes and redraw the chart |
 | `make reference` | regenerate the committed baseline and show the diff |
+| `make spoken-replay` | replay the committed spoken call and re-grade it. No key, no spend |
+| `make spoken-record` | record a *new* spoken call. Spends ElevenLabs characters; needs `LAB_LIVE_SPOKEN` |
 
 ## License
 

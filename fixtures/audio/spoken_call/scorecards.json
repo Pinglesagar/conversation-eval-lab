@@ -1,0 +1,170 @@
+{
+  "channel_effect": {
+    "heard_criteria": {
+      "closing": 0,
+      "discovery": 0,
+      "mandatory_disclosure": 4,
+      "no_unlicensed_advice": 4,
+      "objection_handling": 4
+    },
+    "heard_disclosures": [
+      "capital_at_risk",
+      "fees_and_charges"
+    ],
+    "heard_total": 12,
+    "heard_verdict": "fail",
+    "sent_criteria": {
+      "closing": 0,
+      "discovery": 2,
+      "mandatory_disclosure": 4,
+      "no_unlicensed_advice": 4,
+      "objection_handling": 2
+    },
+    "sent_disclosures": [
+      "capital_at_risk",
+      "fees_and_charges"
+    ],
+    "sent_total": 12,
+    "sent_verdict": "fail"
+  },
+  "deterministic": {
+    "claims": {
+      "jurisdiction": "eu-retail",
+      "language": "en",
+      "mandatory_disclosure_given": true,
+      "unlicensed_advice_detected": false
+    },
+    "criteria": {
+      "closing": 0,
+      "discovery": 0,
+      "mandatory_disclosure": 4,
+      "no_unlicensed_advice": 4,
+      "objection_handling": 4
+    },
+    "feedback": "You went into the product before you understood the customer. Open the next one with a question, not a feature. You took the objection head on rather than deflecting it. The mandatory risk disclosure was given and is recorded. Nothing you said crossed into personal advice. You never asked for the business.",
+    "max_total": 20,
+    "total": 12,
+    "verdict": "fail"
+  },
+  "live": {
+    "claims": {
+      "jurisdiction": "eu-retail",
+      "language": "en",
+      "mandatory_disclosure_given": false,
+      "unlicensed_advice_detected": false
+    },
+    "criteria": {
+      "closing": 4,
+      "discovery": 4,
+      "mandatory_disclosure": 0,
+      "no_unlicensed_advice": 4,
+      "objection_handling": 4
+    },
+    "feedback": "The session demonstrates strong discovery, thorough objection handling, and proper closing, with no evidence of unlicensed advice. However, it fails outright because the mandatory disclosure for 'past_performance' required in the 'eu-retail' jurisdiction is missing from the tool ledger. All other required disclosures are present, but the absence of this one means the session cannot pass certification.",
+    "max_total": 20,
+    "total": 16,
+    "verdict": "fail"
+  },
+  "recognition_deltas": [
+    {
+      "normalised_errors": 3,
+      "normalised_reference_words": 47,
+      "order": 0,
+      "raw_errors": 15,
+      "raw_reference_words": 45,
+      "reference": "Good morning, Mr Novak. Thank you for coming in today. Before we discuss any investment options, I'd like to understand your goals, your timeframe, and how you feel about risk. Could you tell me a bit about what you're hoping to achieve with your investments?",
+      "reference_source": "spoken-form",
+      "speaker": "trainee",
+      "stt_confidence": 1.0,
+      "text_heard": "good morning mister novak thank you for coming in today before we discuss any investment options i'd like to understand your goals your time frame and how you feel about risk could you tell me a bit about what you're hoping to achieve with your investments",
+      "text_sent": "Good morning, Mr Novak. Thank you for coming in today. Before we discuss any investment options, I\u2019d like to understand your goals, your timeframe, and how you feel about risk. Could you tell me a bit about what you\u2019re hoping to achieve with your investments?",
+      "turn": 1
+    },
+    {
+      "normalised_errors": 2,
+      "normalised_reference_words": 68,
+      "order": 2,
+      "raw_errors": 14,
+      "raw_reference_words": 66,
+      "reference": "Thank you for raising that concern--fees are an important consideration. The product I can offer has an annual management charge of zero point six eight per cent, and there are no exit penalties. I'm happy to explain exactly how this works and what it means for your investment. Would you like to discuss fees in more detail now, or shall we first talk about your objectives?",
+      "reference_source": "spoken-form",
+      "speaker": "trainee",
+      "stt_confidence": 1.0,
+      "text_heard": "thank you for raising that concern fees are an important consideration the product i can offer has an annual management charge of zero point six eight percent and there are no exit penalties i'm happy to explain exactly how this works and what it means for your investment would you like to discuss fees in more detail now or shall we first talk about your objectives",
+      "text_sent": "Thank you for raising that concern\u2014fees are an important consideration. The product I can offer has an annual management charge of 0.68 per cent, and there are no exit penalties. I\u2019m happy to explain exactly how this works and what it means for your investment. Would you like to discuss fees in more detail now, or shall we first talk about your objectives?",
+      "turn": 2
+    },
+    {
+      "normalised_errors": 1,
+      "normalised_reference_words": 67,
+      "order": 4,
+      "raw_errors": 15,
+      "raw_reference_words": 64,
+      "reference": "That's a fair question, Mr Novak, and I appreciate your honesty. My role is to help you make informed decisions by setting out your options, the risks, and the costs, so you can decide what's right for you. I don't earn commission for recommending any particular product. My priority is to understand your needs and make sure any advice is suitable for your circumstances.",
+      "reference_source": "spoken-form",
+      "speaker": "trainee",
+      "stt_confidence": 1.0,
+      "text_heard": "that's a fair question mister novak and i appreciate your honesty my role is to help you make informed decisions by setting out your options the risks and the costs so you can decide what's right for you i don't earn commission for recommending any particular product my priority is to understand your needs and make sure any advice is suitable for your circumstances",
+      "text_sent": "That\u2019s a fair question, Mr Novak, and I appreciate your honesty. My role is to help you make informed decisions by setting out your options, the risks, and the costs, so you can decide what\u2019s right for you. I don\u2019t earn commission for recommending any particular product. My priority is to understand your needs and make sure any advice is suitable for your circumstances.",
+      "turn": 3
+    },
+    {
+      "normalised_errors": 3,
+      "normalised_reference_words": 48,
+      "order": 6,
+      "raw_errors": 12,
+      "raw_reference_words": 47,
+      "reference": "Thank you, Mr Novak. To make sure I can give you the most relevant information, could you tell me what you're hoping to achieve with your money and whether you have a specific timeframe in mind? This will help us focus on options that fit your goals.",
+      "reference_source": "spoken-form",
+      "speaker": "trainee",
+      "stt_confidence": 1.0,
+      "text_heard": "thank you mister novak to make sure i can give you the most relevant information could you tell me what you're hoping to achieve with your money and whether you have a specific time frame in mind this will help us focus on options that fit your goals",
+      "text_sent": "Thank you, Mr Novak. To make sure I can give you the most relevant information, could you tell me what you\u2019re hoping to achieve with your money and whether you have a specific timeframe in mind? This will help us focus on options that fit your goals.",
+      "turn": 4
+    },
+    {
+      "normalised_errors": 1,
+      "normalised_reference_words": 6,
+      "order": 11,
+      "raw_errors": 2,
+      "raw_reference_words": 5,
+      "reference": "I understand what you're saying.",
+      "reference_source": "spoken-form",
+      "speaker": "customer",
+      "stt_confidence": 0.99902344,
+      "text_heard": "understand what you're saying",
+      "text_sent": "I understand what you're saying.",
+      "turn": 6
+    },
+    {
+      "normalised_errors": 3,
+      "normalised_reference_words": 78,
+      "order": 12,
+      "raw_errors": 20,
+      "raw_reference_words": 74,
+      "reference": "Thank you for considering that. To summarise, we've discussed your goals, your timeframe, how much you might invest, and your feelings about risk. Based on what you've shared, I can outline some options and explain the trade-offs, but I won't make any recommendations until I have a full picture of your circumstances. Would you like to continue with a full suitability assessment, or do you have any other questions or concerns before we proceed?",
+      "reference_source": "spoken-form",
+      "speaker": "trainee",
+      "stt_confidence": 1.0,
+      "text_heard": "thank you for considering that to summarize we've discussed your goals your time frame how much you might invest and your feelings about risk based on what you've shared i can outline some options and explain the trade offs but i won't make any recommendations until i have a full picture of your circumstances would you like to continue with a full suitability assessment or do you have any other questions or concerns before we proceed",
+      "text_sent": "Thank you for considering that. To summarise, we\u2019ve discussed your goals, your timeframe, how much you might invest, and your feelings about risk. Based on what you\u2019ve shared, I can outline some options and explain the trade-offs, but I won\u2019t make any recommendations until I have a full picture of your circumstances. Would you like to continue with a full suitability assessment, or do you have any other questions or concerns before we proceed?",
+      "turn": 7
+    },
+    {
+      "normalised_errors": 1,
+      "normalised_reference_words": 69,
+      "order": 14,
+      "raw_errors": 19,
+      "raw_reference_words": 64,
+      "reference": "Thank you, Mister Novak. I'll ask you some more detailed questions about your financial situation, commitments, and any other investments or savings you have. This will help ensure any options we discuss are suitable for you. Once we've completed that, I'll summarise the options and the trade-offs, and you can decide how you'd like to proceed. Does that sound good as our next step?",
+      "reference_source": "spoken-form",
+      "speaker": "trainee",
+      "stt_confidence": 1.0,
+      "text_heard": "thank you mister novak i'll ask you some more detailed questions about your financial situation commitments and any other investments or savings you have this will help ensure any options we discuss are suitable for you once we've completed that i'll summarize the options and the trade offs and you can decide how you'd like to proceed does that sound good as our next step",
+      "text_sent": "Thank you, Mr Novak. I\u2019ll ask you some more detailed questions about your financial situation, commitments, and any other investments or savings you have. This will help ensure any options we discuss are suitable for you. Once we\u2019ve completed that, I\u2019ll summarise the options and the trade-offs, and you can decide how you\u2019d like to proceed. Does that sound good as our next step?",
+      "turn": 8
+    }
+  ],
+  "scorer_rubric": "v2",
+  "verdicts_agree": true
+}

@@ -1,0 +1,126 @@
+{
+  "identity": {
+    "competence": "exemplary",
+    "customer_model": "gpt-4.1",
+    "jurisdiction": "eu-retail",
+    "language": "en",
+    "persona": "aggressive_challenger",
+    "prompt_sha256": "7595d0ab91238ba2e079eeee384a1319fc52c7d1987fad4fe59fc0bd0e03610a",
+    "scenario_id": "spoken-eu-challenger-exemplary",
+    "temperature": 0.0,
+    "trainee_model": "gpt-4.1",
+    "turn_budget": 9
+  },
+  "recorded_with": {
+    "live_customer": true,
+    "max_turns": 9,
+    "note": "Spoken-call turns. Each side's words crossed a real TTS -> STT round trip before the other side received them; the audio journey is in fixtures/audio/spoken_call/manifest.json.",
+    "temperature": 0.0
+  },
+  "turns": [
+    {
+      "context_sha256": "5447be2b6454471f6dbc5df305c2208b89528e49e5bdaddb8d56e704c94a9263",
+      "index": 0,
+      "role": "trainee",
+      "utterance": "Good morning, Mr Novak. Thank you for coming in today. Before we discuss any investment options, I\u2019d like to understand your goals, your timeframe, and how you feel about risk. Could you tell me a bit about what you\u2019re hoping to achieve with your investments?"
+    },
+    {
+      "context_sha256": "99cbd6476918660fca81f900ce67db1c28c618580ed1e2b6b5b981c6f3c3a82b",
+      "direction": "Raise this objection now, in your own words: Your charges will eat the whole return. My brother-in-law says these products are a racket and the fees are where the money goes.",
+      "index": 0,
+      "role": "customer",
+      "utterance": "Look, before we go any further, I want to know exactly what your fees are, because my brother-in-law says all these products are just a racket and the charges eat up everything you make."
+    },
+    {
+      "context_sha256": "62e2388ef19b64ecebfb6c1f21a782daaabc24b40c385a03a9eb422b1a66497a",
+      "index": 1,
+      "role": "trainee",
+      "utterance": "Thank you for raising that concern\u2014fees are an important consideration. The product I can offer has an annual management charge of 0.68 per cent, and there are no exit penalties. I\u2019m happy to explain exactly how this works and what it means for your investment. Would you like to discuss fees in more detail now, or shall we first talk about your objectives?"
+    },
+    {
+      "context_sha256": "225599b543182acd48d440c001f41923ee584909c6b759333ed7df3dc3e7b7e5",
+      "direction": "Raise this objection now, in your own words: And you are paid to sell me this. Why would I trust a word of it?",
+      "index": 1,
+      "role": "customer",
+      "utterance": "And why should I trust anything you say when you\u2019re paid to sell me this stuff? Whose side are you really on?"
+    },
+    {
+      "context_sha256": "cf9c0e4881a270867f6f550478a0773a48a00d4bcefab3210b00cb3fb3482a11",
+      "index": 2,
+      "role": "trainee",
+      "utterance": "That\u2019s a fair question, Mr Novak, and I appreciate your honesty. My role is to help you make informed decisions by setting out your options, the risks, and the costs, so you can decide what\u2019s right for you. I don\u2019t earn commission for recommending any particular product. My priority is to understand your needs and make sure any advice is suitable for your circumstances."
+    },
+    {
+      "context_sha256": "9de3669d9b2e7de2939c1715c28179884d5166dad2f7022527285a2c6f8d3d20",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 2,
+      "role": "customer",
+      "utterance": "Alright, I hear you."
+    },
+    {
+      "context_sha256": "e243b4f2a809143f3841b5b86da0fa047dc438c25cb2fbb47681698408caafd2",
+      "index": 3,
+      "role": "trainee",
+      "utterance": "Thank you, Mr Novak. To make sure I can give you the most relevant information, could you tell me what you\u2019re hoping to achieve with your money and whether you have a specific timeframe in mind? This will help us focus on options that fit your goals."
+    },
+    {
+      "context_sha256": "67438cf8488cf33c461e916df2f55fe5b9e1cf30e93a98efec4a873d51e0c8fd",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 3,
+      "role": "customer",
+      "utterance": "Okay, I get that."
+    },
+    {
+      "context_sha256": "ee16d98588ab2ca1bc5ab0e29ce92d51becc59b3e3dda6677b0cebf6c3cfa095",
+      "index": 4,
+      "role": "trainee",
+      "utterance": "Great, thank you. Can you tell me if there\u2019s a particular amount you\u2019re thinking of investing, and whether you might need access to any of that money in the short term? This helps us consider how much you can comfortably tie up and for how long."
+    },
+    {
+      "context_sha256": "7d6052c0eb26e09c2db9976882880936b51dfd569d0891eabf372d6d59006380",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 4,
+      "role": "customer",
+      "utterance": "Alright, understood."
+    },
+    {
+      "context_sha256": "7297e5ebf1a1f43fd96e61b6df788bc59155de316bae3997438ecb733775a333",
+      "index": 5,
+      "role": "trainee",
+      "utterance": "Thank you. One more important area to cover is how you feel about risk\u2014investments can go up and down in value, and there\u2019s always a chance you could get back less than you put in. How comfortable are you with the possibility of losing some of your investment, even temporarily?"
+    },
+    {
+      "context_sha256": "c0773b34f64c76180a7f9b362129f8d8b839de50ad17fd0678d23a4c1a449c57",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 5,
+      "role": "customer",
+      "utterance": "I understand what you're saying."
+    },
+    {
+      "context_sha256": "be9becdeb6864d5f8579ae23f5a7d463348c56858d728b7169c6278d1a6b0750",
+      "index": 6,
+      "role": "trainee",
+      "utterance": "Thank you for considering that. To summarise, we\u2019ve discussed your goals, your timeframe, how much you might invest, and your feelings about risk. Based on what you\u2019ve shared, I can outline some options and explain the trade-offs, but I won\u2019t make any recommendations until I have a full picture of your circumstances. Would you like to continue with a full suitability assessment, or do you have any other questions or concerns before we proceed?"
+    },
+    {
+      "context_sha256": "e599a9e918d653a0dd1f24e4f8f97f627144a4d477050d5606bedf25763bba93",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 6,
+      "role": "customer",
+      "utterance": "That makes sense, go on."
+    },
+    {
+      "context_sha256": "12126fb4f0506369ec4a7787ff564e39131233bfa59e467dbc1f79551783e44d",
+      "index": 7,
+      "role": "trainee",
+      "utterance": "Thank you, Mr Novak. I\u2019ll ask you some more detailed questions about your financial situation, commitments, and any other investments or savings you have. This will help ensure any options we discuss are suitable for you. Once we\u2019ve completed that, I\u2019ll summarise the options and the trade-offs, and you can decide how you\u2019d like to proceed. Does that sound good as our next step?"
+    },
+    {
+      "context_sha256": "4a36f220bd554be31b006099985f8f5642ff407e259b6e2b65034b01b0a596b1",
+      "direction": "Acknowledge what the adviser just said and add nothing new. Do not raise a worry, a plan or a sum of money.",
+      "index": 7,
+      "role": "customer",
+      "utterance": "Yes, that's fine."
+    }
+  ]
+}
