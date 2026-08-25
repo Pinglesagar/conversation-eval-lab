@@ -14415,7 +14415,7 @@ offline from a clean clone with no credentials.
 | v1 judge: TP 2 / FP 0 / FN 6 / TN 16, TPR 0.250 (2/8), TNR 1.000 (16/16), kappa 0.308, raw agreement 0.750 (18/24) | `lab/judges/hallucinated_confirmation/calibration_v1.json` |
 | `PromiseContract` 1/7 live, TPR 6/8 and TNR 14/16 labelled | `tests/test_checks_paraphrase.py` module docstring; 14 tests pass |
 | calibration thresholds 0.85 / 0.85, `min_items` 10, `max_parse_error_rate` 0.0, `min_kappa` None | `lab/judges/calibration.py:339` `CalibrationThresholds` |
-| flake band: budget 12 → 7/8 STABLE_PASS, 1/8 FLAKY, **1/40 repeats failing**; budget 8 → 5/8, 3/8, **6/40**; k = 5, 8 rows, 40 repeats each | tally `fixtures/live_caller/flake_band.json` and `flake_band_budget8.json` |
+| flake band: budget 12 → 7/8 STABLE_PASS, 1/8 FLAKY, **1/40 repeats failing**; budget 8 → 5/8, 3/8, **6/40**; k = 5 over 8 rows = 40 repeats in total per band | tally `fixtures/live_caller/flake_band.json` and `flake_band_budget8.json` |
 | sentinel fix moved the band from 2/40 to 1/40 | `lab/simulator/flake_band.py:90–92`, and the 1/40 half is re-derivable from the fixture above |
 | WER pair: raw 0.4344 as a mean over 14 rows, normalised 7/125 words = 0.0560, factor 7.8 | `docs/AUDIO_SUITE.md`; the single-sentence postcode case is `lab/voice/engines/WER_NORMALISATION.md` |
 | SCORECARD.md section numbering behind F4 | `grep -n '^## \|^### ' docs/SCORECARD.md` |
