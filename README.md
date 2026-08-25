@@ -1,10 +1,14 @@
-# tablemate-evals
+# conversation-eval-lab
 
 An evaluation harness for conversational AI agents — voice and text — built
-around a single auditable trace, plus an applied case study that points it at a
-deliberately imperfect restaurant-booking assistant. The harness is the `lab`
-package; the case study is what it found, and how much of that a suite of checks
-was able to catch on its own.
+around a single auditable trace. The harness is the `lab` package. It is applied
+here to two unrelated domains on the same engine: an **advisory sales-coaching
+platform** for regulated financial services, and a restaurant-booking assistant.
+
+The advisory domain is the one to read first. The restaurant domain is kept
+deliberately, and its job is stated plainly: **one engine, two unrelated domains,
+which is the evidence it will work on a third.** A harness that only runs against
+the domain it was written for has proved nothing about portability.
 
 **Runs with zero API keys.** A clean clone installs and goes green in under two
 minutes with no credentials of any kind. Everything that talks to a live provider
@@ -13,7 +17,94 @@ fixture that replays deterministically in its place.
 
 ---
 
-## The headline numbers
+## The advisory domain, first
+
+A coaching platform grades a trainee adviser's sales conversation and certifies
+them as ready to sell. Four regulators are in scope — MAS (Singapore), FCA COBS
+(UK), Reg BI (US) and SFC/IA (Hong Kong) — and their requirements are held as
+**cited registers**, not keyword lists, so a verdict traces to a paragraph.
+
+### The grader is the thing under test
+
+The scorer is a judge, so it is measured before it is believed
+([`make roleplay-demo`](Makefile)):
+
+| | |
+| --- | --- |
+| specificity | **0.947 (36/38)** |
+| recall | **0.281 (9/32)** |
+| Cohen kappa | 0.241 |
+
+It is **reluctant to fail anybody** — it catches 9 of the 32 sessions that should
+fail. In a product that certifies people, that is the worst available direction to
+be wrong in, and the misses concentrate in compliance and locale: the two things a
+regulated-advice grader exists to check.
+
+### Compliance is computed, not asserted
+
+`python -m roleplay.regime_eval` reads the registers and decides. Eighteen rows,
+**16 computed verdicts agree with the hand labels**, one disagreement and one
+explicit `undecidable` where no field in the schema records the fact the rule turns
+on. That figure is **in-sample** — the probes were written with these transcripts
+in view — and the CLI says so itself on its second line.
+
+The rows that matter are the divergences: **the same transcript, opposite verdicts
+under two regimes**, because the registers differ. One row carries four verdicts on
+one sentence. That is the property a single global compliance checker cannot have.
+
+### A full spoken call, graded end to end
+
+[`fixtures/audio/spoken_call/`](fixtures/audio/spoken_call/) — 16 turns, 181
+seconds, two voices. Every turn synthesised by ElevenLabs, heard back by Deepgram,
+and graded on **what was heard**, not what was sent.
+
+It found a failure that cannot exist in text. `classify_trainee_turn` detects a
+question with `body.endswith("?")`. The scored transcript is `smart_format=false` —
+which the WER rules require, because the prettified string fabricates a word error
+rate — and it carries no punctuation at all. **So no spoken turn can ever end in a
+question mark.** `discovery` fell 2/4 → 0/4 on a call where the adviser
+demonstrably did ask the questions.
+
+It nearly hid: `objection_handling` moved 2 → 4 the other way, so both channels
+total **12/20** with identical verdicts and identical disclosure ledgers. A check on
+the total, the verdict, or the register would each have reported that the audio
+channel changed nothing. Only a **per-criterion** comparison surfaced it — and that
+is the transferable lesson rather than the number.
+
+This is **n = 1**. It demonstrates that the pipeline is real; it supports no rate.
+
+### Voice, across languages
+
+Eighteen rows: **16 runnable, 1 blocked, 1 untestable**. The untestable one is
+recorded as a finding rather than hidden — no TTS vendor synthesises Cantonese, so
+a market with a regional hub cannot be audio-tested on this stack, and the
+remediation is named. See [`docs/AUDIO_SUITE.md`](docs/AUDIO_SUITE.md) for the
+vendor capability matrix.
+
+### Knowledge answers, and whether the citation holds
+
+A coaching platform's knowledge assistant answers from its own top performers and
+shows sources. Two things can fail independently there, and `ragcheck` separates
+them: **did retrieval find the right passage**, and **is the answer actually
+supported by what it found**.
+
+`make ragcheck` — a 16-chunk corpus, 18 questions, recall@k / MRR / nDCG for
+retrieval and a groundedness score per claim. The worked example it opens with is
+the case that matters: **retrieval is perfect and the answer is still wrong.** The
+gold passage is retrieved at recall 1.000 (1/1), and the answer invents a figure
+that appears nowhere in it — groundedness 0.500 (1/2), with the unsupported
+sentence and the contradicting passage both printed.
+
+A single "did RAG work" number would have scored that answer as a success.
+
+The judged half runs on an offline lexical stand-in rather than a model, so it is
+runnable with no key — and the report says so on every line it produces, because a
+stand-in labelled as a judge is worse than no judge. Its corpus is the restaurant
+domain; the metrics and the separation are domain-independent.
+
+---
+
+## The restaurant case study — portability, and what it found
 
 Two committed runs, because the harness is pointed at the same corpus twice: once
 at the **deterministic** build of the system under test, and once at a build with a
@@ -407,6 +498,8 @@ tablemate/              the system under test: a multi-agent booking assistant
 roleplay/               the BFSI advisory pack, where the scorer is under test
   live.py               the multi-turn loop with a model in both seats
   spoken.py             that loop run through real TTS and STT, graded on what was heard
+  regime_eval.py        the cited registers, computed into per-regime verdicts
+ragcheck/               retrieval + groundedness: recall@k, MRR, nDCG, faithfulness
 scenarios/              55 rows of validated YAML, four suites, nine personas
 fixtures/               recordings, the calibration report, the reference run
 error_analysis/         the traces read by hand, coded, counted and written up

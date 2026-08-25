@@ -21,7 +21,7 @@ PY_OK := $(shell $(PYTHON) -c 'import sys; print(1 if sys.version_info[:2] >= (3
 PY_HAVE := $(shell $(PYTHON) -c 'import sys; print("%d.%d" % sys.version_info[:2])' 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help python-ok install test demo calibrate report validate replay errors reference live-replay live-score live-record audio-fixtures audio-check audio-suite audio-suite-plan audio-suite-record audio-suite-evidence audio-setup transport-report transport-record roleplay-demo roleplay-validate advisory-verdicts spoken-replay spoken-record clean
+.PHONY: help python-ok install test demo calibrate report validate replay errors reference live-replay live-score live-record audio-fixtures audio-check audio-suite audio-suite-plan audio-suite-record audio-suite-evidence audio-setup transport-report transport-record roleplay-demo roleplay-validate advisory-verdicts spoken-replay spoken-record ragcheck clean
 
 help:  ## Show this help.
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -143,6 +143,9 @@ transport-record: python-ok  ## Record new live WebRTC sessions. Needs LAB_LIVE_
 # verdicts: the product under test has three real defects and the run reports all
 # of them, while the exit code says only whether anything moved since the last
 # review. See docs/ADVISORY_DEMO.md.
+ragcheck: python-ok  ## Retrieval + groundedness: recall@k, MRR, nDCG, and per-claim faithfulness.
+	$(PYTHON) -m ragcheck
+
 roleplay-demo: python-ok  ## Run the BFSI sales-roleplay pack: contracts, score consistency, scorer calibration.
 	$(PYTHON) -m roleplay.demo
 
