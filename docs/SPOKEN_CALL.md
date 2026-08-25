@@ -70,7 +70,28 @@ three seats (both speakers and the live scorer).
 | deterministic scorer | FAIL 12/20 |
 | live LLM scorer (rubric v2) | FAIL 16/20 |
 
-Synthesis is digest-cached, so re-recording this unchanged call bills **zero**.
+Synthesis is digest-cached, so re-recording this unchanged call bills **zero** —
+on a machine whose cache already holds the sixteen clips.
+
+**That caveat is load-bearing and is not satisfied by a fresh clone.** Clip
+digests enter the repository only through the deliberate `promote()` step, which
+the fixture generator calls and the spoken-call runner does not, so these
+sixteen clips live in the scratch layer (`~/.cache/lab-audio/tts-cache/`) and
+not in `fixtures/audio/tts_cache/`. Two consequences, both worth stating rather
+than discovering:
+
+- the `clip_key` on each manifest turn resolves on the recording machine and
+  nowhere else — treat it as the digest that *identifies* the clip, not as a
+  path to one;
+- `make spoken-record` on a fresh clone re-synthesises from cold and bills the
+  full 1,510 credits. The zero-cost property belongs to the cache, and this
+  call's cache is not committed.
+
+Nothing in the replay path or the test suite touches those clips — the offline
+run rebuilds everything it needs from `manifest.json` and `full_call.wav`, and
+both are verified against each other (see below). Committing the clips would
+make the re-record portable at the cost of roughly 5.6 MB duplicating audio
+already present in `full_call.wav`, which is a trade this pack has not made.
 
 ## The finding
 
@@ -133,13 +154,25 @@ this call that agreement is a coincidence of opposite errors.
 ## What the numbers here are not
 
 - **No agent voice-response latency is quoted, because none exists here.** This
-  loop is half-duplex and file-based. `synthesis_s`, `transcribe_s` and
-  `model_turn_s` are direct wall-clock measurements of harness-side vendor calls:
+  loop is half-duplex and file-based. Where the three per-turn clocks are
+  measured at all they are direct wall clocks on harness-side vendor calls:
   ElevenLabs synthesis (cache hits excluded), the Deepgram *scored* request (the
   display request excluded), and the LLM turn (retry backoff included). The
   trace's `ts` values come from the modelled latency clock and are labelled as
   modelled. The timing gate that governs trace-recovered latencies is
   `fixtures/calibration_report.json`, verdict PASS.
+- **Only one of those three is a measured latency in the committed artifact,
+  and it is recognition.** The committed call was assembled with every line
+  already in the digest cache and the utterances read back from the recorded
+  transcript, so the only vendor round trip that happened while `manifest.json`
+  was written was Deepgram: `transcribe_s` n=16, min 1.24 s, mean 1.94 s, max
+  2.66 s. `synthesis_s` is `None` on all sixteen turns (cache hits), and
+  `model_turn_s` times a transcript lookup — every value is under a
+  millisecond, and `make spoken-replay` refuses to print it as an LLM latency
+  rather than rounding it to `0.00s`. **A synthesis or model latency quoted
+  from this artifact is a number that is not in it**; measuring either means
+  re-recording, which costs the full 1,510 credits again only if the cache is
+  cold. Both refusals are pinned in `tests/test_roleplay_spoken.py`.
 - **Every WER figure carries raw and normalised counts with their denominators**,
   scored against the synthesiser's published spoken form. On this call the raw
   counts exceed the normalised ones roughly fivefold, and that gap is punctuation

@@ -1100,6 +1100,18 @@ class SpokenCallResult:
     trainee_stop: str
     customer_leaks: int
     scorer_rubric: str = SCORER_RUBRIC_VERSION
+    #: `"recorded"` when this result came from a live run, `"replayed"` when it
+    #: was rebuilt from the committed manifest. It exists for one reason: the
+    #: three wall clocks on a note are *not* equally meaningful in both modes,
+    #: and the report must not print a number under a label the number does not
+    #: deserve. On replay the utterances are read from the recorded transcript,
+    #: so `model_turn_s` measures a dictionary lookup — on the committed
+    #: artifact, a third of a millisecond. Printed as `min/mean/max` it rounds
+    #: to `0.00s` under a heading that says LLM, which reads as a model that
+    #: answered instantly. `synthesis_s` already avoids this by being `None` on
+    #: a cache hit; `model_turn_s` has no such natural signal, so the mode is
+    #: carried here instead of being inferred from a suspiciously small float.
+    source: str = "replayed"
 
     @property
     def scorers_agree(self) -> bool | None:
@@ -1163,10 +1175,18 @@ class SpokenCallResult:
                 lines.append("  " + delta.describe().replace("\n", "\n  "))
         lines += ["", "CHANNEL EFFECT ON GRADING", "-" * 78, "  " + self.effect.describe().replace("\n", "\n  ")]
         lines += ["", "PER-TURN WALL CLOCK (harness-side vendor calls; NOT an agent latency)", "-" * 78]
-        for label, values in (
-            ("TTS synthesis_s   ", [n.synthesis_s for n in self.notes if n.synthesis_s is not None]),
-            ("STT transcribe_s  ", [n.transcribe_s for n in self.notes if n.transcribe_s is not None]),
-            ("LLM model_turn_s  ", [n.model_turn_s for n in self.notes if n.model_turn_s is not None]),
+        model_turns = [n.model_turn_s for n in self.notes if n.model_turn_s is not None]
+        for label, values, empty in (
+            (
+                "TTS synthesis_s   ",
+                [n.synthesis_s for n in self.notes if n.synthesis_s is not None],
+                "n=0 (every clip served from the digest cache, so nothing was synthesised to time)",
+            ),
+            (
+                "STT transcribe_s  ",
+                [n.transcribe_s for n in self.notes if n.transcribe_s is not None],
+                "n=0 (no recognition request was made)",
+            ),
         ):
             if values:
                 lines.append(
@@ -1174,7 +1194,25 @@ class SpokenCallResult:
                     f"mean {sum(values) / len(values):.2f}s  max {max(values):.2f}s"
                 )
             else:
-                lines.append(f"  {label} n=0 (every clip replayed from cache)")
+                lines.append(f"  {label} {empty}")
+        # `model_turn_s` is the one clock whose meaning depends on the mode, and
+        # printing it as a latency on replay would be the report's only dishonest
+        # line: it measures a read from the recorded transcript, which rounds to
+        # 0.00s under a heading that says LLM.
+        if self.source == "replayed":
+            largest = f"{max(model_turns) * 1000:.2f}ms" if model_turns else "n/a"
+            lines.append(
+                "  LLM model_turn_s   NOT QUOTED on replay: the utterances are read "
+                f"from the recorded transcript, so this clock times a dictionary "
+                f"lookup (largest {largest}), not a model call. Re-record to measure it."
+            )
+        elif model_turns:
+            lines.append(
+                f"  LLM model_turn_s   n={len(model_turns)}  min {min(model_turns):.2f}s  "
+                f"mean {sum(model_turns) / len(model_turns):.2f}s  max {max(model_turns):.2f}s"
+            )
+        else:
+            lines.append("  LLM model_turn_s   n=0 (no model was called)")
         lines.append(
             "  synthesis_s excludes cache hits; transcribe_s excludes the display "
             "request; model_turn_s includes retry backoff. Trace ts values are the "
@@ -1497,6 +1535,7 @@ def run_spoken_call(
         deepgram_requests=stt.requests,
         trainee_stop=trainee_stop,
         customer_leaks=voice.leaks,
+        source="recorded",
     )
     _write_scorecards(directory / SCORECARDS_PATH.name, result)
     _verify_replays(result, directory)

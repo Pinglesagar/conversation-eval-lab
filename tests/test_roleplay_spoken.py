@@ -40,7 +40,13 @@ import numpy as np
 import pytest
 
 from lab.trace.schema import EventKind
-from lab.voice.engines.base import DEFAULT_SAMPLE_RATE, SynthesisResult, Transcription
+from lab.voice.engines.audiofile import read_audio
+from lab.voice.engines.base import (
+    DEFAULT_SAMPLE_RATE,
+    SynthesisResult,
+    Transcription,
+    audio_digest,
+)
 
 from roleplay import spoken
 from roleplay.live import (
@@ -951,3 +957,175 @@ class TestCommittedCall:
         assert "NOT an agent latency" in report
         for delta in result.deltas:
             assert f"/{delta.normalised_reference_words}" in report
+
+    def test_the_replayed_model_clock_is_refused_not_rounded(
+        self, result: spoken.SpokenCallResult
+    ) -> None:
+        """A replayed `model_turn_s` must never be printed as an LLM latency.
+
+        On replay the utterances are read back from the recorded transcript, so
+        this clock times a dictionary lookup: every committed value is under a
+        millisecond. Formatted as `min/mean/max` at two decimals it renders as
+        `0.00s` beneath a heading that says LLM, which a reader is entitled to
+        read as a model that answered instantly — the one figure in this report
+        that would be untrue. `synthesis_s` escapes the same trap by being
+        `None` on a cache hit; this clock has no such natural signal, so the
+        refusal is explicit and carries the real magnitude with it.
+        """
+        assert result.source == "replayed"
+        model_turns = [n.model_turn_s for n in result.notes if n.model_turn_s is not None]
+        assert model_turns, "the committed notes do carry the values, unquoted"
+        assert max(model_turns) < 0.001
+
+        report = result.report()
+        assert "LLM model_turn_s   NOT QUOTED on replay" in report
+        assert "not a model call" in report
+        # The magnitude is disclosed in a unit that cannot round to zero.
+        assert "ms)" in report
+        assert "mean 0.00s" not in report
+
+    def test_grading_the_committed_call_reads_heard_text_and_only_heard_text(
+        self, result: spoken.SpokenCallResult
+    ) -> None:
+        """Mutate the real call both ways and watch which direction moves.
+
+        The synthetic tests above prove the wiring on a fixture channel. This
+        proves it on the artifact that will actually be shown, which is where the
+        claim would matter if it were false: if grading secretly consulted
+        `text_sent`, every recognition delta in this pack would be theatre, and
+        the "the scorer grades what was heard" headline would be inverted.
+
+        Two mutations of the committed notes, run through the same production
+        loop the replay uses:
+
+        *   drop the registered `capital_at_risk` wording from `text_heard` on
+            the turn that carries it, leaving `text_sent` intact -> the register
+            must stop crediting that disclosure;
+        *   replace `text_sent` on that same turn with a stub, leaving
+            `text_heard` intact -> nothing may move at all.
+
+        The second is the load-bearing half. A scorer that read `text_sent`
+        would still find the disclosure in the first case and would collapse in
+        the second, so the pair pins the direction rather than merely observing
+        that something changed.
+        """
+        profile = load_customer_profiles()[spoken.SPOKEN_ROW.customer]
+        manifest = json.loads(
+            (spoken.SPOKEN_DIR / "manifest.json").read_text(encoding="utf-8")
+        )
+        session = manifest["session"]
+
+        def ledger_for(notes: Sequence[spoken.AudioTurnNote]) -> list[str]:
+            conversation = spoken._converse_from_notes(
+                notes,
+                profile=profile,
+                scenario_id=session["scenario_id"],
+                jurisdiction=session["jurisdiction"],
+                language=session["language"],
+                max_turns=int(session["turn_budget"]),
+                trainee_stop=session["trainee_stop"],
+                customer_leaks=int(session["customer_leaks"]),
+                trainee_repr=session["trainee_repr"],
+                voice_repr=session["voice_repr"],
+                session_id=session["session_id"],
+            )
+            view = session_view(conversation.trace)
+            return [entry["code"] for entry in view.disclosures]
+
+        baseline = list(result.notes)
+        assert "capital_at_risk" in ledger_for(baseline)
+
+        registered = "you could get back less than you put in"
+        carriers = [n for n in baseline if registered in n.text_heard.lower()]
+        assert len(carriers) == 1, "the disclosure should ride on exactly one turn"
+        carrier = carriers[0]
+        assert registered in carrier.text_sent.lower()
+
+        deafened = [
+            n.model_copy(update={"text_heard": n.text_heard.lower().replace(registered, "")})
+            if n is carrier
+            else n
+            for n in baseline
+        ]
+        assert "capital_at_risk" not in ledger_for(deafened), (
+            "a disclosure lost in recognition was still credited"
+        )
+
+        # The converse, and the one that catches a scorer reading the wrong field.
+        muted = [
+            n.model_copy(update={"text_sent": "Nothing at all.", "spoken_form": "Nothing at all."})
+            if n is carrier
+            else n
+            for n in baseline
+        ]
+        assert ledger_for(muted) == ledger_for(baseline), (
+            "grading moved when only text_sent changed, so it is reading text_sent"
+        )
+
+    def test_the_recording_decomposes_into_exactly_the_manifest_turns(self) -> None:
+        """The WAV is these sixteen turns in this order, and nothing else.
+
+        `verify_recording` digests the file as a whole against
+        `assembly.audio_sha256`, which catches a re-encoded, truncated or
+        swapped recording. What it never reads is the manifest's *per-turn*
+        claims — `duration_s` and `audio_sha256` on each turn — so it passes
+        unchanged on a manifest that describes the wrong layout for a WAV that
+        is byte-perfect. Confirmed by construction: swapping two turns' declared
+        durations leaves `verify_recording` green and makes three turns fail
+        here.
+
+        That matters because the per-turn table is what every other claim in the
+        pack is indexed by. "Turn 10 is where the adviser gave the capital-at-
+        risk disclosure, and here is the audio of it" is only checkable if the
+        manifest's offsets are true. This walks the file with the manifest's own
+        durations and digests each span independently, so every turn is checked
+        to be the clip the manifest names, at the offset the manifest implies.
+
+        The gaps are checked too, and checked for *digital* silence rather than
+        quietness: `assemble_call` documents that every sample in the recording
+        is either a synthesised turn or a declared gap, and a gap holding low
+        room tone would make that sentence false while sounding identical.
+        """
+        root = spoken.SPOKEN_DIR
+        manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+        audio, sample_rate = read_audio(root / spoken.FULL_CALL_WAV.name)
+        assembly = manifest["assembly"]
+        assert sample_rate == assembly["sample_rate"]
+        gap_samples = int(round(assembly["gap_s"] * sample_rate))
+
+        cursor = 0
+        for position, turn in enumerate(manifest["turns"]):
+            span = int(round(turn["duration_s"] * sample_rate))
+            segment = audio[cursor : cursor + span]
+            assert len(segment) == span, f"turn {turn['order']} runs past the end"
+            assert audio_digest(segment, sample_rate) == turn["audio_sha256"], (
+                f"turn {turn['order']} is not the clip the manifest names"
+            )
+            cursor += span
+            if position < len(manifest["turns"]) - 1:
+                gap = audio[cursor : cursor + gap_samples]
+                assert float(np.abs(gap).max()) == 0.0, (
+                    f"the gap after turn {turn['order']} is not digital silence"
+                )
+                cursor += gap_samples
+
+        # No unaccounted audio: the file is turns and declared gaps, exhaustively.
+        assert cursor == len(audio)
+
+    def test_only_recognition_is_a_measured_vendor_latency_here(
+        self, result: spoken.SpokenCallResult
+    ) -> None:
+        """Exactly one of the three clocks survives into the committed artifact.
+
+        The committed call was assembled with every line already in the digest
+        cache and the utterances replayed from a recorded transcript, so the
+        only vendor round trip that actually happened while the manifest was
+        written was recognition. Anyone quoting a synthesis or model latency
+        from this artifact is quoting a number that is not in it, and would have
+        to re-record to get one.
+        """
+        assert all(note.tts_replayed for note in result.notes)
+        assert all(note.synthesis_s is None for note in result.notes)
+        transcribe = [n.transcribe_s for n in result.notes if n.transcribe_s is not None]
+        assert len(transcribe) == len(result.notes)
+        assert min(transcribe) > 1.0  # real network round trips, not replays
