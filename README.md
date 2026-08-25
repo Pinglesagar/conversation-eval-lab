@@ -507,6 +507,10 @@ docs/                   trace schema, CLI reference, how to add a scenario
                         SPOKEN_CALL.md — the audio and conversation tiers, joined
 ```
 
+**Full documentation: [docs/WIKI.md](docs/WIKI.md)** — every package and file, every
+command, the sixteen golden rules and what enforces each, written for a product
+manager and an engineer at the same time.
+
 Design rationale: [DESIGN.md](DESIGN.md). The capability-to-question mapping:
 [INTERVIEW_NOTES.md](INTERVIEW_NOTES.md).
 
