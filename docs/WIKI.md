@@ -244,9 +244,26 @@ others. §8 is about why the first two are printed side by side.
 
 #### In plain terms
 
-If the trace is the contract between the two halves of the system, then "how do I plug
-a new AI in" reduces to "what do I have to write down." The answer is short, and short
-on purpose: the fewer things an adapter must promise, the more things can be adapters.
+An **adapter** is the small piece of glue that connects the thing being tested to this
+harness. Swap the adapter and you can point the same harness at a typed chatbot, a phone
+call, or a different vendor's model entirely.
+
+So "how do I test a new AI with this?" becomes a much smaller question: **what does the
+glue have to write down?** The list is deliberately tiny — six kinds of event (the
+session started, the customer spoke, the agent spoke, the agent used a tool, the tool
+answered, the session ended), plus a clock handed to it rather than one it fetches for
+itself. Anything that can write those down gets every check, every score and every report
+in this repository for free, without changing a line of them.
+
+Those six are the floor, not the ceiling: seventeen event kinds exist in all, and a
+spoken adapter adds the audio and transport ones. But a text adapter that emits only the
+six is already a first-class citizen.
+
+Short is the point. Every extra thing an adapter is required to do is another reason
+somebody cannot connect their system to this one.
+
+(Careful with the word *contract* nearby: in this document a **Contract** is a specific
+deterministic check — see the [glossary](#12-glossary) — not an interface agreement.)
 
 #### In detail
 
@@ -795,7 +812,7 @@ documentation task.
 | Package | LOC | What it is |
 | --- | --- | --- |
 | `lab/` | 31,541 | the reusable engine |
-| `tests/` | 28,307 | 1,976 tests across 57 files |
+| `tests/` | 28,307 | 1,976 tests across 54 `test_*.py` modules (57 `.py` files; the other three are shared fixtures) |
 | `roleplay/` | 15,817 | the advisory domain |
 | `tablemate/` | 5,091 | the restaurant domain |
 | `ragcheck/` | 3,108 | retrieval + groundedness |
@@ -1084,9 +1101,13 @@ and again in `roleplay/regime_eval.py`. Do not regress this. Full account, inclu
 ties are ordinary rather than exotic:
 [§8.1.3.6](#8136-ordering-is-decided-on-position-never-on-timestamps).
 
-> *Correction, recorded:* earlier versions of this wiki cited `contracts.py:1523` for this
-> rule. That line is inside `NoProgressContract._capture_positions` — one of the five
-> application sites, not the definition.
+> *Correction, recorded:* earlier versions of this wiki cited
+> `lab/checks/contracts.py:1523` for this
+> rule. That line is not the definition and is not one of the five application sites
+> either — it is a docstring line inside `NoProgressContract._capture_positions`
+> (1515–1531), a helper that *receives* an already-computed sequence and reads positions
+> out of it with `_at()`. The nearest real application site is line 1477, in the same
+> class, which is where that sequence is built.
 
 ### Rule 7 — A judge without calibration is not evidence
 
@@ -1182,11 +1203,22 @@ acting.
 
 **Plain:** matching exact words only works until the AI rephrases.
 
-**Detail:** `DESIGN.md` §10. Measured: a promise detector matching literal substrings had
-**100% recall against a scripted agent and 1/7 (~14%) against a live model that
-paraphrased**. Same defect; the detector went blind. Phrase checks survive only where the
-exact wording *is* the requirement — a prescribed regulatory disclosure — and those are
-allowed to fail. The matching layer that resulted is
+**Detail:** `DESIGN.md` §10. Measured: a promise detector matching literal substrings
+fired on **every** seeded case against the scripted agent, and caught **1/7** of the
+unbacked confirmations a deliberately generous hand-written detector found across the 30
+recorded live conversations in `fixtures/live_run/traces`. After the rewrite it catches
+**7/7**, plus one the hand-written detector missed. Same defect; the detector went blind.
+
+> **Two denominators, two runs — do not merge them.** The **1/7** above is the earlier
+> `fixtures/live_run` corpus (30 conversations), and it is the figure `DESIGN.md` §10 and
+> `tests/test_checks_paraphrase.py` both quote. The separate **1/6** in
+> [§8.4](#84-the-two-systems-under-test--roleplay-and-tablemate) is the later
+> `fixtures/live_full` run, counted over the six large-party conversations in it. Both are
+> real and neither supersedes the other; quoting one with the other's denominator is the
+> exact mistake Rule 3 exists to prevent.
+
+Phrase checks survive only where the exact wording *is* the requirement — a prescribed
+regulatory disclosure — and those are allowed to fail. The matching layer that resulted is
 [§8.1.3.2](#8132-labcheckstextpy--415-lines).
 
 ### Rule 16 — Never commit a credential, and never print one
@@ -1347,6 +1379,15 @@ baseline is a reviewable diff, not a silent overwrite.
 | `make spoken-record` | synthesis characters for a whole call | `LAB_LIVE_SPOKEN` |
 | `make transport-record` | live WebRTC sessions | `LAB_LIVE_TRANSPORT` + the room variables |
 | `make audio-fixtures` | nothing by default — local `say` unless a cloud engine is named | — |
+
+**The remaining four targets are housekeeping**, listed so this section earns the word
+"every": `make help` (prints the per-target help this table is built from), `make
+python-ok` (the version guard every other target depends on — it fails with an
+instruction if `python3` is older than 3.12), `make audio-setup` (runs
+`scripts/setup_audio.sh`, which shows what the local speech engines would download and
+then installs them under `LAB_AUDIO_HOME` — the same show-the-cost-first habit as
+`audio-suite-plan`), and `make clean`. Thirty targets in total; `grep -oE
+'^[a-z][a-z0-9_.-]*:' Makefile` lists them.
 
 ### 5.4 What CI actually asserts
 
@@ -4911,7 +4952,7 @@ company. Nothing in it imports any domain package
 | `scenarios/` | 2,404 + 194 YAML | the corpus and its loader | [§8.5.7](#857-scenarios--the-corpus-and-the-loader) |
 | `error_analysis/` | 288 | traces read by hand, coded, counted | [§8.5.8](#858-error_analysis--traces-read-by-hand) |
 | `scripts/` | 2,539 | the five fixture recorders — every path that spends money | [§8.5.9](#859-scripts--the-fixture-recorders) |
-| `tests/` | 28,307 | 1,976 tests across 57 files | [§8.5.10](#8510-tests--what-it-actually-protects) |
+| `tests/` | 28,307 | 1,976 tests across 54 `test_*.py` modules (57 `.py` files; the other three are shared fixtures) | [§8.5.10](#8510-tests--what-it-actually-protects) |
 
 > **Two notes on the numbering.** Headings here carry their full path — §8.1.3.4 is *the
 > fourth topic of the third group of §8.1* — and in-text cross-references use the same
@@ -8162,14 +8203,18 @@ From the committed reference report, generated by
 ```
 ## Report integrity
 
-- 47/47 (100.0%) scenarios ran once (k=1), so no instability could have been observed in them: …
-- 2/13 (15.4%) contracts ran but had nothing to assert on in any run, so they are
-  skipped rather than passing: no-progress-loop, propagation:seating
-- contract promise-kept was vacuous on 12/47 (25.5%) runs; its failure rate is
-  quoted over the runs where it applied
-- judge hallucinated_confirmation abstained on 13/13 (100.0%) of the runs it was
-  given; those runs are unjudged, not passing
+Where this report's evidence is weaker than its tables imply. Listed because a report that hides its gaps gets trusted for more than it can support.
+
+- 2/23 (8.7%) contracts ran but had nothing to assert on in any run, so they are skipped rather than passing: no-progress-loop, propagation:seating
+- contract promise-kept was vacuous on 36/141 (25.5%) runs; its failure rate is quoted over the runs where it applied
+- judge hallucinated_confirmation abstained on 13/13 (100.0%) of the runs it was given; those runs are unjudged, not passing
 ```
+
+That is the whole section, verbatim, from `fixtures/replay_run/run_report.md`. Note what
+is **not** in it: the k=1 gap. This run is k=3, so the "ran once" gap does not apply, and
+the report omits a gap it does not have rather than printing a reassuring zero. The k=1
+line exists in the code (`report.py:516`) and fires on a single-repeat run — the point of
+the section is that the list is computed per run, not a fixed checklist.
 
 That last line is worth dwelling on. Offline there is no recorded verdict for a
 trace the judge has not seen, so **it abstains on everything rather than
@@ -8446,8 +8491,9 @@ Types, not review. `JudgeSummary.calibration` and `VoiceMetrics.calibration_verd
 are required fields; `Rate` refuses a numerator above its denominator;
 `FailureRecord.evidence` must be non-empty; the headline verdict is derived; and an
 empty report is a FAIL. Then `integrity_gaps()` prints the report's own weaknesses
-as a section — on the committed reference run, that includes "47/47 (100.0%)
-scenarios ran once (k=1)" and "judge abstained on 13/13 (100.0%) of the runs".
+as a section — on the committed reference run, that is "2/23 (8.7%) contracts ran but had
+nothing to assert on", "promise-kept was vacuous on 36/141 (25.5%) runs" and "judge
+abstained on 13/13 (100.0%) of the runs".
 
 **"Isn't this reinventing promptfoo / langfuse?"**
 No — `lab/report/interop.py` exports to both and depends on neither. The langfuse
@@ -11640,6 +11686,11 @@ error at k=3, *"and the reason no confidence interval is offered."*
    silently, in the direction that looks green."* Fixed since;
    `tests/test_checks_paraphrase.py` pins both directions.
 
+   *Denominator note.* This **1/6** is over the six large-party conversations of
+   `fixtures/live_full`. The **1/7** quoted at [Rule 15](#rule-15--a-literal-in-a-check-is-a-check-that-works-once)
+   is the earlier `fixtures/live_run` corpus of 30 conversations. Same lesson, two
+   separate runs; they are not the same measurement and must not be quoted as one.
+
 2. **An emergent defect that is not any of the three.** In two of three repeats of
    `happy-move-booking-later` — a **control** row — the amendment desk said *"You're all
    set for 7:30pm for two people"* and never called `modify_booking`. Root cause visible in
@@ -11761,7 +11812,7 @@ expands the rest of it — the four things standing around the engine:
 | `scenarios/` | `loader.py` 2,340 LOC + 194 YAML files | the declarative corpus and its schema |
 | `error_analysis/` | `pareto.py` 281 LOC + 1,075 lines of coded notes | the hand-assigned failure taxonomy |
 | `scripts/` | 2,539 LOC across 5 recorders | every path that spends provider credit |
-| `tests/` | 28,307 LOC across 57 files, 1,976 tests | the whole of the above, plus `lab/`, `roleplay/`, `tablemate/` |
+| `tests/` | 28,307 LOC across 57 `.py` files (54 test modules), 1,976 tests | the whole of the above, plus `lab/`, `roleplay/`, `tablemate/` |
 
 Sizes from `wc -l`; the test figures from `python -m pytest -q`, which reports
 `1976 passed, 4 skipped in 26.78s` against `1980 tests collected`. The four
@@ -13567,8 +13618,10 @@ The five largest files, by `wc -l`: `test_audio_engines_cloud.py` (1,770),
 `test_scenarios.py` (1,309), `test_voice_transport.py` (1,303),
 `test_roleplay_spoken.py` (1,131), `test_roleplay_live.py` (1,085).
 
-Two of the 57 files are not tests but shared helpers: `tests/audio_doubles.py` and
-`tests/roleplay_fixtures.py`.
+Three of the 57 `.py` files are not test modules: the shared helpers
+`tests/audio_doubles.py` and `tests/roleplay_fixtures.py`, plus `tests/__init__.py`, which
+holds nothing but the docstring stating that every test here runs offline with zero API
+keys. That leaves **54** `test_*.py` modules, which is what `pytest` collects from.
 
 ##### The mutation-style tests — the ones that prove a check *can* fail
 
@@ -13799,8 +13852,10 @@ documentation.
   hang-up sentinel to the turn carrying the caller's final answer, denying the agent the
   turn it needed, then failed it for not acting.
   → [§8.2.8](#828-labsimulatordriverpy--the-loop-that-produces-the-trace)
-- **A detector that went blind to paraphrase** — 100% recall against a scripted agent,
-  **1/7** against a live model that rephrased. Same defect, same trace, different words.
+- **A detector that went blind to paraphrase** — it fired on every seeded case against the
+  scripted agent, then caught **1/7** of the unbacked confirmations across the 30
+  conversations in `fixtures/live_run`. Same defect, same trace, different words. (The
+  **1/6** quoted in §8.4 is a different run over a different six — see Rule 15.)
   → [§8.1.3.2](#8132-labcheckstextpy--415-lines)
 - **Two unbacked confirmations missed because of one character.** Every pattern in the
   checks package used an ASCII apostrophe; the model typed U+2019. Nothing about the miss
@@ -14388,24 +14443,66 @@ Test counts come from `pytest --collect-only -q`.
 
 ## Appendix B — Findings recorded, not fixed
 
-Writing this document was a read-only pass: no `.py` file, no scenario YAML, no fixture and
-no Makefile was modified. The things below were found anyway. They are recorded rather than
-fixed, with enough evidence to act on later.
+Writing this document was a read-only pass: across the two commits that produced it, no
+`.py` file, no scenario YAML, no fixture and no Makefile was modified — `git diff` over
+them touches `README.md` and `docs/WIKI.md` and nothing else. The things below were found
+anyway. They are recorded rather than fixed, with enough evidence to act on later.
+
+*One caveat, so the claim is exact.* The documentation effort that preceded this wiki
+(`5fcb18f`, "lead with the advisory domain, and surface the RAG tier") **did** change the
+`Makefile`: it added the `ragcheck` target and its `.PHONY` entry, four lines, because
+`ragcheck/` had a working CLI and five test modules but no way to run it from `make`. That
+is a real change to build tooling made under a `docs:` heading, and it is the only non-`.md`
+edit anywhere in the chain. It is called out here rather than buried in a commit message.
 
 Two of them are worth knowing before an interview, because they are exactly what a careful
 reader finds: a docstring that contradicts the repository's own headline number, and a
 scoring branch that rewards suppressing an objection.
 
 **One correction that has already been applied to this document.** An earlier version of
-the wiki cited `lab/checks/contracts.py:1523` for rule 6; that line is one of five
-*application* sites, and the canonical definition is `_sequence` at `contracts.py:158`.
-The rule now cites the definition.
+the wiki cited `lab/checks/contracts.py:1523` for rule 6. The canonical definition is
+`_sequence` at `lab/checks/contracts.py:158`, and it is *applied* at exactly five sites —
+lines 732, 1072, 1169, 1313 and 1477, each verifiable with
+`grep -n '_sequence(trace)' lab/checks/contracts.py`. Line 1523 is none of those: it is a
+docstring line inside `NoProgressContract._capture_positions`, a helper that consumes a
+sequence it was handed. The rule now cites the definition.
 
 **And one apparent contradiction between drafts, resolved.** One draft recorded the test
 total as stale — "the wiki says 1,976, `pytest --collect-only -q` reports 1,980". Both
 numbers are right and they count different things: `pytest -q` reports **1,976 passed, 4
 skipped**, which is 1,980 collected. This document quotes 1,976 *passing* and names the 4
 skips.
+
+**Three further corrections applied to this document during the accuracy audit.** All
+three were the same species of error — a number written from memory rather than re-read
+from the artefact — which is precisely the failure Rule 3 and Rule 14 exist to catch, so
+they are recorded rather than quietly patched:
+
+1.  **A quoted report section that did not match the report.** §8.2 reproduced the
+    integrity section of `fixtures/replay_run/run_report.md` in a fenced block and got
+    three of its four lines wrong: it invented a `47/47 (100.0%) scenarios ran once (k=1)`
+    gap that the run does not have (the reference run is **k=3**), and it rendered the
+    other two as `2/13 (15.4%)` and `12/47 (25.5%)` where the file says `2/23 (8.7%)` and
+    `36/141 (25.5%)`. Note the shape of the error: 141 ÷ 3 = 47 and 36 ÷ 3 = 12, so the
+    figures were silently divided through by k. The block now reproduces the file
+    verbatim, and §7 (which had always quoted `6/105` and `36/141` correctly) no longer
+    contradicts it.
+2.  **A miscited line for Rule 6**, described above.
+3.  **Two runs quoted as one measurement.** The literal-detector recall figure appeared as
+    `1/7` in Rule 15 and as `1/6` in §8.4 with nothing to say they are different runs —
+    `fixtures/live_run` (30 conversations) and `fixtures/live_full` (six large-party
+    conversations) respectively. Both are correct; each now carries its corpus and points
+    at the other.
+
+**And one finding in the product, new to this audit.** `SilentCorrectionReport.describe()`
+at `lab/voice/adapter.py:1385` emits the sentence *"Production's equivalent reconciliation
+could attribute 31.3%"* — a **hardcoded literal with no denominator and no derivation
+anywhere in the repository**. It is the repo's own Rule 3 broken by the repo, and because
+it lands in the `description` field of a committed artefact
+(`fixtures/audio/cloud/audio_suite_report.json`), any document that quotes that artefact
+faithfully — this one included — inherits the naked rate. The adjacent
+`{...}% attributable` in the same f-string is recoverable (it is `attributed_fraction`,
+1/1 on the committed run); the 31.3% is not. Not fixed: this was a read-only pass.
 
 ### B.1 From the core of the engine
 
