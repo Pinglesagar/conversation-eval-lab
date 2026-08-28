@@ -1023,3 +1023,26 @@ def test_the_real_runner_corpus_is_a_subset_of_the_selectors_corpus():
     everything = {s.id for s in load_corpus(suites=ALL_SUITES).scenarios}
     assert runnable <= everything
     assert runnable, "an empty runner corpus would make --runner-args always refuse"
+
+
+def test_the_evallab_subcommand_and_the_module_cannot_drift(tmp_path, capsys):
+    """`evallab select` and `python -m lab.selection` must not disagree.
+
+    They are two doors onto one parser — `cmd_select` rebuilds argv and hands
+    over rather than reimplementing the surface — so the only way they diverge
+    is if someone adds an option to one and forgets the other. This pins that.
+    """
+    import json as _json
+
+    from lab.cli import main as cli_main
+    from lab.selection.select import main as selection_main
+
+    argv = ["--changed-since", "HEAD~2", "--json"]
+
+    selection_main(argv)
+    direct = _json.loads(capsys.readouterr().out)
+
+    cli_main(["select", "--changed-since", "HEAD~2", "--json"])
+    through_cli = _json.loads(capsys.readouterr().out)
+
+    assert direct == through_cli

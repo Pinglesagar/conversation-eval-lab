@@ -1,8 +1,8 @@
 """`python -m lab.selection` — the selection layer's entry point.
 
-Deliberately its own entry point rather than an `evallab` subcommand: the CLI is
-owned elsewhere and the selection layer is wired into it separately, once every
-stage has landed. Until then:
+Available both as `evallab select` and here. `lab.cli.cmd_select` rebuilds argv
+and delegates to `select.main`, so there is exactly one parser and the two
+entry points cannot drift; a test pins that they return identical JSON.
 
     python -m lab.selection --changed-since HEAD~1        # the report
     python -m lab.selection --changed-since HEAD~1 --json # the same, machine-readable
