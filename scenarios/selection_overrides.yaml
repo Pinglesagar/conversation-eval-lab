@@ -1,0 +1,67 @@
+# Additive overrides for `python -m lab.selection`.
+#
+# This file exists for the dependencies a trace cannot see. The scenario
+# dependency map is derived from committed traces, and a trace records what one
+# recorded run *did* — so a config value read at run time, a prompt fragment
+# shared between two agents, or a dependency that lives only in data emits no
+# event and appears nowhere in the map. When you know about one of those, write
+# it down here.
+#
+# THIS FILE CAN ONLY WIDEN A SELECTION. It cannot narrow one, and that is not a
+# convention you are being asked to respect — it is structural:
+#
+#   * `then:` has no key that names an exclusion. There is nothing to write.
+#   * The schema is `extra="forbid"`, so an invented `exclude:` or `skip:` key
+#     is a validation error you will see, not a key that is quietly ignored.
+#   * The code that applies these rules returns additions and is never shown the
+#     base selection, so it cannot subtract from a set it has not got.
+#   * `select()` asserts the post-condition anyway.
+#
+# The reason narrowing is refused even to a human who is sure: skipping a
+# scenario that should have run is the only unrecoverable error this tool can
+# make — the run goes green and the regression ships. If the map is over-
+# selecting, the fix is better derivation, not a person declaring something safe.
+# A declared map goes stale silently, and a stale selector is worse than none.
+#
+# A rule that names a scenario which no longer exists escalates to running the
+# WHOLE corpus, loudly. Staleness in this file is therefore expensive rather
+# than dangerous, which is the trade you want.
+#
+#   python -m lab.selection --changed-since HEAD~1     # shows which rules fired
+#
+# ---------------------------------------------------------------------------
+# Schema
+# ---------------------------------------------------------------------------
+#
+#   version: 1
+#   rules:
+#     - id: <short-kebab-name>          # unique; appears in the report
+#       reason: <one sentence>          # required: why a trace cannot see this
+#       when:                           # at least one clause; first match fires
+#         paths:     ["glob", ...]      # fnmatch over changed repo-relative paths
+#         locations: ["glob", ...]      # fnmatch over `path::qualname`
+#         symbols:   ["exact", ...]     # exact runtime agent or tool names
+#       then:                           # at least one; all of them ADD
+#         scenarios: [<id>, ...]        # explicit scenario ids
+#         tags:      [<tag>, ...]       # every scenario carrying the tag
+#         suites:    [<suite>, ...]     # every scenario in the suite
+#         everything: true              # refuse to narrow at all
+#
+# Worked example, kept commented out because nothing in this repository needs it
+# yet — an empty rule list is the healthy state:
+#
+#   version: 1
+#   rules:
+#     - id: shared-greeting-fragment
+#       reason: >
+#         Every agent's system prompt is assembled from one shared opening
+#         fragment. The trace records which agent spoke, never which fragments
+#         its prompt was built from, so editing the fragment is invisible to the
+#         derived map while changing what every disclosure scenario hears.
+#       when:
+#         locations: ["tablemate/prompts.py::*"]
+#       then:
+#         tags: [disclosure]
+
+version: 1
+rules: []
