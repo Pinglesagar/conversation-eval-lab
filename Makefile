@@ -23,17 +23,45 @@ PY_HAVE := $(shell $(PYTHON) -c 'import sys; print("%d.%d" % sys.version_info[:2
 .DEFAULT_GOAL := help
 .PHONY: help start python-ok install gate test coverage demo calibrate report validate replay errors reference live-replay live-score live-record audio-fixtures audio-check audio-suite audio-suite-plan audio-suite-record audio-suite-evidence audio-setup transport-report transport-record roleplay-demo roleplay-validate advisory-verdicts spoken-replay spoken-record ragcheck clean
 
-help:  ## Show this help.
-	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
-		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
-
 # The on-ramp, and the first thing anybody should type. One finding, recomputed
 # on this machine from the committed spoken call, printed in a screen, plus what
 # to read next. It is not a tour and it is deliberately not a summary of the
 # repository: a newcomer handed thirty-two targets and seventeen documents reads
 # none of them, so this shows one result and then gets out of the way.
-start: python-ok  ## The on-ramp: one finding, recomputed offline.
+start: python-ok  ## start: The on-ramp: one finding, recomputed offline.
 	@$(PYTHON) -m scripts.start
+
+# `make help`, grouped — presentation only.
+#
+# Thirty-two targets printed as one flat alphabetical list is the state this
+# replaced, and it had a real cost: `demo` and `audio-suite-record` looked
+# equally routine, and one of those two spends money at a vendor. So the list is
+# bucketed by what a reader is trying to do, and the four targets that bill for
+# something are under a heading that says so and carry a marker of their own.
+#
+# The grouping lives in the `## <group>: <description>` comment on each target
+# rather than in a list here, so a target added later cannot quietly go missing
+# from this screen — it appears under its group, or under UNGROUPED, which is
+# the visible failure that a silently-dropped line would not be.
+#
+# Every target name is unchanged. Nothing that CI or a script references moved.
+# Note: no `#` may appear in HELP_GROUPS — make truncates a variable assignment
+# at the first one, and the label silently loses its tail.
+HELP_GROUPS := start:Start here|every:Everyday|evidence:Evidence — committed runs, offline, no keys|record:Recording — the only group where anything spends money or needs a key|maint:Maintenance|:UNGROUPED — this target needs a group prefix on its help comment
+
+help:  ## start: Show this help, grouped.
+	@grep -hE '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) \
+	| awk -v groups='$(HELP_GROUPS)' 'BEGIN { FS = "## " ; n = split(groups, G, "|") } \
+	  { name = $$1 ; sub(/:.*/, "", name) ; \
+	    rest = $$2 ; key = "" ; \
+	    if (match(rest, /^[a-z]+: /)) { key = substr(rest, 1, RLENGTH - 2) ; \
+	                                    rest = substr(rest, RLENGTH + 1) } \
+	    D[key] = D[key] sprintf("    \033[36m%-21s\033[0m %s\n", name, rest) } \
+	  END { printf "\n" ; \
+	        for (i = 1; i <= n; i++) { split(G[i], p, ":") ; \
+	          if (D[p[1]] != "") printf "  \033[1m%s\033[0m\n%s\n", p[2], D[p[1]] } \
+	        printf "  MONEY+KEY = spends at a vendor and refuses without the named keys.\n" ; \
+        printf "  Every other target on this screen is offline and free.\n\n" }'
 
 python-ok:
 ifneq ($(PY_OK),1)
@@ -44,10 +72,10 @@ ifneq ($(PY_OK),1)
 	@exit 1
 endif
 
-install: python-ok  ## Install the package plus dev extras in editable mode.
+install: python-ok  ## start: Editable install, with the dev extras.
 	$(PIP) install -e ".[dev]"
 
-test: python-ok  ## Run the full offline test suite.
+test: python-ok  ## start: The full offline test suite. No keys.
 	$(PYTHON) -m pytest
 
 # The ordered gate: every offline check this repository has, in cost order,
@@ -75,7 +103,7 @@ test: python-ok  ## Run the full offline test suite.
 # stage can see: **replay is blind to a prompt change**. If your diff touches a
 # prompt, a persona or a rubric, a green gate here is necessary and not
 # sufficient — docs/GATES.md says which live tier answers that question instead.
-gate: python-ok  ## The ordered offline gate, cheapest stage first; stops at the first failure.
+gate: python-ok  ## every: Every offline check, cheapest first, stops at red.
 	@echo "== 1/8  lint: syntax errors and undefined names =="
 	@if $(PYTHON) -m ruff --version >/dev/null 2>&1; then \
 		$(PYTHON) -m ruff check --select E9,F63,F7,F82 --exclude .venv . ; \
@@ -129,7 +157,7 @@ gate: python-ok  ## The ordered offline gate, cheapest stage first; stops at the
 # repository whose argument is that instruments must be measured before they are
 # trusted should not adopt one it has not calibrated. What line coverage cannot
 # tell you is in README.md and WIKI §10.4, next to the number.
-coverage: python-ok  ## Line and branch coverage, whole tree and offline-executable subset.
+coverage: python-ok  ## every: Coverage, twice: whole tree, then offline-executable.
 	$(PYTHON) -m pytest -q --cov --cov-report=term:skip-covered
 	@echo
 	@echo "== omitting the five key-requiring recording scripts =="
@@ -137,31 +165,31 @@ coverage: python-ok  ## Line and branch coverage, whole tree and offline-executa
 	  --omit="scripts/make_audio_fixtures.py,scripts/make_audio_suite_fixtures.py,scripts/make_cloud_fixtures.py,scripts/make_transport_fixtures.py,scripts/run_audio_live.py" \
 	  | grep TOTAL
 
-calibrate: python-ok  ## Run the timing and judge calibration gates; non-zero if either fails.
+calibrate: python-ok  ## every: The timing and judge calibration gates.
 	$(PYTHON) -m lab.cli calibrate
 
-validate: python-ok  ## Validate the scenario corpus against its schema, with coverage.
+validate: python-ok  ## every: Validate the scenario corpus, with coverage.
 	$(PYTHON) -m lab.cli validate --coverage
 
-audio-fixtures: python-ok  ## Re-record fixtures/audio from real speech (needs a TTS engine; macOS `say` by default).
+audio-fixtures: python-ok  ## record: local TTS  Re-record fixtures/audio. No key, no spend.
 	$(PYTHON) -m scripts.make_audio_fixtures
 
-audio-check: python-ok  ## Replay the committed audio fixtures and fail if they no longer match.
+audio-check: python-ok  ## evidence: Replay the committed audio fixtures; fail on drift.
 	$(PYTHON) -m scripts.make_audio_fixtures --check
 
-audio-suite: python-ok  ## Run the 18-row in-process audio tier offline (no keys, no network).
+audio-suite: python-ok  ## evidence: The 18-row audio tier, in process.
 	$(PYTHON) -m pytest tests/test_audio_suite.py -q
 
-audio-suite-plan: python-ok  ## Print what re-recording the audio tier would cost, and spend nothing.
+audio-suite-plan: python-ok  ## record: free       What re-recording the tier would cost.
 	$(PYTHON) -m scripts.make_audio_suite_fixtures --dry-run
 
-audio-suite-record: python-ok  ## Re-record the audio tier (needs LAB_LIVE_TTS, LAB_LIVE_STT and both keys).
+audio-suite-record: python-ok  ## record: MONEY+KEY  Re-record the audio tier. Needs both keys.
 	$(PYTHON) -m scripts.make_audio_suite_fixtures
 
-audio-suite-evidence: python-ok  ## Re-derive the tier's evidence file from the committed cassette. No keys.
+audio-suite-evidence: python-ok  ## evidence: Re-derive the tier's evidence from the cassette.
 	$(PYTHON) -m scripts.make_audio_suite_fixtures --evidence-only
 
-audio-setup:  ## Show what the local speech engines would download, then install them.
+audio-setup:  ## maint: Install the local speech engines (shows the download).
 	./scripts/setup_audio.sh
 
 # The demo is the two-minute tour, so it produces every artefact the README
@@ -169,21 +197,21 @@ audio-setup:  ## Show what the local speech engines would download, then install
 # handoff heatmap, and the Pareto chart of hand-coded failure modes. The two PNGs
 # need matplotlib, which `[dev]` installs; without it both steps print what is
 # missing and carry on, and the tables they annotate are printed either way.
-demo: python-ok  ## Run the case study end to end against the recorded fixtures, into reports/.
+demo: python-ok  ## every: The case study end to end, into reports/.
 	$(PYTHON) -m lab.cli run --out reports --heatmap reports/handoff_heatmap.png
 	@echo
 	$(PYTHON) -m error_analysis.pareto --out reports/pareto.png
 
-report: python-ok  ## Re-render the committed reference report from its own JSON.
+report: python-ok  ## evidence: Re-render the committed report from its own JSON.
 	$(PYTHON) -m lab.cli report
 
-replay: python-ok  ## Re-check every committed trace with no agent and no runner involved.
+replay: python-ok  ## every: Re-check every committed trace, no agent involved.
 	$(PYTHON) -m lab.cli replay --failures-only
 
-errors: python-ok  ## Recount the hand-assigned failure modes and redraw error_analysis/pareto.png.
+errors: python-ok  ## maint: Recount the coded failure modes, redraw the chart.
 	$(PYTHON) -m error_analysis.pareto --check
 
-reference: python-ok  ## Regenerate the committed reference run. Review the diff before committing it.
+reference: python-ok  ## maint: Regenerate the committed baseline; review the diff.
 	$(PYTHON) -m lab.cli run --out fixtures/replay_run
 	@git --no-pager diff --stat -- fixtures/replay_run
 
@@ -192,18 +220,18 @@ reference: python-ok  ## Regenerate the committed reference run. Review the diff
 # test — a model in the decision seat rather than `tablemate/agents.py` — and it is
 # gated against its own baseline for that reason. A live run diffed against the
 # scripted baseline would report the difference between two builds as a regression.
-live-replay: python-ok  ## Replay the committed live run (agent, caller and judge were models). No key needed.
+live-replay: python-ok  ## evidence: Replay the committed live run: models in all 3 seats.
 	$(PYTHON) -m lab.cli run -k 3 --live-agent --live-caller --live-judge \
 		--out reports/live --no-traces \
 		--baseline fixtures/live_full/run_report.json --ci
 
-live-score: python-ok  ## Recompute the seeded-defect rates from the committed live traces.
+live-score: python-ok  ## evidence: Recompute the seeded-defect rates from live traces.
 	$(PYTHON) -m tablemate --score fixtures/live_full
 
 # Re-recording spends money and needs LAB_LIVE_AGENT / LAB_LIVE_CALLER /
 # LAB_LIVE_JUDGE plus a provider key. It draws new samples, so it produces a
 # *different* report — review the diff as a new measurement, not as a regression.
-live-record: python-ok  ## Draw a new live run from a provider. Spends money; needs the LAB_LIVE_* variables.
+live-record: python-ok  ## record: MONEY+KEY  Draw a new live run. Needs LAB_LIVE_*.
 	$(PYTHON) -m lab.cli run -k 3 --live-agent --live-caller --live-judge --record \
 		--out fixtures/live_full --baseline fixtures/live_full/run_report.json
 	@git --no-pager diff --stat -- fixtures/live_full
@@ -221,10 +249,10 @@ live-record: python-ok  ## Draw a new live run from a provider. Spends money; ne
 #
 # Neither target gates a build. A network test that blocks a merge trains people
 # to bypass the gate, so the tier reports and the offline suite gates.
-transport-report: python-ok  ## Recompute the transport tier from its committed recordings. No key needed.
+transport-report: python-ok  ## evidence: Recompute the WebRTC tier from its recordings.
 	$(PYTHON) -m lab.voice.transport.report --out reports/transport_report.md
 
-transport-record: python-ok  ## Record new live WebRTC sessions. Needs LAB_LIVE_TRANSPORT + the LiveKit variables.
+transport-record: python-ok  ## record: MONEY+KEY  Record live rooms. Needs the LiveKit vars.
 	$(PYTHON) -m scripts.make_transport_fixtures
 	@git --no-pager diff --stat -- fixtures/audio/transport
 
@@ -238,13 +266,13 @@ transport-record: python-ok  ## Record new live WebRTC sessions. Needs LAB_LIVE_
 # verdicts: the product under test has three real defects and the run reports all
 # of them, while the exit code says only whether anything moved since the last
 # review. See docs/ADVISORY_DEMO.md.
-ragcheck: python-ok  ## Retrieval + groundedness: recall@k, MRR, nDCG, and per-claim faithfulness.
+ragcheck: python-ok  ## evidence: Retrieval + groundedness, scored and never averaged.
 	$(PYTHON) -m ragcheck
 
-roleplay-demo: python-ok  ## Run the BFSI sales-roleplay pack: contracts, score consistency, scorer calibration.
+roleplay-demo: python-ok  ## evidence: The advisory pack: contracts, consistency, calibration.
 	$(PYTHON) -m roleplay.demo
 
-roleplay-validate: python-ok  ## Validate the roleplay corpus against its schema, with coverage.
+roleplay-validate: python-ok  ## evidence: Validate the roleplay corpus, with coverage.
 	$(PYTHON) -m roleplay.corpus --coverage --list
 
 # The advisory pack's verdicts, computed from the cited registers rather than read
@@ -253,7 +281,7 @@ roleplay-validate: python-ok  ## Validate the roleplay corpus against its schema
 # limitations block first, because the agreement figure it ends with is in-sample
 # and a reader needs that next to the number rather than in a document they may
 # not open. Zero API keys, like everything else here.
-advisory-verdicts: python-ok  ## Compute the 18 advisory rows' regime verdicts from the registers.
+advisory-verdicts: python-ok  ## evidence: The 18 advisory rows, decided from the registers.
 	$(PYTHON) -m roleplay.regime_eval --divergence --shadow
 
 # The spoken call: the one place the audio tier and the conversation tier meet.
@@ -271,13 +299,13 @@ advisory-verdicts: python-ok  ## Compute the 18 advisory rows' regime verdicts f
 # key and the three model routes, and it refuses with all of the missing pieces
 # named at once. Synthesis is digest-cached, so re-recording an unchanged call
 # bills nothing.
-spoken-replay: python-ok  ## Replay the committed spoken call and re-grade it. No keys, no spend.
+spoken-replay: python-ok  ## evidence: Replay the committed spoken call and re-grade it.
 	$(PYTHON) -m roleplay.spoken
 
-spoken-record: python-ok  ## Record a new spoken call. SPENDS ElevenLabs characters; needs LAB_LIVE_SPOKEN.
+spoken-record: python-ok  ## record: MONEY+KEY  New spoken call. Needs LAB_LIVE_SPOKEN.
 	$(PYTHON) -m roleplay.spoken --record
 	@git --no-pager diff --stat -- fixtures/audio/spoken_call
 
-clean:  ## Remove caches and build output.
+clean:  ## maint: Remove caches and build output.
 	rm -rf build dist .pytest_cache .coverage htmlcov *.egg-info
 	find . -name '__pycache__' -type d -prune -exec rm -rf {} +
