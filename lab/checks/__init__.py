@@ -46,6 +46,30 @@ did — because the highest-severity failure in any system that both talks and a
 lives exactly in the gap between them, where neither a transcript review nor a
 tool-call audit can see it.
 
+THE NAME THE FIELD USES FOR TWO OF THESE: GUARDRAILS
+----------------------------------------------------
+`ToolContract(forbidden=...)` and `PhraseContract(forbidden=...)` are guardrail
+assertions in the ordinary sense — a tool this conversation must never call, a
+string the agent must never say — declared as scenario data rather than written
+as code. In this repository's corpus, 20 of the 55 rows declare at least one
+forbidden tool and 6 declare forbidden phrases; 23 carry at least one of the two,
+and 10 of those 23 are in the adversarial suite.
+
+Two qualifications, because the word is often used for something else:
+
+*   These are guardrails in the **testing** sense. They run against a recorded
+    trace, offline, after the fact. Nothing here sits in front of a running agent
+    and blocks an output, and nothing here is a content-safety or PII classifier.
+    A runtime guardrail library and this are complementary, not alternatives: one
+    decides at request time, this one tells you whether the decision was right.
+*   A guardrail that stopped applying is the failure mode that matters, and it is
+    why `applicable=False` exists as a third result. A forbidden-tool contract on
+    a conversation that never reached the tool is not evidence of safety, so it is
+    counted and printed as a gap instead of as a pass.
+
+See `docs/VOCABULARY.md` for the rest of the mapping between this repository's
+vocabulary and the field's.
+
 DESIGN COMMITMENTS
 ------------------
 * **Both directions are tested.** Every contract has tests proving it fires on a

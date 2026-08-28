@@ -9,6 +9,17 @@ is a *trace schema honest enough to measure a voice agent from* — which is wha
 `lab` contributes. So the trace is exportable: the numbers stay reproducible here,
 and the traces go and live wherever the team already looks at them.
 
+WHERE THE OBSERVABILITY STORY LIVES, AND WHERE IT STOPS
+-------------------------------------------------------
+This file is the whole of it. If you came looking for the word *observability*,
+this is the seam: `lab.trace` is the schema, and these four functions hand a
+trace to the tools a team already watches. What is deliberately absent is
+everything else the word usually implies — there is no collector, no agent, no
+hosted backend, no sampling, no retention policy, no time series and no alerting.
+This is an evaluation harness that can export to an observability tool, not an
+observability tool, and the distinction is worth keeping in the one file where
+the confusion would start.
+
 NEITHER PACKAGE IS A DEPENDENCY
 -------------------------------
 Not imported, not declared, not optional-extra'd. These functions emit the
