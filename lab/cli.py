@@ -2033,6 +2033,44 @@ def _print_transcript(trace: Trace | None, scenario_id: str) -> None:
 # --------------------------------------------------------------------------- #
 
 
+def cmd_select(args: argparse.Namespace) -> int:
+    """Which scenarios can this change reach — delegated to `lab.selection`.
+
+    A thin adapter, deliberately. The selection layer owns its own argument
+    surface and its own exit codes (2 means "nothing selected", which is not a
+    failure), and duplicating either here would give `evallab select` and
+    `python -m lab.selection` room to disagree. So this rebuilds argv and hands
+    over; the two entry points cannot drift because there is only one parser.
+
+    The import is local so `evallab --help` does not pay for the dependency
+    graph underneath, matching how `lab/selection/__main__.py` does it.
+    """
+    from lab.selection.select import main as selection_main
+
+    argv: list[str] = ["--changed-since", args.changed_since]
+    if args.head:
+        argv += ["--head", args.head]
+    if args.repo:
+        argv += ["--repo", args.repo]
+    if args.map:
+        argv += ["--map", args.map]
+    if args.overrides:
+        argv += ["--overrides", args.overrides]
+    if args.no_overrides:
+        argv.append("--no-overrides")
+    if args.json:
+        argv.append("--json")
+    if args.runner_args:
+        argv.append("--runner-args")
+    if args.limit is not None:
+        argv += ["--limit", str(args.limit)]
+    if args.calibrate:
+        argv.append("--calibrate")
+    if args.min_recall is not None:
+        argv += ["--min-recall", str(args.min_recall)]
+    return selection_main(argv)
+
+
 def cmd_validate(args: argparse.Namespace) -> int:
     """Validate the corpus. Exit 1 on any error, 1 on a warning under --strict."""
     loader = _import_module(args.corpus_module)
@@ -2373,6 +2411,28 @@ def build_parser() -> argparse.ArgumentParser:
     validate.add_argument("--json", action="store_true", help="machine-readable output")
     validate.add_argument("--coverage", action="store_true", help="print the coverage report")
     validate.set_defaults(func=cmd_validate)
+
+    # ---------------------------------------------------------------- select
+    select = subparsers.add_parser(
+        "select",
+        help="which scenarios can a change reach (fail-safe: unsure means run it)",
+    )
+    select.add_argument("--changed-since", default="HEAD~1", metavar="REF",
+                        help="base ref to compare against (default: HEAD~1)")
+    select.add_argument("--head", metavar="REF", help="head ref (default: the working tree)")
+    select.add_argument("--repo", metavar="REPO", help="repository root (default: cwd)")
+    select.add_argument("--map", metavar="MAP", help="trace-derived dependency map")
+    select.add_argument("--overrides", metavar="FILE", help="additive override file")
+    select.add_argument("--no-overrides", action="store_true", help="ignore the override file")
+    group = select.add_mutually_exclusive_group()
+    group.add_argument("--json", action="store_true", help="machine-readable output")
+    group.add_argument("--runner-args", action="store_true",
+                       help="emit --scenario arguments for `evallab run`")
+    select.add_argument("--limit", type=int, help="cap the reasons printed per scenario")
+    select.add_argument("--calibrate", action="store_true",
+                        help="the selector's own miss rate; refuses to gate below threshold")
+    select.add_argument("--min-recall", type=float, help="gate threshold for --calibrate")
+    select.set_defaults(func=cmd_select)
 
     # ---------------------------------------------------------------- report
     report = subparsers.add_parser(
