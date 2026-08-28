@@ -85,6 +85,7 @@ rounded.
   - [10.4 The harness itself](#104-the-harness-itself)
 - [11. How to extend it](#11-how-to-extend-it)
 - [12. Glossary](#12-glossary)
+- [13. Where this goes next — the enhancement plan](#13-where-this-goes-next--the-enhancement-plan)
 - [Appendix A — Reproduction log](#appendix-a--reproduction-log)
   - [A.1 Architecture](#a1-architecture)
   - [A.2 The core of the engine](#a2-the-core-of-the-engine)
@@ -14121,6 +14122,55 @@ that differs from its ordinary use, the difference is the point of the entry.
 | **Exclusion** | a case removed from a denominator, with the reason recorded, rather than counted as a pass or a fail |
 | **Seeded defect** | a bug planted on purpose in a system under test, so the harness can be caught failing to find it |
 | **Regression gate** | the question CI acts on: has anything *changed* since the agreed baseline — including a finding that vanished |
+
+---
+
+## 13. Where this goes next — the enhancement plan
+
+Everything above describes the repository as it **is**. What it should become is a separate
+question, and it has a separate document: **[`docs/ENHANCEMENT_PLAN.md`](ENHANCEMENT_PLAN.md)**.
+
+That document is a *decision* document, not a roadmap. Nothing in it has been built, and
+nothing in it should be built without a decision first. It merges five research passes —
+speech-and-voice evaluation, judge determinism, the hiring market, patterns from a production
+regression harness, and a gap audit of this wiki and this tree — written to `docs/_plan/`,
+which is deliberately left untracked until the owner decides whether the working notes ship,
+and turns them into choices.
+
+**What is in it:**
+
+| Section | What it decides |
+|---|---|
+| 1 | An honest one-page assessment — strong, average, missing — plus four defects found and deliberately not fixed |
+| 2 | Every gap the five passes found, merged and deduplicated into 37 rows, each tagged **ALREADY-DO** / **PARTLY** / **MISSING** |
+| 3 | 27 candidates ranked by value ÷ effort, each with a verdict — and **18 named rejections with their reasons** |
+| 4 | Three tiers: a weekend, a week, and four questions that are directions rather than tasks |
+| 5 | The judge-determinism story in depth, including the statistics that bound a 24-item labelled set |
+| 6 | How to make the retrieval pack visibly distinct from the conversation work — documentation and navigation only, no code |
+| 7 | Patterns worth porting from a production regression harness, in neutral terms, each costed |
+| 8 | What is over-built relative to what it proves — including this document |
+
+**Three things from it that a reader of this wiki should know now**, because each corrects or
+qualifies something above:
+
+1. **Four defects are recorded there and not fixed here** — including one where the trace
+   schema's own docstring is wrong about the schema (the interruption events *do* have an
+   emitter, a reader and tests), and one where a machine-written run caveat contradicts itself
+   at any `k` except the one the committed reports happen to use. §10 and §12 of this wiki
+   inherit the first of those and are stale until it is corrected.
+2. **The biggest single opportunity is not a feature.** Three market-facing capabilities
+   already exist here under names nobody searches for: `lab/checks/contracts.py` *is*
+   guardrails, the 12 adversarial scenarios *are* red-teaming, and `evallab validate
+   --coverage` *is* golden-dataset management. Closing that costs prose, not code.
+3. **The plan's most important section is the rejection list.** Eighteen things are declined
+   with reasons, several of which are better answers than the features would have been — most
+   sharply, why parallel execution is deliberately absent when a full replay run takes **1.44
+   seconds** for 47 scenarios.
+
+The plan is also explicit that **§8 of it applies to this document**: at 14,802 lines this
+wiki is 65.3% of all documentation in the repository, and the recommendation is to stop
+treating that size as an asset and to write no new volume until the corrections listed above
+are made.
 
 ---
 
