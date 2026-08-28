@@ -21,11 +21,19 @@ PY_OK := $(shell $(PYTHON) -c 'import sys; print(1 if sys.version_info[:2] >= (3
 PY_HAVE := $(shell $(PYTHON) -c 'import sys; print("%d.%d" % sys.version_info[:2])' 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help python-ok install gate test coverage demo calibrate report validate replay errors reference live-replay live-score live-record audio-fixtures audio-check audio-suite audio-suite-plan audio-suite-record audio-suite-evidence audio-setup transport-report transport-record roleplay-demo roleplay-validate advisory-verdicts spoken-replay spoken-record ragcheck clean
+.PHONY: help start python-ok install gate test coverage demo calibrate report validate replay errors reference live-replay live-score live-record audio-fixtures audio-check audio-suite audio-suite-plan audio-suite-record audio-suite-evidence audio-setup transport-report transport-record roleplay-demo roleplay-validate advisory-verdicts spoken-replay spoken-record ragcheck clean
 
 help:  ## Show this help.
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
 		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
+
+# The on-ramp, and the first thing anybody should type. One finding, recomputed
+# on this machine from the committed spoken call, printed in a screen, plus what
+# to read next. It is not a tour and it is deliberately not a summary of the
+# repository: a newcomer handed thirty-two targets and seventeen documents reads
+# none of them, so this shows one result and then gets out of the way.
+start: python-ok  ## The on-ramp: one finding, recomputed offline.
+	@$(PYTHON) -m scripts.start
 
 python-ok:
 ifneq ($(PY_OK),1)
