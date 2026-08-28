@@ -392,3 +392,107 @@ def test_an_empty_suite_renders_without_pretending_it_ran(tmp_path) -> None:
     assert "_No deterministic contracts were evaluated._" in markdown
     assert "_No model-graded checks were run._" in markdown
     assert "Verdict: FAIL" in markdown
+
+
+# --------------------------------------------------------------------------- #
+# Intervals on the calibration rates
+#
+# A TPR is an estimate of an instrument's accuracy over a few dozen labelled
+# items. Printed bare it reads as a property; printed with its interval it reads
+# as what it is. These pin which rates get one and — the part that is a decision
+# rather than a formula — which deliberately do not.
+# --------------------------------------------------------------------------- #
+
+
+def test_a_rate_carries_its_wilson_interval() -> None:
+    assert Rate(numerator=8, denominator=8).interval_text() == "[0.676, 1.000]"
+    assert Rate(numerator=16, denominator=16).interval_text() == "[0.806, 1.000]"
+    assert Rate(numerator=18, denominator=20).interval_text() == "[0.699, 0.972]"
+
+
+def test_an_empty_denominator_has_no_interval_rather_than_a_zero_one() -> None:
+    empty = Rate(numerator=0, denominator=0)
+    assert empty.interval() is None
+    assert empty.interval_text() == "undefined"
+
+
+def test_the_judge_table_prints_the_interval_next_to_tpr_and_tnr() -> None:
+    markdown = _report().to_markdown()
+    assert "| judge | model | flagged | TPR (95% CI) | TNR (95% CI) |" in markdown
+    assert "18/20 (90.0%) [0.699, 0.972]" in markdown
+    assert "17/20 (85.0%) [0.640, 0.948]" in markdown
+
+
+def test_the_flagged_column_deliberately_carries_no_interval() -> None:
+    """It is a count of what happened in this run, not an estimate of a
+    population parameter. An interval on it would answer a question nobody asked,
+    and the report says so rather than leaving the omission to be noticed."""
+    markdown = _report().to_markdown()
+    row = next(line for line in markdown.splitlines() if line.startswith("| tone |"))
+    flagged = row.split("|")[3].strip()
+    assert "[" not in flagged
+    assert "The flagged column deliberately carries none" in markdown
+
+
+def test_a_gate_cleared_on_the_point_estimate_alone_is_named_in_the_report() -> None:
+    """The committed judge's headline: TPR 8/8 clears 0.85 and its lower bound of
+    0.676 does not. The run report is the table a reader acts on, so it says so
+    there and not only in the judge's own calibration artefact."""
+    report = RunReport(
+        judges=[
+            JudgeSummary(
+                name="perfect_on_eight",
+                model="test/stub",
+                judged=8,
+                flagged=8,
+                calibration=JudgeCalibration(
+                    labelled_positive=8,
+                    labelled_negative=16,
+                    true_positives=8,
+                    true_negatives=16,
+                ),
+            )
+        ]
+    )
+    markdown = report.to_markdown()
+    assert "8/8 (100.0%) [0.676, 1.000]" in markdown
+    assert "clears the 0.85 calibration gate on the point estimate and **not**" in markdown
+    assert "(0.676)" in markdown
+
+
+def test_a_gate_cleared_on_the_lower_bound_too_gets_no_caveat() -> None:
+    report = RunReport(
+        judges=[
+            JudgeSummary(
+                name="perfect_on_thirty",
+                model="test/stub",
+                judged=30,
+                flagged=30,
+                calibration=JudgeCalibration(
+                    labelled_positive=30,
+                    labelled_negative=30,
+                    true_positives=30,
+                    true_negatives=30,
+                ),
+            )
+        ]
+    )
+    assert "on the point estimate and **not**" not in report.to_markdown()
+
+
+def test_the_json_carries_the_interval_beside_the_rate_it_belongs_to() -> None:
+    judge = json.loads(_report().to_json())["judges"][0]
+    assert judge["tpr"] == "18/20 (90.0%)"
+    assert judge["tpr_ci95"] == "[0.699, 0.972]"
+    assert judge["tnr_ci95"] == "[0.640, 0.948]"
+
+
+def test_the_gate_threshold_this_module_quotes_is_the_one_that_is_enforced() -> None:
+    """`lab.report` renders numbers and imports no measurement code, so the
+    threshold it names is mirrored rather than imported. This is the test that
+    keeps the mirror honest: change `CalibrationThresholds.min_tpr` and this
+    fails, instead of the run report quietly quoting a bar nothing enforces."""
+    from lab.judges.calibration import CalibrationThresholds
+    from lab.report.report import CALIBRATION_GATE_MIN_TPR
+
+    assert CALIBRATION_GATE_MIN_TPR == CalibrationThresholds().min_tpr

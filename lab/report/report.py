@@ -51,6 +51,12 @@ This module renders results; it does not compute them. Checks live in
 imports none of them: the report's models are a rendering contract, populated by
 whatever produced the numbers, which is what lets the same renderer serve a
 deterministic check suite, a judged run and a replayed fixture.
+
+The one exception is `lab.stats`, which is arithmetic rather than measurement —
+closed-form functions over two integers, no state, no clock, no environment. A
+confidence interval on a printed rate is part of rendering that rate honestly,
+and importing the shared implementation is strictly better than growing a third
+copy of the Wilson formula in the file that does the printing.
 """
 
 from __future__ import annotations
@@ -67,9 +73,20 @@ from lab.simulator.passk import (
     format_rate,
     summarise_stability,
 )
+from lab.stats import format_interval, wilson_interval
+
+#: The TPR a judge must clear to be allowed to gate a build. **Mirrored, not
+#: imported**, from `lab.judges.calibration.CalibrationThresholds.min_tpr`: this
+#: module's whole scope rule is that it renders numbers and imports no
+#: measurement code, and pulling in the judge stack to read one float would break
+#: that for a constant. `tests/test_report_render.py` pins the mirror against the
+#: owning module, so a change there fails loudly here rather than silently
+#: leaving this report quoting a threshold nothing enforces.
+CALIBRATION_GATE_MIN_TPR: float = 0.85
 
 __all__ = [
     "format_rate",
+    "CALIBRATION_GATE_MIN_TPR",
     "Rate",
     "ContractStat",
     "JudgeCalibration",
@@ -109,6 +126,22 @@ class Rate(BaseModel):
     @property
     def text(self) -> str:
         return format_rate(self.numerator, self.denominator)
+
+    def interval(self, confidence: float = 0.95) -> tuple[float, float] | None:
+        """The Wilson score interval, or None when there is nothing to measure.
+
+        A method rather than a stored field, and not present in the JSON, for the
+        same reason the fraction is stored and the percentage is not: an interval
+        is a function of the two counts already in the file, so a consumer can
+        recompute it and check the arithmetic. A derived number nobody can check
+        is a claim rather than a result.
+        """
+        if self.denominator == 0:
+            return None
+        return wilson_interval(self.numerator, self.denominator, confidence=confidence)
+
+    def interval_text(self, confidence: float = 0.95) -> str:
+        return format_interval(self.interval(confidence))
 
     def __str__(self) -> str:
         return self.text
@@ -695,20 +728,41 @@ class RunReport(BaseModel):
         lines.append("")
         lines.extend(
             _table(
-                ["judge", "model", "flagged", "TPR", "TNR", "labelled n", "source"],
+                [
+                    "judge",
+                    "model",
+                    "flagged",
+                    "TPR (95% CI)",
+                    "TNR (95% CI)",
+                    "labelled n",
+                    "source",
+                ],
                 [
                     [
                         judge.name,
                         judge.model,
                         judge.flag_rate.text,
-                        judge.calibration.tpr.text,
-                        judge.calibration.tnr.text,
+                        f"{judge.calibration.tpr.text} "
+                        f"{judge.calibration.tpr.interval_text()}",
+                        f"{judge.calibration.tnr.text} "
+                        f"{judge.calibration.tnr.interval_text()}",
                         str(judge.calibration.n_labelled),
                         "fixture" if judge.replayed_from_fixture else "live",
                     ]
                     for judge in self.judges
                 ],
             )
+        )
+        lines.append("")
+        lines.append(
+            "TPR and TNR carry a 95% Wilson score interval, computed from the two "
+            "counts beside them. They are estimates of an instrument's accuracy on "
+            "a population, measured over a few dozen labelled items, and a rate of "
+            "1.000 over eight of them is consistent with a true rate near two "
+            "thirds. The flagged column deliberately carries none: it is a count "
+            "of what happened in this run, not an estimate of a population "
+            "parameter, and an interval on it would be answering a question nobody "
+            "asked."
         )
         lines.append("")
         for judge in self.judges:
@@ -718,6 +772,22 @@ class RunReport(BaseModel):
                 f"{judge.calibration.false_positives.text} of labelled clean examples"
                 + (f" (prompt {judge.prompt_id})" if judge.prompt_id else "")
             )
+            # Where the point estimate clears the calibration gate and the lower
+            # bound does not, say so here rather than only in the judge's own
+            # report: this is the table a reader of the run acts on, and a
+            # threshold cleared on a point estimate is not the same claim as a
+            # threshold cleared on the evidence.
+            bounds = judge.calibration.tpr.interval()
+            gate = CALIBRATION_GATE_MIN_TPR
+            if bounds is not None and bounds[0] < gate <= judge.calibration.tpr.fraction:
+                lines.append(
+                    f"  - its TPR clears the {gate:.2f} calibration gate on the point "
+                    f"estimate and **not** on the lower bound of that interval "
+                    f"({bounds[0]:.3f}). The gate is scored on the point estimate "
+                    f"deliberately; the argument, and the number of labelled items "
+                    f"the lower bound would need, is in the judge's own calibration "
+                    f"report."
+                )
         lines.append("")
         return lines
 
@@ -836,7 +906,9 @@ class RunReport(BaseModel):
                     **j.model_dump(mode="json"),
                     "flag_rate": j.flag_rate.text,
                     "tpr": j.calibration.tpr.text,
+                    "tpr_ci95": j.calibration.tpr.interval_text(),
                     "tnr": j.calibration.tnr.text,
+                    "tnr_ci95": j.calibration.tnr.interval_text(),
                 }
                 for j in self.judges
             ],

@@ -8272,7 +8272,7 @@ line; move on.
 
 ##### 8.2.11.1 `lab/report/report.py` — the run report
 
-**Size:** 899 lines. **Public names that matter:** `RunReport`, `ContractStat`,
+**Size:** 960 lines. **Public names that matter:** `RunReport`, `ContractStat`,
 `JudgeSummary`, `JudgeCalibration`, `VoiceMetrics`, `FailureRecord`, `Rate`,
 `write_report()`, `format_rate` (re-exported from `passk`).
 
@@ -8317,7 +8317,17 @@ next to `NOT_RUN` is correctly discounted by anyone who sees it.*
    An unlabelled judge verdict is "an opinion wearing a number's clothes".
    `JudgeCalibration` prints counts rather than rates alone, because *a TPR of
    100% over 4 labelled positives is a much weaker claim than one over 60, and
-   only the denominator says which you are looking at*.
+   only the denominator says which you are looking at* — and it now prints the
+   95% Wilson interval beside each of them, so the committed run report reads
+   `8/8 (100.0%) [0.676, 1.000]` rather than `8/8 (100.0%)`. Where the point
+   estimate clears the 0.85 calibration gate and the lower bound does not, the
+   section says so under the table, because this is the table a reader of the run
+   acts on. The **flagged** column deliberately carries no interval: it is a count
+   of what happened in this run, not an estimate of a population parameter, and
+   the report states that rather than leaving the omission to be noticed. The
+   arithmetic comes from `lab/stats.py` — the one exception to this module's rule
+   against importing measurement code, on the grounds that a closed form over two
+   integers is rendering, not measurement.
 3. **A latency figure cannot be printed without the timing gate's verdict.**
    `VoiceMetrics.calibration_verdict` is required, `NOT_RUN` included, and
    `trustworthy` is False unless the verdict is PASS, `samples > 0`, and

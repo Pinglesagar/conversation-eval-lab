@@ -1130,7 +1130,7 @@ _DERIVED_KEYS: dict[str, frozenset[str]] = {
     "": frozenset({"verdict", "headline", "stability_summary", "integrity_gaps"}),
     "stability": frozenset({"pass_rate", "flake_rate", "passed"}),
     "contracts": frozenset({"applicable", "failure_rate"}),
-    "judges": frozenset({"flag_rate", "tpr", "tnr"}),
+    "judges": frozenset({"flag_rate", "tpr", "tpr_ci95", "tnr", "tnr_ci95"}),
     "voice": frozenset({"trustworthy"}),
 }
 

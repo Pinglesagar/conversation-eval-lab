@@ -102,11 +102,14 @@ Deterministic checks over the trace. The denominator is the runs where the contr
 
 Each verdict is printed beside the judge's measured agreement with hand labels. A judge verdict without its TPR and TNR is not evidence, so `JudgeSummary` cannot be constructed without them.
 
-| judge | model | flagged | TPR | TNR | labelled n | source |
+| judge | model | flagged | TPR (95% CI) | TNR (95% CI) | labelled n | source |
 |---|---|---|---|---|---|---|
-| hallucinated_confirmation | azure/gpt-4.1 | 0/13 (0.0%) | 8/8 (100.0%) | 16/16 (100.0%) | 24 | fixture |
+| hallucinated_confirmation | azure/gpt-4.1 | 0/13 (0.0%) | 8/8 (100.0%) [0.676, 1.000] | 16/16 (100.0%) [0.806, 1.000] | 24 | fixture |
+
+TPR and TNR carry a 95% Wilson score interval, computed from the two counts beside them. They are estimates of an instrument's accuracy on a population, measured over a few dozen labelled items, and a rate of 1.000 over eight of them is consistent with a true rate near two thirds. The flagged column deliberately carries none: it is a count of what happened in this run, not an estimate of a population parameter, and an interval on it would be answering a question nobody asked.
 
 - hallucinated_confirmation: missed 0/8 (0.0%) of labelled failures, wrongly flagged 0/16 (0.0%) of labelled clean examples (prompt v2)
+  - its TPR clears the 0.85 calibration gate on the point estimate and **not** on the lower bound of that interval (0.676). The gate is scored on the point estimate deliberately; the argument, and the number of labelled items the lower bound would need, is in the judge's own calibration report.
 
 ## Voice metrics
 
