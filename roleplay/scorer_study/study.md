@@ -229,6 +229,35 @@ Same label set (`3bf9c1b846b078e2`, 27 items), same model (`azure/gpt-4.1`). Onl
 
 All four confusion cells are printed, not just the two rates. A rate hides which direction the errors ran, and the direction is the whole story here: a judge that misses defects and a judge that invents them fail the same threshold and require opposite fixes.
 
+## Is the difference distinguishable from chance?
+
+The comparison is **paired** — the same 27 items, the same labels, two prompts — so the correct test is McNemar's over the items where the two versions disagree, not a two-proportion z-test over the two rates. A z-test treats the two columns as independent samples, and they are the same items; it would be anticonservative here, which is the direction that flatters.
+
+| | v2 correct | v2 wrong |
+|---|---|---|
+| **v1 correct** | 21 | 0 |
+| **v1 wrong** | 6 | 0 |
+
+The 21 concordant items carry no information about which prompt is better. The test is over the 6 that moved.
+
+`v2` fixed 6 of the 27 items and broke 0. Exact two-sided McNemar p = 0.03125 — distinguishable from chance at alpha = 0.05. That is the floor below, exactly: one fewer item moving would have published nothing.
+
+### The detectability floor on this set: 6 items
+
+The half of this section that survives the next prompt change. With `d` discordant pairs **all pointing the same way**, the exact two-sided p is `2/2**d` — a function of `d` alone, not of the set size and not of either version's accuracy. So there is a hard floor under every paired comparison, and at alpha = 0.05 it is 6:
+
+| discordant pairs, all one way | exact two-sided p | publishable |
+|---|---|---|
+| 1 | 1.00000 | no |
+| 2 | 0.50000 | no |
+| 3 | 0.25000 | no |
+| 4 | 0.12500 | no |
+| 5 | 0.06250 | no |
+| 6 | 0.03125 | yes |
+| 7 | 0.01562 | yes |
+
+So **6 of these 27 items must move together** before this set can publish an improvement at all. A `v3` that fixed 3 of them and broke none would score p = 0.25000 and be unpublishable, however real the improvement was. That is not an argument for a laxer threshold — it is the size of the labelled set, stated as the smallest claim the set can support. Nothing about the prompt moves that; more labelled items is the only thing that does.
+
 
 ## Pointing the live scorer at the seeded defects
 

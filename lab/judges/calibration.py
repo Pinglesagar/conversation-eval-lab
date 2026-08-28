@@ -41,6 +41,25 @@ kappa depends on prevalence, so the same judge measured on a 10%-defect set and 
 differently-balanced label sets; TPR and TNR are, which is why the thresholds in
 `lab.judges.registry` gate on TPR and TNR and not on kappa.
 
+COMPARING TWO VERSIONS: THE TEST, AND THE FLOOR UNDER IT
+--------------------------------------------------------
+`compare_reports` puts two calibrations of the same judge side by side, and a
+delta table alone answers only "did v2 beat v1" — never "is that difference
+distinguishable from chance". The comparison is **paired**: the same items, the
+same labels, two prompts. So the test is McNemar's over the discordant items,
+computed exactly rather than by the chi-square approximation, which is not
+trustworthy at these counts.
+
+The more useful half is the **detectability floor**. With `d` discordant pairs
+all pointing one way the exact two-sided p is `2/2**d`, which depends on `d`
+alone — not on the size of the set, not on either version's accuracy. At
+alpha = 0.05 that puts a hard floor of **6** under every paired comparison: five
+items moving together gives p = 0.0625 and publishes nothing. Printing it says
+in advance what this label set *cannot* prove — that a v3 fixing three items and
+breaking none is unpublishable at p = 0.250 however real the improvement is —
+which is a more honest thing to hand a reader than a p-value on its own, and it
+names the fix (more labelled items) rather than inviting a better prompt.
+
 WHY EVERY RATE CARRIES ITS NUMERATOR AND DENOMINATOR
 ----------------------------------------------------
 "TNR 0.94" and "TNR 15/16" are the same number and not the same claim. The second
@@ -95,6 +114,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from pathlib import Path
 from typing import Iterable, Literal, Sequence
 
@@ -116,6 +136,10 @@ __all__ = [
     "write_labels",
     "labels_digest",
     "compare_reports",
+    "PairedComparison",
+    "mcnemar",
+    "exact_mcnemar_p",
+    "detectability_floor",
     "SelfConsistency",
     "ItemVerdictRuns",
     "self_consistency",
@@ -841,6 +865,271 @@ def _cohens_kappa(tp: int, fp: int, fn: int, tn: int) -> tuple[float | None, flo
 
 
 # --------------------------------------------------------------------------- #
+# Is a prompt-to-prompt difference distinguishable from chance?
+# --------------------------------------------------------------------------- #
+
+
+def exact_mcnemar_p(regressed: int, fixed: int) -> float:
+    """Exact two-sided McNemar p over the discordant pairs. Closed form, stdlib.
+
+    The concordant items — the ones both versions got right, and the ones both got
+    wrong — carry no information about which version is better, so the test
+    conditions on the `n = regressed + fixed` items where the two disagree and asks
+    whether the split between them is further from even than chance would usually
+    manage. Under the null each discordant item is a fair coin, so
+
+        p = 2 * sum(C(n, i) for i in 0..min(regressed, fixed)) / 2**n     (capped at 1)
+
+    **Exact, not the chi-square approximation**, and not because exactness is
+    tidier: the approximation is unreliable below roughly 25 discordant pairs and
+    this repository's label set has 24 *items*. Quoting an asymptotic p on six
+    pairs would be a worse error than quoting no p at all, because it would look
+    like a real number.
+
+    Verified against the closed form 2/2**n for an all-one-way split:
+    4 -> 0.12500, 5 -> 0.06250, 6 -> 0.03125, 7 -> 0.01562.
+    """
+    if regressed < 0 or fixed < 0:
+        raise ValueError(
+            f"discordant counts cannot be negative: {regressed=}, {fixed=}"
+        )
+    n = regressed + fixed
+    if n == 0:
+        # No item moved. There is nothing to test, and 1.0 is the honest answer:
+        # the data is exactly what the null predicts.
+        return 1.0
+    tail = sum(math.comb(n, i) for i in range(min(regressed, fixed) + 1))
+    return min(1.0, 2.0 * tail / 2**n)
+
+
+def detectability_floor(alpha: float = 0.05) -> int:
+    """How many items must move *together* before any improvement is publishable.
+
+    The most useful number in this module, and the one a p-value alone hides. With
+    `d` discordant pairs all pointing the same way the exact two-sided p is
+    `2/2**d`, which depends on nothing but `d` — not on the size of the label set,
+    not on the accuracy of either version. So there is a hard floor below which a
+    paired comparison on *any* set cannot reach significance, and at alpha = 0.05
+    that floor is **6**: five items moving together gives p = 0.0625 and does not
+    clear it.
+
+    That is a statement about what a labelled set cannot prove, which is worth
+    more than the p-value it sits next to: it says in advance that a v3 fixing
+    three items and breaking none is unpublishable at p = 0.250 however real the
+    improvement is, and that the answer is more labels rather than more prompting.
+    """
+    if not 0.0 < alpha < 1.0:
+        raise ValueError(f"alpha must be strictly between 0 and 1, got {alpha}")
+    d = 1
+    while exact_mcnemar_p(d, 0) > alpha:
+        d += 1
+    return d
+
+
+class PairedComparison(BaseModel):
+    """Two versions scored on the same items, split by who got what right.
+
+    The 2x2 table McNemar's test runs on. Named for what it is rather than for
+    the test, because the counts are readable on their own: `after_only_correct`
+    is the list of items a prompt change fixed, and `before_only_correct` is the
+    price it paid, and a change with a good delta and a non-zero price is a
+    different object from one with none.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    n_items: int
+    both_correct: int
+    both_wrong: int
+    #: The version under test got these wrong and its predecessor got them right.
+    before_only_correct: int
+    #: Fixed by the change.
+    after_only_correct: int
+    alpha: float = 0.05
+
+    @property
+    def discordant(self) -> int:
+        return self.before_only_correct + self.after_only_correct
+
+    @property
+    def p_value(self) -> float:
+        return exact_mcnemar_p(self.before_only_correct, self.after_only_correct)
+
+    @property
+    def significant(self) -> bool:
+        return self.p_value <= self.alpha
+
+    @property
+    def floor(self) -> int:
+        """Smallest all-one-way discordant count this comparison could publish."""
+        return detectability_floor(self.alpha)
+
+    @property
+    def floor_is_reachable(self) -> bool:
+        """False when the set is too small to publish anything at all.
+
+        On fewer items than the floor, every possible result is insignificant
+        before a single verdict is read — which is a fact about the set, and one
+        that ought to be discovered before the labelling rather than after.
+        """
+        return self.n_items >= self.floor
+
+    def summary_line(self) -> str:
+        return (
+            f"discordant {self.after_only_correct}/{self.before_only_correct} "
+            f"(fixed/broken, of {self.n_items} items), exact two-sided "
+            f"p = {_fmt_p(self.p_value)}"
+        )
+
+
+def mcnemar(
+    before: CalibrationReport, after: CalibrationReport, *, alpha: float = 0.05
+) -> PairedComparison:
+    """Pair two reports item by item. Both must have scored the same items.
+
+    Correctness is `judge_label == human_label`, not the confusion cell, so the
+    pairing does not depend on which class either report called positive.
+    """
+    first = {item.item_id: item for item in before.items}
+    second = {item.item_id: item for item in after.items}
+    if set(first) != set(second):
+        missing = sorted(set(first) ^ set(second))
+        raise ValueError(
+            "cannot pair two reports scored on different items; these ids appear "
+            f"in one and not the other: {missing}"
+        )
+
+    both_correct = both_wrong = before_only = after_only = 0
+    for item_id, left in first.items():
+        right = second[item_id]
+        left_ok = left.judge_label == left.human_label
+        right_ok = right.judge_label == right.human_label
+        if left_ok and right_ok:
+            both_correct += 1
+        elif left_ok:
+            before_only += 1
+        elif right_ok:
+            after_only += 1
+        else:
+            both_wrong += 1
+
+    return PairedComparison(
+        n_items=len(first),
+        both_correct=both_correct,
+        both_wrong=both_wrong,
+        before_only_correct=before_only,
+        after_only_correct=after_only,
+        alpha=alpha,
+    )
+
+
+def _fmt_p(p: float) -> str:
+    """A p-value at a precision that does not overstate it, and never as `0`."""
+    if p < 0.0001:
+        return f"{p:.1e}"
+    return f"{p:.5f}"
+
+
+def _paired_section(
+    before: CalibrationReport, after: CalibrationReport, paired: PairedComparison
+) -> list[str]:
+    """The McNemar block and the detectability floor, as markdown lines."""
+    before_v, after_v = before.prompt_version, after.prompt_version
+    lines = [
+        "## Is the difference distinguishable from chance?",
+        "",
+        f"The comparison is **paired** — the same {paired.n_items} items, the same "
+        f"labels, two prompts — so the correct test is McNemar's over the items "
+        f"where the two versions disagree, not a two-proportion z-test over the "
+        f"two rates. A z-test treats the two columns as independent samples, and "
+        f"they are the same items; it would be anticonservative here, which is the "
+        f"direction that flatters.",
+        "",
+        f"| | {after_v} correct | {after_v} wrong |",
+        "|---|---|---|",
+        f"| **{before_v} correct** | {paired.both_correct} | "
+        f"{paired.before_only_correct} |",
+        f"| **{before_v} wrong** | {paired.after_only_correct} | "
+        f"{paired.both_wrong} |",
+        "",
+        f"The {paired.both_correct + paired.both_wrong} concordant items carry no "
+        f"information about which prompt is better. The test is over the "
+        f"{paired.discordant} that moved.",
+        "",
+    ]
+    if paired.discordant == 0:
+        lines += [
+            f"**No item changed verdict.** There is nothing to test: exact "
+            f"two-sided p = {_fmt_p(paired.p_value)}, which is what the null "
+            "predicts. Whatever moved in the rate table above moved by rounding, "
+            "not by an item.",
+            "",
+        ]
+    else:
+        verdict = (
+            f"distinguishable from chance at alpha = {paired.alpha:g}"
+            if paired.significant
+            else f"**not** distinguishable from chance at alpha = {paired.alpha:g}"
+        )
+        margin = ""
+        if paired.significant and paired.discordant <= paired.floor:
+            margin = (
+                " That is the floor below, exactly: one fewer item moving would "
+                "have published nothing."
+            )
+        lines += [
+            f"`{after_v}` fixed {paired.after_only_correct} of the "
+            f"{paired.n_items} items and broke {paired.before_only_correct}. "
+            f"Exact two-sided McNemar "
+            f"p = {_fmt_p(paired.p_value)} — {verdict}.{margin}",
+            "",
+        ]
+
+    floor = paired.floor
+    lines += [
+        f"### The detectability floor on this set: {floor} items",
+        "",
+        "The half of this section that survives the next prompt change. With `d` "
+        "discordant pairs **all pointing the same way**, the exact two-sided p is "
+        "`2/2**d` — a function of `d` alone, not of the set size and not of either "
+        "version's accuracy. So there is a hard floor under every paired "
+        f"comparison, and at alpha = {paired.alpha:g} it is {floor}:",
+        "",
+        "| discordant pairs, all one way | exact two-sided p | publishable |",
+        "|---|---|---|",
+    ]
+    for d in range(1, max(floor + 2, paired.discordant + 2)):
+        p = exact_mcnemar_p(d, 0)
+        mark = "yes" if p <= paired.alpha else "no"
+        lines.append(f"| {d} | {_fmt_p(p)} | {mark} |")
+    tail = "Nothing about the prompt moves that; more labelled items is the only "
+    tail += "thing that does."
+    if paired.floor_is_reachable:
+        lines += [
+            "",
+            f"So **{floor} of these {paired.n_items} items must move together** "
+            f"before this set can publish an improvement at all. A `v3` that fixed "
+            f"{floor // 2} of them and broke none would score "
+            f"p = {_fmt_p(exact_mcnemar_p(floor // 2, 0))} and be unpublishable, "
+            f"however real the improvement was. That is not an argument for a "
+            f"laxer threshold — it is the size of the labelled set, stated as the "
+            f"smallest claim the set can support. " + tail,
+            "",
+        ]
+    else:
+        lines += [
+            "",
+            f"**This set cannot publish any improvement.** It holds "
+            f"{paired.n_items} items and the floor is {floor}, so every possible "
+            f"result — including all {paired.n_items} moving together, "
+            f"p = {_fmt_p(exact_mcnemar_p(paired.n_items, 0))} — is insignificant "
+            f"at alpha = {paired.alpha:g} before a single verdict is read. " + tail,
+            "",
+        ]
+    return lines
+
+
+# --------------------------------------------------------------------------- #
 # Comparing two prompt versions
 # --------------------------------------------------------------------------- #
 
@@ -928,6 +1217,7 @@ def compare_reports(before: CalibrationReport, after: CalibrationReport) -> str:
         "judge that misses defects and a judge that invents them fail the same "
         "threshold and require opposite fixes.",
         "",
+        *_paired_section(before, after, mcnemar(before, after)),
     ]
     return "\n".join(lines)
 

@@ -30,7 +30,10 @@ from lab.judges.calibration import (
     Rate,
     calibrate,
     compare_reports,
+    detectability_floor,
+    exact_mcnemar_p,
     labels_digest,
+    mcnemar,
     load_labels,
     self_consistency,
     write_labels,
@@ -404,6 +407,122 @@ def test_compare_reports_shows_the_delta() -> None:
     assert "0.500 (1/2)" in table  # v1 true negative rate
     assert "1.000 (2/2)" in table  # v2 true negative rate
     assert "| false positives | 1 | 0 | -1 |" in table
+
+
+# --------------------------------------------------------------------------- #
+# McNemar, and the floor under it
+#
+# `compare_reports` used to say whether v2 beat v1 without saying whether the
+# difference was distinguishable from chance. These pin both halves: the exact
+# test, and the number that says what the set cannot prove whatever the result.
+# --------------------------------------------------------------------------- #
+
+
+def test_exact_mcnemar_matches_the_closed_form_when_all_pairs_point_one_way() -> None:
+    """d discordant pairs all one way -> 2/2**d. Every figure this repo quotes."""
+    for d, expected in ((3, 0.25), (4, 0.125), (5, 0.0625), (6, 0.03125), (7, 0.015625)):
+        assert exact_mcnemar_p(d, 0) == pytest.approx(expected)
+        # Symmetric: a regression of the same size is equally (in)significant.
+        assert exact_mcnemar_p(0, d) == pytest.approx(expected)
+
+
+def test_exact_mcnemar_handles_the_even_split_and_the_empty_one() -> None:
+    # An even split is the null exactly; the two-sided sum overshoots 1 and is
+    # capped rather than printed as 1.5.
+    assert exact_mcnemar_p(3, 3) == 1.0
+    # Nothing moved: nothing to test.
+    assert exact_mcnemar_p(0, 0) == 1.0
+    with pytest.raises(ValueError):
+        exact_mcnemar_p(-1, 0)
+
+
+def test_the_detectability_floor_is_six_at_the_conventional_alpha() -> None:
+    assert detectability_floor(0.05) == 6
+    # Five is not enough, six is: the whole point, stated as the two p-values.
+    assert exact_mcnemar_p(5, 0) > 0.05
+    assert exact_mcnemar_p(6, 0) <= 0.05
+    # The floor moves with alpha and with nothing else.
+    assert detectability_floor(0.10) == 5
+    assert detectability_floor(0.01) == 8
+    with pytest.raises(ValueError):
+        detectability_floor(0.0)
+
+
+def test_mcnemar_pairs_by_item_and_counts_both_directions() -> None:
+    items = [_item("a", "fail"), _item("b", "pass"), _item("c", "pass"), _item("d", "fail")]
+    # v1 is right on a and b; v2 is right on a and c. So b regressed, c was
+    # fixed, d is wrong in both, a is right in both.
+    before = calibrate(
+        _judge_answering({"a": "fail", "b": "pass", "c": "fail", "d": "pass"}), items
+    )
+    after = calibrate(
+        _judge_answering(
+            {"a": "fail", "b": "fail", "c": "pass", "d": "pass"}, version="v2"
+        ),
+        items,
+    )
+    paired = mcnemar(before, after)
+    assert (paired.n_items, paired.both_correct, paired.both_wrong) == (4, 1, 1)
+    assert paired.before_only_correct == 1
+    assert paired.after_only_correct == 1
+    assert paired.discordant == 2
+    # One fixed, one broken, on two discordant pairs: the null exactly.
+    assert paired.p_value == 1.0
+    assert paired.significant is False
+
+
+def test_the_worked_studys_comparison_is_significant_and_only_just() -> None:
+    """The committed v1 -> v2 study: 6 fixed, 0 broken, p = 0.03125."""
+    from lab.judges import hallucinated_confirmation as story
+
+    items = story.labels()
+    v1 = story.calibrate_version("v1", items=items)
+    v2 = story.calibrate_version("v2", items=items)
+    paired = mcnemar(v1, v2)
+
+    assert (paired.n_items, paired.after_only_correct, paired.before_only_correct) == (
+        24,
+        6,
+        0,
+    )
+    assert paired.p_value == pytest.approx(0.03125)
+    assert paired.significant is True
+    # Exactly on the floor: five items would have published nothing.
+    assert paired.discordant == paired.floor == 6
+    assert paired.floor_is_reachable is True
+
+
+def test_compare_reports_prints_the_test_and_the_floor() -> None:
+    items = [_item("a", "fail"), _item("b", "pass"), _item("c", "pass")]
+    before = calibrate(_judge_answering({"a": "fail", "b": "fail", "c": "pass"}), items)
+    after = calibrate(
+        _judge_answering({"a": "fail", "b": "pass", "c": "pass"}, version="v2"), items
+    )
+    table = compare_reports(before, after)
+
+    assert "## Is the difference distinguishable from chance?" in table
+    # One item moved: not distinguishable from anything.
+    assert "Exact two-sided McNemar p = 1.00000" in table
+    assert "**not** distinguishable from chance" in table
+    # The floor is printed whether or not the comparison cleared it, and it is
+    # the number a reader needs *before* labelling the next set.
+    assert "The detectability floor on this set: 6 items" in table
+    assert "| 6 | 0.03125 | yes |" in table
+    assert "| 5 | 0.06250 | no |" in table
+    # Three items, floor of six: this set could never have published anything.
+    assert "cannot publish any improvement" in table
+
+
+def test_mcnemar_refuses_reports_scored_on_different_items() -> None:
+    """The pairing is the test; pairing the wrong items would invent a result."""
+    first = [_item("a", "fail"), _item("b", "pass")]
+    second = [_item("a", "fail"), _item("c", "pass")]
+    before = calibrate(_judge_answering({"a": "fail", "b": "pass"}), first)
+    after = calibrate(
+        _judge_answering({"a": "fail", "c": "pass"}, version="v2"), second
+    )
+    with pytest.raises(ValueError, match="different items"):
+        mcnemar(before, after)
 
 
 # --------------------------------------------------------------------------- #
