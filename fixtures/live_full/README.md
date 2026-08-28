@@ -44,7 +44,7 @@ All k repeats are kept, not just the first. On the deterministic run one trace
 stands for all three because they are identical; here they are three different
 conversations, and two thirds of the evidence would be thrown away by keeping one.
 
-## Two things to know before quoting anything from here
+## Three things to know before quoting anything from here
 
 **Re-recording produces a different report, and that is the measurement.** These
 are three draws from one model at one temperature on one day. `k=3` bounds
@@ -56,3 +56,26 @@ as high as 0.56.
 on a `FakeClock` so that fixtures do not depend on how busy a provider was. The
 seconds in these traces are `lab.voice`'s simulated latency model; the provider's
 real response times were never recorded.
+
+**The judge graded its own agent's output, and the harness would now refuse to
+record this run.** All three seats above are `azure-openai/gpt-4.1`. That is
+self-grading, and `lab.judges.registry.require_independent_judge` — added after
+this recording was made — raises `SelfGradingError` on exactly this
+configuration, so `evallab run --record` can no longer produce it without the
+`allow_self_grading` keyword. Replay is unaffected: the check runs at record
+time, which is why this directory still replays and CI still passes.
+
+What that costs the numbers, stated plainly: **self-enhancement bias — a model
+scoring text it wrote above equivalent text it did not — is not measured
+anywhere in this repository, and none of the judge's 24 calibration items
+corrects for it.** The judge's 8/8 and 16/16 were measured against
+hand-labelled items, not against its own agent's output, so they do not transfer
+to the 38 sessions it graded here. Treat every judge verdict in this directory as
+an upper bound on the agent, and read the contract results instead where you need
+a number that no model produced — the six contract types are decided from the
+event stream with no model in the loop, and they are what the run's FAIL verdict
+is built from.
+
+The fix is a second provider in the judge seat and a re-record; it is not done,
+because it spends money and needs a credential this repository does not assume.
+`docs/ENHANCEMENT_PLAN.md` R5 has the sequencing for a judge panel.
