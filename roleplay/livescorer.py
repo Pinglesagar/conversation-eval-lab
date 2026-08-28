@@ -94,6 +94,9 @@ from roleplay.scorer import (
 __all__ = [
     "LIVE_ENV_VAR",
     "MODEL_ENV_VAR",
+    "LIVE_TRAINEE_ENV_VAR",
+    "TRAINEE_MODEL_ENV_VAR",
+    "require_independent_scorer",
     "SCORER_NAME",
     "RUBRIC_VERSIONS",
     "DEFAULT_SYSTEM",
@@ -120,6 +123,14 @@ LIVE_ENV_VAR: str = "LAB_LIVE_SCORER"
 #: in this file, for the reason `lab.judges.judge.model_from_env` gives: a harness
 #: that pins a vendor has an expiry date.
 MODEL_ENV_VAR: str = "LAB_SCORER_MODEL"
+
+#: The *trainee's* switch and route, mirrored from `roleplay.live` as names rather
+#: than imported, because `roleplay.live` is the heavy module and this one is
+#: imported by the offline path. `require_independent_scorer` compares the two
+#: routes; a test asserts these strings still match `roleplay.live`'s, so renaming
+#: one without the other fails rather than silently disarming the check.
+LIVE_TRAINEE_ENV_VAR: str = "LAB_LIVE_TRAINEE"
+TRAINEE_MODEL_ENV_VAR: str = "LAB_TRAINEE_MODEL"
 
 #: The instrument's name, carried into every calibration report so the scorer's
 #: measurement history is one series rather than several. Named for the question
@@ -599,12 +610,52 @@ class LiveRubricScorer:
 # --------------------------------------------------------------------------- #
 
 
+def require_independent_scorer(*, allow_self_grading: bool = False) -> None:
+    """Refuse to score a live trainee's words with the trainee's own model.
+
+    The same exposure `lab.cli` guards on the restaurant side, in the domain that
+    actually has two model seats: `LAB_LIVE_TRAINEE` puts a model in the adviser's
+    chair and `LAB_LIVE_SCORER` puts one behind the rubric, both routes are read
+    from the environment, and on a machine with one provider configured the
+    obvious thing to do is point both at it. The rubric would then be asking a
+    model whether its own advice was compliant, and every criterion on the card —
+    not just the verdict — carries self-enhancement bias that no figure in
+    `roleplay/scorer_study/` measures.
+
+    Checked here rather than at each of the five places a live scorer is built,
+    because this is the single seam all of them go through, and it is checked
+    before the completion exists rather than after the first paid call.
+
+    Three conditions, all required, so the check refuses only what it means to:
+    the trainee switch is on, both routes are configured, and they are the same.
+    A same route with a *scripted* trainee is not self-grading — nothing the model
+    wrote is being graded — and refusing it would break the offline path.
+
+    `allow_self_grading=True` is the bypass, at the call site only. See
+    `lab.judges.registry.require_independent_judge` for why it is a keyword
+    argument and not a flag.
+    """
+    from lab.judges.registry import require_independent_judge
+
+    if not os.environ.get(LIVE_TRAINEE_ENV_VAR):
+        return
+    require_independent_judge(
+        judge_route=os.environ.get(MODEL_ENV_VAR),
+        subject_route=os.environ.get(TRAINEE_MODEL_ENV_VAR),
+        judge_role="rubric scorer",
+        subject_role="trainee under assessment",
+        judge_env_var=MODEL_ENV_VAR,
+        allow_self_grading=allow_self_grading,
+    )
+
+
 def live_completion(
     *,
     retry: RetryPolicy | None = None,
     extra: Mapping[str, Any] | None = None,
+    allow_self_grading: bool = False,
 ) -> LiteLLMCompletion:
-    """A real provider call, gated on `LAB_LIVE_SCORER`.
+    """A real provider call, gated on `LAB_LIVE_SCORER` and on independence.
 
     `lab.judges.judge.LiteLLMCompletion` already parameterises its env var, so the
     scorer's opt-in switch is a different name over identical code: the same
@@ -613,7 +664,14 @@ def live_completion(
     rate limit raises rather than becoming a verdict. Reusing it is the point —
     a second implementation of provider-error handling is a second place for a 429
     to turn into a FAIL.
+
+    The second gate is `require_independent_scorer`, which raises
+    `lab.judges.registry.SelfGradingError` when the trainee is live and its route
+    is the scorer's. It runs first because it costs nothing and needs no
+    credential, and because the cheapest place to stop a biased measurement is
+    before it is recorded.
     """
+    require_independent_scorer(allow_self_grading=allow_self_grading)
     return LiteLLMCompletion(env_var=LIVE_ENV_VAR, retry=retry, extra=extra)
 
 

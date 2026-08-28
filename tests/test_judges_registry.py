@@ -25,8 +25,12 @@ from lab.judges.judge import Judge, JudgeError, Label, ScriptedCompletion
 from lab.judges.registry import (
     JudgeBelowThresholdError,
     JudgeRegistry,
+    SelfGradingError,
     UncalibratedJudgeError,
     in_ci_mode,
+    normalise_route,
+    require_independent_judge,
+    self_grading_conflict,
 )
 from lab.trace.build import TraceBuilder
 from lab.trace.schema import Trace
@@ -372,3 +376,195 @@ def test_thresholds_are_configurable_per_registry_and_named_in_the_refusal() -> 
         strict.require_calibrated(v2, thresholds=CalibrationThresholds(), ci=True)
         is v2.calibration
     )
+
+
+# --------------------------------------------------------------------------- #
+# The second gate: the judge must not be the thing it grades
+#
+# Both directions are pinned. A guard that refuses everything is as useless as
+# one that refuses nothing, and the failure mode here is specifically that a
+# well-meant tightening starts refusing the live-caller configuration
+# `lab.simulator.flake_band` depends on.
+# --------------------------------------------------------------------------- #
+
+
+def test_same_route_is_refused_and_the_message_says_why() -> None:
+    with pytest.raises(SelfGradingError) as excinfo:
+        require_independent_judge(
+            judge_route="azure/gpt-4.1", subject_route="azure/gpt-4.1"
+        )
+    message = str(excinfo.value)
+    # The refusal has to carry the reason, not just the verdict: "invalid config"
+    # sends the reader to the source, and the reason is the whole finding.
+    assert "grading its own output" in message
+    assert "self-enhancement bias" in message.lower()
+    assert "LAB_JUDGE_MODEL" in message
+    assert "allow_self_grading=True" in message
+    # The route may name a private deployment, and this message reaches a log.
+    assert "azure/gpt-4.1" not in message
+
+
+def test_different_routes_are_allowed() -> None:
+    # The direction that matters as much as the refusal: a guard that fires on a
+    # legitimate configuration gets switched off, and then guards nothing.
+    require_independent_judge(
+        judge_route="azure/gpt-4.1", subject_route="azure/gpt-4o-mini"
+    )
+    assert (
+        self_grading_conflict(
+            judge_route="azure/gpt-4.1", subject_route="azure/gpt-4o-mini"
+        )
+        is None
+    )
+
+
+def test_an_unconfigured_route_is_not_a_conflict() -> None:
+    # Two empty routes are equal as strings and are not a self-grading run; the
+    # missing-variable case belongs to whoever needs the variable.
+    for judge, subject in (("", ""), (None, None), ("azure/x", None), (None, "azure/x")):
+        assert (
+            self_grading_conflict(judge_route=judge, subject_route=subject) is None
+        )
+
+
+def test_route_comparison_ignores_case_and_padding_only() -> None:
+    assert normalise_route("  AZURE/GPT-4.1 ") == "azure/gpt-4.1"
+    with pytest.raises(SelfGradingError):
+        require_independent_judge(
+            judge_route=" AZURE/GPT-4.1", subject_route="azure/gpt-4.1 "
+        )
+    # Same family, two providers, stays allowed: the harness cannot know whether
+    # those are the same weights, and `self_grading_conflict` says so rather than
+    # guessing. A passing check means "the routes are written differently", which
+    # is weaker than independence and is all a config check can claim.
+    require_independent_judge(
+        judge_route="openai/gpt-4.1", subject_route="azure/gpt-4.1"
+    )
+
+
+def test_the_override_is_a_call_site_argument_and_it_shouts(caplog) -> None:
+    with caplog.at_level(logging.WARNING, logger="lab.judges.registry"):
+        require_independent_judge(
+            judge_route="azure/gpt-4.1",
+            subject_route="azure/gpt-4.1",
+            allow_self_grading=True,
+        )
+    assert "A MODEL IS GRADING ITS OWN OUTPUT" in caplog.text
+    assert "allow_self_grading=True was passed at the call site" in caplog.text
+
+
+def test_the_override_has_no_environment_or_config_equivalent(monkeypatch) -> None:
+    """The property the docstring claims, asserted rather than asserted-in-prose.
+
+    An override that can be set outside the source becomes permanent within a
+    month. So: nothing in the environment may open this gate — including the
+    variables that plausibly would, and including CI mode, which is the axis
+    `require_calibrated` deliberately does bend on.
+    """
+    for name in (
+        "LAB_ALLOW_SELF_GRADING",
+        "ALLOW_SELF_GRADING",
+        "LAB_JUDGE_CI",
+        "CI",
+    ):
+        monkeypatch.setenv(name, "1")
+    with pytest.raises(SelfGradingError):
+        require_independent_judge(
+            judge_route="azure/gpt-4.1", subject_route="azure/gpt-4.1"
+        )
+    for name in ("LAB_JUDGE_CI", "CI"):
+        monkeypatch.setenv(name, "0")
+    with pytest.raises(SelfGradingError):
+        require_independent_judge(
+            judge_route="azure/gpt-4.1", subject_route="azure/gpt-4.1"
+        )
+
+
+def test_the_run_command_refuses_to_record_a_self_grading_rig(monkeypatch) -> None:
+    from lab import cli
+
+    monkeypatch.setenv("LAB_LIVE_AGENT", "1")
+    monkeypatch.setenv("LAB_LIVE_JUDGE", "1")
+    monkeypatch.setenv(cli.AGENT_MODEL_ENV_VAR, "azure/gpt-4.1")
+    monkeypatch.setenv("LAB_JUDGE_MODEL", "azure/gpt-4.1")
+
+    rig = cli.LiveRig(agent=True, judge=True, record=True)
+    refusals = cli._live_refusals(rig)
+    assert len(refusals) == 1
+    assert refusals[0].startswith("--record refused: ")
+    assert "grading its own output" in refusals[0]
+
+    # Different routes: no refusal at all.
+    monkeypatch.setenv("LAB_JUDGE_MODEL", "azure/gpt-4o-mini")
+    assert cli._live_refusals(rig) == []
+
+    # And the check is a *record*-time check: replaying a committed cassette
+    # spends nothing and records nothing, so there is nothing to refuse.
+    monkeypatch.setenv("LAB_JUDGE_MODEL", "azure/gpt-4.1")
+    assert cli._live_refusals(cli.LiveRig(agent=True, judge=True)) == []
+
+
+def test_a_live_caller_sharing_the_judges_route_is_not_refused(monkeypatch) -> None:
+    """The caller is an input to the verdict, not the thing being graded.
+
+    `lab.simulator.flake_band` runs a live caller against the deterministic agent
+    on purpose. Refusing that would break the only configuration that produces a
+    clean flake number.
+    """
+    from lab import cli
+
+    monkeypatch.setenv("LAB_LIVE_CALLER", "1")
+    monkeypatch.setenv("LAB_LIVE_JUDGE", "1")
+    monkeypatch.setenv("LAB_CALLER_MODEL", "azure/gpt-4.1")
+    monkeypatch.setenv("LAB_JUDGE_MODEL", "azure/gpt-4.1")
+    monkeypatch.delenv(cli.AGENT_MODEL_ENV_VAR, raising=False)
+
+    assert cli._live_refusals(cli.LiveRig(caller=True, judge=True, record=True)) == []
+
+
+def test_the_cli_and_the_case_study_name_the_same_agent_route_variable() -> None:
+    """`lab.cli` mirrors the name rather than importing it; this pins the mirror."""
+    from lab import cli
+    from tablemate import runtime
+
+    assert cli.AGENT_MODEL_ENV_VAR == runtime.MODEL_ENV_VAR
+
+
+def test_the_rubric_scorer_refuses_to_grade_its_own_trainee(monkeypatch) -> None:
+    from roleplay import live as roleplay_live
+    from roleplay import livescorer
+
+    # The mirrored names must still match the module that owns them, or the
+    # check reads a variable nobody sets and passes for the wrong reason.
+    assert livescorer.TRAINEE_MODEL_ENV_VAR == roleplay_live.TRAINEE_MODEL_ENV_VAR
+    assert livescorer.LIVE_TRAINEE_ENV_VAR == roleplay_live.LIVE_TRAINEE_ENV_VAR
+
+    monkeypatch.setenv(livescorer.LIVE_TRAINEE_ENV_VAR, "1")
+    monkeypatch.setenv(livescorer.TRAINEE_MODEL_ENV_VAR, "azure/gpt-4.1")
+    monkeypatch.setenv(livescorer.MODEL_ENV_VAR, "azure/gpt-4.1")
+    with pytest.raises(SelfGradingError) as excinfo:
+        livescorer.require_independent_scorer()
+    assert "rubric scorer" in str(excinfo.value)
+    assert "trainee under assessment" in str(excinfo.value)
+    assert livescorer.MODEL_ENV_VAR in str(excinfo.value)
+
+    # Building the live completion goes through the same gate, before any
+    # credential is read and before anything is spent.
+    with pytest.raises(SelfGradingError):
+        livescorer.live_completion()
+
+    # Two routes, no refusal.
+    monkeypatch.setenv(livescorer.MODEL_ENV_VAR, "azure/gpt-4o-mini")
+    livescorer.require_independent_scorer()
+    assert livescorer.live_completion().env_var == livescorer.LIVE_ENV_VAR
+
+
+def test_a_scripted_trainee_is_never_self_grading(monkeypatch) -> None:
+    """One route, no live trainee: nothing the scorer's model wrote is graded."""
+    from roleplay import livescorer
+
+    monkeypatch.delenv(livescorer.LIVE_TRAINEE_ENV_VAR, raising=False)
+    monkeypatch.setenv(livescorer.TRAINEE_MODEL_ENV_VAR, "azure/gpt-4.1")
+    monkeypatch.setenv(livescorer.MODEL_ENV_VAR, "azure/gpt-4.1")
+    livescorer.require_independent_scorer()
+    assert livescorer.live_completion().env_var == livescorer.LIVE_ENV_VAR

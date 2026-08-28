@@ -91,6 +91,7 @@ from lab.trace.schema import EventKind, Trace
 __all__ = [
     "DEFAULT_CORPUS_MODULE",
     "DEFAULT_AGENT_FACTORY",
+    "AGENT_MODEL_ENV_VAR",
     "DEFAULT_SCRIPTS",
     "DEFAULT_OUT_DIR",
     "LIVE_RUN_DIR",
@@ -115,6 +116,13 @@ DEFAULT_CORPUS_MODULE: str = "scenarios.loader"
 
 #: Dotted path to a callable with `build_agent`'s keyword signature.
 DEFAULT_AGENT_FACTORY: str = "tablemate.runtime:build_agent"
+
+#: Where a live agent reads its litellm route from. A *name*, not an import from
+#: the case study, for the layering reason above — `tablemate.runtime` holds the
+#: same string on the other side of the seam, and a test asserts the two agree so
+#: that renaming one without the other is a failure rather than a silent gap in
+#: the self-grading check.
+AGENT_MODEL_ENV_VAR: str = "LAB_AGENT_MODEL"
 
 #: Caller lines, per scenario. A fixture in the same sense as a cassette: the
 #: caller is part of the instrument, so its utterances are recorded and reviewed
@@ -464,12 +472,23 @@ class LiveRig:
         )
 
 
-def _live_refusals(rig: LiveRig) -> list[str]:
+def _live_refusals(rig: LiveRig, *, allow_self_grading: bool = False) -> list[str]:
     """Every reason this rig may not record, as sentences. Empty means go ahead.
 
     Checked before anything runs and reported all at once. The alternative —
     failing on the first missing variable — makes setting up a live run a sequence
     of five separate error messages.
+
+    The last of them is not about a missing variable but about two that are
+    present and equal. With `--live-agent --live-judge` both routes are read from
+    the environment, and on a machine with one provider configured the obvious
+    thing to do is point both at it — at which point the judge is grading its own
+    output and every verdict in the recording carries self-enhancement bias that
+    no calibration figure in this repository measures. `allow_self_grading` is
+    the deliberate bypass, and it is a keyword argument rather than a flag on
+    purpose: `lab.judges.registry.require_independent_judge` explains why an
+    override that can be set outside the source is an override nobody remembers
+    turning on.
     """
     if not rig.record:
         return []
@@ -488,7 +507,39 @@ def _live_refusals(rig: LiveRig) -> list[str]:
             "--record with nothing live records nothing; pass --live-agent, "
             "--live-caller or --live-judge"
         )
+    problems.extend(_self_grading_refusals(rig, allow_self_grading=allow_self_grading))
     return problems
+
+
+def _self_grading_refusals(
+    rig: LiveRig, *, allow_self_grading: bool = False
+) -> list[str]:
+    """Refuse a recording in which the judge would grade its own output.
+
+    Only the agent seat is compared against the judge. The caller is not the
+    system under test — it plays the customer, its words are an *input* to the
+    verdict rather than the thing being graded, and a shared route there is a
+    realism question rather than a bias one. Getting that distinction backwards
+    would refuse the one configuration `lab.simulator.flake_band` needs.
+    """
+    if not (rig.judge and rig.agent):
+        return []
+
+    # Imported here, not at module scope: `lab.cli` resolves the case study
+    # lazily by design, and the judge stack is only needed on this path.
+    from lab.judges.judge import MODEL_ENV_VAR as JUDGE_MODEL_ENV_VAR
+    from lab.judges.registry import SelfGradingError, require_independent_judge
+
+    try:
+        require_independent_judge(
+            judge_route=os.environ.get(JUDGE_MODEL_ENV_VAR),
+            subject_route=os.environ.get(AGENT_MODEL_ENV_VAR),
+            judge_env_var=JUDGE_MODEL_ENV_VAR,
+            allow_self_grading=allow_self_grading,
+        )
+    except SelfGradingError as refusal:
+        return [f"--record refused: {refusal}"]
+    return []
 
 
 # --------------------------------------------------------------------------- #

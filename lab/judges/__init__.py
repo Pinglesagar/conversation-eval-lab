@@ -112,8 +112,10 @@ if TYPE_CHECKING:  # pragma: no cover - for type checkers only, never at runtime
     from lab.judges.registry import (  # noqa: F401
         JudgeBelowThresholdError,
         JudgeRegistry,
+        SelfGradingError,
         UncalibratedJudgeError,
         require_calibrated,
+        require_independent_judge,
     )
 
 _LAZY: dict[str, str] = {
@@ -146,8 +148,10 @@ _LAZY: dict[str, str] = {
     # registry.py
     "JudgeBelowThresholdError": "lab.judges.registry",
     "JudgeRegistry": "lab.judges.registry",
+    "SelfGradingError": "lab.judges.registry",
     "UncalibratedJudgeError": "lab.judges.registry",
     "require_calibrated": "lab.judges.registry",
+    "require_independent_judge": "lab.judges.registry",
 }
 
 __all__ = sorted(_LAZY)
