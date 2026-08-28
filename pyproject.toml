@@ -149,6 +149,23 @@ markers = [
   "live: hits a real network provider; skipped unless the relevant opt-in env var is set.",
 ]
 
+# All seven packages, not three. The previous list named `lab`, `roleplay` and
+# `tablemate` only, so anyone running coverage per the committed config measured
+# three-sevenths of the tree and got a figure whose denominator was silently
+# wrong — the exact defect this repository spends most of its energy refusing to
+# ship. `scripts` is in the list even though five of its modules need vendor keys
+# and can never run offline: excluding them would raise the headline number by
+# hiding code, which is the wrong direction. `make coverage` prints both the
+# whole-tree figure and the figure with those five omitted, and says which is
+# which.
 [tool.coverage.run]
 branch = true
-source = ["lab", "roleplay", "tablemate"]
+source = [
+  "lab",
+  "roleplay",
+  "tablemate",
+  "ragcheck",
+  "scenarios",
+  "error_analysis",
+  "scripts",
+]

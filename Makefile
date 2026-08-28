@@ -21,7 +21,7 @@ PY_OK := $(shell $(PYTHON) -c 'import sys; print(1 if sys.version_info[:2] >= (3
 PY_HAVE := $(shell $(PYTHON) -c 'import sys; print("%d.%d" % sys.version_info[:2])' 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help python-ok install test demo calibrate report validate replay errors reference live-replay live-score live-record audio-fixtures audio-check audio-suite audio-suite-plan audio-suite-record audio-suite-evidence audio-setup transport-report transport-record roleplay-demo roleplay-validate advisory-verdicts spoken-replay spoken-record ragcheck clean
+.PHONY: help python-ok install test coverage demo calibrate report validate replay errors reference live-replay live-score live-record audio-fixtures audio-check audio-suite audio-suite-plan audio-suite-record audio-suite-evidence audio-setup transport-report transport-record roleplay-demo roleplay-validate advisory-verdicts spoken-replay spoken-record ragcheck clean
 
 help:  ## Show this help.
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -41,6 +41,27 @@ install: python-ok  ## Install the package plus dev extras in editable mode.
 
 test: python-ok  ## Run the full offline test suite.
 	$(PYTHON) -m pytest
+
+# Line and branch coverage over all seven packages, printed twice on purpose.
+#
+# The first figure is the whole tree. The second omits the five recording scripts
+# that need vendor keys and spend money, which no offline run can execute — so
+# the difference between the two figures is exactly "code that cannot be covered
+# without a bill". Printing both is the only version of this number that carries
+# its own denominator, which is the rule everything else here follows.
+#
+# Deliberately NOT a CI gate and deliberately NOT a threshold. A coverage floor
+# fails for reasons that have nothing to do with the change in front of it, and a
+# repository whose argument is that instruments must be measured before they are
+# trusted should not adopt one it has not calibrated. What line coverage cannot
+# tell you is in README.md and WIKI §10.4, next to the number.
+coverage: python-ok  ## Line and branch coverage, whole tree and offline-executable subset.
+	$(PYTHON) -m pytest -q --cov --cov-report=term:skip-covered
+	@echo
+	@echo "== omitting the five key-requiring recording scripts =="
+	@$(PYTHON) -m coverage report \
+	  --omit="scripts/make_audio_fixtures.py,scripts/make_audio_suite_fixtures.py,scripts/make_cloud_fixtures.py,scripts/make_transport_fixtures.py,scripts/run_audio_live.py" \
+	  | grep TOTAL
 
 calibrate: python-ok  ## Run the timing and judge calibration gates; non-zero if either fails.
 	$(PYTHON) -m lab.cli calibrate
