@@ -1,21 +1,47 @@
 # conversation-eval-lab
 
-An evaluation harness for conversational AI agents — voice and text — built
-around a single auditable trace. The harness is the `lab` package. It is applied
-here to two unrelated domains on the same engine: an **advisory sales-coaching
-platform** for regulated financial services, and a restaurant-booking assistant.
+An evaluation harness for conversational AI agents, voice and text, built on one
+auditable trace. One engine drives two unrelated domains — an **advisory
+sales-coaching platform** for regulated financial services, and a
+restaurant-booking assistant — which is the evidence that it will drive a third.
+**It needs no API key:** every live path has a recorded fixture that replays in
+its place, so a clean clone installs and goes green offline, in under two
+minutes, with no credential of any kind.
+
+## Sixty seconds
+
+```bash
+python3.12 -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+
+pytest                 # 2,302 offline tests, 46 s, no keys
+make start             # one finding, printed in a screen
+```
+
+`make start` recomputes and prints the strongest result in this repository. A
+grader marked a trainee adviser down for **not asking questions, on a call where
+he asked five** — because the question detector is `body.endswith("?")` and the
+transcript that actually gets scored has no punctuation in it at all. It nearly
+escaped: the total, the verdict and the disclosure ledger were identical either
+way, and only a per-criterion comparison saw it.
+
+Then, in the order you will want them:
+
+| | |
+| --- | --- |
+| `make help` | every target, grouped — the four that spend money are marked |
+| `make gate` | every offline check, cheapest first; run it before you push |
+| [docs/README.md](docs/README.md) | the documentation, indexed by question |
+
+---
+
+Everything below is the detail, and none of it is needed to run anything.
 
 The advisory domain is the one to read first. The restaurant domain is kept
 deliberately, and its job is stated plainly: **one engine, two unrelated domains,
 which is the evidence it will work on a third.** A harness that only runs against
-the domain it was written for has proved nothing about portability.
-
-**Runs with zero API keys.** A clean clone installs and goes green in under two
-minutes with no credentials of any kind. Everything that talks to a live provider
-is opt-in behind an environment variable, and every live path has a recorded
-fixture that replays deterministically in its place.
-
----
+the domain it was written for has proved nothing about portability. Retrieval
+comes after both, as a different *kind* of evaluation rather than a third domain.
 
 ## The advisory domain, first
 
@@ -218,14 +244,11 @@ demonstrate retrieval engineering") are written down in
 
 ---
 
-## Quickstart
+## Beyond the first screen
+
+Install is above. Past that, four targets cover the everyday work:
 
 ```bash
-git clone <this repo> && cd tablemate-evals
-python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
-pytest                      # ~1,600 tests, offline, under a minute
-
 make demo                   # the case study end to end, into reports/
 make replay                 # re-check every committed trace, no agent involved
 make calibrate              # the timing and judge gates
@@ -257,7 +280,8 @@ Full command reference: [docs/cli.md](docs/cli.md).
 
 ## The gate — what to run, in what order
 
-Thirty-two `make` targets, and one procedure that puts them in order:
+Thirty-two documented `make` targets (`make help`), and one procedure that
+puts them in order:
 
 ```bash
 make gate
@@ -765,24 +789,18 @@ Read this section as part of every number above.
 
 ## Make targets
 
-| target | what it does |
-| --- | --- |
-| `make install` | editable install with dev extras |
-| `make gate` | **the ordered pre-flight**: every offline check, cheapest stage first, stopping at the first failure ([docs/GATES.md](docs/GATES.md)) |
-| `make test` | the full offline suite |
-| `make coverage` | line and branch coverage, whole tree and offline-executable subset |
-| `make demo` | the case study end to end, into `reports/` |
-| `make replay` | re-check every committed trace, no agent involved |
-| `make validate` | validate the scenario corpus, with coverage |
-| `make calibrate` | the timing and judge calibration gates |
-| `make report` | re-render the committed report from its own JSON |
-| `make live-replay` | replay the committed live run — agent, caller and judge were models. No key |
-| `make live-score` | recompute the seeded-defect rates from the committed live traces |
-| `make live-record` | draw a *new* live run from a provider. Spends money; needs the `LAB_LIVE_*` variables |
-| `make errors` | recount the coded failure modes and redraw the chart |
-| `make reference` | regenerate the committed baseline and show the diff |
-| `make spoken-replay` | replay the committed spoken call and re-grade it. No key, no spend |
-| `make spoken-record` | record a *new* spoken call. Spends ElevenLabs characters; needs `LAB_LIVE_SPOKEN` |
+Thirty-two of them, and the authoritative list is the one that cannot go stale:
+
+```bash
+make help
+```
+
+It groups them — Start here, Everyday, Evidence, Recording, Maintenance — and
+marks the four that spend money at a vendor and refuse without keys
+(`live-record`, `spoken-record`, `audio-suite-record`, `transport-record`).
+Everything else on that screen is offline and free. `make gate` is the one to
+run before you push; [docs/GATES.md](docs/GATES.md) says what each of its eight
+stages proves and what it cannot catch.
 
 ## License
 
