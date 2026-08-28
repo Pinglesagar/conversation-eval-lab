@@ -48,9 +48,9 @@ conversations, and two thirds of the evidence would be thrown away by keeping on
 
 **Re-recording produces a different report, and that is the measurement.** These
 are three draws from one model at one temperature on one day. `k=3` bounds
-flakiness loosely: three passes out of three put the 95% Wilson lower bound on the
-pass rate at 0.44, so a `STABLE_PASS` row here is consistent with a real failure
-rate above one call in two.
+flakiness loosely: 3 passes out of 3 put the 95% Wilson lower bound on the pass
+rate at 0.44, so a `STABLE_PASS` row here is consistent with a real failure rate
+as high as 0.56.
 
 **No latency figure from this run is a measurement of the model.** The driver runs
 on a `FakeClock` so that fixtures do not depend on how busy a provider was. The

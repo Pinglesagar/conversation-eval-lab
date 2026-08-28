@@ -27,6 +27,7 @@ every commit.
 
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 
@@ -646,3 +647,66 @@ def test_import_object_accepts_both_spellings() -> None:
     assert cli._import_object("tablemate.runtime:build_agent") is cli._import_object(
         "tablemate.runtime.build_agent"
     )
+
+
+# --------------------------------------------------------------------------- #
+# The unanimity caveat, and the arithmetic under it
+#
+# The caveat used to interpolate the run's real `k` and then hardcode the
+# arithmetic for k=3, so at any other k the artefact said two different things
+# about one run. Both committed live reports run at k=3, so the bug was invisible
+# on every path anybody exercised. These tests pin the derivation away from 3.
+# --------------------------------------------------------------------------- #
+
+
+def test_wilson_lower_bound_reproduces_the_figures_quoted_in_the_tree() -> None:
+    # Every one of these is quoted in prose somewhere in the repository; the
+    # helper has to agree with the documents, not merely with itself.
+    assert cli._wilson_lower_bound(3, 3) == pytest.approx(0.439, abs=0.0005)
+    assert cli._wilson_lower_bound(5, 5) == pytest.approx(0.566, abs=0.0005)
+    assert cli._wilson_lower_bound(8, 8) == pytest.approx(0.676, abs=0.0005)
+    assert cli._wilson_lower_bound(16, 16) == pytest.approx(0.806, abs=0.0005)
+    assert cli._wilson_lower_bound(2, 8) == pytest.approx(0.071, abs=0.0005)
+
+
+def test_wilson_lower_bound_refuses_a_non_proportion() -> None:
+    with pytest.raises(ValueError):
+        cli._wilson_lower_bound(1, 0)
+    with pytest.raises(ValueError):
+        cli._wilson_lower_bound(4, 3)
+
+
+def test_unanimity_caveat_is_computed_from_k_not_written_down() -> None:
+    at_three = cli._unanimity_caveat(3)
+    assert "3 passes out of 3" in at_three
+    assert "0.44" in at_three and "0.56" in at_three
+
+    at_five = cli._unanimity_caveat(5)
+    assert "5 passes out of 5" in at_five
+    assert "0.57" in at_five and "0.43" in at_five
+    # The old bug in one assertion: the k=5 sentence must not talk about three.
+    assert "three" not in at_five and " 3 " not in at_five
+
+    assert cli._unanimity_caveat(1).startswith("1 pass out of 1")
+
+
+def test_the_live_k_note_agrees_with_itself_at_k_other_than_three() -> None:
+    selection = cli._Selection(
+        scenarios=[], corpus_size=0, voice_skipped=[], unscripted=[], filtered_out=0
+    )
+    args = argparse.Namespace(repeats=5)
+    notes = cli._notes(
+        args=args,
+        selection=selection,
+        evaluations=[],
+        contract_notes=[],
+        candidates=[],
+        non_deterministic=[],
+        rig=cli.LiveRig(agent=True),
+        sessions=0,
+    )
+    k_note = next(note for note in notes if note.startswith("k=5 with a live rig"))
+    assert "5 passes out of 5" in k_note
+    assert "0.57" in k_note
+    assert "three passes out of three" not in k_note
+    assert "0.44" not in k_note

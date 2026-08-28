@@ -62,6 +62,7 @@ from __future__ import annotations
 import argparse
 import importlib
 import json
+import math
 import os
 import statistics
 import sys
@@ -1691,6 +1692,59 @@ def _live_diagnostics(rig: LiveRig, callers: Sequence[Any]) -> list[str]:
     return lines
 
 
+#: The two-sided 95% z. Written once, because every interval quoted anywhere in
+#: this repository is a 95% one and a second literal would eventually disagree.
+_Z_95 = 1.959963984540054
+
+
+def _wilson_lower_bound(successes: int, trials: int, z: float = _Z_95) -> float:
+    """Wilson score lower bound on a proportion. Closed form, no dependency.
+
+    Used here for exactly one thing: turning "k passes out of k" into the honest
+    statement of what k unanimous samples do and do not buy. The naive (Wald)
+    interval is degenerate at the only point that matters — at p-hat = 1 it has
+    zero width and asserts the true rate is exactly 1.0 — which is the claim the
+    caveat exists to refuse, so Wilson it is.
+
+    Reproduces the figures already quoted in prose elsewhere in the tree:
+    3/3 -> 0.439, 5/5 -> 0.566, 8/8 -> 0.676, 16/16 -> 0.806.
+    """
+    if trials <= 0:
+        raise ValueError(f"a Wilson bound needs at least one trial, got {trials}")
+    if not 0 <= successes <= trials:
+        raise ValueError(
+            f"{successes} of {trials} is not a proportion: successes must be "
+            "between 0 and trials"
+        )
+    p_hat = successes / trials
+    z2 = z * z
+    denominator = 1.0 + z2 / trials
+    centre = (p_hat + z2 / (2 * trials)) / denominator
+    half = (z / denominator) * math.sqrt(
+        p_hat * (1.0 - p_hat) / trials + z2 / (4 * trials * trials)
+    )
+    return max(0.0, centre - half)
+
+
+def _unanimity_caveat(k: int) -> str:
+    """What k identical passes bound the true pass rate to, derived from k.
+
+    This sentence used to interpolate the run's real `k` and then hardcode the
+    arithmetic for k=3 four lines later, so at any other k the artefact stated
+    two different things about one run. Both committed live reports run at k=3,
+    which is exactly why it survived: a latent error that is only wrong on a
+    setting nobody happened to use is the kind this repository exists to argue
+    against, so the figure is now computed and pinned by a test at k != 3.
+    """
+    lower = _wilson_lower_bound(k, k)
+    passes = "pass" if k == 1 else "passes"
+    return (
+        f"{k} {passes} out of {k} put the 95% Wilson lower bound on the pass "
+        f"rate at {lower:.2f}, so a row that came back STABLE_PASS is consistent "
+        f"with a real-world failure rate as high as {1.0 - lower:.2f}"
+    )
+
+
 def _notes(
     *,
     args: argparse.Namespace,
@@ -1713,11 +1767,9 @@ def _notes(
             "variance, not harness determinism: the repeats are *supposed* to "
             "differ, and a scenario whose k repeats disagree is FLAKY rather than "
             "irreproducible. Read a STABLE_PASS here as k samples agreeing and "
-            "nothing more: three passes out of three put the 95% Wilson lower "
-            "bound on the pass rate at 0.44, so a row that came back STABLE_PASS "
-            "is consistent with a real-world failure rate above one call in two. "
-            "k=3 buys the difference between unanimous and not; it does not buy a "
-            "reliability estimate."
+            "nothing more: " + _unanimity_caveat(args.repeats) + ". "
+            f"k={args.repeats} buys the difference between unanimous and not; it "
+            "does not buy a reliability estimate."
         )
         if rig.agent and rig.caller:
             k_note += (

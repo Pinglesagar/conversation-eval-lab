@@ -6384,9 +6384,10 @@ fingerprints every event — `ts` rounded to 9 places, kind, actor, engine, payl
 Calling that a variance measurement would be exactly the kind of claim the repo exists to
 avoid, so `LiveRig.repeats_should_be_identical` is `not any_live`, and `_notes` writes the
 caveat into the artefact itself. Under a live rig it writes a different one, including:
-*"three passes out of three put the 95% Wilson lower bound on the pass rate at 0.44, so a
-row that came back STABLE_PASS is consistent with a real-world failure rate above one call
-in two."*
+*"3 passes out of 3 put the 95% Wilson lower bound on the pass rate at 0.44, so a row that
+came back STABLE_PASS is consistent with a real-world failure rate as high as 0.56."* Both
+figures are derived from the run's own `k` by `_wilson_lower_bound`, not written down: at
+`k=5` the same sentence reads 0.57 and 0.43.
 
 `LiveRig` also makes a point of keeping **liveness and recording as separate switches**.
 `record=False` with `agent=True` means "replay the committed cassette": same code path, same
