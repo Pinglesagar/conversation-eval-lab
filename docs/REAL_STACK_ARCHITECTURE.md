@@ -253,7 +253,7 @@ bare `clock.now()` read in harness code with nothing between it and the boundary
 | **Speaking time** | `agent_audio_first_byte` → `agent_audio_complete` | Harness clock | In the current half-duplex adapter the clock is *advanced by the clip duration*, so this is exactly the audible length. In a streaming adapter it becomes wall-clock arrival time of the last frame, which includes network stalls. Two different quantities under one name — the payload must record which. |
 | **WER (word error rate)** | `caller_utterance` (ground-truth text we synthesised) → `transcript_in` (what the agent's Deepgram wrote down) | Harness writes A from the scenario; B is copied verbatim out of the agent's own `UserInputTranscribedEvent` (`is_final=True`) | (a) **Provenance.** If `transcript_in` carries `provenance="reference"` the number is 0.0 by construction and must stay refused (`lab/voice/adapter.py::audio_wer_report`). (b) **Pair alignment.** `trace_wer` pairs greedily on event order; transcript-before-utterance ordering shifts every pair by one turn and produces a plausible, wrong number. (c) Double resampling. (d) Normalisation — report raw *and* normalised, never one alone. |
 | **Silence gaps** | Speech spans built from `audio_emitted` / `agent_audio_complete`, with `tool_call`/`tool_result` enclosed | Harness clock for the span edges; tool events are **interpolated** | Tool events carry `ts_estimated: true` (`lab/simulator/driver.py`). **No timing figure may be derived from an estimated timestamp** — they are used only to *attribute* a gap to an enclosed operation, never to measure its duration. If a future adapter passes real `ToolInvocation.ts`, the flag disappears and attribution becomes measurement. |
-| **Barge-in** (Stage 4 only) | `interruption_started` (first caller audio frame published while agent audio is still arriving) → `interruption_acknowledged` (last agent frame received, confirmed by a quiet window) | Harness clock, both — receive-side | Requires duplex. Until Stage 4 these stay declared-and-unemitted (`lab/trace/schema.py`) and nothing may claim to measure barge-in. Corruptors: the quiet-window length is a judgement call and must be a declared parameter; `rtc.AudioFrameEvent` carries **no timestamp**, so B is our receipt time and includes SDK queue latency. Corroborate with LiveKit's `InterruptionMetrics.detection_delay`, but do not substitute it — that measures when the *model decided*, not when the sound stopped. |
+| **Barge-in** (Stage 4 only) | `interruption_started` (first caller audio frame published while agent audio is still arriving) → `interruption_acknowledged` (last agent frame received, confirmed by a quiet window) | Harness clock, both — receive-side | Requires duplex for *discovery*. Until Stage 4 barge-in is constructed, not discovered: `lab/voice/interaction.py` emits and scores the two kinds from timings a scenario hands in, no adapter finds an overlap, and nothing may claim a discovered barge-in. Stage 4 is what makes the pair a measurement of the agent rather than of our own arithmetic. Corruptors: the quiet-window length is a judgement call and must be a declared parameter; `rtc.AudioFrameEvent` carries **no timestamp**, so B is our receipt time and includes SDK queue latency. Corroborate with LiveKit's `InterruptionMetrics.detection_delay`, but do not substitute it — that measures when the *model decided*, not when the sound stopped. |
 | **Component latency** (TTFT, TTS TTFB, end-of-utterance delay, transcription delay) | Single agent-side values, not a pair | LiveKit, inside the agent process (`ChatMessage.metrics`, `metrics/base.py`) | Nothing the harness can do — these are unbeatable from outside and unverifiable from outside. Ingest as `component_metrics` events with `provenance: agent_reported`. |
 
 ### Which timestamps are trustworthy
@@ -392,7 +392,7 @@ divergence localises the fault.
 boundary between what the agent spent and what we spent becomes a matter of opinion." LiveKit's
 per-component metrics dissolve that argument — attribution now arrives for free from
 `ChatMessage.metrics`. Half-duplex still buys determinism and a predictable bill, which are real
-and worth keeping as the default. But it is the sole reason barge-in is unmeasurable, and that
+and worth keeping as the default. But it is the sole reason barge-in cannot be *discovered* — only constructed from handed-in timings — and that
 trade should now be re-decided consciously rather than inherited. Recommendation: keep
 half-duplex as Tier 0–2, add duplex as Tier 3 for the rows that need it, and rewrite the
 docstring so it argues determinism and cost rather than attribution.
@@ -719,10 +719,13 @@ Only for what genuinely needs it: barge-in, and transport-inclusive caller-perce
   officially sanctioned way to run an agent in-process against a real connected room with no
   worker or AgentServer.
 - `lab/trace/schema.py`: `interruption_started` / `interruption_acknowledged` move from
-  `V2_RESERVED` into `KNOWN` and get documented payload keys (including the declared
-  quiet-window parameter).
-- `lab/voice/metrics.py`: add `barge_in_report` — and gate it on the calibration gate exactly as
-  latency is gated.
+  `V2_RESERVED` into `KNOWN`, and their existing `PAYLOAD_KEYS` entries gain the declared
+  quiet-window parameter. That promotion is also what flips `audio-barge-in-not-discovered`
+  from blocked to runnable, with no scenario edit.
+- `lab/voice/interaction.py`: `barge_in_report` already exists and already reads the pair
+  back off a trace; what changes is its input — discovered timings instead of handed-in
+  ones. Gate it on the calibration gate exactly as latency is gated, which is a change it
+  does not need today because a constructed figure has no clock to distrust.
 - `lab/simulator/driver.py`: barge-in injection needs `turn_detection="manual"` plus
   `session.interrupt()` for the *deterministic* case, and free-running VAD for the realistic
   case. Both, clearly separated.

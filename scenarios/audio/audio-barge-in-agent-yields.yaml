@@ -40,9 +40,11 @@ notes: >-
   **Constructed, not discovered — and this row says so rather than implying
   otherwise.** The adapter's turn loop is half-duplex: it cannot produce an
   overlap, so it cannot find one. What this row proves is that given an overlap,
-  the harness measures the yield correctly and emits the two events the schema
-  reserved. Discovery is `audio-barge-in-not-discovered`, and that row is
-  reported blocked.
+  the harness measures the yield correctly. It computes that yield with
+  `interaction.barge_in` and does not emit the two reserved events onto its
+  trace; `interaction.emit_barge_in` is the emitter, and the events it writes
+  carry the same constructed timings. Discovery is
+  `audio-barge-in-not-discovered`, and that row is reported blocked.
   .
   300 ms is the budget because for a live in-call coaching product the
   interruption is the caller reclaiming the floor. An agent still talking 300 ms

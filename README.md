@@ -560,11 +560,16 @@ Read this section as part of every number above.
   as unaccounted rather than apportioned, because the trace does not contain the
   evidence for the split and inventing one produces a number more precise than
   the data.
-- **Barge-in is declared in the schema and not implemented.**
-  `interruption_started` and `interruption_acknowledged` are in the event
-  vocabulary and nothing emits them. Interruption handling is a first-class voice
-  failure mode and this repository measures none of it. The events are named so
-  that the gap is visible rather than forgotten.
+- **Barge-in is constructed, not discovered.** `interruption_started` and
+  `interruption_acknowledged` have an emitter and a reader, both tested —
+  `lab/voice/interaction.py` writes them and `barge_in_report` scores them — but
+  their timings are handed in by a scenario rather than observed by an adapter;
+  nothing outside the tests calls the emitter, so no committed trace contains
+  either kind; and discovering a real overlap needs a duplex streaming path this
+  version does not have. So the yield latency the audio suite reports is real
+  arithmetic over two real clips, and it is not evidence that the harness can
+  *find* an interruption. `audio-barge-in-not-discovered` holds that gap open as
+  a **blocked** row that can never pass.
 - **The latency figures come from a simulated latency model on a fake clock.**
   They demonstrate the measurement path end to end, and the calibration gate is
   what makes that path trustworthy. They say nothing about how fast any real

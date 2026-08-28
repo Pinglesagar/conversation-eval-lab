@@ -601,7 +601,9 @@ chosen to make the row pass.
 
 `audio-barge-in-not-discovered` is reported **blocked**, and the distinction it
 draws is the point. The two event kinds are no longer un-emitted —
-`interaction.emit_barge_in` writes them. What does not exist is an adapter that
+`interaction.emit_barge_in` writes them and `barge_in_report` reads them back,
+both under test, though nothing outside those tests calls the emitter, so no
+committed trace contains either kind. What does not exist is an adapter that
 *discovers* an overlap: the turn loop plays the agent, then plays the caller, so
 there is no moment at which both are sounding and nothing for a detector to find.
 Every barge-in figure this tier reports was **constructed from timings the row

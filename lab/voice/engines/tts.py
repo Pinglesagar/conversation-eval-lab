@@ -42,8 +42,9 @@ WHAT THIS DOES NOT DO
 ---------------------
 No SSML, no prosody control, no per-word timing, no phoneme alignment. Forced
 alignment would let the harness locate a specific word in the audio and measure a
-barge-in against it; that is a v2 concern that needs duplex audio to be worth
-anything (see `lab.trace.schema` on the reserved interruption events).
+barge-in against it — a *discovered* one rather than the constructed measurement
+in `lab.voice.interaction`. That is a v2 concern that needs duplex audio to be
+worth anything (see `lab.trace.schema` on the reserved interruption events).
 """
 
 from __future__ import annotations

@@ -89,19 +89,31 @@ them: the agent had already finished generating when its audio arrived, so
 attributing the arrival to the agent would put an agent action at an instant the
 agent was not acting. The transport is the thing that acted.
 
-DECLARED BUT NOT EMITTED IN v1 — PLANNED FOR v2
------------------------------------------------
+CONSTRUCTED, NOT DISCOVERED — RESERVED UNTIL A v2 ADAPTER DISCOVERS THEM
+------------------------------------------------------------------------
     interruption_started        caller began speaking over the agent (barge-in)
     interruption_acknowledged   agent actually stopped speaking in response
 
     These two are named here, and only here, on purpose. Barge-in handling is
     the single most common voice-agent failure mode, and the metric that matters
     is the gap between those two events: how long the agent keeps talking after
-    the caller has started. Measuring it needs duplex audio streaming, which the
-    v1 adapters do not implement. They are reserved rather than invented, so that
-    a v2 adapter can emit them without a schema migration, and so that no check
-    in this repo can silently pretend to measure barge-in today. Nothing in v1
-    emits, consumes, or asserts on them.
+    the caller has started.
+
+    The one true sentence about them, repeated wherever they are documented:
+    **barge-in in this repository is constructed, not discovered** —
+    `lab.voice.interaction.emit_barge_in` writes both kinds and
+    `barge_in_report` reads them back, both under test, but their timings are
+    handed in by a scenario rather than observed by an adapter; nothing outside
+    the tests calls the emitter, so no committed trace contains either kind; and
+    discovering a real overlap needs the duplex streaming path the v1 adapters
+    do not implement.
+
+    That is why they stay out of `KNOWN` rather than joining it: reserved means
+    "no adapter discovers this yet", not "no code touches this". The audio row
+    `audio-barge-in-not-discovered` derives its blocked status from
+    `V2_RESERVED` rather than from a hand-kept list, so the day an adapter does
+    discover an interruption and these kinds are promoted, the row becomes
+    runnable on its own.
 
 CANONICAL PAYLOAD KEYS
 ----------------------
@@ -156,7 +168,9 @@ class EventKind:
     TRANSPORT_DISCONNECTED = "transport_disconnected"
     SESSION_END = "session_end"
 
-    # Declared for v2. Nothing in v1 emits or consumes these — see module docstring.
+    # Reserved until an adapter *discovers* an interruption. `emit_barge_in` and
+    # `barge_in_report` already write and read them from constructed timings — see
+    # the module docstring for the one true sentence.
     INTERRUPTION_STARTED = "interruption_started"
     INTERRUPTION_ACKNOWLEDGED = "interruption_acknowledged"
 
@@ -188,6 +202,11 @@ class EventKind:
 #: Payload keys each event kind is expected to carry. Checks may rely on these;
 #: anything else in a payload is adapter-specific extra detail. Keys in
 #: parentheses are optional.
+#:
+#: The two `V2_RESERVED` kinds are documented here too, because they are emitted
+#: today — from constructed timings — and `barge_in_report` pairs them on `turn`.
+#: A kind with a live emitter and a live reader whose payload contract is absent
+#: from the contract table would be exactly the gap this table exists to close.
 PAYLOAD_KEYS: dict[str, tuple[str, ...]] = {
     EventKind.SESSION_START: ("session_id", "scenario_id", "adapter"),
     EventKind.CALLER_UTTERANCE: ("text",),
@@ -204,6 +223,8 @@ PAYLOAD_KEYS: dict[str, tuple[str, ...]] = {
     EventKind.TRANSPORT_CONNECTED: ("participant", "attempt"),
     EventKind.TRANSPORT_DISCONNECTED: ("participant", "reason"),
     EventKind.SESSION_END: ("reason", "turns"),
+    EventKind.INTERRUPTION_STARTED: ("turn", "agent_started_s", "agent_would_end_s"),
+    EventKind.INTERRUPTION_ACKNOWLEDGED: ("turn", "overlap_s", "yielded"),
 }
 
 

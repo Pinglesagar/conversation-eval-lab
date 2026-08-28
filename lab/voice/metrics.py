@@ -49,9 +49,13 @@ SCOPE
 -----
 Latency only. Word error rate lives in `lab.voice.wer`, dead-air attribution in
 `lab.voice.silence`. Barge-in latency — the gap between a caller interrupting
-and the agent stopping — is deliberately absent: it needs the `interruption_*`
-events reserved for v2 in `lab.trace.schema`, and no v1 adapter emits them, so
-there is nothing here that could pretend to measure it.
+and the agent stopping — is deliberately absent *from this module*: it lives in
+`lab.voice.interaction.barge_in_report`, which reads the `interruption_*` events
+back off a trace. It is kept out of here because it is not the same kind of
+number. Every latency in this module is recovered from instants an adapter
+observed; a barge-in latency is constructed from timings a scenario handed in,
+because no v1 adapter discovers an interruption. Pooling the two in one report
+would let a constructed figure be read as a measured one.
 """
 
 from __future__ import annotations

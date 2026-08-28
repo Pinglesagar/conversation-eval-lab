@@ -991,9 +991,10 @@ tell the two apart — which is precisely why joining the audio tier to the conv
 tier was an afternoon's work rather than a fork.
 
 **The vocabulary is closed, and its size is the point.** `EventKind.KNOWN` holds
-**15** kinds and `EventKind.V2_RESERVED` holds **2** more that are declared but have no
-emitter yet (`interruption_started`, `interruption_acknowledged` — the barge-in pair;
-see §5 of §8.3 and the limitation stated in [§10](#10-limitations-stated-plainly)). Fifteen is small
+**15** kinds and `EventKind.V2_RESERVED` holds **2** more that no adapter *discovers*
+yet (`interruption_started`, `interruption_acknowledged` — the barge-in pair, which
+`lab.voice.interaction` emits and reads from constructed timings; see §5 of §8.3 and the
+limitation stated in [§10](#10-limitations-stated-plainly)). Fifteen is small
 enough to hold in your head and large enough that no adapter has needed a sixteenth.
 A schema that grows a kind per feature stops being a shared vocabulary and becomes a
 union of private ones.
@@ -5138,13 +5139,20 @@ the recogniser rather than on the model. `agent_audio_first_byte` vs `audio_deli
 *answer exists* vs *answer arrived* — the gap between them is network delivery, and it is
 invisible to any in-process adapter by construction.
 
-Two more kinds are **declared and never emitted**: `interruption_started` and
+Two more kinds are **reserved**: `interruption_started` and
 `interruption_acknowledged`, in `V2_RESERVED`. Barge-in — the caller talking over the
 agent — is the commonest voice-agent failure mode, and the metric that matters is the gap
-between those two events. Measuring it needs duplex streaming that the v1 adapters do not
-implement. They are reserved so a v2 adapter can emit them without a schema migration,
-and so no check in this repo can pretend to measure barge-in today. `Trace.unknown_kinds()`
-treats them as known; nothing else touches them.
+between those two events.
+
+The one true sentence about them, which this wiki now states identically everywhere:
+**barge-in is constructed, not discovered.** `lab.voice.interaction.emit_barge_in` writes
+both kinds and `barge_in_report` reads them back, both under test, but their timings are
+handed in by a scenario rather than observed by an adapter; nothing outside the tests calls
+the emitter, so no committed trace contains either kind; and discovering a real overlap
+needs the duplex streaming path the v1 adapters do not implement. Reserved therefore means
+*no adapter discovers this yet* — which is why they stay out of `KNOWN` (the blocked
+discovery row derives from `V2_RESERVED`), why `PAYLOAD_KEYS` documents both, and why
+`Trace.unknown_kinds()` treats them as known.
 
 ###### Why it exists / the tricky part
 
@@ -7805,10 +7813,12 @@ than it can carry.*
 
 ##### 8.2.8.7 What this file does not do
 
-**No barge-in.** Interrupting the agent mid-utterance needs duplex audio; the v1
-adapters are turn-based; `interruption_started` / `interruption_acknowledged` are
-reserved in the schema and unemitted. A turn-based driver cannot measure
-interruption handling and this one does not claim to. (Golden Rule 10 territory:
+**No barge-in.** Interrupting the agent mid-utterance needs duplex audio and the v1
+adapters are turn-based, so this driver emits neither `interruption_started` nor
+`interruption_acknowledged`. Barge-in is constructed, not discovered: the constructed
+measurement lives in `lab.voice.interaction`, and *discovering* an interruption is what
+nothing here does. A turn-based driver cannot measure interruption handling and this one
+does not claim to. (Golden Rule 10 territory:
 the audio suite reports those rows as NOT YET RUNNABLE rather than passing
 silently.)
 
@@ -9020,13 +9030,15 @@ demonstrate the failure **at the setting that actually shipped**, rather than at
 chosen to make the demonstration work.
 
 **On barge-in — an honesty note worth reading.** `lab.trace.schema` has defined
-`interruption_started` and `interruption_acknowledged` from the beginning; nothing emitted
-them and nothing consumed them. Both `metrics.py` and `adapter.py` said so explicitly and
-truthfully. Both statements were honest and both left a real metric on the floor: the
-events were unusable *for a turn-based adapter*, which is not the same as unusable. Given
-two clips and the instant the second starts, the overlap is arithmetic. So this module
-constructs the overlap, emits the events and reports the latency — and does not pretend
-the adapter's turn loop discovered them. The committed barge-in row measures
+`interruption_started` and `interruption_acknowledged` from the beginning; for a long time
+nothing emitted them and nothing consumed them, and `metrics.py` and `adapter.py` both said
+so. Those statements were honest and both left a real metric on the floor: the events were
+unusable *for a turn-based adapter*, which is not the same as unusable. Given two clips and
+the instant the second starts, the overlap is arithmetic. So this module constructs the
+overlap, emits the events and reports the latency — **constructed, not discovered**, and it
+does not pretend the adapter's turn loop found them. Nothing outside
+`tests/test_voice_interaction.py` calls `emit_barge_in`, so no committed trace contains
+either kind. The committed barge-in row measures
 `yield_ms = 240.0` against a 300 ms budget, with `overlap_s = 0.24`. A second row,
 `audio-barge-in-not-discovered`, carries `passed: null` and is reported as **blocked**,
 never as a pass.
@@ -9513,9 +9525,11 @@ the design depends on:
    It is also the *retryable* shape — a rate limit costs a retry rather than a lost
    session — and its cost is predictable from the corpus before the run starts.
 
-So: half-duplex, and honest about it. `interruption_started` and
-`interruption_acknowledged` stay reserved and unemitted by *this* adapter, and a v2 duplex
-adapter can emit them without a schema change.
+So: half-duplex, and honest about it. Barge-in is constructed, not discovered: *this*
+adapter emits neither `interruption_started` nor `interruption_acknowledged`, because its
+turn loop plays the agent and then the caller and no moment exists in which both are
+sounding; `lab.voice.interaction` writes and scores the two kinds from timings a scenario
+hands in; and a v2 duplex adapter can discover one and emit it without a schema change.
 
 **One implementation detail worth the underscore.** The adapter imports
 `_WindowStamper` privately from `lab.simulator.driver`. It is the implementation of the
@@ -13955,9 +13969,11 @@ none of them has to be taken on trust.
   on that call, on the day it was recorded. [§6.10](#610-what-this-call-does-not-support)
 - **Only one of the committed spoken call's three per-turn clocks is a real measurement.**
   The other two are replay lookups, and the report refuses to quote them as latency.
-- **Barge-in is declared, not runnable.** The two interruption events exist in the schema
-  with no emitter; the adapter is half-duplex by design and `interaction.py` constructs the
-  overlap arithmetically and says so. The row reports **blocked**, never a pass.
+- **Barge-in is constructed, not discovered.** The two interruption events have an emitter
+  and a reader in `interaction.py`, both tested, but their timings are handed in by a
+  scenario rather than observed: the adapter is half-duplex by design, nothing outside the
+  tests calls the emitter, and no committed trace contains either kind. The discovery row
+  reports **blocked**, never a pass.
   [§8.3.6](#836-silencepy-and-interactionpy--firing-versus-attributing)
 - **Cantonese is untestable** — no vendor in the matrix synthesises it. Recorded as data so
   the finding expires by itself the day one does.
@@ -14068,7 +14084,7 @@ that differs from its ordinary use, the difference is the point of the entry.
 | Term | Plain meaning |
 | --- | --- |
 | **Trace** | the ordered list of everything that happened in one conversation — the one thing every check reads ([§3](#3-the-one-idea-trace-first)) |
-| **Event kind** | one of the 15 legal entries in that list, plus 2 reserved for barge-in and not yet emitted |
+| **Event kind** | one of the 15 legal entries in that list, plus 2 reserved for barge-in — emitted from constructed timings, discovered by no adapter |
 | **Adapter** | anything that produces a trace: a scripted runner, a live model loop, a speech pipeline, a WebRTC session |
 | **Contract** | a deterministic check — no AI involved, same trace, same answer, forever |
 | **Judge** | a check where an AI grades the output, so it has to be calibrated before it counts |
@@ -14108,7 +14124,7 @@ that differs from its ordinary use, the difference is the point of the entry.
 | **Perturbation** | a deliberate degradation — noise at a stated SNR, a telephone passband, packet loss, speed, pitch |
 | **Ladder** | the same row run at successive rungs of a perturbation, so the report can say *where* it broke rather than *whether* |
 | **Code-switching** | changing language mid-sentence, which is ordinary in many markets and not supported by every recogniser |
-| **Barge-in** | the caller talking over the agent. Declared in the schema, not measurable by a half-duplex adapter, reported as blocked |
+| **Barge-in** | the caller talking over the agent. Constructed, not discovered: emitted and scored from timings a scenario hands in, never found by a half-duplex adapter, and the discovery row is reported blocked |
 | **Delivery gap** | the difference between the agent finishing and the listener hearing it. Zero by construction in-process; 89.0 ms mean over 12 turns on a real network |
 | **First byte** | when the answer *exists*, agent-side. Not when the caller starts hearing it |
 
@@ -14201,7 +14217,8 @@ Supports [§2](#2-architecture-with-the-diagrams).
 | judge v1 vs v2 | `evallab calibrate` | TPR `0.250 (2/8)` → `1.000 (8/8)`; TNR `1.000 (16/16)` both; kappa 0.308 → 1.000; raw agreement `0.750 (18/24)` → `1.000 (24/24)`; gate v1 **FAIL**, v2 **PASS** |
 | self-consistency trap | same | v1 `0.917 (22/24)` unanimous; unstable `all-set-saturday: fail→pass→fail`, `claim-buried-in-policy-answer: pass→fail→pass`; v2 `1.000 (24/24)` |
 | timing gate | `evallab calibrate --timing` | PASS, 20 repeats × 5 delays; worst `+0.266%` at 100 ms; naive whole-turn control **FAIL** |
-| 15 event kinds, 2 reserved | `python -c "from lab.trace.schema import EventKind; …"` | `len(KNOWN)==15`; `V2_RESERVED == {interruption_started, interruption_acknowledged}` |
+| 15 event kinds, 2 reserved | `python -c "from lab.trace.schema import EventKind; …"` | `len(KNOWN)==15`; `V2_RESERVED == {interruption_started, interruption_acknowledged}`, disjoint from `KNOWN` |
+| barge-in: emitter, reader, tests, no committed trace | `grep -rn "emit_barge_in" lab tests`; `grep -rl interruption_started fixtures reports` | the emitter is called from `tests/test_voice_interaction.py` and nowhere else; the two fixture hits are the *blocked* row's note, not trace events |
 | spoken trace shape | `python -c` over `fixtures/audio/spoken_call/trace.jsonl` | 80 events, 8 turns, kinds as listed in §2 |
 | `text` vs `text_sent` | same file, first `transcript_in` | heard string is lowercase, unpunctuated, `Mr`→`mister`, `timeframe`→`time frame` |
 | delivery gap | `python -m lab.voice.transport.report` | `89.0 ms mean over 12 turns`, `86.0 ms` net of the send queue, against `0 ms` agent-side; 3 rows, tier PASS |

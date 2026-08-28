@@ -61,12 +61,15 @@ def test_kind_stays_open_for_forward_compatibility() -> None:
     assert _trace(event).unknown_kinds() == {"some_future_kind"}
 
 
-def test_v2_kinds_are_declared_but_not_emitted() -> None:
-    """Barge-in events are reserved, not implemented — see the schema docstring.
+def test_v2_kinds_are_reserved_and_have_no_named_builder_method() -> None:
+    """Barge-in is constructed, not discovered — see the schema docstring.
 
-    They must be recognised by the vocabulary (so a v2 adapter needs no schema
-    migration) while nothing in v1 emits them. Anchoring that here stops a check
-    being written today against a metric this version cannot measure.
+    The kinds must be recognised by the vocabulary (so a v2 adapter needs no
+    schema migration) and must stay out of `KNOWN` (so the blocked discovery row
+    stays blocked). `lab.voice.interaction.emit_barge_in` does write them, from
+    timings a scenario hands in, and it goes through the generic `emit` escape
+    hatch: the absence of a named `TraceBuilder` method is the standing evidence
+    that no adapter discovers an interruption for itself.
     """
     assert EventKind.V2_RESERVED == {
         "interruption_started",
@@ -80,11 +83,17 @@ def test_v2_kinds_are_declared_but_not_emitted() -> None:
         for name in dir(builder)
         if not name.startswith("_") and "interruption" in name
     ]
-    assert emitters == [], "v1 must have no way to emit a barge-in event"
+    assert emitters == [], "a discovered interruption would need a named emitter"
 
 
-def test_payload_keys_documents_every_v1_kind() -> None:
-    assert set(PAYLOAD_KEYS) == EventKind.KNOWN
+def test_payload_keys_documents_every_kind_anything_emits() -> None:
+    """Every kind with an emitter carries a payload contract — reserved included.
+
+    The two interruption kinds are emitted today, from constructed timings, so
+    leaving them out would mean two live emitters writing payload keys the
+    schema's own contract table does not describe.
+    """
+    assert set(PAYLOAD_KEYS) == EventKind.KNOWN | EventKind.V2_RESERVED
 
 
 def test_event_get_reads_the_payload() -> None:

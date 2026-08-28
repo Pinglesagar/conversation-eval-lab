@@ -410,7 +410,7 @@ def test_a_turn_that_does_not_overlap_is_refused() -> None:
 
 
 def test_the_interruption_events_are_emitted_and_consumed() -> None:
-    """The gap this closes: defined in the schema, emitted by nothing, read by nothing."""
+    """The gap this closed: defined in the schema, emitted by nothing, read by nothing."""
     builder = TraceBuilder(scenario_id="barge", adapter="voice:audio", session_id="b1")
     builder.session_start(latency_gate="PASS")
     yielded = barge_in(
@@ -428,6 +428,28 @@ def test_the_interruption_events_are_emitted_and_consumed() -> None:
     assert report.yields == 1
     assert report.yield_rate == 1.0
     assert report.latencies_s == [pytest.approx(0.2)]
+
+
+def test_the_emitted_payloads_match_the_schemas_contract() -> None:
+    """Two live emitters, so the schema must describe what they write.
+
+    `PAYLOAD_KEYS` is the repo's payload contract. A kind that is emitted but
+    absent from it — or present in it with keys the emitter does not write —
+    would leave a downstream check written against a key that is never there.
+    """
+    from lab.trace.schema import PAYLOAD_KEYS
+
+    builder = TraceBuilder(scenario_id="barge", adapter="voice:audio", session_id="b6")
+    emit_barge_in(
+        builder,
+        barge_in(
+            agent_started_s=0.0, agent_duration_s=3.0, caller_started_s=1.0, agent_stopped_s=1.2
+        ),
+        turn=1,
+    )
+    for event in builder.build().events:
+        assert event.kind in PAYLOAD_KEYS, f"{event.kind} is emitted but has no payload contract"
+        assert set(PAYLOAD_KEYS[event.kind]) <= set(event.payload), event.kind
 
 
 def test_no_acknowledgement_is_emitted_when_the_agent_did_not_yield() -> None:

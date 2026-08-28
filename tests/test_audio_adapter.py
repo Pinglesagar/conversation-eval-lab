@@ -173,8 +173,14 @@ def test_the_trace_is_ordered() -> None:
     assert trace.is_ordered()
 
 
-def test_v2_interruption_events_are_never_emitted() -> None:
-    """A turn-based adapter cannot measure barge-in and must not appear to."""
+def test_this_adapter_emits_no_interruption_events() -> None:
+    """Barge-in is constructed, not discovered — and *this* adapter constructs nothing.
+
+    `lab.voice.interaction.emit_barge_in` does write the two kinds, from timings a
+    scenario hands in. The claim under test is narrower and is the one that
+    matters: a half-duplex turn loop cannot find an overlap, so it must not put
+    one on a trace it produced.
+    """
     trace, _ = run_session()
     assert not trace.events_of_kind(
         EventKind.INTERRUPTION_STARTED, EventKind.INTERRUPTION_ACKNOWLEDGED

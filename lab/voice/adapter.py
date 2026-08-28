@@ -30,8 +30,8 @@ WHY HALF-DUPLEX, FILE-BASED, PRE-SYNTHESISED AND POST-HOC
 ---------------------------------------------------------
 This is the central design decision, and it is a trade, not a shortcut. A duplex
 streaming adapter — caller audio and agent audio flowing concurrently over a real
-transport — would buy one thing this cannot measure: barge-in. It would cost
-three things this depends on.
+transport — would buy one thing this cannot do: *discover* a barge-in rather
+than be handed its timings. It would cost three things this depends on.
 
 **1. Attributable latency.** The system under test here is text-in, text-out, so
 the STT and TTS legs belong to the *harness*, not to the agent. In a streaming
@@ -58,10 +58,13 @@ a rate limit costs a retry rather than a lost session — and the shape whose co
 is predictable from the corpus before the run starts. A streaming-realtime
 evaluation of 55 scenarios at k=5 is a bill nobody estimated.
 
-So: half-duplex, and honest about it. `interruption_started` and
-`interruption_acknowledged` stay reserved and unemitted (see `lab.trace.schema`),
-no metric in this repo claims to measure barge-in, and a v2 duplex adapter can
-emit them without a schema change.
+So: half-duplex, and honest about it. Barge-in here is constructed, not
+discovered: `lab.voice.interaction.emit_barge_in` writes `interruption_started`
+and `interruption_acknowledged` and `barge_in_report` scores them, but from
+timings a scenario hands in — *this* adapter emits neither kind, because its turn
+loop plays the agent and then the caller and no moment exists in which both are
+sounding. A v2 duplex adapter can discover one and emit it without a schema
+change (see `lab.trace.schema`).
 
 THE TURN, INSTANT BY INSTANT
 ----------------------------
@@ -124,7 +127,9 @@ use, never an `ImportError` from three frames down.
 
 WHAT THIS DOES NOT DO
 ---------------------
-*   No barge-in, for the reasons above.
+*   No barge-in *discovery*, for the reasons above: this adapter emits neither
+    interruption kind. The constructed measurement lives in
+    `lab.voice.interaction`.
 *   No agent-side loop-back transcription by default. Transcribing our own
     synthesis of the agent's known words measures our TTS's intelligibility,
     which is a real question and not a question about the agent; it is available

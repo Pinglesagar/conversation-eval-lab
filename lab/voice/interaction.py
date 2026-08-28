@@ -48,20 +48,27 @@ always three situations.
 REFERENCE BUG: THE INTERRUPTION EVENTS NOBODY USED
 --------------------------------------------------
 `lab.trace.schema` has defined `interruption_started` and
-`interruption_acknowledged` from the beginning. Nothing emitted them and nothing
-consumed them. `lab.voice.metrics` says so explicitly — barge-in latency is
-"deliberately absent: it needs the `interruption_*` events" — and
-`lab.voice.adapter` explains why its half-duplex turn loop cannot produce them.
+`interruption_acknowledged` from the beginning. For a long time nothing emitted
+them and nothing consumed them: `lab.voice.adapter` explained why its half-duplex
+turn loop cannot produce an overlap, and `lab.voice.metrics` declined the latency
+on those grounds.
 
-Both of those statements were honest and both left a real metric on the floor.
-The events were unusable *for a turn-based adapter*, which is not the same as
-unusable. Given two clips and the instant the second one starts, the overlap is
-arithmetic — and for a live in-call coaching product, barge-in is not a nicety:
-an adviser talking over a suggestion is the product's core interaction, and an
-agent that does not yield is one that talks over a client.
+Both statements were honest and both left a real metric on the floor. The events
+were unusable *for a turn-based adapter*, which is not the same as unusable.
+Given two clips and the instant the second one starts, the overlap is arithmetic
+— and for a live in-call coaching product, barge-in is not a nicety: an adviser
+talking over a suggestion is the product's core interaction, and an agent that
+does not yield is one that talks over a client.
 
 So this module constructs the overlap explicitly, emits the two events, and
-reports the latency. It does not pretend the adapter's turn loop discovered them.
+reports the latency. **Barge-in here is constructed, not discovered** — that is
+the one sentence every other mention of it in this repository now repeats.
+`emit_barge_in` writes both kinds and `barge_in_report` scores them, both under
+test, but their timings are handed in by a scenario rather than observed by an
+adapter; nothing outside the tests calls the emitter, so no committed trace
+contains either kind; and discovering a real overlap needs a duplex streaming
+path this version does not have. The scenario row `audio-barge-in-not-discovered`
+holds that gap open as a `blocked` result rather than a sentence in a document.
 
 WHY ENERGY AND NOT A VAD
 ------------------------
@@ -512,10 +519,17 @@ def barge_in(
 def emit_barge_in(builder: Any, event: BargeIn, *, turn: int, engine: str | None = None) -> None:
     """Write a barge-in onto a trace as `interruption_started` / `_acknowledged`.
 
-    These are the two event kinds `lab.trace.schema` has always defined and that
-    nothing has ever emitted. They go through `TraceBuilder.emit` rather than a
-    named method because there is no named method — which is itself the evidence
-    that nothing used them.
+    This is the only emitter of the two kinds `lab.trace.schema` reserves, and it
+    writes them from timings it is given, not from an observation: the caller's
+    start instant arrives as a `BargeIn` a scenario constructed. They go through
+    `TraceBuilder.emit` rather than a named builder method deliberately — the
+    absence of a named method is the standing evidence that no adapter discovers
+    an interruption for itself. Nothing outside the tests calls this function, so
+    no committed trace contains either kind.
+
+    The payload keys written here are the ones `PAYLOAD_KEYS` records for the two
+    kinds, and `test_the_emitted_payloads_match_the_schemas_contract` holds them
+    to it: `turn` is what `barge_in_report` pairs on.
 
     `interruption_acknowledged` is emitted **only when the agent actually
     stopped**. An acknowledgement event for an agent that talked straight through

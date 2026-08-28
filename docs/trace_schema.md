@@ -86,14 +86,23 @@ being blamed on the agent.
 that ran out of turns, which looks identical to a finished one if you only count
 events.
 
-## Declared but not emitted in v1
+## Reserved: constructed, not discovered
 
-`interruption_started` and `interruption_acknowledged` are in the vocabulary and
-nothing writes them. Barge-in — the caller talking over the agent — is a
-first-class voice failure mode, and the schema names it so that a future adapter
-has somewhere to put it and so that its absence is visible rather than forgotten.
-Any claim about barge-in handling in this repository would be fiction; there is
-none.
+`interruption_started` and `interruption_acknowledged` stay out of `KNOWN`.
+Barge-in — the caller talking over the agent — is a first-class voice failure
+mode, and the schema names the two kinds so that a future adapter has somewhere
+to put them.
+
+The one true sentence about them: **barge-in in this repository is constructed,
+not discovered.** `lab.voice.interaction.emit_barge_in` writes both kinds and
+`barge_in_report` reads them back, both under test, but their timings are handed
+in by a scenario rather than observed by an adapter; nothing outside the tests
+calls the emitter, so no committed trace contains either kind; and discovering a
+real overlap needs a duplex streaming path this version does not have. Reserved
+therefore means *no adapter discovers this yet*, not *no code touches this* —
+which is why `PAYLOAD_KEYS` documents both kinds, and why the audio row
+`audio-barge-in-not-discovered` derives its blocked status from `V2_RESERVED`
+and becomes runnable by itself on the day they are promoted.
 
 ## Ordering and timing
 

@@ -51,10 +51,12 @@ between a documented approximation and a lie with a footnote.
 
 WHAT THIS DOES NOT DO
 ---------------------
-No barge-in. Interrupting the agent mid-utterance needs duplex audio, the v1
-adapters are turn-based, and `interruption_started` / `interruption_acknowledged`
-are reserved but unemitted (see `lab.trace.schema`). A turn-based driver cannot
-measure interruption handling and this one does not claim to.
+No barge-in. Interrupting the agent mid-utterance needs duplex audio and the v1
+adapters are turn-based, so this driver emits neither `interruption_started` nor
+`interruption_acknowledged`. The constructed measurement — those two kinds
+written from timings a scenario hands in, and scored — lives in
+`lab.voice.interaction`; discovering an interruption is what nothing here does,
+and this driver does not claim to.
 """
 
 from __future__ import annotations

@@ -993,8 +993,8 @@ class VoiceSpec(_Block):
         default_factory=list,
         description=(
             "Trace event kinds this row cannot be evaluated without. Any of them "
-            "that is still reserved-and-unemitted (`EventKind.V2_RESERVED`) makes "
-            "the row unrunnable today, and `blocked_on()` says so."
+            "that is still reserved — no adapter discovers it (`EventKind.V2_RESERVED`) "
+            "— makes the row unrunnable today, and `blocked_on()` says so."
         ),
     )
 

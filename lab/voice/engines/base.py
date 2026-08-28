@@ -60,9 +60,10 @@ SCOPE
 -----
 Engines are synchronous and whole-buffer. No streaming, no partial hypotheses, no
 async. That is a deliberate consequence of the half-duplex, file-based design
-argued for in `lab.voice.adapter`: streaming would buy barge-in measurement and
-cost the ability to attribute latency to a stage, and this repo has chosen
-attribution. Nothing here pretends otherwise.
+argued for in `lab.voice.adapter`: streaming would buy barge-in *discovery* —
+the one thing `lab.voice.interaction` cannot construct — and cost the ability to
+attribute latency to a stage, and this repo has chosen attribution. Nothing here
+pretends otherwise.
 """
 
 from __future__ import annotations
