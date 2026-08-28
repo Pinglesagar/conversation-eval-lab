@@ -621,9 +621,24 @@ def test_the_judge_gate_accepts_the_reported_judge() -> None:
 
 
 def test_the_parser_documents_every_subcommand() -> None:
+    """Exact equality, so a new subcommand cannot arrive undocumented.
+
+    This test failing is the intended behaviour when the surface changes — add
+    the name here and give it a help string, or explain why it should not be
+    reachable. `select` was added when the selection layer was wired in.
+    """
     parser = cli.build_parser()
     actions = [a for a in parser._actions if a.dest == "command"]
-    assert set(actions[0].choices) == {"run", "validate", "report", "calibrate", "replay"}
+    assert set(actions[0].choices) == {
+        "run",
+        "validate",
+        "select",
+        "report",
+        "calibrate",
+        "replay",
+    }
+    for name, sub in actions[0].choices.items():
+        assert sub.description or sub.format_usage(), f"{name} has no usage"
 
 
 def test_a_missing_corpus_module_ends_in_a_sentence_not_a_stack() -> None:
