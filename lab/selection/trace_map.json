@@ -1,0 +1,2882 @@
+{
+  "_provenance": {
+    "command": "python -m lab.selection.trace_map --write",
+    "commit": "4aaad2328159ab98379c26b96fa0be8906f03ef9",
+    "fixture_root": "fixtures",
+    "format_version": 1,
+    "note": "GENERATED FILE - do not hand-edit. Derived from the committed traces under fixtures/ by lab/selection/trace_map.py. A trace records what one recorded run DID, never what a scenario COULD do, so this map is a lower bound on each scenario's dependencies: it proves 'touched X', never 'cannot touch Y'. Scenarios with mapped=false are UNMAPPED and must always run. If degraded=true the whole map is untrusted and the whole corpus must run."
+  },
+  "corpus_size": 73,
+  "degraded": false,
+  "degraded_reasons": [],
+  "format_version": 1,
+  "mapped_count": 55,
+  "scenarios": [
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent",
+        "ModificationAgent",
+        "PolicyAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "BookingAgent>PolicyAgent",
+        "GreeterAgent>BookingAgent",
+        "GreeterAgent>PolicyAgent",
+        "PolicyAgent>BookingAgent",
+        "PolicyAgent>ModificationAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "adversarial-abuse-demands-free-meal",
+      "sessions": 4,
+      "suite": "adversarial",
+      "tools": [
+        "check_policy",
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "228468229165",
+      "trace_files": [
+        "fixtures/live_full/traces/adversarial-abuse-demands-free-meal-0.jsonl",
+        "fixtures/live_full/traces/adversarial-abuse-demands-free-meal-1.jsonl",
+        "fixtures/live_full/traces/adversarial-abuse-demands-free-meal-2.jsonl",
+        "fixtures/replay_run/traces/adversarial-abuse-demands-free-meal.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "adversarial-abuse-then-real-booking",
+      "sessions": 4,
+      "suite": "adversarial",
+      "tools": [
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "915cb68e233c",
+      "trace_files": [
+        "fixtures/live_full/traces/adversarial-abuse-then-real-booking-0.jsonl",
+        "fixtures/live_full/traces/adversarial-abuse-then-real-booking-1.jsonl",
+        "fixtures/live_full/traces/adversarial-abuse-then-real-booking-2.jsonl",
+        "fixtures/replay_run/traces/adversarial-abuse-then-real-booking.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "GreeterAgent",
+        "PolicyAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>PolicyAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "adversarial-disclosure-asks-for-instructions",
+      "sessions": 4,
+      "suite": "adversarial",
+      "tools": [],
+      "trace_digest": "cd424b001844",
+      "trace_files": [
+        "fixtures/live_full/traces/adversarial-disclosure-asks-for-instructions-0.jsonl",
+        "fixtures/live_full/traces/adversarial-disclosure-asks-for-instructions-1.jsonl",
+        "fixtures/live_full/traces/adversarial-disclosure-asks-for-instructions-2.jsonl",
+        "fixtures/replay_run/traces/adversarial-disclosure-asks-for-instructions.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "GreeterAgent",
+        "ModificationAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>ModificationAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "adversarial-impersonation-cancels-for-another",
+      "sessions": 4,
+      "suite": "adversarial",
+      "tools": [],
+      "trace_digest": "3df4def8e997",
+      "trace_files": [
+        "fixtures/live_full/traces/adversarial-impersonation-cancels-for-another-0.jsonl",
+        "fixtures/live_full/traces/adversarial-impersonation-cancels-for-another-1.jsonl",
+        "fixtures/live_full/traces/adversarial-impersonation-cancels-for-another-2.jsonl",
+        "fixtures/replay_run/traces/adversarial-impersonation-cancels-for-another.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent",
+        "PolicyAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent",
+        "GreeterAgent>PolicyAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "adversarial-impersonation-claims-to-be-staff",
+      "sessions": 4,
+      "suite": "adversarial",
+      "tools": [],
+      "trace_digest": "7c772246aed6",
+      "trace_files": [
+        "fixtures/live_full/traces/adversarial-impersonation-claims-to-be-staff-0.jsonl",
+        "fixtures/live_full/traces/adversarial-impersonation-claims-to-be-staff-1.jsonl",
+        "fixtures/live_full/traces/adversarial-impersonation-claims-to-be-staff-2.jsonl",
+        "fixtures/replay_run/traces/adversarial-impersonation-claims-to-be-staff.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent",
+        "ModificationAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent",
+        "GreeterAgent>ModificationAgent",
+        "ModificationAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "adversarial-injection-fake-system-turn",
+      "sessions": 4,
+      "suite": "adversarial",
+      "tools": [
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "0c5c2312ecde",
+      "trace_files": [
+        "fixtures/live_full/traces/adversarial-injection-fake-system-turn-0.jsonl",
+        "fixtures/live_full/traces/adversarial-injection-fake-system-turn-1.jsonl",
+        "fixtures/live_full/traces/adversarial-injection-fake-system-turn-2.jsonl",
+        "fixtures/replay_run/traces/adversarial-injection-fake-system-turn.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "adversarial-injection-in-booking-name",
+      "sessions": 4,
+      "suite": "adversarial",
+      "tools": [
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "3e095fca7dc9",
+      "trace_files": [
+        "fixtures/live_full/traces/adversarial-injection-in-booking-name-0.jsonl",
+        "fixtures/live_full/traces/adversarial-injection-in-booking-name-1.jsonl",
+        "fixtures/live_full/traces/adversarial-injection-in-booking-name-2.jsonl",
+        "fixtures/replay_run/traces/adversarial-injection-in-booking-name.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent",
+        "PolicyAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "BookingAgent>PolicyAgent",
+        "GreeterAgent>BookingAgent",
+        "PolicyAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "adversarial-injection-in-dietary-note",
+      "sessions": 4,
+      "suite": "adversarial",
+      "tools": [
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "53f3fbd2d992",
+      "trace_files": [
+        "fixtures/live_full/traces/adversarial-injection-in-dietary-note-0.jsonl",
+        "fixtures/live_full/traces/adversarial-injection-in-dietary-note-1.jsonl",
+        "fixtures/live_full/traces/adversarial-injection-in-dietary-note-2.jsonl",
+        "fixtures/replay_run/traces/adversarial-injection-in-dietary-note.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "GreeterAgent",
+        "ModificationAgent",
+        "PolicyAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>ModificationAgent",
+        "GreeterAgent>PolicyAgent",
+        "ModificationAgent>PolicyAgent",
+        "PolicyAgent>ModificationAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "adversarial-injection-inside-policy-question",
+      "sessions": 4,
+      "suite": "adversarial",
+      "tools": [
+        "check_policy",
+        "modify_booking"
+      ],
+      "trace_digest": "f6d90b25d0e4",
+      "trace_files": [
+        "fixtures/live_full/traces/adversarial-injection-inside-policy-question-0.jsonl",
+        "fixtures/live_full/traces/adversarial-injection-inside-policy-question-1.jsonl",
+        "fixtures/live_full/traces/adversarial-injection-inside-policy-question-2.jsonl",
+        "fixtures/replay_run/traces/adversarial-injection-inside-policy-question.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "adversarial-off-topic-taxi-and-table",
+      "sessions": 4,
+      "suite": "adversarial",
+      "tools": [
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "6b5280f923e7",
+      "trace_files": [
+        "fixtures/live_full/traces/adversarial-off-topic-taxi-and-table-0.jsonl",
+        "fixtures/live_full/traces/adversarial-off-topic-taxi-and-table-1.jsonl",
+        "fixtures/live_full/traces/adversarial-off-topic-taxi-and-table-2.jsonl",
+        "fixtures/replay_run/traces/adversarial-off-topic-taxi-and-table.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent",
+        "PolicyAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent",
+        "GreeterAgent>PolicyAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "adversarial-off-topic-writing-request",
+      "sessions": 4,
+      "suite": "adversarial",
+      "tools": [],
+      "trace_digest": "d1f111a5babf",
+      "trace_files": [
+        "fixtures/live_full/traces/adversarial-off-topic-writing-request-0.jsonl",
+        "fixtures/live_full/traces/adversarial-off-topic-writing-request-1.jsonl",
+        "fixtures/live_full/traces/adversarial-off-topic-writing-request-2.jsonl",
+        "fixtures/replay_run/traces/adversarial-off-topic-writing-request.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "GreeterAgent",
+        "ModificationAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>ModificationAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "adversarial-over-reach-moves-another-table",
+      "sessions": 4,
+      "suite": "adversarial",
+      "tools": [
+        "modify_booking",
+        "search_tables"
+      ],
+      "trace_digest": "1bb1f825f256",
+      "trace_files": [
+        "fixtures/live_full/traces/adversarial-over-reach-moves-another-table-0.jsonl",
+        "fixtures/live_full/traces/adversarial-over-reach-moves-another-table-1.jsonl",
+        "fixtures/live_full/traces/adversarial-over-reach-moves-another-table-2.jsonl",
+        "fixtures/replay_run/traces/adversarial-over-reach-moves-another-table.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [],
+      "agents": [],
+      "engines": [],
+      "event_kinds": [],
+      "handoff_edges": [],
+      "mapped": false,
+      "scenario_id": "audio-barge-in-agent-yields",
+      "sessions": 0,
+      "suite": "audio",
+      "tools": [],
+      "trace_digest": null,
+      "trace_files": [],
+      "unmapped_reason": "no committed trace names this scenario; there is no evidence to exclude it from any change, so always run it"
+    },
+    {
+      "adapters": [],
+      "agents": [],
+      "engines": [],
+      "event_kinds": [],
+      "handoff_edges": [],
+      "mapped": false,
+      "scenario_id": "audio-barge-in-not-discovered",
+      "sessions": 0,
+      "suite": "audio",
+      "tools": [],
+      "trace_digest": null,
+      "trace_files": [],
+      "unmapped_reason": "no committed trace names this scenario; there is no evidence to exclude it from any change, so always run it"
+    },
+    {
+      "adapters": [],
+      "agents": [],
+      "engines": [],
+      "event_kinds": [],
+      "handoff_edges": [],
+      "mapped": false,
+      "scenario_id": "audio-bilingual-es-us-disclosure",
+      "sessions": 0,
+      "suite": "audio",
+      "tools": [],
+      "trace_digest": null,
+      "trace_files": [],
+      "unmapped_reason": "no committed trace names this scenario; there is no evidence to exclude it from any change, so always run it"
+    },
+    {
+      "adapters": [],
+      "agents": [],
+      "engines": [],
+      "event_kinds": [],
+      "handoff_edges": [],
+      "mapped": false,
+      "scenario_id": "audio-bilingual-es-us-regulator-verbatim",
+      "sessions": 0,
+      "suite": "audio",
+      "tools": [],
+      "trace_digest": null,
+      "trace_files": [],
+      "unmapped_reason": "no committed trace names this scenario; there is no evidence to exclude it from any change, so always run it"
+    },
+    {
+      "adapters": [],
+      "agents": [],
+      "engines": [],
+      "event_kinds": [],
+      "handoff_edges": [],
+      "mapped": false,
+      "scenario_id": "audio-capture-confusable-names",
+      "sessions": 0,
+      "suite": "audio",
+      "tools": [],
+      "trace_digest": null,
+      "trace_files": [],
+      "unmapped_reason": "no committed trace names this scenario; there is no evidence to exclude it from any change, so always run it"
+    },
+    {
+      "adapters": [],
+      "agents": [],
+      "engines": [],
+      "event_kinds": [],
+      "handoff_edges": [],
+      "mapped": false,
+      "scenario_id": "audio-capture-date-of-birth",
+      "sessions": 0,
+      "suite": "audio",
+      "tools": [],
+      "trace_digest": null,
+      "trace_files": [],
+      "unmapped_reason": "no committed trace names this scenario; there is no evidence to exclude it from any change, so always run it"
+    },
+    {
+      "adapters": [],
+      "agents": [],
+      "engines": [],
+      "event_kinds": [],
+      "handoff_edges": [],
+      "mapped": false,
+      "scenario_id": "audio-capture-money-amount",
+      "sessions": 0,
+      "suite": "audio",
+      "tools": [],
+      "trace_digest": null,
+      "trace_files": [],
+      "unmapped_reason": "no committed trace names this scenario; there is no evidence to exclude it from any change, so always run it"
+    },
+    {
+      "adapters": [],
+      "agents": [],
+      "engines": [],
+      "event_kinds": [],
+      "handoff_edges": [],
+      "mapped": false,
+      "scenario_id": "audio-capture-postcode",
+      "sessions": 0,
+      "suite": "audio",
+      "tools": [],
+      "trace_digest": null,
+      "trace_files": [],
+      "unmapped_reason": "no committed trace names this scenario; there is no evidence to exclude it from any change, so always run it"
+    },
+    {
+      "adapters": [],
+      "agents": [],
+      "engines": [],
+      "event_kinds": [],
+      "handoff_edges": [],
+      "mapped": false,
+      "scenario_id": "audio-capture-spelled-surname",
+      "sessions": 0,
+      "suite": "audio",
+      "tools": [],
+      "trace_digest": null,
+      "trace_files": [],
+      "unmapped_reason": "no committed trace names this scenario; there is no evidence to exclude it from any change, so always run it"
+    },
+    {
+      "adapters": [],
+      "agents": [],
+      "engines": [],
+      "event_kinds": [],
+      "handoff_edges": [],
+      "mapped": false,
+      "scenario_id": "audio-hinglish-lakh-magnitude",
+      "sessions": 0,
+      "suite": "audio",
+      "tools": [],
+      "trace_digest": null,
+      "trace_files": [],
+      "unmapped_reason": "no committed trace names this scenario; there is no evidence to exclude it from any change, so always run it"
+    },
+    {
+      "adapters": [],
+      "agents": [],
+      "engines": [],
+      "event_kinds": [],
+      "handoff_edges": [],
+      "mapped": false,
+      "scenario_id": "audio-hk-cantonese-untestable",
+      "sessions": 0,
+      "suite": "audio",
+      "tools": [],
+      "trace_digest": null,
+      "trace_files": [],
+      "unmapped_reason": "no committed trace names this scenario; there is no evidence to exclude it from any change, so always run it"
+    },
+    {
+      "adapters": [],
+      "agents": [],
+      "engines": [],
+      "event_kinds": [],
+      "handoff_edges": [],
+      "mapped": false,
+      "scenario_id": "audio-line-quality-noise-ladder",
+      "sessions": 0,
+      "suite": "audio",
+      "tools": [],
+      "trace_digest": null,
+      "trace_files": [],
+      "unmapped_reason": "no committed trace names this scenario; there is no evidence to exclude it from any change, so always run it"
+    },
+    {
+      "adapters": [],
+      "agents": [],
+      "engines": [],
+      "event_kinds": [],
+      "handoff_edges": [],
+      "mapped": false,
+      "scenario_id": "audio-line-quality-packet-loss-ladder",
+      "sessions": 0,
+      "suite": "audio",
+      "tools": [],
+      "trace_digest": null,
+      "trace_files": [],
+      "unmapped_reason": "no committed trace names this scenario; there is no evidence to exclude it from any change, so always run it"
+    },
+    {
+      "adapters": [],
+      "agents": [],
+      "engines": [],
+      "event_kinds": [],
+      "handoff_edges": [],
+      "mapped": false,
+      "scenario_id": "audio-line-quality-telephone-band",
+      "sessions": 0,
+      "suite": "audio",
+      "tools": [],
+      "trace_digest": null,
+      "trace_files": [],
+      "unmapped_reason": "no committed trace names this scenario; there is no evidence to exclude it from any change, so always run it"
+    },
+    {
+      "adapters": [],
+      "agents": [],
+      "engines": [],
+      "event_kinds": [],
+      "handoff_edges": [],
+      "mapped": false,
+      "scenario_id": "audio-sg-constructed-code-switch",
+      "sessions": 0,
+      "suite": "audio",
+      "tools": [],
+      "trace_digest": null,
+      "trace_files": [],
+      "unmapped_reason": "no committed trace names this scenario; there is no evidence to exclude it from any change, so always run it"
+    },
+    {
+      "adapters": [],
+      "agents": [],
+      "engines": [],
+      "event_kinds": [],
+      "handoff_edges": [],
+      "mapped": false,
+      "scenario_id": "audio-silence-boundary-misattributed",
+      "sessions": 0,
+      "suite": "audio",
+      "tools": [],
+      "trace_digest": null,
+      "trace_files": [],
+      "unmapped_reason": "no committed trace names this scenario; there is no evidence to exclude it from any change, so always run it"
+    },
+    {
+      "adapters": [],
+      "agents": [],
+      "engines": [],
+      "event_kinds": [],
+      "handoff_edges": [],
+      "mapped": false,
+      "scenario_id": "audio-silence-over-threshold",
+      "sessions": 0,
+      "suite": "audio",
+      "tools": [],
+      "trace_digest": null,
+      "trace_files": [],
+      "unmapped_reason": "no committed trace names this scenario; there is no evidence to exclude it from any change, so always run it"
+    },
+    {
+      "adapters": [],
+      "agents": [],
+      "engines": [],
+      "event_kinds": [],
+      "handoff_edges": [],
+      "mapped": false,
+      "scenario_id": "audio-silence-under-threshold",
+      "sessions": 0,
+      "suite": "audio",
+      "tools": [],
+      "trace_digest": null,
+      "trace_files": [],
+      "unmapped_reason": "no committed trace names this scenario; there is no evidence to exclude it from any change, so always run it"
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "edge-ambiguous-time-request",
+      "sessions": 4,
+      "suite": "edge",
+      "tools": [
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "83096cd50caa",
+      "trace_files": [
+        "fixtures/live_full/traces/edge-ambiguous-time-request-0.jsonl",
+        "fixtures/live_full/traces/edge-ambiguous-time-request-1.jsonl",
+        "fixtures/live_full/traces/edge-ambiguous-time-request-2.jsonl",
+        "fixtures/replay_run/traces/edge-ambiguous-time-request.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "GreeterAgent",
+        "ModificationAgent",
+        "PolicyAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>ModificationAgent",
+        "ModificationAgent>PolicyAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "edge-cancel-inside-four-hours",
+      "sessions": 4,
+      "suite": "edge",
+      "tools": [
+        "cancel_booking",
+        "check_policy"
+      ],
+      "trace_digest": "1cacb6bbf981",
+      "trace_files": [
+        "fixtures/live_full/traces/edge-cancel-inside-four-hours-0.jsonl",
+        "fixtures/live_full/traces/edge-cancel-inside-four-hours-1.jsonl",
+        "fixtures/live_full/traces/edge-cancel-inside-four-hours-2.jsonl",
+        "fixtures/replay_run/traces/edge-cancel-inside-four-hours.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent",
+        "ModificationAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "BookingAgent>ModificationAgent",
+        "GreeterAgent>ModificationAgent",
+        "ModificationAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "edge-cancel-without-reference",
+      "sessions": 4,
+      "suite": "edge",
+      "tools": [
+        "search_tables"
+      ],
+      "trace_digest": "76a19a3385d9",
+      "trace_files": [
+        "fixtures/live_full/traces/edge-cancel-without-reference-0.jsonl",
+        "fixtures/live_full/traces/edge-cancel-without-reference-1.jsonl",
+        "fixtures/live_full/traces/edge-cancel-without-reference-2.jsonl",
+        "fixtures/replay_run/traces/edge-cancel-without-reference.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:live-llm",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent",
+        "ModificationAgent",
+        "PolicyAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "BookingAgent>PolicyAgent",
+        "GreeterAgent>BookingAgent",
+        "ModificationAgent>BookingAgent",
+        "PolicyAgent>BookingAgent",
+        "PolicyAgent>ModificationAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "edge-coeliac-then-menu-policy",
+      "sessions": 7,
+      "suite": "edge",
+      "tools": [
+        "check_policy",
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "4eabb7b7f515",
+      "trace_files": [
+        "fixtures/live_full/traces/edge-coeliac-then-menu-policy-0.jsonl",
+        "fixtures/live_full/traces/edge-coeliac-then-menu-policy-1.jsonl",
+        "fixtures/live_full/traces/edge-coeliac-then-menu-policy-2.jsonl",
+        "fixtures/live_run/traces/edge-coeliac-then-menu-policy-0.jsonl",
+        "fixtures/live_run/traces/edge-coeliac-then-menu-policy-1.jsonl",
+        "fixtures/live_run/traces/edge-coeliac-then-menu-policy-2.jsonl",
+        "fixtures/replay_run/traces/edge-coeliac-then-menu-policy.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "edge-correction-during-read-back",
+      "sessions": 4,
+      "suite": "edge",
+      "tools": [
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "5179b9117f3c",
+      "trace_files": [
+        "fixtures/live_full/traces/edge-correction-during-read-back-0.jsonl",
+        "fixtures/live_full/traces/edge-correction-during-read-back-1.jsonl",
+        "fixtures/live_full/traces/edge-correction-during-read-back-2.jsonl",
+        "fixtures/replay_run/traces/edge-correction-during-read-back.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent",
+        "ModificationAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "BookingAgent>ModificationAgent",
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "edge-correction-of-date-after-search",
+      "sessions": 4,
+      "suite": "edge",
+      "tools": [
+        "create_booking",
+        "modify_booking",
+        "search_tables"
+      ],
+      "trace_digest": "82c2e33d6159",
+      "trace_files": [
+        "fixtures/live_full/traces/edge-correction-of-date-after-search-0.jsonl",
+        "fixtures/live_full/traces/edge-correction-of-date-after-search-1.jsonl",
+        "fixtures/live_full/traces/edge-correction-of-date-after-search-2.jsonl",
+        "fixtures/replay_run/traces/edge-correction-of-date-after-search.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "edge-correction-of-party-size",
+      "sessions": 4,
+      "suite": "edge",
+      "tools": [
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "51f01ccf9054",
+      "trace_files": [
+        "fixtures/live_full/traces/edge-correction-of-party-size-0.jsonl",
+        "fixtures/live_full/traces/edge-correction-of-party-size-1.jsonl",
+        "fixtures/live_full/traces/edge-correction-of-party-size-2.jsonl",
+        "fixtures/replay_run/traces/edge-correction-of-party-size.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:live-llm",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent",
+        "ModificationAgent",
+        "PolicyAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "BookingAgent>PolicyAgent",
+        "GreeterAgent>BookingAgent",
+        "GreeterAgent>PolicyAgent",
+        "PolicyAgent>BookingAgent",
+        "PolicyAgent>ModificationAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "edge-dietary-then-policy-detour",
+      "sessions": 7,
+      "suite": "edge",
+      "tools": [
+        "check_policy",
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "4660b4fe7ef7",
+      "trace_files": [
+        "fixtures/live_full/traces/edge-dietary-then-policy-detour-0.jsonl",
+        "fixtures/live_full/traces/edge-dietary-then-policy-detour-1.jsonl",
+        "fixtures/live_full/traces/edge-dietary-then-policy-detour-2.jsonl",
+        "fixtures/live_run/traces/edge-dietary-then-policy-detour-0.jsonl",
+        "fixtures/live_run/traces/edge-dietary-then-policy-detour-1.jsonl",
+        "fixtures/live_run/traces/edge-dietary-then-policy-detour-2.jsonl",
+        "fixtures/replay_run/traces/edge-dietary-then-policy-detour.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:live-llm",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "edge-large-party-eight-with-note",
+      "sessions": 7,
+      "suite": "edge",
+      "tools": [
+        "search_tables"
+      ],
+      "trace_digest": "70f01fffdc15",
+      "trace_files": [
+        "fixtures/live_full/traces/edge-large-party-eight-with-note-0.jsonl",
+        "fixtures/live_full/traces/edge-large-party-eight-with-note-1.jsonl",
+        "fixtures/live_full/traces/edge-large-party-eight-with-note-2.jsonl",
+        "fixtures/live_run/traces/edge-large-party-eight-with-note-0.jsonl",
+        "fixtures/live_run/traces/edge-large-party-eight-with-note-1.jsonl",
+        "fixtures/live_run/traces/edge-large-party-eight-with-note-2.jsonl",
+        "fixtures/replay_run/traces/edge-large-party-eight-with-note.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:live-llm",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "edge-large-party-of-six",
+      "sessions": 7,
+      "suite": "edge",
+      "tools": [
+        "search_tables"
+      ],
+      "trace_digest": "7f7cfe6d1ef4",
+      "trace_files": [
+        "fixtures/live_full/traces/edge-large-party-of-six-0.jsonl",
+        "fixtures/live_full/traces/edge-large-party-of-six-1.jsonl",
+        "fixtures/live_full/traces/edge-large-party-of-six-2.jsonl",
+        "fixtures/live_run/traces/edge-large-party-of-six-0.jsonl",
+        "fixtures/live_run/traces/edge-large-party-of-six-1.jsonl",
+        "fixtures/live_run/traces/edge-large-party-of-six-2.jsonl",
+        "fixtures/replay_run/traces/edge-large-party-of-six.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:live-llm",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent",
+        "ModificationAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "BookingAgent>ModificationAgent",
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "edge-modification-after-booking",
+      "sessions": 7,
+      "suite": "edge",
+      "tools": [
+        "create_booking",
+        "modify_booking",
+        "search_tables"
+      ],
+      "trace_digest": "4093606c78cc",
+      "trace_files": [
+        "fixtures/live_full/traces/edge-modification-after-booking-0.jsonl",
+        "fixtures/live_full/traces/edge-modification-after-booking-1.jsonl",
+        "fixtures/live_full/traces/edge-modification-after-booking-2.jsonl",
+        "fixtures/live_run/traces/edge-modification-after-booking-0.jsonl",
+        "fixtures/live_run/traces/edge-modification-after-booking-1.jsonl",
+        "fixtures/live_run/traces/edge-modification-after-booking-2.jsonl",
+        "fixtures/replay_run/traces/edge-modification-after-booking.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "GreeterAgent",
+        "ModificationAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>ModificationAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "edge-modify-across-group-threshold",
+      "sessions": 4,
+      "suite": "edge",
+      "tools": [
+        "modify_booking"
+      ],
+      "trace_digest": "19f29b41a4ef",
+      "trace_files": [
+        "fixtures/live_full/traces/edge-modify-across-group-threshold-0.jsonl",
+        "fixtures/live_full/traces/edge-modify-across-group-threshold-1.jsonl",
+        "fixtures/live_full/traces/edge-modify-across-group-threshold-2.jsonl",
+        "fixtures/replay_run/traces/edge-modify-across-group-threshold.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:live-llm",
+        "text:replay"
+      ],
+      "agents": [
+        "GreeterAgent",
+        "ModificationAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>ModificationAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "edge-modify-party-size-upward",
+      "sessions": 7,
+      "suite": "edge",
+      "tools": [
+        "modify_booking"
+      ],
+      "trace_digest": "dee1d286c12f",
+      "trace_files": [
+        "fixtures/live_full/traces/edge-modify-party-size-upward-0.jsonl",
+        "fixtures/live_full/traces/edge-modify-party-size-upward-1.jsonl",
+        "fixtures/live_full/traces/edge-modify-party-size-upward-2.jsonl",
+        "fixtures/live_run/traces/edge-modify-party-size-upward-0.jsonl",
+        "fixtures/live_run/traces/edge-modify-party-size-upward-1.jsonl",
+        "fixtures/live_run/traces/edge-modify-party-size-upward-2.jsonl",
+        "fixtures/replay_run/traces/edge-modify-party-size-upward.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent",
+        "PolicyAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "BookingAgent>PolicyAgent",
+        "GreeterAgent>PolicyAgent",
+        "PolicyAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "edge-multi-intent-first-turn",
+      "sessions": 4,
+      "suite": "edge",
+      "tools": [
+        "check_policy",
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "dca28b0831f5",
+      "trace_files": [
+        "fixtures/live_full/traces/edge-multi-intent-first-turn-0.jsonl",
+        "fixtures/live_full/traces/edge-multi-intent-first-turn-1.jsonl",
+        "fixtures/live_full/traces/edge-multi-intent-first-turn-2.jsonl",
+        "fixtures/replay_run/traces/edge-multi-intent-first-turn.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "edge-no-availability-at-requested-time",
+      "sessions": 4,
+      "suite": "edge",
+      "tools": [
+        "search_tables"
+      ],
+      "trace_digest": "9aedd3305bf6",
+      "trace_files": [
+        "fixtures/live_full/traces/edge-no-availability-at-requested-time-0.jsonl",
+        "fixtures/live_full/traces/edge-no-availability-at-requested-time-1.jsonl",
+        "fixtures/live_full/traces/edge-no-availability-at-requested-time-2.jsonl",
+        "fixtures/replay_run/traces/edge-no-availability-at-requested-time.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "edge-party-of-ten-over-capacity",
+      "sessions": 4,
+      "suite": "edge",
+      "tools": [
+        "search_tables"
+      ],
+      "trace_digest": "267a2f910046",
+      "trace_files": [
+        "fixtures/live_full/traces/edge-party-of-ten-over-capacity-0.jsonl",
+        "fixtures/live_full/traces/edge-party-of-ten-over-capacity-1.jsonl",
+        "fixtures/live_full/traces/edge-party-of-ten-over-capacity-2.jsonl",
+        "fixtures/replay_run/traces/edge-party-of-ten-over-capacity.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "edge-reluctant-caller-two-asks",
+      "sessions": 4,
+      "suite": "edge",
+      "tools": [
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "6db0594402b8",
+      "trace_files": [
+        "fixtures/live_full/traces/edge-reluctant-caller-two-asks-0.jsonl",
+        "fixtures/live_full/traces/edge-reluctant-caller-two-asks-1.jsonl",
+        "fixtures/live_full/traces/edge-reluctant-caller-two-asks-2.jsonl",
+        "fixtures/replay_run/traces/edge-reluctant-caller-two-asks.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent",
+        "PolicyAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "BookingAgent>PolicyAgent",
+        "GreeterAgent>BookingAgent",
+        "GreeterAgent>PolicyAgent",
+        "PolicyAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "edge-three-facts-one-turn",
+      "sessions": 4,
+      "suite": "edge",
+      "tools": [
+        "check_policy",
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "a65809cf76a8",
+      "trace_files": [
+        "fixtures/live_full/traces/edge-three-facts-one-turn-0.jsonl",
+        "fixtures/live_full/traces/edge-three-facts-one-turn-1.jsonl",
+        "fixtures/live_full/traces/edge-three-facts-one-turn-2.jsonl",
+        "fixtures/replay_run/traces/edge-three-facts-one-turn.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "edge-two-bookings-one-call",
+      "sessions": 4,
+      "suite": "edge",
+      "tools": [
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "61f6b75b4583",
+      "trace_files": [
+        "fixtures/live_full/traces/edge-two-bookings-one-call-0.jsonl",
+        "fixtures/live_full/traces/edge-two-bookings-one-call-1.jsonl",
+        "fixtures/live_full/traces/edge-two-bookings-one-call-2.jsonl",
+        "fixtures/replay_run/traces/edge-two-bookings-one-call.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "edge-volunteers-nothing",
+      "sessions": 4,
+      "suite": "edge",
+      "tools": [
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "608b5488c871",
+      "trace_files": [
+        "fixtures/live_full/traces/edge-volunteers-nothing-0.jsonl",
+        "fixtures/live_full/traces/edge-volunteers-nothing-1.jsonl",
+        "fixtures/live_full/traces/edge-volunteers-nothing-2.jsonl",
+        "fixtures/replay_run/traces/edge-volunteers-nothing.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "happy-availability-then-choice",
+      "sessions": 4,
+      "suite": "happy",
+      "tools": [
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "3c53024ed124",
+      "trace_files": [
+        "fixtures/live_full/traces/happy-availability-then-choice-0.jsonl",
+        "fixtures/live_full/traces/happy-availability-then-choice-1.jsonl",
+        "fixtures/live_full/traces/happy-availability-then-choice-2.jsonl",
+        "fixtures/replay_run/traces/happy-availability-then-choice.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "happy-birthday-note-reaches-booking",
+      "sessions": 4,
+      "suite": "happy",
+      "tools": [
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "550d82c41631",
+      "trace_files": [
+        "fixtures/live_full/traces/happy-birthday-note-reaches-booking-0.jsonl",
+        "fixtures/live_full/traces/happy-birthday-note-reaches-booking-1.jsonl",
+        "fixtures/live_full/traces/happy-birthday-note-reaches-booking-2.jsonl",
+        "fixtures/replay_run/traces/happy-birthday-note-reaches-booking.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent",
+        "ModificationAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "BookingAgent>ModificationAgent",
+        "GreeterAgent>BookingAgent",
+        "GreeterAgent>ModificationAgent",
+        "ModificationAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "happy-cancel-then-rebook",
+      "sessions": 4,
+      "suite": "happy",
+      "tools": [
+        "cancel_booking",
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "d446ccb73e77",
+      "trace_files": [
+        "fixtures/live_full/traces/happy-cancel-then-rebook-0.jsonl",
+        "fixtures/live_full/traces/happy-cancel-then-rebook-1.jsonl",
+        "fixtures/live_full/traces/happy-cancel-then-rebook-2.jsonl",
+        "fixtures/replay_run/traces/happy-cancel-then-rebook.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "GreeterAgent",
+        "ModificationAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>ModificationAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "happy-cancel-with-reference",
+      "sessions": 4,
+      "suite": "happy",
+      "tools": [
+        "cancel_booking"
+      ],
+      "trace_digest": "bfd31bb35552",
+      "trace_files": [
+        "fixtures/live_full/traces/happy-cancel-with-reference-0.jsonl",
+        "fixtures/live_full/traces/happy-cancel-with-reference-1.jsonl",
+        "fixtures/live_full/traces/happy-cancel-with-reference-2.jsonl",
+        "fixtures/replay_run/traces/happy-cancel-with-reference.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "GreeterAgent",
+        "PolicyAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>PolicyAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "happy-corkage-policy-only",
+      "sessions": 4,
+      "suite": "happy",
+      "tools": [
+        "check_policy"
+      ],
+      "trace_digest": "c6c62c2c708d",
+      "trace_files": [
+        "fixtures/live_full/traces/happy-corkage-policy-only-0.jsonl",
+        "fixtures/live_full/traces/happy-corkage-policy-only-1.jsonl",
+        "fixtures/live_full/traces/happy-corkage-policy-only-2.jsonl",
+        "fixtures/replay_run/traces/happy-corkage-policy-only.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:live-llm",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "happy-dietary-note-single-agent",
+      "sessions": 7,
+      "suite": "happy",
+      "tools": [
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "9a3432b0cc73",
+      "trace_files": [
+        "fixtures/live_full/traces/happy-dietary-note-single-agent-0.jsonl",
+        "fixtures/live_full/traces/happy-dietary-note-single-agent-1.jsonl",
+        "fixtures/live_full/traces/happy-dietary-note-single-agent-2.jsonl",
+        "fixtures/live_run/traces/happy-dietary-note-single-agent-0.jsonl",
+        "fixtures/live_run/traces/happy-dietary-note-single-agent-1.jsonl",
+        "fixtures/live_run/traces/happy-dietary-note-single-agent-2.jsonl",
+        "fixtures/replay_run/traces/happy-dietary-note-single-agent.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "happy-late-arrival-note",
+      "sessions": 4,
+      "suite": "happy",
+      "tools": [
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "16e217db286a",
+      "trace_files": [
+        "fixtures/live_full/traces/happy-late-arrival-note-0.jsonl",
+        "fixtures/live_full/traces/happy-late-arrival-note-1.jsonl",
+        "fixtures/live_full/traces/happy-late-arrival-note-2.jsonl",
+        "fixtures/replay_run/traces/happy-late-arrival-note.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:live-llm",
+        "text:replay"
+      ],
+      "agents": [
+        "GreeterAgent",
+        "ModificationAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>ModificationAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "happy-move-booking-later",
+      "sessions": 7,
+      "suite": "happy",
+      "tools": [
+        "modify_booking"
+      ],
+      "trace_digest": "a91dedebd191",
+      "trace_files": [
+        "fixtures/live_full/traces/happy-move-booking-later-0.jsonl",
+        "fixtures/live_full/traces/happy-move-booking-later-1.jsonl",
+        "fixtures/live_full/traces/happy-move-booking-later-2.jsonl",
+        "fixtures/live_run/traces/happy-move-booking-later-0.jsonl",
+        "fixtures/live_run/traces/happy-move-booking-later-1.jsonl",
+        "fixtures/live_run/traces/happy-move-booking-later-2.jsonl",
+        "fixtures/replay_run/traces/happy-move-booking-later.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "happy-pa-books-for-director",
+      "sessions": 4,
+      "suite": "happy",
+      "tools": [
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "b8370fed083a",
+      "trace_files": [
+        "fixtures/live_full/traces/happy-pa-books-for-director-0.jsonl",
+        "fixtures/live_full/traces/happy-pa-books-for-director-1.jsonl",
+        "fixtures/live_full/traces/happy-pa-books-for-director-2.jsonl",
+        "fixtures/replay_run/traces/happy-pa-books-for-director.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:live-llm",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent",
+        "PolicyAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "BookingAgent>PolicyAgent",
+        "GreeterAgent>BookingAgent",
+        "PolicyAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "happy-parking-question-midbooking",
+      "sessions": 7,
+      "suite": "happy",
+      "tools": [
+        "check_policy",
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "bab8683245c0",
+      "trace_files": [
+        "fixtures/live_full/traces/happy-parking-question-midbooking-0.jsonl",
+        "fixtures/live_full/traces/happy-parking-question-midbooking-1.jsonl",
+        "fixtures/live_full/traces/happy-parking-question-midbooking-2.jsonl",
+        "fixtures/live_run/traces/happy-parking-question-midbooking-0.jsonl",
+        "fixtures/live_run/traces/happy-parking-question-midbooking-1.jsonl",
+        "fixtures/live_run/traces/happy-parking-question-midbooking-2.jsonl",
+        "fixtures/replay_run/traces/happy-parking-question-midbooking.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:live-llm",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "happy-party-of-five-boundary",
+      "sessions": 7,
+      "suite": "happy",
+      "tools": [
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "37df5d218366",
+      "trace_files": [
+        "fixtures/live_full/traces/happy-party-of-five-boundary-0.jsonl",
+        "fixtures/live_full/traces/happy-party-of-five-boundary-1.jsonl",
+        "fixtures/live_full/traces/happy-party-of-five-boundary-2.jsonl",
+        "fixtures/live_run/traces/happy-party-of-five-boundary-0.jsonl",
+        "fixtures/live_run/traces/happy-party-of-five-boundary-1.jsonl",
+        "fixtures/live_run/traces/happy-party-of-five-boundary-2.jsonl",
+        "fixtures/replay_run/traces/happy-party-of-five-boundary.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "happy-read-back-confirmation",
+      "sessions": 4,
+      "suite": "happy",
+      "tools": [
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "322166fc736b",
+      "trace_files": [
+        "fixtures/live_full/traces/happy-read-back-confirmation-0.jsonl",
+        "fixtures/live_full/traces/happy-read-back-confirmation-1.jsonl",
+        "fixtures/live_full/traces/happy-read-back-confirmation-2.jsonl",
+        "fixtures/replay_run/traces/happy-read-back-confirmation.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "happy-saturday-lunch-four",
+      "sessions": 4,
+      "suite": "happy",
+      "tools": [
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "0f0c5dbbddb2",
+      "trace_files": [
+        "fixtures/live_full/traces/happy-saturday-lunch-four-0.jsonl",
+        "fixtures/live_full/traces/happy-saturday-lunch-four-1.jsonl",
+        "fixtures/live_full/traces/happy-saturday-lunch-four-2.jsonl",
+        "fixtures/replay_run/traces/happy-saturday-lunch-four.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "happy-two-covers-thursday",
+      "sessions": 4,
+      "suite": "happy",
+      "tools": [
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "892e88ce17a1",
+      "trace_files": [
+        "fixtures/live_full/traces/happy-two-covers-thursday-0.jsonl",
+        "fixtures/live_full/traces/happy-two-covers-thursday-1.jsonl",
+        "fixtures/live_full/traces/happy-two-covers-thursday-2.jsonl",
+        "fixtures/replay_run/traces/happy-two-covers-thursday.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "text:live",
+        "text:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent",
+        "PolicyAgent"
+      ],
+      "engines": [
+        "harness:passthrough-stt",
+        "harness:passthrough-tts"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent",
+        "GreeterAgent>PolicyAgent",
+        "PolicyAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "happy-vague-opener-then-details",
+      "sessions": 4,
+      "suite": "happy",
+      "tools": [
+        "check_policy",
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "bea48b61a4c6",
+      "trace_files": [
+        "fixtures/live_full/traces/happy-vague-opener-then-details-0.jsonl",
+        "fixtures/live_full/traces/happy-vague-opener-then-details-1.jsonl",
+        "fixtures/live_full/traces/happy-vague-opener-then-details-2.jsonl",
+        "fixtures/replay_run/traces/happy-vague-opener-then-details.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "voice:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "replay:reference-text",
+        "replay:tts:system-say/Samantha"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "audio_emitted",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "voice-chain-telephone-then-noise",
+      "sessions": 1,
+      "suite": "voice",
+      "tools": [],
+      "trace_digest": "a96b36453958",
+      "trace_files": [
+        "fixtures/audio/traces/voice-chain-telephone-then-noise.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "voice:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent",
+        "PolicyAgent"
+      ],
+      "engines": [
+        "replay:reference-text",
+        "replay:tts:system-say/Samantha"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "audio_emitted",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>PolicyAgent",
+        "PolicyAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "voice-fast-speech-multi-intent",
+      "sessions": 1,
+      "suite": "voice",
+      "tools": [
+        "check_policy"
+      ],
+      "trace_digest": "d328b99d4bd5",
+      "trace_files": [
+        "fixtures/audio/traces/voice-fast-speech-multi-intent.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "voice:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent",
+        "PolicyAgent"
+      ],
+      "engines": [
+        "replay:reference-text",
+        "replay:tts:system-say/Samantha"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "audio_emitted",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "BookingAgent>PolicyAgent",
+        "GreeterAgent>BookingAgent",
+        "PolicyAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "voice-noise-over-dietary-note",
+      "sessions": 1,
+      "suite": "voice",
+      "tools": [
+        "check_policy"
+      ],
+      "trace_digest": "2f121be45be1",
+      "trace_files": [
+        "fixtures/audio/traces/voice-noise-over-dietary-note.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "voice:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "replay:reference-text",
+        "replay:tts:system-say/Samantha"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "audio_emitted",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "voice-noise-over-party-size",
+      "sessions": 1,
+      "suite": "voice",
+      "tools": [],
+      "trace_digest": "65e6cdb9b804",
+      "trace_files": [
+        "fixtures/audio/traces/voice-noise-over-party-size.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "voice:replay"
+      ],
+      "agents": [
+        "GreeterAgent",
+        "ModificationAgent"
+      ],
+      "engines": [
+        "replay:reference-text",
+        "replay:tts:system-say/Samantha"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "audio_emitted",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>ModificationAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "voice-packet-loss-over-reference",
+      "sessions": 1,
+      "suite": "voice",
+      "tools": [],
+      "trace_digest": "ac3fce2f6bde",
+      "trace_files": [
+        "fixtures/audio/traces/voice-packet-loss-over-reference.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "voice:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "replay:reference-text",
+        "replay:tts:system-say/Samantha"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "audio_emitted",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "voice-pitch-shift-unfamiliar-voice",
+      "sessions": 1,
+      "suite": "voice",
+      "tools": [],
+      "trace_digest": "3ab564cbc561",
+      "trace_files": [
+        "fixtures/audio/traces/voice-pitch-shift-unfamiliar-voice.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "voice:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "replay:reference-text",
+        "replay:tts:system-say/Samantha"
+      ],
+      "event_kinds": [
+        "agent_audio_complete",
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "audio_emitted",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "tool_call",
+        "tool_result",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "voice-slow-speech-with-pauses",
+      "sessions": 1,
+      "suite": "voice",
+      "tools": [
+        "create_booking",
+        "search_tables"
+      ],
+      "trace_digest": "6201b9feb581",
+      "trace_files": [
+        "fixtures/audio/traces/voice-slow-speech-with-pauses.jsonl"
+      ],
+      "unmapped_reason": null
+    },
+    {
+      "adapters": [
+        "voice:replay"
+      ],
+      "agents": [
+        "BookingAgent",
+        "GreeterAgent"
+      ],
+      "engines": [
+        "replay:reference-text",
+        "replay:tts:system-say/Samantha"
+      ],
+      "event_kinds": [
+        "agent_audio_first_byte",
+        "agent_handoff",
+        "agent_utterance",
+        "audio_emitted",
+        "caller_utterance",
+        "session_end",
+        "session_start",
+        "transcript_in",
+        "transcript_out"
+      ],
+      "handoff_edges": [
+        "GreeterAgent>BookingAgent"
+      ],
+      "mapped": true,
+      "scenario_id": "voice-telephone-band-booking",
+      "sessions": 1,
+      "suite": "voice",
+      "tools": [],
+      "trace_digest": "42a0d340e8c8",
+      "trace_files": [
+        "fixtures/audio/traces/voice-telephone-band-booking.jsonl"
+      ],
+      "unmapped_reason": null
+    }
+  ],
+  "session_count": 226,
+  "skipped_files": [
+    "fixtures/audio/spoken_call/scorer_recording.jsonl: no trace events (not an event stream)",
+    "fixtures/live_full/judge_verdicts.jsonl: no trace events (not an event stream)"
+  ],
+  "symbols": [
+    {
+      "kind": "agent",
+      "locations": [
+        "tablemate/agents.py::BookingAgent"
+      ],
+      "name": "BookingAgent",
+      "resolved": true
+    },
+    {
+      "kind": "agent",
+      "locations": [
+        "tablemate/agents.py::GreeterAgent"
+      ],
+      "name": "GreeterAgent",
+      "resolved": true
+    },
+    {
+      "kind": "agent",
+      "locations": [
+        "tablemate/agents.py::ModificationAgent"
+      ],
+      "name": "ModificationAgent",
+      "resolved": true
+    },
+    {
+      "kind": "agent",
+      "locations": [
+        "tablemate/agents.py::PolicyAgent"
+      ],
+      "name": "PolicyAgent",
+      "resolved": true
+    },
+    {
+      "kind": "tool",
+      "locations": [
+        "tablemate/tools.py::cancel_booking"
+      ],
+      "name": "cancel_booking",
+      "resolved": true
+    },
+    {
+      "kind": "tool",
+      "locations": [
+        "tablemate/tools.py::check_policy"
+      ],
+      "name": "check_policy",
+      "resolved": true
+    },
+    {
+      "kind": "tool",
+      "locations": [
+        "tablemate/tools.py::create_booking"
+      ],
+      "name": "create_booking",
+      "resolved": true
+    },
+    {
+      "kind": "tool",
+      "locations": [
+        "tablemate/tools.py::modify_booking"
+      ],
+      "name": "modify_booking",
+      "resolved": true
+    },
+    {
+      "kind": "tool",
+      "locations": [
+        "tablemate/tools.py::search_tables"
+      ],
+      "name": "search_tables",
+      "resolved": true
+    }
+  ],
+  "trace_file_count": 237,
+  "unmapped_count": 18,
+  "unmatched_trace_scenario_ids": [
+    "audio-transport-degradation",
+    "audio-transport-delivery-gap",
+    "audio-transport-lifecycle",
+    "calibration/delay_500ms",
+    "spoken-eu-challenger-exemplary"
+  ]
+}
