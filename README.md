@@ -81,27 +81,6 @@ a market with a regional hub cannot be audio-tested on this stack, and the
 remediation is named. See [`docs/AUDIO_SUITE.md`](docs/AUDIO_SUITE.md) for the
 vendor capability matrix.
 
-### Knowledge answers, and whether the citation holds
-
-A coaching platform's knowledge assistant answers from its own top performers and
-shows sources. Two things can fail independently there, and `ragcheck` separates
-them: **did retrieval find the right passage**, and **is the answer actually
-supported by what it found**.
-
-`make ragcheck` — a 16-chunk corpus, 18 questions, recall@k / MRR / nDCG for
-retrieval and a groundedness score per claim. The worked example it opens with is
-the case that matters: **retrieval is perfect and the answer is still wrong.** The
-gold passage is retrieved at recall 1.000 (1/1), and the answer invents a figure
-that appears nowhere in it — groundedness 0.500 (1/2), with the unsupported
-sentence and the contradicting passage both printed.
-
-A single "did RAG work" number would have scored that answer as a success.
-
-The judged half runs on an offline lexical stand-in rather than a model, so it is
-runnable with no key — and the report says so on every line it produces, because a
-stand-in labelled as a judge is worse than no judge. Its corpus is the restaurant
-domain; the metrics and the separation are domain-independent.
-
 ---
 
 ## The restaurant case study — portability, and what it found
@@ -180,6 +159,62 @@ The live run is diffed against a live baseline and the scripted run against a
 scripted one, because a live run compared to a scripted baseline would report the
 difference between two builds as a regression. Neither verdict is derived from the
 other — see [DESIGN.md](DESIGN.md) §9.
+
+---
+
+## Retrieval — a second *kind* of evaluation, not a third domain
+
+**The worked example is the reason `ragcheck/` exists: retrieval is perfect and
+the answer is still wrong.** The gold passage comes back at recall 1.000 (1/1) and
+the answer invents a figure that appears nowhere in it — groundedness 0.500 (1/2),
+with the unsupported sentence and the contradicting passage both printed. A single
+"did RAG work" number scores that row as a success and quotes the customer a
+figure 67% too high.
+
+`make ragcheck` — a 16-chunk corpus, 18 questions, recall@k / precision@k / MRR /
+nDCG@k / AP@k for retrieval, and groundedness, answer relevance and context recall
+for generation. The two halves are never averaged into one score: on this corpus
+they read **recall@3 0.750 (15/20)** and **groundedness 0.857 (12/14)**, and those
+are two findings owned by two different teams. Averaging them would produce a
+number that moves for two unrelated reasons and tells nobody what to fix.
+The judged half runs on an offline lexical stand-in rather than a
+model, so it needs no key — and its own calibration gate **refuses** it at
+TPR 0.800 (4/5), which the report says on every line it produces.
+
+**It is a different activity from everything above, and the import graph is the
+proof rather than the assertion.** `ragcheck` imports `lab.judges`, `lab.trace`
+and `lab.clock` — and nothing else. Zero of `lab.checks`, `lab.simulator`,
+`lab.voice`, `lab.report` and `lab.cli`. Nothing in `lab` imports `ragcheck` at
+all. Both facts are one command each:
+
+```bash
+grep -rhE '^ *from lab' ragcheck/*.py | sed 's/ import.*//' | sort -u
+grep -rn ragcheck lab/ ; echo "exit=$?"      # no matches, exit=1
+```
+
+That is the boundary, and it is exactly the right shape. Conversation evaluation
+needs a conversation — turns, a simulated caller with gated facts, contracts
+decided on position in the event stream, a `pass^k` verdict over repeats.
+**A retrieval turn is one question and one answer**, so it needs none of them.
+What the two genuinely share is a trace to record on, a clock to stamp it with,
+and a judge that must be calibrated before anybody believes it. The claim worth
+making is therefore not "a third domain" but *the same calibrated-judge machinery
+grades a retrieval answer and a multi-turn conversation, nothing else transfers,
+and the import graph is the receipt.*
+
+The two halves also exist to catch different things: conversation evaluation
+catches **a decision that did not match an action**, retrieval evaluation catches
+**a number that was right for the wrong reason**. Neither instrument would have
+found the other's bug.
+
+There is no vector store here, and that is a decision rather than a gap — the
+retrieval metrics consume a ranked list of chunk ids and are indifferent to what
+produced the ranking, so swapping the lexical retriever for a dense one changes
+their input and not one line of their definition. The reasoning, the
+lexical-versus-semantic difference in plain terms, and the limitation it leaves
+("this repository can argue about retrieval evaluation methodology and cannot
+demonstrate retrieval engineering") are written down in
+[docs/RAG_NOTES.md §9](docs/RAG_NOTES.md#9-the-vector-store-declined-as-a-decision-rather-than-a-gap).
 
 ---
 
@@ -523,7 +558,9 @@ roleplay/               the BFSI advisory pack, where the scorer is under test
   live.py               the multi-turn loop with a model in both seats
   spoken.py             that loop run through real TTS and STT, graded on what was heard
   regime_eval.py        the cited registers, computed into per-regime verdicts
-ragcheck/               retrieval + groundedness: recall@k, MRR, nDCG, faithfulness
+ragcheck/               a second KIND of evaluation, not a third domain: retrieval
+                        + groundedness. Imports lab.judges, lab.trace, lab.clock
+                        and nothing else — that import list is the boundary
 scenarios/              55 rows of validated YAML, four suites, nine personas
                         adversarial/ — the 12 red-team rows
 fixtures/               recordings, the calibration report, the reference run
@@ -531,6 +568,7 @@ error_analysis/         the traces read by hand, coded, counted and written up
 docs/                   trace schema, CLI reference, how to add a scenario
                         SPOKEN_CALL.md — the audio and conversation tiers, joined
                         VOCABULARY.md — this repo's names, and the field's
+                        RAG_NOTES.md — the retrieval boundary, and the metrics
 ```
 
 **Full documentation: [docs/WIKI.md](docs/WIKI.md)** — the in-depth wiki, written for a
