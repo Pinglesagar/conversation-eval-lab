@@ -1,4 +1,4 @@
-# QualityProof
+# conversation-eval-lab
 
 An evaluation harness for conversational AI agents — voice and text — built
 around a single auditable trace. The harness is the `lab` package. It is applied
