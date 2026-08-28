@@ -255,6 +255,47 @@ Full command reference: [docs/cli.md](docs/cli.md).
 
 ---
 
+## The gate — what to run, in what order
+
+Thirty-two `make` targets, and one procedure that puts them in order:
+
+```bash
+make gate
+```
+
+Eight stages, cheapest first, stopping at the first failure. No key, no spend, no
+socket. In cost order, wall-clock, best of three on the machine this was measured on:
+
+| # | stage | cost |
+| --- | --- | --- |
+| 1 | lint — syntax and undefined names | 0.05 s |
+| 2 | both corpora against their schemas | 0.85 s |
+| 3 | every committed trace, re-checked with no agent | 0.45 s |
+| 4 | the case study against its baseline, then byte for byte | 0.81 s |
+| 5 | the timing and judge calibration gates, then byte for byte | 0.24 s |
+| 6 | the error analysis still agrees with the artefacts | 0.35 s |
+| 7 | the other packs and the recorded tiers | 5.61 s |
+| 8 | the offline test suite | 73 s |
+
+**Stages 1–7 are fifteen commands and 8.4 s in total; stage 8 alone is 73 s.** That
+ratio is the argument for the ordering: running the whole artefact surface costs less
+than deciding whether to.
+
+> **The one operational fact: replay is blind to a prompt change.** Every stage above
+> reads a recording made against the prompt as it was on the day. Measured — inserting
+> one word into the agent's live system prompt leaves `validate`, `replay`, `run
+> --replay --ci`, `roleplay.demo`, `ragcheck` and `spoken-replay` all at exit 0. Only
+> the live tiers can see it. If your diff changes **what a model is told**, a green
+> gate has told you that nothing else broke, and nothing at all about your change.
+
+What each stage proves, what it **cannot** catch, and which changes require paying to
+go live: **[docs/GATES.md](docs/GATES.md)**.
+What to do when one of them goes red: **[docs/DEBUGGING.md](docs/DEBUGGING.md)** —
+every failure on that page was induced on purpose and the output is what actually
+happened.
+
+---
+
 ## Architecture
 
 ```mermaid
@@ -566,6 +607,8 @@ scenarios/              55 rows of validated YAML, four suites, nine personas
 fixtures/               recordings, the calibration report, the reference run
 error_analysis/         the traces read by hand, coded, counted and written up
 docs/                   trace schema, CLI reference, how to add a scenario
+                        GATES.md — the ordered gate: cost, proof, and blind spot
+                                   per stage, and which changes need a live tier
                         DEBUGGING.md — what to do when a row goes red, worked
                                    through on failures induced on purpose
                         SPOKEN_CALL.md — the audio and conversation tiers, joined
@@ -725,6 +768,7 @@ Read this section as part of every number above.
 | target | what it does |
 | --- | --- |
 | `make install` | editable install with dev extras |
+| `make gate` | **the ordered pre-flight**: every offline check, cheapest stage first, stopping at the first failure ([docs/GATES.md](docs/GATES.md)) |
 | `make test` | the full offline suite |
 | `make coverage` | line and branch coverage, whole tree and offline-executable subset |
 | `make demo` | the case study end to end, into `reports/` |

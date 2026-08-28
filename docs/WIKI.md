@@ -1346,6 +1346,7 @@ clone can run every row below.
 | Target | What it does |
 | --- | --- |
 | `make install` | the package plus dev extras, editable |
+| `make gate` | every row below it that gates, in cost order, stopping at the first failure ([docs/GATES.md](GATES.md)) |
 | `make test` | the full offline suite — 1,992 pass, 4 skip at commit `006dbd4` |
 | `make coverage` | line and branch coverage: whole tree, then the offline-executable subset ([§10.4](#104-the-harness-itself)) |
 | `make calibrate` | the timing and judge gates; **non-zero if either fails** |
@@ -1389,8 +1390,12 @@ python-ok` (the version guard every other target depends on — it fails with an
 instruction if `python3` is older than 3.12), `make audio-setup` (runs
 `scripts/setup_audio.sh`, which shows what the local speech engines would download and
 then installs them under `LAB_AUDIO_HOME` — the same show-the-cost-first habit as
-`audio-suite-plan`), and `make clean`. Thirty targets in total; `grep -oE
+`audio-suite-plan`), and `make clean`. Thirty-two targets in total; `grep -oE
 '^[a-z][a-z0-9_.-]*:' Makefile` lists them.
+
+**Which of them to run, and in what order, is [docs/GATES.md](GATES.md)** — `make
+gate` puts stages 1 to 8 of that page in cost order and stops at the first failure.
+When one of them goes red, [docs/DEBUGGING.md](DEBUGGING.md) is the page for it.
 
 ### 5.4 What CI actually asserts
 

@@ -21,7 +21,7 @@ PY_OK := $(shell $(PYTHON) -c 'import sys; print(1 if sys.version_info[:2] >= (3
 PY_HAVE := $(shell $(PYTHON) -c 'import sys; print("%d.%d" % sys.version_info[:2])' 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help python-ok install test coverage demo calibrate report validate replay errors reference live-replay live-score live-record audio-fixtures audio-check audio-suite audio-suite-plan audio-suite-record audio-suite-evidence audio-setup transport-report transport-record roleplay-demo roleplay-validate advisory-verdicts spoken-replay spoken-record ragcheck clean
+.PHONY: help python-ok install gate test coverage demo calibrate report validate replay errors reference live-replay live-score live-record audio-fixtures audio-check audio-suite audio-suite-plan audio-suite-record audio-suite-evidence audio-setup transport-report transport-record roleplay-demo roleplay-validate advisory-verdicts spoken-replay spoken-record ragcheck clean
 
 help:  ## Show this help.
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -41,6 +41,72 @@ install: python-ok  ## Install the package plus dev extras in editable mode.
 
 test: python-ok  ## Run the full offline test suite.
 	$(PYTHON) -m pytest
+
+# The ordered gate: every offline check this repository has, in cost order,
+# stopping at the first failure. What each stage proves and — more usefully —
+# what it CANNOT catch is docs/GATES.md. What to do when one of them goes red is
+# docs/DEBUGGING.md.
+#
+# The order is cost order, cheapest first, because a mistake should be named in
+# milliseconds rather than after a long run that was misleading all the way
+# through. Stages 1-7 are fifteen commands and cost 8.4 s in total on the
+# machine this was measured on; stage 8, the test suite, costs 73 s on its own.
+# That ratio is the whole argument for the ordering: the entire artefact surface
+# is cheaper than deciding whether to run it, and the suite is the one thing here
+# worth deferring.
+#
+# Two stages WRITE the committed artefacts and then diff them, exactly as CI
+# does: stage 4 rewrites fixtures/replay_run and stage 5 rewrites
+# lab/judges/..., and the `git diff --exit-code` after each is the assertion.
+# Run this on a tree that holds your change and nothing else, or the diff will
+# report somebody else's work in progress as your regression.
+#
+# NOT in this gate: anything that needs a key, spends a character or opens a
+# socket. Nor `make coverage` (134 s, and deliberately not a threshold) or
+# `make audio-suite`, which is a subset of stage 8. And note what no offline
+# stage can see: **replay is blind to a prompt change**. If your diff touches a
+# prompt, a persona or a rubric, a green gate here is necessary and not
+# sufficient — docs/GATES.md says which live tier answers that question instead.
+gate: python-ok  ## The ordered offline gate, cheapest stage first; stops at the first failure.
+	@echo "== 1/8  lint: syntax errors and undefined names =="
+	@if $(PYTHON) -m ruff --version >/dev/null 2>&1; then \
+		$(PYTHON) -m ruff check --select E9,F63,F7,F82 --exclude .venv . ; \
+	else \
+		echo "   ruff is not installed here, so this stage is skipped."; \
+		echo "   CI installs it; run 'pip install ruff' to have it locally."; \
+	fi
+	@echo "== 2/8  the two corpora, against their schemas =="
+	$(PYTHON) -m lab.cli validate --coverage
+	$(PYTHON) -m roleplay.corpus --coverage --list
+	@echo "== 3/8  the committed traces, re-checked with no agent and no runner =="
+	$(PYTHON) -m lab.cli replay --failures-only
+	@echo "== 4/8  the case study, against its baseline, then byte for byte =="
+	$(PYTHON) -m lab.cli run --replay --ci --out fixtures/replay_run
+	git diff --exit-code -- fixtures/replay_run
+	@echo "== 5/8  the calibration gates, then the artefacts they wrote =="
+	@echo "        (this diff and the one above read the WORKING TREE: uncommitted"
+	@echo "         work of your own under fixtures/ or lab/judges/ shows up here.)"
+	$(PYTHON) -m lab.cli calibrate --ci
+	git diff --exit-code -- fixtures lab/judges
+	@echo "== 6/8  the error analysis still agrees with the artefacts =="
+	$(PYTHON) -m error_analysis.pareto --check --no-chart
+	@echo "== 7/8  the other packs and the recorded tiers, all offline =="
+	$(PYTHON) -m roleplay.demo
+	$(PYTHON) -m roleplay.regime_eval --divergence --shadow
+	$(PYTHON) -m ragcheck
+	$(PYTHON) -m roleplay.spoken
+	$(PYTHON) -m lab.voice.transport.report --out reports/transport_report.md
+	$(PYTHON) -m lab.cli run -k 3 --live-agent --live-caller --live-judge \
+		--out reports/live --no-traces \
+		--baseline fixtures/live_full/run_report.json --ci
+	$(PYTHON) -m tablemate --score fixtures/live_full
+	$(PYTHON) -m scripts.make_audio_fixtures --check
+	@echo "== 8/8  the offline suite =="
+	$(PYTHON) -m pytest -q
+	@echo
+	@echo "gate: all eight stages passed, and none of them asked a model anything."
+	@echo "      If this change touched a prompt, a persona or a rubric, that is"
+	@echo "      not yet an answer: see docs/GATES.md, stage 9."
 
 # Line and branch coverage over all seven packages, printed twice on purpose.
 #
