@@ -566,6 +566,8 @@ scenarios/              55 rows of validated YAML, four suites, nine personas
 fixtures/               recordings, the calibration report, the reference run
 error_analysis/         the traces read by hand, coded, counted and written up
 docs/                   trace schema, CLI reference, how to add a scenario
+                        DEBUGGING.md — what to do when a row goes red, worked
+                                   through on failures induced on purpose
                         SPOKEN_CALL.md — the audio and conversation tiers, joined
                         VOCABULARY.md — this repo's names, and the field's
                         RAG_NOTES.md — the retrieval boundary, and the metrics
