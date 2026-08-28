@@ -47,12 +47,45 @@ RUNS WITH NO API KEY
 The live path is one argument: pass a judge built with a real completion to
 `ragcheck.report.evaluate` and every metric definition stays exactly as it is.
 
+THE IMPORT BOUNDARY, WHICH IS THE POINT OF THE PACKAGE'S SHAPE
+--------------------------------------------------------------
+This package imports `lab.judges`, `lab.trace` and `lab.clock`, and deliberately
+nothing else — zero of `lab.checks`, `lab.simulator`, `lab.voice`, `lab.report`
+and `lab.cli`. Nothing in `lab` imports `ragcheck` at all, so the dependency runs
+one way and the engine does not know the retrieval pack exists. Both facts are
+one command each::
+
+    grep -rhE '^ *from lab' ragcheck/*.py | sed 's/ import.*//' | sort -u
+    grep -rn ragcheck lab/ ; echo "exit=$?"     # no matches, exit=1
+
+That is not an accident of history, and it is not a shortfall to be closed later.
+It is where conversation evaluation ends and retrieval evaluation begins, stated
+as something a reader can check rather than something this docstring asserts.
+Conversation evaluation needs a conversation — turns, a simulated caller,
+contracts decided on position in the event stream, a pass^k verdict over repeats.
+A retrieval turn is one question and one answer, so it needs none of them. What
+the two genuinely share is a trace to record on, a clock to stamp it with, and a
+judge that must be calibrated before it is believed.
+
+**The rule that keeps the line where it is: if this package ever needs
+`lab.checks` or `lab.simulator`, the thing being evaluated has stopped being a
+retrieval turn** — and it belongs in a conversation suite rather than here.
+
 WHAT IS NOT HERE, DELIBERATELY
 ------------------------------
 Embeddings, and therefore every metric defined as a cosine similarity —
 including Ragas's own formulation of answer relevancy. Chunking strategy
 evaluation. A vector store. See docs/RAG_NOTES.md, which also lists what I have
 and have not done with the published frameworks.
+
+The vector store in particular is a **decision, not a gap**, and docs/RAG_NOTES.md
+§9 is the reasoning: every retrieval metric here consumes a ranked list of chunk
+ids and is therefore indifferent to what produced the ranking, so swapping a
+lexical retriever for a dense one changes the input to these metrics and not one
+line of their definition. `Retriever` in ragcheck.corpus is the one-method
+substitution point where that swap would happen. The honest limitation that comes
+with the decision, stated rather than hidden: this package can argue about
+retrieval evaluation methodology and cannot demonstrate retrieval engineering.
 """
 
 from __future__ import annotations

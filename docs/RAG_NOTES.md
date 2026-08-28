@@ -9,6 +9,81 @@ Run it: `python -m ragcheck` (offline, no keys), `pytest tests/test_ragcheck_*.p
 
 ---
 
+## Where conversation evaluation ends and retrieval evaluation begins
+
+Read this first if you arrived from the README or the wiki, because the most
+common wrong reading of this repository is that `ragcheck/` is a *third domain*
+alongside `roleplay/` and `tablemate/`. It is not. It is a **second kind of
+evaluation running on the same engine**, and the difference is worth one screen.
+
+### The boundary is a checkable fact, not a claim
+
+`ragcheck` imports exactly three of `lab`'s subpackages, and nothing in `lab`
+imports `ragcheck` at all. Both halves are one command each:
+
+```bash
+grep -rhE '^ *from lab' ragcheck/*.py | sed 's/ import.*//' | sort -u
+# from lab.clock
+# from lab.judges.calibration
+# from lab.judges.judge
+# from lab.judges.registry
+# from lab.trace.build
+# from lab.trace.schema
+
+grep -rn ragcheck lab/ ; echo "exit=$?"     # no matches, exit=1
+```
+
+So `ragcheck` uses **`lab.judges`, `lab.trace` and `lab.clock`, and nothing
+else** — zero of `lab.checks`, `lab.simulator`, `lab.voice`, `lab.report` and
+`lab.cli`. That is not a shortfall and it is not an accident of history. It is
+the boundary itself, expressed in the import graph, and it is the reason the
+retrieval pack can be read, run or removed without touching anything else.
+
+The dependency is one-directional by design: the engine does not know the
+retrieval pack exists. Compare the conversation domains, which between them reach
+into seven subpackages:
+
+```bash
+grep -rhoE 'lab\.[a-z_]+' roleplay/*.py tablemate/*.py | sort | uniq -c | sort -rn
+```
+
+**Why those three and only those three.** Conversation evaluation needs a
+*conversation*: multiple turns, a simulated caller with facts it releases only
+when asked, contracts decided on position in the event stream, a `pass^k`
+stability verdict over repeats. Retrieval evaluation needs none of that, because
+**a retrieval turn is one question and one answer.** What the two genuinely share
+is the small part that is shared: a trace to record on, a clock to stamp it with,
+and a judge that has to be calibrated before anybody believes it.
+
+That is a better claim than "third domain": *the same calibrated-judge machinery
+grades a retrieval answer and a multi-turn conversation, nothing else transfers,
+and the import graph is the receipt.*
+
+### What is genuinely different about each
+
+| | Conversation evaluation (`roleplay/`, `tablemate/`, `scenarios/`) | Retrieval evaluation (`ragcheck/`) |
+|---|---|---|
+| Unit of evaluation | a multi-turn session | a single question–answer pair |
+| Where the truth lives | a seeded backend state, plus the trace of what the agent did | a corpus with gold chunk ids per question |
+| What can be decided with no model | contracts on event-stream position — did the tool call exist, was a field re-asked, did the promise match the action | every retrieval metric — recall@k, precision@k, MRR, nDCG@k, AP@k are exact arithmetic |
+| What needs a judge | whether an unbounded claim was hallucinated; the rubric score | whether each atomic claim is supported by the retrieved context |
+| The characteristic failure it exists to expose | the agent said it did something it did not do | retrieval was perfect and the answer was still wrong |
+| Stability model | `pass^k` with a measured flake band | none — the retriever is deterministic |
+| Engine surface used | `lab.checks`, `lab.simulator`, `lab.trace`, `lab.judges`, `lab.voice`, `lab.report`, `lab.cli` | `lab.judges`, `lab.trace`, `lab.clock` — and nothing else |
+
+The last row is the first row restated as code, and the two failure rows are the
+sentence to take away: one half exists to catch a **decision that did not match an
+action**, the other exists to catch a **number that was right for the wrong
+reason**. Different failure classes need different instruments, and neither
+instrument would have found the other's bug.
+
+The rule that keeps the line where it is: **if this package ever needs
+`lab.checks` or `lab.simulator`, the thing being evaluated has stopped being a
+retrieval turn** — and it should move to a conversation suite rather than the
+boundary being widened to meet it.
+
+---
+
 ## 1. The two halves, and why they are never averaged
 
     RETRIEVAL   did the passages that answer the question come back, and in what order?
@@ -202,7 +277,10 @@ conversational systems.
 * **No embeddings, no vector store, no reranker.** So: no embedding-based
   metrics (including Ragas's own answer-relevancy method), no ANN recall
   measurement, no chunking-strategy experiments, no reranker A/B. The lexical
-  retriever here exists to make the metrics testable, not to be good.
+  retriever here exists to make the metrics testable, not to be good. This one
+  is a **decision rather than an omission**, and §9 is the reasoning; it is in
+  this list as well because the *consequence* — a limitation on what this
+  repository can demonstrate — is real either way.
 * **I have not shipped with Ragas, DeepEval, Langfuse, LangSmith, Braintrust or
   Promptfoo.** I have read their metric definitions closely enough to implement
   the equivalents and to say where I would diverge and why — which is what this
@@ -244,3 +322,70 @@ conversational systems.
    retrieval and generation separately, with the stability band measured rather
    than assumed — non-determinism gets a `pass^k` verdict and a flake band, not a
    re-run.
+
+---
+
+## 9. The vector store, declined as a decision rather than a gap
+
+This has been proposed and declined twice, so it is written down here as a
+position with its reasoning, rather than left to be rediscovered as a hole by
+every future reader.
+
+### The lexical/semantic difference, in plain terms
+
+The retriever that ships (`ragcheck/corpus.py`) is **lexical**: it scores a
+passage by the words it shares with the query, weighted so that rare words count
+for more than common ones (idf). It is fast, it needs no model, it is exactly
+reproducible, and it is easy to fool — ask about "the joining fee" when the
+corpus says "the membership charge" and it returns nothing useful, because it
+matches strings and those strings do not overlap.
+
+A **semantic**, or dense, retriever converts both the query and every passage into
+a vector with an embedding model, and ranks by distance in that space. It finds
+the membership charge. That is a genuinely better retriever for most corpora, and
+it is what a production system would use — usually stored in a vector database so
+the nearest-neighbour search stays fast over millions of passages.
+
+### Why the better retriever changes nothing this package measures
+
+**Every retrieval metric here is retriever-agnostic, and that is the point.**
+recall@k, precision@k, MRR, nDCG@k and AP@k are computed from a *ranked list of
+chunk ids* against a gold set. They do not know — and must not know — whether that
+ranking came from word overlap, from a dense index, from a hybrid of the two, or
+from a reranker sitting on top. Swapping the retriever changes the **input** to
+these metrics and changes **not one line** of their definition. That indifference
+is exactly the property that makes them a measuring instrument rather than a
+benchmark of one stack.
+
+The substitution point already exists and is already exercised: `Retriever` in
+`ragcheck/corpus.py` is a one-method protocol (`retrieve(query, *, k) ->
+Retrieval`), and two classes implement it — `LexicalRetriever`, and
+`PinnedRetriever`, which returns a fixed context so a generation metric can be
+isolated from retrieval entirely. A dense retriever would be a third class and
+nothing else would move.
+
+```bash
+grep -n 'class .*Retriever\|def retrieve' ragcheck/corpus.py
+```
+
+### So what would it actually buy
+
+An **engineering dependency and zero methodological content**: an install, an
+index to build, an embedding model to choose and version, a new failure mode, and
+a new source of run-to-run difference — in exchange for demonstrating a component
+whose output the metrics deliberately do not depend on. It would also put
+pressure on this repository's cardinal rule, because the credible versions of it
+want a hosted service or a large local model, and the rule is that a clean clone
+runs with zero API keys.
+
+### The honest limitation, stated rather than hidden
+
+**This repository can argue about retrieval evaluation methodology and cannot
+demonstrate retrieval engineering.** Those are different skills and only one of
+them is what this package is for. There is no ANN recall measurement here, no
+chunking-strategy experiment, no reranker A/B and no embedding-based metric —
+including Ragas's own formulation of answer relevancy, which is a cosine (see §4
+for why the binary form was kept instead).
+
+If a reader needs the second skill, the `Retriever` protocol is where they would
+plug it in, and the metrics on the other side of it would not move.

@@ -55,6 +55,21 @@ path rather than a mock of it, and the numbers it prints are a model's answers
 rather than a fixture author's expectations. Recording is the only way a verdict
 can enter this package; there is deliberately no code path that manufactures one.
 
+THE ONE SUBPACKAGE BOTH KINDS OF EVALUATION USE
+-----------------------------------------------
+`lab.judges` is the only part of the engine shared by the two different
+activities in this repository. Conversation evaluation (`roleplay/`, `tablemate/`,
+`scenarios/`) reaches into seven `lab` subpackages; retrieval evaluation
+(`ragcheck/`) imports three — this one, `lab.trace` and `lab.clock` — and nothing
+else. So the calibration machinery lives here rather than in either domain, and
+that is not a filing convenience: a judge is the one component both activities
+have to *distrust in the same way*, and duplicating the confusion matrix into two
+packages would mean two thresholds, two override paths and two chances to quietly
+drop the gate. `ragcheck.judges` subclasses these, so a retrieval claim and a
+conversational promise are refused by the same code when the grader is
+uncalibrated. See `docs/RAG_NOTES.md` for the boundary, with the import graph as
+its receipt.
+
 The re-exports below resolve lazily (PEP 562), matching `lab.voice`: importing a
 submodule eagerly from a package `__init__` puts it in `sys.modules` before
 `python -m lab.judges.hallucinated_confirmation` can execute it, which makes
