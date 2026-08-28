@@ -75,7 +75,7 @@ gate failures:
 FAIL — 42/47 (89.4%) scenarios stable-pass — 48/369 (13.0%) contract evaluations failed
 
 report verdict:   FAIL — the product's own state
-regression gate:  FAIL — 4 new, 0 vanished, 0 stale expectation(s), 16 finding(s) total
+regression gate:  FAIL — 4 new, 0 vanished, 0 stale expectation(s), 16 finding(s) total (9 declared by the corpus, 7 not)
 ```
 
 Four findings, two rows, two contracts. Already the useful shape: two *different*
@@ -255,7 +255,7 @@ with nothing behind it — is the harness-failure fingerprint, and the report ro
 the cause outright:
 
 ```
-| happy-two-covers-thursday | STABLE_FAIL | 0/1 | 0/1 | 1 | run raised: TypeError: remit() got an unexpected keyword argument 'clock' |
+| happy-two-covers-thursday | STABLE_FAIL | 0/1 (0.0%) | 0/1 (0.0%) | 1 | run raised: TypeError: remit() got an unexpected keyword argument 'clock' |
 ```
 
 To get the stack rather than the summary:
@@ -568,7 +568,7 @@ the live-transport ones, which name `LAB_LIVE_TRANSPORT` as the missing piece.
 
 A malformed scenario rarely crashes. It quietly asserts less than its author believed
 and then passes, which is why the schema rejects the shapes that go green for the wrong
-reason. This is the cheapest check in the repository and worth running first.
+reason. This is one of the cheapest checks in the repository and worth running early.
 
 Induced by mistyping a tool name in one YAML file:
 
@@ -592,9 +592,10 @@ suites:
   edge          19/54  (below minimum 20)
 ```
 
-The broken row dropped out of the corpus, so a suite fell below its floor. Two errors
-are reported and there is one cause. Fix the first one and re-run before reading the
-second — this is the same reason the gate stops at its first failing stage.
+The broken row dropped out of the corpus, so a suite fell below its floor. The error
+count is one; the symptoms are two, and the second is downstream of the first. Fix the
+error and re-run before reading anything else — the same reason the gate stops at its
+first failing stage.
 
 The advisory corpus has its own loader and its own command, and a new contract has to
 be wired into **both**:
