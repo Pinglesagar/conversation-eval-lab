@@ -189,7 +189,7 @@ all. Both facts are one command each:
 
 ```bash
 grep -rhE '^ *from lab' ragcheck/*.py | sed 's/ import.*//' | sort -u
-grep -rn ragcheck lab/ ; echo "exit=$?"      # no matches, exit=1
+grep -rnE '^ *(from|import) +ragcheck' lab/ --include='*.py' ; echo "exit=$?"   # exit=1
 ```
 
 That is the boundary, and it is exactly the right shape. Conversation evaluation

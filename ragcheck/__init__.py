@@ -56,7 +56,7 @@ one way and the engine does not know the retrieval pack exists. Both facts are
 one command each::
 
     grep -rhE '^ *from lab' ragcheck/*.py | sed 's/ import.*//' | sort -u
-    grep -rn ragcheck lab/ ; echo "exit=$?"     # no matches, exit=1
+    grep -rnE '^ *(from|import) +ragcheck' lab/ --include='*.py'   # exit=1
 
 That is not an accident of history, and it is not a shortfall to be closed later.
 It is where conversation evaluation ends and retrieval evaluation begins, stated

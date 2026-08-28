@@ -30,7 +30,7 @@ grep -rhE '^ *from lab' ragcheck/*.py | sed 's/ import.*//' | sort -u
 # from lab.trace.build
 # from lab.trace.schema
 
-grep -rn ragcheck lab/ ; echo "exit=$?"     # no matches, exit=1
+grep -rnE '^ *(from|import) +ragcheck' lab/ --include='*.py' ; echo "exit=$?"   # exit=1
 ```
 
 So `ragcheck` uses **`lab.judges`, `lab.trace` and `lab.clock`, and nothing
