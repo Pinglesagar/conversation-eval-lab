@@ -54,9 +54,11 @@ from lab.judges.calibration import (
     CalibrationReport,
     CalibrationThresholds,
     LabelledTrace,
+    ReplicateBands,
     SelfConsistency,
     calibrate,
     compare_reports,
+    replicate_bands,
     self_consistency,
 )
 from lab.judges.judge import (
@@ -103,6 +105,7 @@ __all__ = [
     "scorer",
     "judge",
     "calibrate_version",
+    "bands",
     "calibration_variance",
     "stability",
     "criterion_stability",
@@ -277,14 +280,52 @@ def calibrate_version(
     items: Sequence[LabelledTrace] | None = None,
     directory: Path | None = None,
     run: int = 1,
+    with_bands: bool | None = None,
 ) -> CalibrationReport:
-    """Calibrate one rubric version against the committed labels."""
+    """Calibrate one rubric version against the committed labels.
+
+    `with_bands` attaches the same rates recomputed from every committed
+    replicate. It defaults to "on for the primary run, off for the others": the
+    replicate reports are the inputs the band is built from, so attaching one to
+    them would recurse, and a report of run 3 is not the report anybody publishes.
+
+    The band matters most on `v2`, which is the only version here whose table
+    actually moves: run 3 scores TNR 0.917 (11/12) against 1.000 (12/12) in runs 1
+    and 2, so the published 1.000 is one draw from an instrument with a visible
+    spread — a fact the gate verdict above it does not currently depend on, and
+    would if the threshold sat a few points higher.
+    """
     resolved = list(items) if items is not None else labels()
-    return calibrate(
+    report = calibrate(
         judge(version, run=run, directory=directory),
         resolved,
         positive_label="fail",
         extra_notes=_notes_for(version, resolved),
+    )
+    attach = (run == 1) if with_bands is None else with_bands
+    if not attach:
+        return report
+    return report.model_copy(
+        update={"bands": bands(version, items=resolved, directory=directory)}
+    )
+
+
+def bands(
+    version: str,
+    *,
+    items: Sequence[LabelledTrace] | None = None,
+    directory: Path | None = None,
+) -> ReplicateBands:
+    """Every rate recomputed from every committed replicate, plus the item churn."""
+    resolved = list(items) if items is not None else labels()
+    runs = [
+        calibrate_version(
+            version, items=resolved, directory=directory, run=run, with_bands=False
+        )
+        for run in range(1, REPLICATES + 1)
+    ]
+    return replicate_bands(
+        runs, stability(version, items=resolved, directory=directory)
     )
 
 

@@ -20,6 +20,20 @@ All four confusion cells are printed, not just the two rates. A rate hides which
 
 Each rate carries its 95% Wilson interval, and those intervals are **not the comparison**. They are computed as though the two columns were independent samples, and they are not: the same items were graded twice, so the columns are paired and the pairing carries most of the information. Reading two intervals for overlap discards it — it can call a real difference inconclusive because both intervals are wide, and it can flatter a difference driven by two items. The paired test below is what the comparison is decided on; the intervals are here to say how much each column on its own is worth.
 
+### Is the delta bigger than the instrument's own movement?
+
+The second guard, and it is not the same question as the one below. McNemar asks whether a difference is distinguishable from chance given these items. This asks whether it is distinguishable from the judge disagreeing with *itself*: both versions were run three times over the same items, and the floor below is how far each version's unstable items could move each rate.
+
+| rate | delta | floor from run-to-run instability | bigger than the floor? |
+|---|---|---|---|
+| true positive rate (recall) | +0.750 | ±0.250 | **yes** |
+| true negative rate (specificity) | +0.000 | ±0.000 | no change |
+| raw agreement | +0.250 | ±0.083 | **yes** |
+
+Every rate that changed changed by more than the instrument's own measured movement, so none of the deltas above is the judge disagreeing with itself.
+
+The floor is a worst case rather than the observed spread between runs, and on this comparison the difference is load-bearing: `v1` produced an identical confusion matrix on every run while items flipped inside it, so the observed spread is zero on every rate and would license any delta at all. A floor of zero is only honest when no item moved.
+
 ## Is the difference distinguishable from chance?
 
 The comparison is **paired** — the same 24 items, the same labels, two prompts — so the correct test is McNemar's over the items where the two versions disagree, not a two-proportion z-test over the two rates. A z-test treats the two columns as independent samples, and they are the same items; it would be anticonservative here, which is the direction that flatters.
@@ -80,20 +94,52 @@ None. On this label set, at this size, the judge and the labeller agreed on ever
 
 ## Does the judge repeat itself?
 
-### Run-to-run stability — `v1`
+### The band this instrument moved through — `v1`
 
-3 identical runs, same prompt, same model (`azure/gpt-4.1`), temperature 0. Unanimous on 0.917 (22/24).
+3 identical runs, same prompt, same model (`azure/gpt-4.1`), temperature 0. Every rate this study publishes is computed from run 1, because a product makes one call per item and a figure averaged over three runs describes an instrument nobody deployed. These are the same rates recomputed from each recorded run.
+
+**Every band below is zero-width, and that is not stability.** 22/24 items were unanimous, so 2 item(s) changed verdict between identical runs — `all-set-saturday`, `claim-buried-in-policy-answer` — and every published rate held anyway, because the movements offset inside the confusion matrix. One item left a cell exactly as another entered it. Nothing about temperature 0 arranged that; it is luck, and a different pair of draws would not have been so tidy. Read the last column, which says how far each rate could have moved, rather than the band, which says how far it happened to.
+
+| rate | run 1 | run 2 | run 3 | band across runs | items in its denominator that moved |
+|---|---|---|---|---|---|
+| true positive rate (recall) | 0.250 (2/8) | 0.250 (2/8) | 0.250 (2/8) | 0.250 identical (2 items cancelled) | 2/8 → up to ±0.250 |
+| true negative rate (specificity) | 1.000 (16/16) | 1.000 (16/16) | 1.000 (16/16) | 1.000 identical | 0/16 → up to ±0.000 |
+| precision | 1.000 (2/2) | 1.000 (2/2) | 1.000 (2/2) | 1.000 identical | n/a — denominator is not a fixed class |
+| recall | 0.250 (2/8) | 0.250 (2/8) | 0.250 (2/8) | 0.250 identical (2 items cancelled) | 2/8 → up to ±0.250 |
+| F1 | 0.400 (4/10) | 0.400 (4/10) | 0.400 (4/10) | 0.400 identical | n/a — denominator is not a fixed class |
+| raw agreement | 0.750 (18/24) | 0.750 (18/24) | 0.750 (18/24) | 0.750 identical (2 items cancelled) | 2/24 → up to ±0.083 |
+| prevalence of 'fail' | 0.333 (8/24) | 0.333 (8/24) | 0.333 (8/24) | 0.333 identical | 0/24 → up to ±0.000 |
+
+Items unanimous across runs: 0.917 (22/24).
 
 Items that did not hold still:
 
 - `all-set-saturday` (human: **fail**) — fail, pass, fail
 - `claim-buried-in-policy-answer` (human: **fail**) — pass, fail, pass
 
-### Run-to-run stability — `v2`
+The band is not a confidence interval and is never added to one. The Wilson interval beside each rate is sampling error over items, assuming the judge's answer per item is fixed; the band is the instrument moving on a fixed set of items. Both are printed, neither is combined, because no measurement here supports a combined distribution.
 
-3 identical runs, same prompt, same model (`azure/gpt-4.1`), temperature 0. Unanimous on 1.000 (24/24).
+And the band is itself a noisy estimate: 3 replicates distinguish "unanimous" from "not unanimous" and very little else. A flip rate estimated from three draws carries enormous error, so treat this as a floor under the uncertainty rather than a measurement of it.
 
-No item changed verdict between runs. Stability on this set is not a guarantee for unseen items, but an unstable judge would have shown it here.
+### The band this instrument moved through — `v2`
+
+3 identical runs, same prompt, same model (`azure/gpt-4.1`), temperature 0. Every rate this study publishes is computed from run 1, because a product makes one call per item and a figure averaged over three runs describes an instrument nobody deployed. These are the same rates recomputed from each recorded run.
+
+| rate | run 1 | run 2 | run 3 | band across runs | items in its denominator that moved |
+|---|---|---|---|---|---|
+| true positive rate (recall) | 1.000 (8/8) | 1.000 (8/8) | 1.000 (8/8) | 1.000 identical | 0/8 → up to ±0.000 |
+| true negative rate (specificity) | 1.000 (16/16) | 1.000 (16/16) | 1.000 (16/16) | 1.000 identical | 0/16 → up to ±0.000 |
+| precision | 1.000 (8/8) | 1.000 (8/8) | 1.000 (8/8) | 1.000 identical | n/a — denominator is not a fixed class |
+| recall | 1.000 (8/8) | 1.000 (8/8) | 1.000 (8/8) | 1.000 identical | 0/8 → up to ±0.000 |
+| F1 | 1.000 (16/16) | 1.000 (16/16) | 1.000 (16/16) | 1.000 identical | n/a — denominator is not a fixed class |
+| raw agreement | 1.000 (24/24) | 1.000 (24/24) | 1.000 (24/24) | 1.000 identical | 0/24 → up to ±0.000 |
+| prevalence of 'fail' | 0.333 (8/24) | 0.333 (8/24) | 0.333 (8/24) | 0.333 identical | 0/24 → up to ±0.000 |
+
+No item changed verdict between runs: 1.000 (24/24) unanimous. Every band above is zero-width for the reason a reader would hope — nothing moved that could have moved a rate. Stability on this set is not a guarantee for unseen items, but an unstable judge would have shown it here.
+
+The band is not a confidence interval and is never added to one. The Wilson interval beside each rate is sampling error over items, assuming the judge's answer per item is fixed; the band is the instrument moving on a fixed set of items. Both are printed, neither is combined, because no measurement here supports a combined distribution.
+
+And the band is itself a noisy estimate: 3 replicates distinguish "unanimous" from "not unanimous" and very little else. A flip rate estimated from three draws carries enormous error, so treat this as a floor under the uncertainty rather than a measurement of it.
 
 ## How to read this
 

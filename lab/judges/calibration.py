@@ -180,6 +180,10 @@ __all__ = [
     "SelfConsistency",
     "ItemVerdictRuns",
     "self_consistency",
+    "RunRate",
+    "RateBand",
+    "ReplicateBands",
+    "replicate_bands",
     "traces_of",
 ]
 
@@ -577,6 +581,17 @@ class CalibrationReport(BaseModel):
     disagreements: list[Disagreement] = Field(default_factory=list)
     notes: list[str] = Field(default_factory=list)
 
+    bands: "ReplicateBands | None" = Field(
+        default=None,
+        description=(
+            "The same rates recomputed from every recorded replicate, plus the "
+            "per-item churn behind them. Optional because a single run is a "
+            "complete calibration; attached wherever replicates were recorded, "
+            "because a rate published without the band its own instrument moves "
+            "through is a rate from one sample presented as a property."
+        ),
+    )
+
     # ------------------------------------------------------------- accessors
 
     @property
@@ -715,6 +730,9 @@ class CalibrationReport(BaseModel):
                 if cell.startswith("[") or cell == "undefined"
                 else f"no interval — {cell}"
             )
+            band = self.bands.band(rate.name) if self.bands is not None else None
+            if band is not None:
+                suffix += f"   {self.bands.runs} runs {band.text()}"
             lines.append(f"  {rate.name:<{width}} : {str(rate):<{value_width}}  {suffix}")
         lines.append(f"  {'Cohen kappa':<{width}} : {_fmt_kappa(self.cohens_kappa)}")
         lines.append(
@@ -734,6 +752,18 @@ class CalibrationReport(BaseModel):
         return "\n".join(lines)
 
     # --------------------------------------------------- intervals and the gate
+
+    def _band_cell(self, rate_name: str) -> str:
+        """The trailing markdown cell for the run-to-run band, or nothing.
+
+        Empty string when no replicates were recorded, so the rates table keeps
+        its original four columns rather than growing a column of dashes that
+        would read as "measured, and it was nothing".
+        """
+        if self.bands is None:
+            return ""
+        band = self.bands.band(rate_name)
+        return f" {band.text()} |" if band is not None else " not measured |"
 
     def interval_cell(self, rate: Rate, confidence: float = 0.95) -> str:
         """The interval for one reported rate, or a refusal for the ones it fits.
@@ -876,25 +906,34 @@ class CalibrationReport(BaseModel):
             "",
             "## Rates",
             "",
-            "| metric | value | numerator / denominator | 95% Wilson CI |",
-            "|---|---|---|---|",
+        ]
+        banded = self.bands is not None
+        band_header = (
+            f" across {self.bands.runs} runs |" if self.bands is not None else ""
+        )
+        lines += [
+            "| metric | value | numerator / denominator | 95% Wilson CI |"
+            + (f"{band_header}" if banded else ""),
+            "|---|---|---|---|" + ("---|" if banded else ""),
         ]
         for rate in self.rates():
             value = "undefined" if rate.value is None else f"{rate.value:.3f}"
-            lines.append(
+            row = (
                 f"| {rate.name} | {value} | {rate.numerator} / {rate.denominator} | "
                 f"{self.interval_cell(rate)} |"
             )
+            lines.append(row + self._band_cell(rate.name))
         lines.append(
             f"| Cohen's kappa | {_fmt_kappa(self.cohens_kappa)} | "
             f"observed {self.kappa_observed_agreement:.3f}, "
             f"chance {self.kappa_expected_agreement:.3f} | not a proportion |"
+            + (" not measured |" if banded else "")
         )
         if self.parse_errors:
             per = self.parse_error_rate
             lines.append(
                 f"| parse errors | {per.value:.3f} | {per.numerator} / {per.denominator} "
-                f"| {per.interval_text()} |"
+                f"| {per.interval_text()} |" + (" not measured |" if banded else "")
             )
 
         lines += [
@@ -917,6 +956,8 @@ class CalibrationReport(BaseModel):
             "",
         ]
         lines += self.gate_evidence()
+        if self.bands is not None:
+            lines += [self.bands.to_markdown().replace("### ", "## ", 1)]
         lines += [
             "## Disagreements",
             "",
@@ -1532,9 +1573,119 @@ def compare_reports(before: CalibrationReport, after: CalibrationReport) -> str:
         "comparison is decided on; the intervals are here to say how much each "
         "column on its own is worth.",
         "",
+        *_decision_band_section(before, after),
         *_paired_section(before, after, mcnemar(before, after)),
     ]
     return "\n".join(lines)
+
+
+def _decision_band_section(
+    before: CalibrationReport, after: CalibrationReport
+) -> list[str]:
+    """Refuse a delta smaller than the instrument's own measured movement.
+
+    The second guard on a prompt comparison, and the cheaper one: McNemar asks
+    whether the difference is distinguishable from chance *given the items*, and
+    this asks whether it is distinguishable from the judge disagreeing with
+    itself. A prompt comparison has to clear both, and they can disagree — six
+    items moving one way is significant at p = 0.031 even if two of them are
+    items that flip between identical runs.
+
+    The floor is the worst case rather than the observed spread, deliberately.
+    v1's observed spread on this set is zero on every rate, because its two
+    unstable items cancel; using that as the floor would license any delta at all.
+    The number used instead is how far the unstable items *could* move each rate,
+    which for v1's TPR is 2 items over a denominator of 8.
+
+    Silent when either side has no replicates: an unmeasured band is not a band of
+    zero, and printing one would be the same error the section exists to catch.
+    """
+    if before.bands is None or after.bands is None:
+        return []
+
+    rows: list[tuple[str, float, float | None]] = []
+    for name in ("true_positive_rate", "true_negative_rate", "raw_agreement"):
+        a, b = getattr(before, name), getattr(after, name)
+        if a.value is None or b.value is None:
+            continue
+        band_a = before.bands.band(a.name)
+        band_b = after.bands.band(b.name)
+        floor: float | None = None
+        if band_a is not None and band_b is not None:
+            widths = (band_a.at_risk_width, band_b.at_risk_width)
+            if all(width is not None for width in widths):
+                floor = sum(width for width in widths if width is not None)
+        rows.append((a.name, b.value - a.value, floor))
+
+    lines = [
+        "### Is the delta bigger than the instrument's own movement?",
+        "",
+        "The second guard, and it is not the same question as the one below. "
+        "McNemar asks whether a difference is distinguishable from chance given "
+        "these items. This asks whether it is distinguishable from the judge "
+        "disagreeing with *itself*: both versions were run three times over the "
+        "same items, and the floor below is how far each version's unstable items "
+        "could move each rate.",
+        "",
+        "| rate | delta | floor from run-to-run instability | bigger than the floor? |",
+        "|---|---|---|---|",
+    ]
+    inside: list[str] = []
+    for name, delta, floor in rows:
+        if floor is None:
+            verdict, floor_text = "not measurable", "n/a"
+        elif delta == 0.0:
+            verdict, floor_text = "no change", f"±{floor:.3f}"
+        elif abs(delta) > floor:
+            verdict, floor_text = "**yes**", f"±{floor:.3f}"
+        else:
+            verdict, floor_text = "**no — inside the noise**", f"±{floor:.3f}"
+            inside.append(name)
+        lines.append(f"| {name} | {delta:+.3f} | {floor_text} | {verdict} |")
+    lines.append("")
+
+    if inside:
+        lines += [
+            "**"
+            + ", ".join(inside)
+            + " moved by less than this instrument moves on identical input.** "
+            "That difference is not reportable as a prompt improvement, whatever "
+            "its sign: rerun the losing version and it might win.",
+            "",
+        ]
+    else:
+        lines += [
+            "Every rate that changed changed by more than the instrument's own "
+            "measured movement, so none of the deltas above is the judge "
+            "disagreeing with itself.",
+            "",
+        ]
+    cancelling = [
+        report.prompt_version
+        for report in (before, after)
+        if report.bands is not None and report.bands.cancelling
+    ]
+    if cancelling:
+        lines += [
+            "The floor is a worst case rather than the observed spread between "
+            "runs, and on this comparison the difference is load-bearing: "
+            + " and ".join(f"`{version}`" for version in cancelling)
+            + " produced an identical confusion matrix on every run while items "
+            "flipped inside it, so the observed spread is zero on every rate and "
+            "would license any delta at all. A floor of zero is only honest when "
+            "no item moved.",
+            "",
+        ]
+    else:
+        lines += [
+            "The floor is a worst case rather than the observed spread between "
+            "runs. Zero observed movement can mean two very different things — "
+            "nothing moved, or things moved and cancelled — and only the worst "
+            "case distinguishes them. Here no item cancelled, so on this "
+            "comparison the two would have agreed.",
+            "",
+        ]
+    return lines
 
 
 # --------------------------------------------------------------------------- #
@@ -1691,3 +1842,424 @@ def self_consistency(
 def traces_of(labelled: Sequence[LabelledTrace]) -> list[Trace]:
     """The traces from a labelled set, in order. Convenience for recording."""
     return [item.trace for item in labelled]
+
+
+# --------------------------------------------------------------------------- #
+# The band a rate moved through across identical runs
+#
+# `SelfConsistency` above answers "did any item change its mind". This answers
+# the question a reader of a rate actually has: given that some items did, how
+# far could the published number have moved? The two are reported together
+# because either alone misleads — see `ReplicateBands`.
+# --------------------------------------------------------------------------- #
+
+
+class RunRate(BaseModel):
+    """One rate as one recorded run computed it.
+
+    Both counts, never the ratio alone, for the same reason every other rate in
+    this module carries its fraction: a band printed as `0.917-1.000` hides that
+    the movement was one item out of twelve.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    run: int = Field(ge=1)
+    numerator: int = Field(ge=0)
+    denominator: int = Field(ge=0)
+
+    @property
+    def value(self) -> float | None:
+        return None if self.denominator == 0 else self.numerator / self.denominator
+
+    def __str__(self) -> str:
+        if self.value is None:
+            return f"undefined ({self.numerator}/{self.denominator})"
+        return f"{self.value:.3f} ({self.numerator}/{self.denominator})"
+
+
+class RateBand(BaseModel):
+    """One rate, recomputed from every recorded run, and what could still move it.
+
+    TWO WIDTHS, AND THE SECOND ONE IS THE HONEST ONE
+    ------------------------------------------------
+    `width` is what was *observed*: the spread between the smallest and largest
+    value the recorded runs produced. It is the number everybody expects, and on
+    its own it is dangerous, because it can be exactly zero while the instrument
+    underneath is unstable.
+
+    That is not hypothetical here. Three identical runs of this repository's v1
+    prompt produced a byte-identical confusion matrix, and two items flipped
+    inside it: one left the true-positive cell exactly as the other entered it,
+    because both carry the same human label. Every published rate held. The
+    observed width was 0.000 and the instrument was a coin flip on 2 of 24 items.
+
+    `at_risk_width` is the second number, and it is what a reader should act on:
+    of the items in *this rate's denominator*, how many did not hold still, and
+    therefore how far could this rate have moved on a different set of draws. For
+    the v1 TPR that is 2 unstable items over a denominator of 8 — a quarter of the
+    scale — against an observed width of zero.
+
+    `at_risk_width` is None where it cannot be computed honestly. Precision and F1
+    have denominators that are functions of the judge's own output rather than of
+    the label set, so an unstable item moves the numerator and the denominator at
+    once and a worst case in the units of the rate is not well defined. A blank is
+    the correct entry; a plausible-looking number would be worse than nothing.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str
+    runs: list[RunRate] = Field(min_length=1)
+    unstable_in_denominator: int | None = Field(
+        default=None,
+        description=(
+            "Items inside this rate's denominator whose verdict was not the same "
+            "in every run. None where the denominator is not a fixed class of the "
+            "label set and the question has no honest answer."
+        ),
+    )
+
+    @property
+    def values(self) -> list[float | None]:
+        return [run.value for run in self.runs]
+
+    @property
+    def defined(self) -> bool:
+        return all(value is not None for value in self.values)
+
+    @property
+    def low(self) -> float | None:
+        return min(self.values) if self.defined else None  # type: ignore[type-var]
+
+    @property
+    def high(self) -> float | None:
+        return max(self.values) if self.defined else None  # type: ignore[type-var]
+
+    @property
+    def width(self) -> float | None:
+        """The observed spread. Zero does not mean stable — see the class docstring."""
+        if not self.defined:
+            return None
+        assert self.low is not None and self.high is not None
+        return self.high - self.low
+
+    @property
+    def zero_width(self) -> bool:
+        return self.width == 0.0
+
+    @property
+    def at_risk_width(self) -> float | None:
+        """How far the unstable items in this denominator could have moved it."""
+        if self.unstable_in_denominator is None:
+            return None
+        denominator = self.runs[0].denominator
+        if denominator == 0:
+            return None
+        return self.unstable_in_denominator / denominator
+
+    @property
+    def cancelling(self) -> bool:
+        """Zero observed movement, with unstable items that happened to offset.
+
+        The case this class exists for, and the one a naive band would report as
+        stability.
+        """
+        return self.zero_width and bool(self.unstable_in_denominator)
+
+    def text(self) -> str:
+        """The band as one cell: the range, or an explicit statement of identity."""
+        if not self.defined:
+            return "undefined"
+        assert self.low is not None and self.high is not None
+        if not self.zero_width:
+            return f"{self.low:.3f}–{self.high:.3f}"
+        if self.cancelling:
+            items = self.unstable_in_denominator
+            plural = "" if items == 1 else "s"
+            return f"{self.low:.3f} identical ({items} item{plural} cancelled)"
+        return f"{self.low:.3f} identical"
+
+
+class ReplicateBands(BaseModel):
+    """Every rate recomputed from every recorded run, beside the per-item churn.
+
+    WHY A RATE WITHOUT THIS IS A RATE FROM ONE SAMPLE
+    -------------------------------------------------
+    A calibration report is computed from one call per item, which is the right
+    thing to publish because it is what a product does — and it means the whole
+    table is a sample. If a second identical run yields a different table then
+    `TPR 1.000` is a property of a run rather than of the instrument, and every
+    prompt-to-prompt comparison built on it is partly reading its own noise.
+
+    The recordings needed to check that are already committed. Nothing here costs
+    a call.
+
+    THE ZERO-WIDTH TRAP, WHICH IS THE WHOLE POINT
+    ---------------------------------------------
+    A band of zero width means one of two very different things, and reporting
+    them the same way is the failure this class refuses:
+
+        genuinely stable   no item changed its verdict, so nothing could move
+        cancelling         items DID change, and their movements offset
+
+    The second is luck, not stability. Both of v1's unstable items carry the human
+    label `fail`, so one entered the true-positive cell exactly as the other left
+    it; nothing about temperature 0 arranged that. `cancelling` is True in that
+    case, the band cell says so in words, and `to_markdown` prints the warning
+    above the table rather than below it.
+
+    WHAT THE BAND IS NOT
+    --------------------
+    It is not an interval, and it is never added to one. A Wilson interval is
+    sampling error over items assuming a fixed judge; this is instrument
+    variation on a fixed set of items. They are different axes of the same
+    ignorance, and the defensible way to publish both is side by side —
+    "TNR 0.917-1.000 across 3 runs; 95% CI on run 1 [0.758, 1.000]" — which is
+    what the reports do.
+
+    AND THE BAND ITSELF IS NOISY
+    ----------------------------
+    Three replicates distinguish "unanimous" from "not unanimous" and very little
+    else. A flip rate of 2 in 24 estimated from three draws is estimated with
+    enormous error, so this band is a floor under the uncertainty rather than a
+    measurement of it. That sentence is printed in the artefact, because a caveat
+    only the author knows is not a caveat.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    judge: str
+    prompt_version: str
+    model: str
+    runs: int = Field(ge=2)
+    bands: list[RateBand] = Field(default_factory=list)
+    unanimous_items: int = Field(ge=0)
+    total_items: int = Field(ge=0)
+    unstable: list[ItemVerdictRuns] = Field(default_factory=list)
+
+    @property
+    def unanimity(self) -> Rate:
+        return Rate(
+            name="unanimous items",
+            numerator=self.unanimous_items,
+            denominator=self.total_items,
+        )
+
+    @property
+    def every_band_zero_width(self) -> bool:
+        return bool(self.bands) and all(band.zero_width for band in self.bands)
+
+    @property
+    def cancelling(self) -> bool:
+        """Every published rate held still and at least one item did not."""
+        return self.every_band_zero_width and bool(self.unstable)
+
+    def band(self, name: str) -> RateBand | None:
+        for candidate in self.bands:
+            if candidate.name == name:
+                return candidate
+        return None
+
+    def summary_line(self) -> str:
+        if self.cancelling:
+            tail = (
+                f"every rate identical across {self.runs} runs, and "
+                f"{len(self.unstable)} item(s) flipped and cancelled"
+            )
+        elif self.every_band_zero_width:
+            tail = f"every rate identical across {self.runs} runs, no item moved"
+        else:
+            widest = max(
+                (b for b in self.bands if b.width is not None),
+                key=lambda b: b.width or 0.0,
+            )
+            tail = f"widest band {widest.name} {widest.text()}"
+        return f"{self.judge} {self.prompt_version}: {tail}"
+
+    def to_markdown(self) -> str:
+        """The band section, warning first when the zero width is a cancellation."""
+        lines = [
+            f"### The band this instrument moved through — `{self.prompt_version}`",
+            "",
+            f"{self.runs} identical runs, same prompt, same model (`{self.model}`), "
+            "temperature 0. Every rate this study publishes is computed from run 1, "
+            "because a product makes one call per item and a figure averaged over "
+            "three runs describes an instrument nobody deployed. These are the same "
+            "rates recomputed from each recorded run.",
+            "",
+        ]
+
+        if self.cancelling:
+            ids = ", ".join(f"`{item.item_id}`" for item in self.unstable)
+            lines += [
+                "**Every band below is zero-width, and that is not stability.** "
+                f"{self.unanimity.numerator}/{self.unanimity.denominator} items were "
+                f"unanimous, so {len(self.unstable)} item(s) changed verdict between "
+                f"identical runs — {ids} — and every published rate held anyway, "
+                "because the movements offset inside the confusion matrix. One item "
+                "left a cell exactly as another entered it. Nothing about "
+                "temperature 0 arranged that; it is luck, and a different pair of "
+                "draws would not have been so tidy. Read the last column, which says "
+                "how far each rate could have moved, rather than the band, which "
+                "says how far it happened to.",
+                "",
+            ]
+
+        lines += [
+            "| rate | "
+            + " | ".join(f"run {run}" for run in range(1, self.runs + 1))
+            + " | band across runs | items in its denominator that moved |",
+            "|---" * (self.runs + 3) + "|",
+        ]
+        for band in self.bands:
+            cells = [str(run) for run in band.runs]
+            if band.unstable_in_denominator is None:
+                risk = "n/a — denominator is not a fixed class"
+            else:
+                at_risk = band.at_risk_width
+                risk = f"{band.unstable_in_denominator}/{band.runs[0].denominator}"
+                if at_risk is not None:
+                    risk += f" → up to ±{at_risk:.3f}"
+            lines.append(
+                f"| {band.name} | " + " | ".join(cells) + f" | {band.text()} | {risk} |"
+            )
+        lines.append("")
+
+        if not self.unstable:
+            lines += [
+                f"No item changed verdict between runs: {self.unanimity} unanimous. "
+                "Every band above is zero-width for the reason a reader would hope — "
+                "nothing moved that could have moved a rate. Stability on this set is "
+                "not a guarantee for unseen items, but an unstable judge would have "
+                "shown it here.",
+                "",
+            ]
+        else:
+            lines += [f"Items unanimous across runs: {self.unanimity}.", ""]
+            lines.append("Items that did not hold still:")
+            lines.append("")
+            for item in self.unstable:
+                lines.append(
+                    f"- `{item.item_id}` (human: **{item.human_label}**) — "
+                    + ", ".join(item.verdicts)
+                )
+            lines.append("")
+
+        lines += [
+            f"The band is not a confidence interval and is never added to one. The "
+            f"Wilson interval beside each rate is sampling error over items, assuming "
+            f"the judge's answer per item is fixed; the band is the instrument moving "
+            f"on a fixed set of items. Both are printed, neither is combined, because "
+            f"no measurement here supports a combined distribution.",
+            "",
+            f"And the band is itself a noisy estimate: {self.runs} replicates "
+            "distinguish \"unanimous\" from \"not unanimous\" and very little else. A "
+            "flip rate estimated from three draws carries enormous error, so treat "
+            "this as a floor under the uncertainty rather than a measurement of it.",
+            "",
+        ]
+        return "\n".join(lines)
+
+
+#: Which rates get a worst-case column, and which class of the label set fixes
+#: their denominator. `None` means the denominator moves with the judge's own
+#: output (precision, F1), so no honest worst case exists in the rate's units.
+_BAND_SLOTS: tuple[tuple[str, str | None], ...] = (
+    ("true_positive_rate", "positive"),
+    ("true_negative_rate", "negative"),
+    ("precision", None),
+    ("recall", "positive"),
+    ("f1", None),
+    ("raw_agreement", "all"),
+    ("prevalence", "fixed"),
+)
+
+
+def replicate_bands(
+    reports: Sequence[CalibrationReport], consistency: SelfConsistency
+) -> ReplicateBands:
+    """Assemble the band from one calibration per recorded run, plus the churn.
+
+    `reports[0]` is the primary — the run the published table comes from — and the
+    rest are the replicates. `consistency` is the per-item view over the same runs;
+    it is required rather than optional because a band without it is exactly the
+    number that reports a cancellation as stability.
+
+    Refuses a mixture, on the same principle as `self_consistency`: the premise is
+    "the same judge, the same prompt, the same items, twice", and comparing two
+    different prompts and calling the difference instability would be a category
+    error dressed as a measurement.
+    """
+    if len(reports) < 2:
+        raise ValueError(
+            "a band needs at least two runs; one run cannot disagree with itself"
+        )
+    identity = {
+        (r.judge, r.prompt_version, r.model, r.labels_sha256, r.positive_label)
+        for r in reports
+    }
+    if len(identity) != 1:
+        raise ValueError(
+            "a band compares repeated runs of ONE judge on ONE label set; these "
+            f"reports differ in judge, prompt version, model, labels or polarity: "
+            f"{sorted(identity)}"
+        )
+    first = reports[0]
+    if (consistency.judge, consistency.prompt_version) != (
+        first.judge,
+        first.prompt_version,
+    ):
+        raise ValueError(
+            f"the self-consistency measurement describes {consistency.judge} "
+            f"{consistency.prompt_version}, not {first.judge} {first.prompt_version}"
+        )
+    if consistency.runs != len(reports):
+        raise ValueError(
+            f"{len(reports)} calibration run(s) against {consistency.runs} run(s) of "
+            "self-consistency: the two must be measured over the same recordings"
+        )
+
+    positive = first.positive_label
+    unstable = consistency.unstable
+    moved = {
+        "positive": sum(1 for i in unstable if i.human_label == positive),
+        "negative": sum(1 for i in unstable if i.human_label != positive),
+        "all": len(unstable),
+        "fixed": 0,
+    }
+
+    bands: list[RateBand] = []
+    for attribute, klass in _BAND_SLOTS:
+        runs = [
+            RunRate(
+                run=index,
+                numerator=getattr(report, attribute).numerator,
+                denominator=getattr(report, attribute).denominator,
+            )
+            for index, report in enumerate(reports, start=1)
+        ]
+        bands.append(
+            RateBand(
+                name=getattr(first, attribute).name,
+                runs=runs,
+                unstable_in_denominator=None if klass is None else moved[klass],
+            )
+        )
+
+    return ReplicateBands(
+        judge=first.judge,
+        prompt_version=first.prompt_version,
+        model=first.model,
+        runs=len(reports),
+        bands=bands,
+        unanimous_items=consistency.unanimity.numerator,
+        total_items=consistency.unanimity.denominator,
+        unstable=list(unstable),
+    )
+
+
+# Deferred because `CalibrationReport.bands` names a class defined below it. The
+# report is the natural owner of the field — a band belongs to the rates it
+# widens — and the band needs `CalibrationReport` to be built from.
+CalibrationReport.model_rebuild()

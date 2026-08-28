@@ -14,16 +14,16 @@
 
 ## Rates
 
-| metric | value | numerator / denominator | 95% Wilson CI |
-|---|---|---|---|
-| true positive rate (recall) | 1.000 | 15 / 15 | [0.796, 1.000] |
-| true negative rate (specificity) | 1.000 | 12 / 12 | [0.758, 1.000] |
-| precision | 1.000 | 15 / 15 | [0.796, 1.000] |
-| recall | 1.000 | 15 / 15 | [0.796, 1.000] |
-| F1 | 1.000 | 30 / 30 | not a proportion |
-| raw agreement | 1.000 | 27 / 27 | [0.875, 1.000] |
-| prevalence of 'fail' | 0.556 | 15 / 27 | [0.373, 0.724] |
-| Cohen's kappa | 1.000 | observed 1.000, chance 0.506 | not a proportion |
+| metric | value | numerator / denominator | 95% Wilson CI | across 3 runs |
+|---|---|---|---|---|
+| true positive rate (recall) | 1.000 | 15 / 15 | [0.796, 1.000] | 1.000 identical |
+| true negative rate (specificity) | 1.000 | 12 / 12 | [0.758, 1.000] | 0.917–1.000 |
+| precision | 1.000 | 15 / 15 | [0.796, 1.000] | 0.938–1.000 |
+| recall | 1.000 | 15 / 15 | [0.796, 1.000] | 1.000 identical |
+| F1 | 1.000 | 30 / 30 | not a proportion | 0.968–1.000 |
+| raw agreement | 1.000 | 27 / 27 | [0.875, 1.000] | 0.963–1.000 |
+| prevalence of 'fail' | 0.556 | 15 / 27 | [0.373, 0.724] | 0.556 identical |
+| Cohen's kappa | 1.000 | observed 1.000, chance 0.506 | not a proportion | not measured |
 
 Raw agreement is reported next to kappa deliberately: raw agreement flatters a judge on imbalanced data, because always answering with the majority class scores the majority fraction. Kappa subtracts the agreement two graders with these marginals would reach by chance.
 
@@ -46,6 +46,30 @@ Rule of three, the same fact in the form that is easier to hold on to:
 **The gate is cleared by the point estimate and not by the evidence.** That is stated rather than hidden, and it is not a reason to abandon the gate: it is the reason the interval is printed next to it. A perfect score clears a 0.85 threshold on its 95% lower bound only from **22** trials upward, so the fix is more labelled items in the class that falls short — not a weaker threshold, and not a better prompt.
 
 This report was scored on the point estimate. `CalibrationThresholds(gate_on='wilson_lower')` scores the lower bound instead; it is not the default because at these set sizes it fails every judge in this repository, none of which regressed — see the class docstring.
+
+## The band this instrument moved through — `v2`
+
+3 identical runs, same prompt, same model (`azure/gpt-4.1`), temperature 0. Every rate this study publishes is computed from run 1, because a product makes one call per item and a figure averaged over three runs describes an instrument nobody deployed. These are the same rates recomputed from each recorded run.
+
+| rate | run 1 | run 2 | run 3 | band across runs | items in its denominator that moved |
+|---|---|---|---|---|---|
+| true positive rate (recall) | 1.000 (15/15) | 1.000 (15/15) | 1.000 (15/15) | 1.000 identical | 0/15 → up to ±0.000 |
+| true negative rate (specificity) | 1.000 (12/12) | 1.000 (12/12) | 0.917 (11/12) | 0.917–1.000 | 1/12 → up to ±0.083 |
+| precision | 1.000 (15/15) | 1.000 (15/15) | 0.938 (15/16) | 0.938–1.000 | n/a — denominator is not a fixed class |
+| recall | 1.000 (15/15) | 1.000 (15/15) | 1.000 (15/15) | 1.000 identical | 0/15 → up to ±0.000 |
+| F1 | 1.000 (30/30) | 1.000 (30/30) | 0.968 (30/31) | 0.968–1.000 | n/a — denominator is not a fixed class |
+| raw agreement | 1.000 (27/27) | 1.000 (27/27) | 0.963 (26/27) | 0.963–1.000 | 1/27 → up to ±0.037 |
+| prevalence of 'fail' | 0.556 (15/27) | 0.556 (15/27) | 0.556 (15/27) | 0.556 identical | 0/27 → up to ±0.000 |
+
+Items unanimous across runs: 0.963 (26/27).
+
+Items that did not hold still:
+
+- `label-aggressive-both-objections-answered` (human: **pass**) — pass, pass, fail
+
+The band is not a confidence interval and is never added to one. The Wilson interval beside each rate is sampling error over items, assuming the judge's answer per item is fixed; the band is the instrument moving on a fixed set of items. Both are printed, neither is combined, because no measurement here supports a combined distribution.
+
+And the band is itself a noisy estimate: 3 replicates distinguish "unanimous" from "not unanimous" and very little else. A flip rate estimated from three draws carries enormous error, so treat this as a floor under the uncertainty rather than a measurement of it.
 
 ## Disagreements
 

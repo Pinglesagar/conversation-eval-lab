@@ -845,3 +845,40 @@ def test_the_cli_exits_zero_and_writes_its_artefacts(tmp_path, capsys) -> None:
     assert study.main(["--out", str(study.DIR)]) == 0
     out = capsys.readouterr().out
     assert "wrote study" in out
+
+
+def test_the_scorers_band_is_the_one_that_actually_moves(items) -> None:
+    """`v2`'s table is not reproducible, and the band says so beside the rate.
+
+    Run 3 scores TNR 0.917 (11/12) against 1.000 (12/12) in runs 1 and 2, so the
+    published 1.000 is one draw. The worst-case column agrees with the observed
+    spread exactly here: one unstable item in a denominator of 12 is +-0.083, and
+    the observed band is 1.000 - 0.917 = 0.083. That agreement is the check that
+    the two columns are measuring the same thing from different directions.
+    """
+    band_set = study.bands("v2", items=items)
+    assert band_set.runs == study.REPLICATES == 3
+    assert band_set.every_band_zero_width is False
+    assert band_set.cancelling is False
+
+    tnr = band_set.band("true negative rate (specificity)")
+    assert tnr.low == pytest.approx(0.9166, abs=0.0005)
+    assert tnr.high == 1.0
+    assert tnr.width == pytest.approx(tnr.at_risk_width)
+    assert tnr.text() == "0.917–1.000"
+
+    assert [item.item_id for item in band_set.unstable] == [
+        "label-aggressive-both-objections-answered"
+    ]
+
+    # And the rate the study publishes carries it, next to the Wilson interval,
+    # in the fixed-width block the write-up embeds.
+    text = study.calibrate_version("v2", items=items).to_text()
+    assert "95% CI [0.758, 1.000]   3 runs 0.917–1.000" in text
+
+
+def test_the_scorers_v1_band_is_zero_width_because_nothing_moved(items) -> None:
+    band_set = study.bands("v1", items=items)
+    assert band_set.every_band_zero_width is True
+    assert band_set.cancelling is False
+    assert band_set.unstable == []

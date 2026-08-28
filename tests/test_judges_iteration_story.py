@@ -287,6 +287,72 @@ def test_v2_is_unanimous_across_three_identical_runs() -> None:
     assert runs.unanimity.value == pytest.approx(1.0)
 
 
+def test_v1s_bands_are_all_zero_width_and_that_is_not_stability() -> None:
+    """The finding this repository's judge tier exists to make, on real data.
+
+    Three identical runs of v1 at temperature 0 produce a byte-identical confusion
+    matrix — TP 2, FP 0, FN 6, TN 16 every time — so every band is zero-width. And
+    two items flipped. Both carry the human label `fail`, so one left the
+    true-positive cell exactly as the other entered it and every published rate
+    held. Aggregate stability is not instrument stability.
+
+    The number a reader should act on is the last column: both unstable items sit
+    inside the TPR denominator of 8, so a different pair of draws could have moved
+    TPR by 2/8 = 0.250 against an observed spread of 0.000.
+    """
+    band_set = story.bands("v1")
+    assert band_set.runs == story.REPLICATES == 3
+    assert band_set.every_band_zero_width is True
+    assert band_set.cancelling is True
+    assert [item.item_id for item in band_set.unstable] == [
+        "all-set-saturday",
+        "claim-buried-in-policy-answer",
+    ]
+    assert all(item.human_label == "fail" for item in band_set.unstable)
+
+    tpr = band_set.band("true positive rate (recall)")
+    assert tpr.width == 0.0
+    assert tpr.at_risk_width == pytest.approx(0.250)
+    assert "2 items cancelled" in tpr.text()
+
+    tnr = band_set.band("true negative rate (specificity)")
+    assert tnr.at_risk_width == 0.0  # neither unstable item is a negative
+
+    markdown = band_set.to_markdown()
+    assert "**Every band below is zero-width, and that is not stability.**" in markdown
+    assert "it is luck" in markdown
+
+
+def test_v2s_bands_are_zero_width_for_the_reason_a_reader_would_hope() -> None:
+    band_set = story.bands("v2")
+    assert band_set.every_band_zero_width is True
+    assert band_set.cancelling is False
+    assert band_set.unstable == []
+    assert "No item changed verdict between runs" in band_set.to_markdown()
+    assert "that is not stability" not in band_set.to_markdown()
+
+
+def test_the_committed_report_carries_its_band_beside_every_rate() -> None:
+    report = story.calibrate_version("v1")
+    assert report.bands is not None
+    markdown = report.to_markdown()
+    assert "95% Wilson CI | across 3 runs |" in markdown
+    assert "| 0.250 identical (2 items cancelled) |" in markdown
+
+
+def test_the_iteration_prints_the_band_under_the_delta() -> None:
+    """A prompt delta has to clear two floors, and the artefact prints both.
+
+    v1's TPR could have moved by 0.250 on a different set of draws; the observed
+    delta is +0.750, so the improvement survives the instrument as well as
+    McNemar. A v3 gaining a quarter of a point on TPR would not.
+    """
+    table = story.iteration_summary()
+    assert "### Is the delta bigger than the instrument's own movement?" in table
+    assert "| true positive rate (recall) | +0.750 | ±0.250 | **yes** |" in table
+    assert "A floor of zero is only honest when no item moved." in table
+
+
 def test_v1_is_unstable_on_two_items() -> None:
     """The naive prompt does not hold still, at temperature 0, on identical input."""
     runs = story.stability("v1")

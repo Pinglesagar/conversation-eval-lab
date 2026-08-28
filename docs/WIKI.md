@@ -6746,11 +6746,12 @@ instability *invisible*.
 
 #### 8.2.3 `lab/judges/calibration.py` — measuring the measuring instrument
 
-**Size:** 1,693 lines. **Public names that matter:** `calibrate()`,
+**Size:** 2,265 lines. **Public names that matter:** `calibrate()`,
 `CalibrationReport`, `ConfusionMatrix`, `Rate`, `LabelledTrace`,
 `CalibrationThresholds`, `Disagreement`, `compare_reports()`,
 `mcnemar()`, `PairedComparison`, `exact_mcnemar_p()`, `detectability_floor()`,
-`self_consistency()`, `SelfConsistency`, `labels_digest()`.
+`self_consistency()`, `SelfConsistency`, `replicate_bands()`, `ReplicateBands`,
+`RateBand`, `RunRate`, `labels_digest()`.
 
 ##### 8.2.3.1 Its job in one plain sentence
 
@@ -7256,6 +7257,55 @@ sequence.
 For v2, the same three runs give **1.000 (24/24)** unanimous, with the honest
 caveat printed alongside: *stability on this set is not a guarantee for unseen
 items, but an unstable judge would have shown it here.*
+
+##### 8.2.5.4 The band, and the two ways a band can be zero
+
+`ReplicateBands` is the second half of the same argument, and it is what puts the
+finding above *next to the rate it undermines* rather than in a section further
+down. It recomputes every rate from every recorded run and prints the range beside
+the point estimate — `TNR 1.000 (12/12), 95% CI [0.758, 1.000], 3 runs
+0.917–1.000` on the advisory scorer, where run 3 genuinely differs.
+
+The reason it exists rather than a `min`/`max` written inline is that a
+**zero-width band means two completely different things**, and printing them the
+same way is exactly the error §8.2.5.2 describes:
+
+| observed band | items that moved | what it means |
+|---|---|---|
+| zero | none | genuinely stable — nothing could have moved a rate |
+| zero | some | **cancellation**. Luck, not stability |
+
+`RateBand.cancelling` is True in the second case, the band cell says
+`0.250 identical (2 items cancelled)` instead of `0.250 identical`, and
+`to_markdown()` puts a warning **above** the table rather than a footnote below
+it. v1 is the second case on every one of its rates.
+
+So each band carries a second width, and it is the one to act on:
+`at_risk_width` — of the items in *this rate's denominator*, how many did not hold
+still, and therefore how far the rate could have moved. For v1's TPR that is 2
+unstable items over a denominator of 8, so **±0.250 against an observed spread of
+0.000**. It is `None` for precision and F1, whose denominators are functions of
+the judge's own output rather than of the label set: an unstable item moves
+numerator and denominator together and no worst case in the rate's units is well
+defined. A blank is the correct entry there; a plausible-looking number would be
+worse than nothing.
+
+`compare_reports` then uses it as a second gate on a prompt comparison, printed
+next to McNemar and answering a different question. McNemar asks whether a
+difference is distinguishable from chance given these items; the band asks whether
+it is distinguishable from **the judge disagreeing with itself**. A delta at or
+below the combined floor is reported as *not reportable as a prompt improvement,
+whatever its sign*. The v1 → v2 TPR delta of +0.750 against a floor of ±0.250
+clears both.
+
+Two caveats, both printed in the artefact rather than left to the reader. The band
+is **never added to the Wilson interval**: one is sampling error over items
+assuming a fixed judge, the other is the instrument moving on a fixed set of
+items, and no measurement here supports a combined distribution — so both are
+printed and neither is merged. And `REPLICATES = 3` distinguishes "unanimous" from
+"not unanimous" and very little else, so a flip rate estimated from three draws
+carries enormous error and the band is a floor under the uncertainty rather than a
+measurement of it.
 
 ---
 

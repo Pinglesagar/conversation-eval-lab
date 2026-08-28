@@ -35,6 +35,7 @@ from lab.judges.calibration import (
     labels_digest,
     mcnemar,
     load_labels,
+    replicate_bands,
     self_consistency,
     write_labels,
 )
@@ -747,3 +748,238 @@ def test_the_comparison_table_carries_an_interval_but_names_the_paired_test() ->
     assert "0.500 (1/2) [0.095, 0.905]" in table  # v1 TNR, with its interval
     assert "those intervals are **not the comparison**" in table
     assert "the columns are paired" in table
+
+
+# --------------------------------------------------------------------------- #
+# The run-to-run band, and the zero-width trap inside it
+#
+# A band of zero width means either "no item moved" or "items moved and their
+# movements offset". Those are completely different claims about an instrument,
+# and reporting them the same way is the failure these pin.
+# --------------------------------------------------------------------------- #
+
+
+def _three_runs(answers_per_run: list[dict[str, Label]], items):
+    """Calibrate the same items once per run, and measure the churn alongside."""
+    reports = [
+        calibrate(_judge_answering(answers), items) for answers in answers_per_run
+    ]
+    runs = self_consistency(
+        [_judge_answering(answers) for answers in answers_per_run], items
+    )
+    return reports, runs
+
+
+def test_a_band_reports_the_spread_it_observed() -> None:
+    items = [_item("a", "fail"), _item("b", "fail"), _item("c", "pass")]
+    reports, runs = _three_runs(
+        [
+            {"a": "fail", "b": "fail", "c": "pass"},
+            {"a": "fail", "b": "fail", "c": "pass"},
+            {"a": "fail", "b": "pass", "c": "pass"},  # one miss in run 3
+        ],
+        items,
+    )
+    bands = replicate_bands(reports, runs)
+    tpr = bands.band("true positive rate (recall)")
+    assert tpr is not None
+    assert tpr.low == pytest.approx(0.5)  # run 3: 1/2
+    assert tpr.high == pytest.approx(1.0)  # runs 1-2: 2/2
+    assert tpr.width == pytest.approx(0.5)
+    assert tpr.zero_width is False
+    assert tpr.text() == "0.500–1.000"
+
+
+def test_a_zero_width_band_with_no_churn_is_reported_as_stability() -> None:
+    items = [_item("a", "fail"), _item("b", "pass")]
+    answers = {"a": "fail", "b": "pass"}
+    reports, runs = _three_runs([answers, answers, answers], items)
+    bands = replicate_bands(reports, runs)
+    assert bands.every_band_zero_width is True
+    assert bands.cancelling is False
+    assert bands.band("true positive rate (recall)").text() == "1.000 identical"
+    markdown = bands.to_markdown()
+    assert "No item changed verdict between runs" in markdown
+    assert "that is not stability" not in markdown
+
+
+def test_a_zero_width_band_from_cancellation_is_refused_as_stability() -> None:
+    """Two items on the same side of the matrix, swapping places.
+
+    `a` goes fail -> pass -> fail and `b` goes pass -> fail -> pass; both carry the
+    human label `fail`, so one leaves the TP cell exactly as the other enters it.
+    TP is 1 in all three runs, the band is zero on every rate, and 2 of 3 items
+    are coin flips. This is the real shape of the committed v1 recording, reduced
+    to the smallest set that shows it.
+    """
+    items = [_item("a", "fail"), _item("b", "fail"), _item("c", "pass")]
+    reports, runs = _three_runs(
+        [
+            {"a": "fail", "b": "pass", "c": "pass"},
+            {"a": "pass", "b": "fail", "c": "pass"},
+            {"a": "fail", "b": "pass", "c": "pass"},
+        ],
+        items,
+    )
+    bands = replicate_bands(reports, runs)
+
+    assert bands.every_band_zero_width is True
+    assert bands.cancelling is True
+    assert len(bands.unstable) == 2
+    tpr = bands.band("true positive rate (recall)")
+    assert tpr.width == 0.0
+    assert tpr.cancelling is True
+    assert "2 items cancelled" in tpr.text()
+    # And the number a reader should act on: both unstable items sit in the TPR
+    # denominator of 2, so the rate could have moved by the whole scale.
+    assert tpr.at_risk_width == pytest.approx(1.0)
+
+    markdown = bands.to_markdown()
+    assert "**Every band below is zero-width, and that is not stability.**" in markdown
+    assert "it is luck" in markdown
+    assert "flipped and cancelled" in bands.summary_line()
+
+
+def test_precision_and_f1_are_given_no_worst_case_because_none_is_honest() -> None:
+    """Their denominators move with the judge's own output, so an unstable item
+    changes numerator and denominator at once and a worst case in the rate's own
+    units is not well defined. A blank beats a plausible-looking number."""
+    items = [_item("a", "fail"), _item("b", "fail"), _item("c", "pass")]
+    reports, runs = _three_runs(
+        [
+            {"a": "fail", "b": "fail", "c": "pass"},
+            {"a": "fail", "b": "pass", "c": "pass"},
+            {"a": "fail", "b": "fail", "c": "pass"},
+        ],
+        items,
+    )
+    bands = replicate_bands(reports, runs)
+    assert bands.band("precision").unstable_in_denominator is None
+    assert bands.band("precision").at_risk_width is None
+    assert bands.band("F1").at_risk_width is None
+    assert "n/a — denominator is not a fixed class" in bands.to_markdown()
+    # The classes the label set fixes do get one.
+    assert bands.band("true positive rate (recall)").at_risk_width == pytest.approx(0.5)
+    assert bands.band("true negative rate (specificity)").at_risk_width == 0.0
+    assert bands.band("prevalence of 'fail'").at_risk_width == 0.0
+
+
+def test_a_band_refuses_a_single_run() -> None:
+    items = [_item("a", "fail"), _item("b", "pass")]
+    answers = {"a": "fail", "b": "pass"}
+    reports, runs = _three_runs([answers, answers], items)
+    with pytest.raises(ValueError, match="cannot disagree with itself"):
+        replicate_bands(reports[:1], runs)
+
+
+def test_a_band_refuses_two_different_prompt_versions() -> None:
+    items = [_item("a", "fail"), _item("b", "pass")]
+    answers = {"a": "fail", "b": "pass"}
+    first = calibrate(_judge_answering(answers), items)
+    second = calibrate(_judge_answering(answers, version="v2"), items)
+    runs = self_consistency(
+        [_judge_answering(answers), _judge_answering(answers)], items
+    )
+    with pytest.raises(ValueError, match="repeated runs of ONE judge"):
+        replicate_bands([first, second], runs)
+
+
+def test_a_band_refuses_a_churn_measurement_of_a_different_judge() -> None:
+    items = [_item("a", "fail"), _item("b", "pass")]
+    answers = {"a": "fail", "b": "pass"}
+    reports, _ = _three_runs([answers, answers], items)
+    other = self_consistency(
+        [_judge_answering(answers, version="v2"), _judge_answering(answers, version="v2")],
+        items,
+    )
+    with pytest.raises(ValueError, match="describes test_judge v2"):
+        replicate_bands(reports, other)
+
+
+def test_a_band_refuses_a_different_number_of_runs() -> None:
+    items = [_item("a", "fail"), _item("b", "pass")]
+    answers = {"a": "fail", "b": "pass"}
+    reports, _ = _three_runs([answers, answers, answers], items)
+    two = self_consistency(
+        [_judge_answering(answers), _judge_answering(answers)], items
+    )
+    with pytest.raises(ValueError, match="measured over the same recordings"):
+        replicate_bands(reports, two)
+
+
+def test_a_report_without_replicates_keeps_its_four_column_table() -> None:
+    """An unmeasured band is not a band of zero, so no column is printed at all."""
+    items = [_item("a", "fail"), _item("b", "pass")]
+    report = calibrate(_judge_answering({"a": "fail", "b": "pass"}), items)
+    assert report.bands is None
+    markdown = report.to_markdown()
+    assert "| metric | value | numerator / denominator | 95% Wilson CI |" in markdown
+    assert "across 3 runs" not in markdown
+    assert "band this instrument moved through" not in markdown
+
+
+def test_a_report_with_replicates_carries_the_band_beside_every_rate() -> None:
+    items = [_item("a", "fail"), _item("b", "fail"), _item("c", "pass")]
+    reports, runs = _three_runs(
+        [
+            {"a": "fail", "b": "fail", "c": "pass"},
+            {"a": "fail", "b": "pass", "c": "pass"},
+            {"a": "fail", "b": "fail", "c": "pass"},
+        ],
+        items,
+    )
+    report = reports[0].model_copy(update={"bands": replicate_bands(reports, runs)})
+    markdown = report.to_markdown()
+    assert "95% Wilson CI | across 3 runs |" in markdown
+    assert "| 0.500–1.000 |" in markdown
+    assert "## The band this instrument moved through" in markdown
+    assert "3 runs 0.500–1.000" in report.to_text()
+
+
+def test_the_comparison_refuses_a_delta_smaller_than_the_instrument_moves() -> None:
+    """The decision band: a prompt change worth less than the judge's own churn.
+
+    Both versions score TPR 1/2 on the published run, and v2 gains one true
+    negative — a delta of +0.500 on TNR against a floor of ±0.500, because one of
+    the two negatives is a coin flip in v1. Equal to the floor is inside it.
+    """
+    items = [_item("a", "fail"), _item("b", "fail"), _item("c", "pass"), _item("d", "pass")]
+    v1_runs = [
+        {"a": "fail", "b": "pass", "c": "fail", "d": "pass"},
+        {"a": "fail", "b": "pass", "c": "pass", "d": "pass"},
+        {"a": "fail", "b": "pass", "c": "fail", "d": "pass"},
+    ]
+    v2_runs = [
+        {"a": "fail", "b": "pass", "c": "pass", "d": "pass"},
+        {"a": "fail", "b": "pass", "c": "pass", "d": "pass"},
+        {"a": "fail", "b": "pass", "c": "pass", "d": "pass"},
+    ]
+    before_reports, before_runs = _three_runs(v1_runs, items)
+    after_reports = [
+        calibrate(_judge_answering(answers, version="v2"), items) for answers in v2_runs
+    ]
+    after_runs = self_consistency(
+        [_judge_answering(answers, version="v2") for answers in v2_runs], items
+    )
+    before = before_reports[0].model_copy(
+        update={"bands": replicate_bands(before_reports, before_runs)}
+    )
+    after = after_reports[0].model_copy(
+        update={"bands": replicate_bands(after_reports, after_runs)}
+    )
+
+    table = compare_reports(before, after)
+    assert "### Is the delta bigger than the instrument's own movement?" in table
+    assert "**no — inside the noise**" in table
+    assert "not reportable as a prompt improvement" in table
+
+
+def test_the_comparison_stays_silent_when_no_replicates_were_recorded() -> None:
+    """An unmeasured band must not be printed as a band of zero, which would
+    license every delta."""
+    items = [_item("a", "fail"), _item("b", "pass"), _item("c", "pass")]
+    before = calibrate(_judge_answering({"a": "fail", "b": "fail", "c": "pass"}), items)
+    after = calibrate(
+        _judge_answering({"a": "fail", "b": "pass", "c": "pass"}, version="v2"), items
+    )
+    assert "instrument's own movement" not in compare_reports(before, after)

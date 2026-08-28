@@ -1,4 +1,162 @@
 {
+  "bands": {
+    "bands": [
+      {
+        "name": "true positive rate (recall)",
+        "runs": [
+          {
+            "denominator": 8,
+            "numerator": 8,
+            "run": 1
+          },
+          {
+            "denominator": 8,
+            "numerator": 8,
+            "run": 2
+          },
+          {
+            "denominator": 8,
+            "numerator": 8,
+            "run": 3
+          }
+        ],
+        "unstable_in_denominator": 0
+      },
+      {
+        "name": "true negative rate (specificity)",
+        "runs": [
+          {
+            "denominator": 16,
+            "numerator": 16,
+            "run": 1
+          },
+          {
+            "denominator": 16,
+            "numerator": 16,
+            "run": 2
+          },
+          {
+            "denominator": 16,
+            "numerator": 16,
+            "run": 3
+          }
+        ],
+        "unstable_in_denominator": 0
+      },
+      {
+        "name": "precision",
+        "runs": [
+          {
+            "denominator": 8,
+            "numerator": 8,
+            "run": 1
+          },
+          {
+            "denominator": 8,
+            "numerator": 8,
+            "run": 2
+          },
+          {
+            "denominator": 8,
+            "numerator": 8,
+            "run": 3
+          }
+        ],
+        "unstable_in_denominator": null
+      },
+      {
+        "name": "recall",
+        "runs": [
+          {
+            "denominator": 8,
+            "numerator": 8,
+            "run": 1
+          },
+          {
+            "denominator": 8,
+            "numerator": 8,
+            "run": 2
+          },
+          {
+            "denominator": 8,
+            "numerator": 8,
+            "run": 3
+          }
+        ],
+        "unstable_in_denominator": 0
+      },
+      {
+        "name": "F1",
+        "runs": [
+          {
+            "denominator": 16,
+            "numerator": 16,
+            "run": 1
+          },
+          {
+            "denominator": 16,
+            "numerator": 16,
+            "run": 2
+          },
+          {
+            "denominator": 16,
+            "numerator": 16,
+            "run": 3
+          }
+        ],
+        "unstable_in_denominator": null
+      },
+      {
+        "name": "raw agreement",
+        "runs": [
+          {
+            "denominator": 24,
+            "numerator": 24,
+            "run": 1
+          },
+          {
+            "denominator": 24,
+            "numerator": 24,
+            "run": 2
+          },
+          {
+            "denominator": 24,
+            "numerator": 24,
+            "run": 3
+          }
+        ],
+        "unstable_in_denominator": 0
+      },
+      {
+        "name": "prevalence of 'fail'",
+        "runs": [
+          {
+            "denominator": 24,
+            "numerator": 8,
+            "run": 1
+          },
+          {
+            "denominator": 24,
+            "numerator": 8,
+            "run": 2
+          },
+          {
+            "denominator": 24,
+            "numerator": 8,
+            "run": 3
+          }
+        ],
+        "unstable_in_denominator": 0
+      }
+    ],
+    "judge": "hallucinated_confirmation",
+    "model": "azure/gpt-4.1",
+    "prompt_version": "v2",
+    "runs": 3,
+    "total_items": 24,
+    "unanimous_items": 24,
+    "unstable": []
+  },
   "cohens_kappa": 1.0,
   "confusion": {
     "false_negative": 0,

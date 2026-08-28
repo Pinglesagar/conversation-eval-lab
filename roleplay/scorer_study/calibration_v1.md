@@ -14,16 +14,16 @@
 
 ## Rates
 
-| metric | value | numerator / denominator | 95% Wilson CI |
-|---|---|---|---|
-| true positive rate (recall) | 0.600 | 9 / 15 | [0.357, 0.802] |
-| true negative rate (specificity) | 1.000 | 12 / 12 | [0.758, 1.000] |
-| precision | 1.000 | 9 / 9 | [0.701, 1.000] |
-| recall | 0.600 | 9 / 15 | [0.357, 0.802] |
-| F1 | 0.750 | 18 / 24 | not a proportion |
-| raw agreement | 0.778 | 21 / 27 | [0.592, 0.894] |
-| prevalence of 'fail' | 0.556 | 15 / 27 | [0.373, 0.724] |
-| Cohen's kappa | 0.571 | observed 0.778, chance 0.481 | not a proportion |
+| metric | value | numerator / denominator | 95% Wilson CI | across 3 runs |
+|---|---|---|---|---|
+| true positive rate (recall) | 0.600 | 9 / 15 | [0.357, 0.802] | 0.600 identical |
+| true negative rate (specificity) | 1.000 | 12 / 12 | [0.758, 1.000] | 1.000 identical |
+| precision | 1.000 | 9 / 9 | [0.701, 1.000] | 1.000 identical |
+| recall | 0.600 | 9 / 15 | [0.357, 0.802] | 0.600 identical |
+| F1 | 0.750 | 18 / 24 | not a proportion | 0.750 identical |
+| raw agreement | 0.778 | 21 / 27 | [0.592, 0.894] | 0.778 identical |
+| prevalence of 'fail' | 0.556 | 15 / 27 | [0.373, 0.724] | 0.556 identical |
+| Cohen's kappa | 0.571 | observed 0.778, chance 0.481 | not a proportion | not measured |
 
 Raw agreement is reported next to kappa deliberately: raw agreement flatters a judge on imbalanced data, because always answering with the majority class scores the majority fraction. Kappa subtracts the agreement two graders with these marginals would reach by chance.
 
@@ -43,6 +43,26 @@ Rule of three, the same fact in the form that is easier to hold on to:
 - true negative rate (specificity): 0 errors in 12, so the 95% upper bound on the true error rate is about 3/12 = 0.250
 
 This report was scored on the point estimate. `CalibrationThresholds(gate_on='wilson_lower')` scores the lower bound instead; it is not the default because at these set sizes it fails every judge in this repository, none of which regressed — see the class docstring.
+
+## The band this instrument moved through — `v1`
+
+3 identical runs, same prompt, same model (`azure/gpt-4.1`), temperature 0. Every rate this study publishes is computed from run 1, because a product makes one call per item and a figure averaged over three runs describes an instrument nobody deployed. These are the same rates recomputed from each recorded run.
+
+| rate | run 1 | run 2 | run 3 | band across runs | items in its denominator that moved |
+|---|---|---|---|---|---|
+| true positive rate (recall) | 0.600 (9/15) | 0.600 (9/15) | 0.600 (9/15) | 0.600 identical | 0/15 → up to ±0.000 |
+| true negative rate (specificity) | 1.000 (12/12) | 1.000 (12/12) | 1.000 (12/12) | 1.000 identical | 0/12 → up to ±0.000 |
+| precision | 1.000 (9/9) | 1.000 (9/9) | 1.000 (9/9) | 1.000 identical | n/a — denominator is not a fixed class |
+| recall | 0.600 (9/15) | 0.600 (9/15) | 0.600 (9/15) | 0.600 identical | 0/15 → up to ±0.000 |
+| F1 | 0.750 (18/24) | 0.750 (18/24) | 0.750 (18/24) | 0.750 identical | n/a — denominator is not a fixed class |
+| raw agreement | 0.778 (21/27) | 0.778 (21/27) | 0.778 (21/27) | 0.778 identical | 0/27 → up to ±0.000 |
+| prevalence of 'fail' | 0.556 (15/27) | 0.556 (15/27) | 0.556 (15/27) | 0.556 identical | 0/27 → up to ±0.000 |
+
+No item changed verdict between runs: 1.000 (27/27) unanimous. Every band above is zero-width for the reason a reader would hope — nothing moved that could have moved a rate. Stability on this set is not a guarantee for unseen items, but an unstable judge would have shown it here.
+
+The band is not a confidence interval and is never added to one. The Wilson interval beside each rate is sampling error over items, assuming the judge's answer per item is fixed; the band is the instrument moving on a fixed set of items. Both are printed, neither is combined, because no measurement here supports a combined distribution.
+
+And the band is itself a noisy estimate: 3 replicates distinguish "unanimous" from "not unanimous" and very little else. A flip rate estimated from three draws carries enormous error, so treat this as a floor under the uncertainty rather than a measurement of it.
 
 ## Disagreements
 

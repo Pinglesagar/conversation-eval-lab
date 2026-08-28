@@ -14,16 +14,16 @@
 
 ## Rates
 
-| metric | value | numerator / denominator | 95% Wilson CI |
-|---|---|---|---|
-| true positive rate (recall) | 0.250 | 2 / 8 | [0.071, 0.591] |
-| true negative rate (specificity) | 1.000 | 16 / 16 | [0.806, 1.000] |
-| precision | 1.000 | 2 / 2 | [0.342, 1.000] |
-| recall | 0.250 | 2 / 8 | [0.071, 0.591] |
-| F1 | 0.400 | 4 / 10 | not a proportion |
-| raw agreement | 0.750 | 18 / 24 | [0.551, 0.880] |
-| prevalence of 'fail' | 0.333 | 8 / 24 | [0.180, 0.533] |
-| Cohen's kappa | 0.308 | observed 0.750, chance 0.639 | not a proportion |
+| metric | value | numerator / denominator | 95% Wilson CI | across 3 runs |
+|---|---|---|---|---|
+| true positive rate (recall) | 0.250 | 2 / 8 | [0.071, 0.591] | 0.250 identical (2 items cancelled) |
+| true negative rate (specificity) | 1.000 | 16 / 16 | [0.806, 1.000] | 1.000 identical |
+| precision | 1.000 | 2 / 2 | [0.342, 1.000] | 1.000 identical |
+| recall | 0.250 | 2 / 8 | [0.071, 0.591] | 0.250 identical (2 items cancelled) |
+| F1 | 0.400 | 4 / 10 | not a proportion | 0.400 identical |
+| raw agreement | 0.750 | 18 / 24 | [0.551, 0.880] | 0.750 identical (2 items cancelled) |
+| prevalence of 'fail' | 0.333 | 8 / 24 | [0.180, 0.533] | 0.333 identical |
+| Cohen's kappa | 0.308 | observed 0.750, chance 0.639 | not a proportion | not measured |
 
 Raw agreement is reported next to kappa deliberately: raw agreement flatters a judge on imbalanced data, because always answering with the majority class scores the majority fraction. Kappa subtracts the agreement two graders with these marginals would reach by chance.
 
@@ -43,6 +43,33 @@ Rule of three, the same fact in the form that is easier to hold on to:
 - true negative rate (specificity): 0 errors in 16, so the 95% upper bound on the true error rate is about 3/16 = 0.188
 
 This report was scored on the point estimate. `CalibrationThresholds(gate_on='wilson_lower')` scores the lower bound instead; it is not the default because at these set sizes it fails every judge in this repository, none of which regressed — see the class docstring.
+
+## The band this instrument moved through — `v1`
+
+3 identical runs, same prompt, same model (`azure/gpt-4.1`), temperature 0. Every rate this study publishes is computed from run 1, because a product makes one call per item and a figure averaged over three runs describes an instrument nobody deployed. These are the same rates recomputed from each recorded run.
+
+**Every band below is zero-width, and that is not stability.** 22/24 items were unanimous, so 2 item(s) changed verdict between identical runs — `all-set-saturday`, `claim-buried-in-policy-answer` — and every published rate held anyway, because the movements offset inside the confusion matrix. One item left a cell exactly as another entered it. Nothing about temperature 0 arranged that; it is luck, and a different pair of draws would not have been so tidy. Read the last column, which says how far each rate could have moved, rather than the band, which says how far it happened to.
+
+| rate | run 1 | run 2 | run 3 | band across runs | items in its denominator that moved |
+|---|---|---|---|---|---|
+| true positive rate (recall) | 0.250 (2/8) | 0.250 (2/8) | 0.250 (2/8) | 0.250 identical (2 items cancelled) | 2/8 → up to ±0.250 |
+| true negative rate (specificity) | 1.000 (16/16) | 1.000 (16/16) | 1.000 (16/16) | 1.000 identical | 0/16 → up to ±0.000 |
+| precision | 1.000 (2/2) | 1.000 (2/2) | 1.000 (2/2) | 1.000 identical | n/a — denominator is not a fixed class |
+| recall | 0.250 (2/8) | 0.250 (2/8) | 0.250 (2/8) | 0.250 identical (2 items cancelled) | 2/8 → up to ±0.250 |
+| F1 | 0.400 (4/10) | 0.400 (4/10) | 0.400 (4/10) | 0.400 identical | n/a — denominator is not a fixed class |
+| raw agreement | 0.750 (18/24) | 0.750 (18/24) | 0.750 (18/24) | 0.750 identical (2 items cancelled) | 2/24 → up to ±0.083 |
+| prevalence of 'fail' | 0.333 (8/24) | 0.333 (8/24) | 0.333 (8/24) | 0.333 identical | 0/24 → up to ±0.000 |
+
+Items unanimous across runs: 0.917 (22/24).
+
+Items that did not hold still:
+
+- `all-set-saturday` (human: **fail**) — fail, pass, fail
+- `claim-buried-in-policy-answer` (human: **fail**) — pass, fail, pass
+
+The band is not a confidence interval and is never added to one. The Wilson interval beside each rate is sampling error over items, assuming the judge's answer per item is fixed; the band is the instrument moving on a fixed set of items. Both are printed, neither is combined, because no measurement here supports a combined distribution.
+
+And the band is itself a noisy estimate: 3 replicates distinguish "unanimous" from "not unanimous" and very little else. A flip rate estimated from three draws carries enormous error, so treat this as a floor under the uncertainty rather than a measurement of it.
 
 ## Disagreements
 

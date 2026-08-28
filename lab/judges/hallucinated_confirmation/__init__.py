@@ -128,6 +128,15 @@ and cancel. Aggregate stability is not instrument stability. Only the per-item
 view (`lab.judges.calibration.self_consistency`) sees it, and a v3-versus-v2
 comparison that moved by one or two items would have been reading this noise.
 
+Which is why the reports print the band beside every rate rather than only in a
+section of their own (`lab.judges.calibration.ReplicateBands`). v1's *observed*
+band is zero on every rate, and the number a reader should act on is the second
+one: both unstable items sit inside the TPR denominator of 8, so a different pair
+of draws could have moved TPR by **0.250** — a quarter of the scale — against an
+observed spread of 0.000. The v1 -> v2 TPR delta is +0.750, so the improvement
+clears that floor as well as McNemar's; a v3 gaining a quarter of a point would
+clear neither.
+
 WHAT THE NUMBERS DO NOT SAY
 ---------------------------
 v2 scores 1.000 on every rate, and that is a fact about a 24-item set, not a
@@ -177,10 +186,12 @@ from lab.judges.calibration import (
     Rate,
     CalibrationThresholds,
     LabelledTrace,
+    ReplicateBands,
     SelfConsistency,
     calibrate,
     compare_reports,
     load_labels,
+    replicate_bands,
     self_consistency,
     write_labels,
 )
@@ -207,6 +218,7 @@ __all__ = [
     "verdicts_path",
     "replicate_judges",
     "stability",
+    "bands",
     "labels_path",
     "labels",
     "recorded_model",
@@ -385,19 +397,62 @@ def calibrate_version(
     *,
     items: Sequence[LabelledTrace] | None = None,
     directory: str | Path | None = None,
+    run: int = 1,
+    with_bands: bool = True,
 ) -> CalibrationReport:
-    """Calibrate one prompt version against the checked-in labels."""
+    """Calibrate one prompt version against the checked-in labels.
+
+    `run` selects which recording is scored; run 1 is the primary and the one the
+    committed reports come from, because a product makes one call per item and a
+    figure averaged over three runs describes an instrument nobody deployed.
+
+    `with_bands` attaches the same table recomputed from every recorded replicate
+    (`lab.judges.calibration.replicate_bands`). It is on by default because a rate
+    published without the band its own instrument moves through is a rate from one
+    sample presented as a property of the judge — and here it is load-bearing: v1's
+    bands are all zero-width and v1 is not stable, because its two unstable items
+    cancel. Turned off for the replicate calibrations themselves, which would
+    otherwise recurse.
+    """
     resolved = list(items) if items is not None else labels()
     base = Path(directory) if directory is not None else DIR
     replayed = ReplayJudge(
-        recording=base / verdicts_path(version).name,
+        recording=base / verdicts_path(version, run).name,
         name=JUDGE_NAME,
         prompt=prompt(version),
         version=version,
         model=recorded_model(version, directory=base),
         include_tools=False,
     )
-    return calibrate(replayed, resolved, extra_notes=_notes_for(version))
+    report = calibrate(replayed, resolved, extra_notes=_notes_for(version))
+    if not with_bands:
+        return report
+    return report.model_copy(
+        update={"bands": bands(version, items=resolved, directory=directory)}
+    )
+
+
+def bands(
+    version: str,
+    *,
+    items: Sequence[LabelledTrace] | None = None,
+    directory: str | Path | None = None,
+) -> ReplicateBands:
+    """Every rate recomputed from every committed replicate, plus the item churn.
+
+    Offline and free: the replicate recordings are in the tree, so this is
+    arithmetic over files rather than a second bill.
+    """
+    resolved = list(items) if items is not None else labels()
+    runs = [
+        calibrate_version(
+            version, items=resolved, directory=directory, run=run, with_bands=False
+        )
+        for run in range(1, REPLICATES + 1)
+    ]
+    return replicate_bands(
+        runs, stability(version, items=resolved, directory=directory)
+    )
 
 
 def iteration_summary(*, directory: str | Path | None = None) -> str:
@@ -425,9 +480,11 @@ def iteration_summary(*, directory: str | Path | None = None) -> str:
         parts.append(_disagreement_section(reports[version]))
     parts += ["## Does the judge repeat itself?", ""]
     for version in VERSIONS:
-        parts.append(
-            stability(version, items=items, directory=directory).to_markdown()
-        )
+        # The band rather than the bare per-item list: for v1 the two are the
+        # whole story together and misleading apart. Every rate is identical
+        # across the three runs AND two items flipped; printing the first without
+        # the second is how a cancellation gets published as stability.
+        parts.append(bands(version, items=items, directory=directory).to_markdown())
     parts.append(_how_to_read(reports[VERSIONS[-1]]))
     return "\n".join(parts)
 

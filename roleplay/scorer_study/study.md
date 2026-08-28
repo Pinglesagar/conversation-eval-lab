@@ -39,13 +39,13 @@ Judge calibration: roleplay_rubric_scorer v1
      judge: fail            TP 9            FP 0
      judge: pass            FN 6           TN 12
 
-  true positive rate (recall)      : 0.600 (9/15)   95% CI [0.357, 0.802]
-  true negative rate (specificity) : 1.000 (12/12)  95% CI [0.758, 1.000]
-  precision                        : 1.000 (9/9)    95% CI [0.701, 1.000]
-  recall                           : 0.600 (9/15)   95% CI [0.357, 0.802]
-  F1                               : 0.750 (18/24)  no interval — not a proportion
-  raw agreement                    : 0.778 (21/27)  95% CI [0.592, 0.894]
-  prevalence of 'fail'             : 0.556 (15/27)  95% CI [0.373, 0.724]
+  true positive rate (recall)      : 0.600 (9/15)   95% CI [0.357, 0.802]   3 runs 0.600 identical
+  true negative rate (specificity) : 1.000 (12/12)  95% CI [0.758, 1.000]   3 runs 1.000 identical
+  precision                        : 1.000 (9/9)    95% CI [0.701, 1.000]   3 runs 1.000 identical
+  recall                           : 0.600 (9/15)   95% CI [0.357, 0.802]   3 runs 0.600 identical
+  F1                               : 0.750 (18/24)  no interval — not a proportion   3 runs 0.750 identical
+  raw agreement                    : 0.778 (21/27)  95% CI [0.592, 0.894]   3 runs 0.778 identical
+  prevalence of 'fail'             : 0.556 (15/27)  95% CI [0.373, 0.724]   3 runs 0.556 identical
   Cohen kappa                      : 0.571
                                      (observed 0.778, expected by chance 0.481)
 
@@ -148,13 +148,13 @@ Judge calibration: roleplay_rubric_scorer v2
      judge: fail           TP 15            FP 0
      judge: pass            FN 0           TN 12
 
-  true positive rate (recall)      : 1.000 (15/15)  95% CI [0.796, 1.000]
-  true negative rate (specificity) : 1.000 (12/12)  95% CI [0.758, 1.000]
-  precision                        : 1.000 (15/15)  95% CI [0.796, 1.000]
-  recall                           : 1.000 (15/15)  95% CI [0.796, 1.000]
-  F1                               : 1.000 (30/30)  no interval — not a proportion
-  raw agreement                    : 1.000 (27/27)  95% CI [0.875, 1.000]
-  prevalence of 'fail'             : 0.556 (15/27)  95% CI [0.373, 0.724]
+  true positive rate (recall)      : 1.000 (15/15)  95% CI [0.796, 1.000]   3 runs 1.000 identical
+  true negative rate (specificity) : 1.000 (12/12)  95% CI [0.758, 1.000]   3 runs 0.917–1.000
+  precision                        : 1.000 (15/15)  95% CI [0.796, 1.000]   3 runs 0.938–1.000
+  recall                           : 1.000 (15/15)  95% CI [0.796, 1.000]   3 runs 1.000 identical
+  F1                               : 1.000 (30/30)  no interval — not a proportion   3 runs 0.968–1.000
+  raw agreement                    : 1.000 (27/27)  95% CI [0.875, 1.000]   3 runs 0.963–1.000
+  prevalence of 'fail'             : 0.556 (15/27)  95% CI [0.373, 0.724]   3 runs 0.556 identical
   Cohen kappa                      : 1.000
                                      (observed 1.000, expected by chance 0.506)
 ```
@@ -263,6 +263,20 @@ Same label set (`3bf9c1b846b078e2`, 27 items), same model (`azure/gpt-4.1`). Onl
 All four confusion cells are printed, not just the two rates. A rate hides which direction the errors ran, and the direction is the whole story here: a judge that misses defects and a judge that invents them fail the same threshold and require opposite fixes.
 
 Each rate carries its 95% Wilson interval, and those intervals are **not the comparison**. They are computed as though the two columns were independent samples, and they are not: the same items were graded twice, so the columns are paired and the pairing carries most of the information. Reading two intervals for overlap discards it — it can call a real difference inconclusive because both intervals are wide, and it can flatter a difference driven by two items. The paired test below is what the comparison is decided on; the intervals are here to say how much each column on its own is worth.
+
+### Is the delta bigger than the instrument's own movement?
+
+The second guard, and it is not the same question as the one below. McNemar asks whether a difference is distinguishable from chance given these items. This asks whether it is distinguishable from the judge disagreeing with *itself*: both versions were run three times over the same items, and the floor below is how far each version's unstable items could move each rate.
+
+| rate | delta | floor from run-to-run instability | bigger than the floor? |
+|---|---|---|---|
+| true positive rate (recall) | +0.400 | ±0.000 | **yes** |
+| true negative rate (specificity) | +0.000 | ±0.083 | no change |
+| raw agreement | +0.222 | ±0.037 | **yes** |
+
+Every rate that changed changed by more than the instrument's own measured movement, so none of the deltas above is the judge disagreeing with itself.
+
+The floor is a worst case rather than the observed spread between runs. Zero observed movement can mean two very different things — nothing moved, or things moved and cancelled — and only the worst case distinguishes them. Here no item cancelled, so on this comparison the two would have agreed.
 
 ## Is the difference distinguishable from chance?
 
