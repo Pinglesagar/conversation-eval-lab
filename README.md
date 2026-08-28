@@ -265,6 +265,30 @@ not driven rather than run as text. See [Limitations](#limitations).
 
 ---
 
+## The same things, under the names the field uses
+
+This repository names things after what they do, which is not always the name a
+reader arrives with. The mapping is below. **It adds no capability — every row
+points at code, a corpus file or a committed artefact that was already here**, and
+each row carries the *not* as well as the *is*, because a name that overstates its
+object is worse than no name at all.
+
+| The name you may be looking for | What it is here | What it is **not** |
+| --- | --- | --- |
+| **guardrails** | `lab/checks/` — `ToolContract(forbidden=…)` and `PhraseContract(forbidden=…)` declared as scenario data. 20 of 55 rows forbid a tool, 6 forbid a phrase, 23 do at least one | a runtime enforcement layer, a content-safety or PII classifier. These are assertions over a recorded trace, offline, after the fact |
+| **red-teaming, prompt injection** | `scenarios/adversarial/` — 12 of the 55 rows: injection inside a booking name, a dietary note, a policy question and a fake system turn; impersonation; over-reach; disclosure probes | a generated attack suite, a fuzzer, or an attack-success rate. Twelve hand-written rows is a corpus, not coverage |
+| **golden datasets** | `evallab validate --coverage` over 194 committed YAML files — 55 booking rows and 70 advisory rows, plus four hand-labelled sets. The loader **fails the load on an assertion that could never fire** | an annotation UI, a multi-rater workflow, or agreement between two humans. Every label here is one person, one pass |
+| **regression testing, drift detection** | a committed baseline diffed in both directions — a finding that *vanishes* fails the build too — and CI diffing `fixtures/replay_run/` byte for byte | production drift monitoring. Nothing samples live traffic, tracks a metric over time or alerts |
+| **observability** | `lab/trace/` as the schema and `lab/report/interop.py` as the export: langfuse round-trips exactly, promptfoo is a one-way projection, neither is a dependency | a collector, an agent, a hosted backend or a dashboard. This exports *to* an observability tool |
+| **LLM-as-judge, position bias** | `lab/judges/` — TPR/TNR/kappa against hand labels, every disagreement listed, and a registry that raises below threshold. Single-item binary grading against a fixed rubric has no position for a bias to attach to | a mitigation applied afterwards; it is a property of this shape of judge, and a pairwise judge would need the usual remedy |
+| **TTFT vs TTFA, WER/CER, Entity Error Rate, endpointing** | two distinct event kinds rather than one derived number; `scoring_unit()` labelling character-vs-word; the 5 `digits-and-names` rows asserting values; `vad_false_silence` / `would_not_fire` | benchmark figures. The WER is harness-relative, the latencies come from an injected clock, and the entity rows are n=1 each |
+
+Long form, with the command that reproduces every figure and a closing list of the
+terms it would be dishonest to claim at all:
+**[docs/VOCABULARY.md](docs/VOCABULARY.md)**.
+
+---
+
 ## What it does, and what comparable tools do
 
 Five capabilities, each with an honest note on what I found in the open-source
@@ -501,10 +525,12 @@ roleplay/               the BFSI advisory pack, where the scorer is under test
   regime_eval.py        the cited registers, computed into per-regime verdicts
 ragcheck/               retrieval + groundedness: recall@k, MRR, nDCG, faithfulness
 scenarios/              55 rows of validated YAML, four suites, nine personas
+                        adversarial/ — the 12 red-team rows
 fixtures/               recordings, the calibration report, the reference run
 error_analysis/         the traces read by hand, coded, counted and written up
 docs/                   trace schema, CLI reference, how to add a scenario
                         SPOKEN_CALL.md — the audio and conversation tiers, joined
+                        VOCABULARY.md — this repo's names, and the field's
 ```
 
 **Full documentation: [docs/WIKI.md](docs/WIKI.md)** — the in-depth wiki, written for a
@@ -515,7 +541,10 @@ the decision or bug behind it. Enter at any level; every figure is re-derived fr
 committed artefact or a named command.
 
 Design rationale: [DESIGN.md](DESIGN.md). The capability-to-question mapping:
-[INTERVIEW_NOTES.md](INTERVIEW_NOTES.md).
+[INTERVIEW_NOTES.md](INTERVIEW_NOTES.md). If you arrived looking for a particular
+term — guardrails, red-teaming, golden datasets, drift detection, observability —
+start at [docs/VOCABULARY.md](docs/VOCABULARY.md), which maps each one onto what
+is already here and says plainly where the name would overreach.
 
 ---
 
