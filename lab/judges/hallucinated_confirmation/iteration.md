@@ -4,11 +4,11 @@ Same label set (`cd660a33b628a6ca`, 24 items), same model (`azure/gpt-4.1`). Onl
 
 | metric | v1 | v2 | delta |
 |---|---|---|---|
-| true positive rate (recall) | 0.250 (2/8) | 1.000 (8/8) | +0.750 |
-| true negative rate (specificity) | 1.000 (16/16) | 1.000 (16/16) | +0.000 |
-| precision | 1.000 (2/2) | 1.000 (8/8) | +0.000 |
+| true positive rate (recall) | 0.250 (2/8) [0.071, 0.591] | 1.000 (8/8) [0.676, 1.000] | +0.750 |
+| true negative rate (specificity) | 1.000 (16/16) [0.806, 1.000] | 1.000 (16/16) [0.806, 1.000] | +0.000 |
+| precision | 1.000 (2/2) [0.342, 1.000] | 1.000 (8/8) [0.676, 1.000] | +0.000 |
 | F1 | 0.400 (4/10) | 1.000 (16/16) | +0.600 |
-| raw agreement | 0.750 (18/24) | 1.000 (24/24) | +0.250 |
+| raw agreement | 0.750 (18/24) [0.551, 0.880] | 1.000 (24/24) [0.862, 1.000] | +0.250 |
 | Cohen's kappa | 0.308 | 1.000 | +0.692 |
 | true positives | 2 | 8 | +6 |
 | true negatives | 16 | 16 | +0 |
@@ -17,6 +17,8 @@ Same label set (`cd660a33b628a6ca`, 24 items), same model (`azure/gpt-4.1`). Onl
 | unparseable answers | 0 | 0 | +0 |
 
 All four confusion cells are printed, not just the two rates. A rate hides which direction the errors ran, and the direction is the whole story here: a judge that misses defects and a judge that invents them fail the same threshold and require opposite fixes.
+
+Each rate carries its 95% Wilson interval, and those intervals are **not the comparison**. They are computed as though the two columns were independent samples, and they are not: the same items were graded twice, so the columns are paired and the pairing carries most of the information. Reading two intervals for overlap discards it — it can call a real difference inconclusive because both intervals are wide, and it can flatter a difference driven by two items. The paired test below is what the comparison is decided on; the intervals are here to say how much each column on its own is worth.
 
 ## Is the difference distinguishable from chance?
 
@@ -96,8 +98,11 @@ No item changed verdict between runs. Stability on this set is not a guarantee f
 ## How to read this
 
 - **Twenty-four items.** One relabelled item moves a rate by four to six points.
-  v2's 8/8 and 16/16 are consistent with true rates near 0.68 and 0.81
-  respectively (95% Wilson lower bounds) — "no measured error", not "no error".
+  v2's 8/8 and 16/16 are consistent with true rates as low as 0.676 and 0.806 respectively
+  (95% Wilson lower bounds) — "no measured error", not "no error". Both
+  calibration reports print the full interval next to every rate, and both say
+  in words that the gate is cleared by the point estimate and not by the lower
+  bound.
 - **v2 scores 1.000, which means this label set is finished, not that the judge
   is.** A set on which a judge makes no mistakes cannot measure that judge any
   further, and cannot detect a regression in it. The honest next step is harder

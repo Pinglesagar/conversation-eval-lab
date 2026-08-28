@@ -597,3 +597,153 @@ def test_self_consistency_refuses_an_empty_set() -> None:
         self_consistency(
             [_judge_answering({}), _judge_answering({})], []
         )
+
+
+# --------------------------------------------------------------------------- #
+# Wilson intervals, and the position this module reversed
+#
+# The module used to decline confidence intervals on the grounds that "a Wilson
+# interval on 8/8 would imply a precision the set cannot support". These pin the
+# reversal: the interval is printed beside every rate, the report says which
+# number the gate was scored on, and the stricter rule is available without being
+# imposed.
+# --------------------------------------------------------------------------- #
+
+
+def test_a_rate_carries_its_wilson_interval() -> None:
+    """8/8 -> [0.676, 1.000]; the arithmetic is worked in tests/test_stats.py."""
+    rate = Rate(name="tpr", numerator=8, denominator=8)
+    low, high = rate.interval()
+    assert low == pytest.approx(0.676, abs=0.0005)
+    assert high == 1.0
+    assert rate.interval_text() == "[0.676, 1.000]"
+    assert rate.with_interval() == "1.000 (8/8) 95% CI [0.676, 1.000]"
+
+
+def test_an_undefined_rate_has_no_interval_rather_than_a_zero_one() -> None:
+    rate = Rate(name="precision", numerator=0, denominator=0)
+    assert rate.interval() is None
+    assert rate.interval_text() == "undefined"
+
+
+def test_the_rule_of_three_sentence_appears_only_on_a_perfect_score() -> None:
+    perfect = Rate(name="tnr", numerator=16, denominator=16)
+    assert perfect.zero_error() is True
+    text = perfect.rule_of_three_text()
+    assert text is not None and "3/16 = 0.188" in text
+
+    imperfect = Rate(name="tnr", numerator=15, denominator=16)
+    assert imperfect.zero_error() is False
+    assert imperfect.rule_of_three_text() is None
+
+
+def test_the_report_prints_an_interval_next_to_every_proportion() -> None:
+    items = [_item("a", "fail"), _item("b", "pass"), _item("c", "pass")]
+    report = calibrate(
+        _judge_answering({"a": "fail", "b": "pass", "c": "pass"}), items
+    )
+    markdown = report.to_markdown()
+    assert "| metric | value | numerator / denominator | 95% Wilson CI |" in markdown
+    # TPR 1/1 and TNR 2/2, both perfect, both with an interval that says so.
+    assert "| true positive rate (recall) | 1.000 | 1 / 1 | [" in markdown
+    assert "95% CI" in report.to_text()
+
+
+def test_f1_and_kappa_are_refused_an_interval_because_they_are_not_proportions() -> None:
+    """F1's denominator counts the same item twice (2TP + FP + FN), so the trials
+    are not independent and a binomial interval on it is the wrong arithmetic.
+    Kappa is not a proportion of trials at all. Both say so in the cell rather
+    than printing a number a reader would take at face value.
+    """
+    items = [_item("a", "fail"), _item("b", "pass"), _item("c", "pass")]
+    report = calibrate(
+        _judge_answering({"a": "fail", "b": "fail", "c": "pass"}), items
+    )
+    assert report.interval_cell(report.f1) == "not a proportion"
+    assert report.interval_cell(report.true_positive_rate).startswith("[")
+    markdown = report.to_markdown()
+    assert "| Cohen's kappa |" in markdown
+    assert "not a proportion |" in markdown
+
+
+def test_the_gate_section_names_both_numbers_and_which_one_was_scored() -> None:
+    items = [_item(f"p{i}", "fail") for i in range(8)] + [
+        _item(f"n{i}", "pass") for i in range(16)
+    ]
+    answers = {item.item_id: item.label for item in items}
+    report = calibrate(_judge_answering(answers), items)
+
+    assert report.passes() is True  # 8/8 and 16/16 on the point estimate
+    section = "\n".join(report.gate_evidence())
+    assert "| TPR >= 0.85 | 1.000 (8/8) | [0.676, 1.000] | yes | **no** |" in section
+    assert "| TNR >= 0.85 | 1.000 (16/16) | [0.806, 1.000] | yes | **no** |" in section
+    assert "cleared by the point estimate and not by the evidence" in section
+    assert "**22**" in section  # the number of perfect trials 0.85 would need
+    assert "scored on the point estimate" in section
+
+
+def test_the_gate_section_says_so_when_the_lower_bound_also_clears() -> None:
+    """A set large enough that the evidence, and not only the fraction, clears
+    the bar. 30 positives and 30 negatives, all correct: the 95% lower bound is
+    0.884 on both, so the verdict does not depend on which number is scored."""
+    items = [_item(f"p{i}", "fail") for i in range(30)] + [
+        _item(f"n{i}", "pass") for i in range(30)
+    ]
+    answers = {item.item_id: item.label for item in items}
+    report = calibrate(_judge_answering(answers), items)
+    section = "\n".join(report.gate_evidence())
+    assert "clear the threshold on the 95% lower bound" in section
+    assert "cleared by the point estimate and not by the evidence" not in section
+
+
+def test_the_default_gate_still_scores_the_point_estimate() -> None:
+    """The load-bearing compatibility assertion. Printing the lower bound must
+    not silently change whether a committed judge passes; the shipped judge
+    clears 0.85 on 8/8 and would fail on its lower bound of 0.676."""
+    thresholds = CalibrationThresholds()
+    assert thresholds.gate_on == "point"
+    assert thresholds.confidence == 0.95
+    assert "scored on the point estimate" in thresholds.describe()
+
+
+def test_gating_on_the_lower_bound_is_available_and_fails_a_perfect_small_set() -> None:
+    """The stricter rule, and the reason it is not the default, in one test."""
+    items = [_item(f"p{i}", "fail") for i in range(8)] + [
+        _item(f"n{i}", "pass") for i in range(16)
+    ]
+    answers = {item.item_id: item.label for item in items}
+    report = calibrate(_judge_answering(answers), items)
+
+    strict = CalibrationThresholds(gate_on="wilson_lower")
+    ok, failures = report.meets(strict)
+    assert ok is False
+    assert any("Wilson lower bound of 0.676" in f for f in failures)
+    assert any("the point estimate clears the threshold" in f for f in failures)
+    assert "scored on the 95% Wilson lower bound" in strict.describe()
+
+
+def test_the_strict_gate_names_both_numbers_when_both_fall_short() -> None:
+    items = [_item(f"p{i}", "fail") for i in range(8)] + [
+        _item(f"n{i}", "pass") for i in range(16)
+    ]
+    answers = {item.item_id: item.label for item in items}
+    answers["p0"] = "pass"  # one miss: TPR 7/8 = 0.875... still above 0.85
+    answers["p1"] = "pass"  # two misses: TPR 6/8 = 0.750, below it
+    report = calibrate(_judge_answering(answers), items)
+    ok, failures = report.meets(CalibrationThresholds(gate_on="wilson_lower"))
+    assert ok is False
+    assert any("on both the point estimate and the 95% Wilson lower bound" in f
+               for f in failures)
+
+
+def test_the_comparison_table_carries_an_interval_but_names_the_paired_test() -> None:
+    """Two intervals side by side are not the comparison; the artefact says so."""
+    items = [_item("a", "fail"), _item("b", "pass"), _item("c", "pass")]
+    before = calibrate(_judge_answering({"a": "fail", "b": "fail", "c": "pass"}), items)
+    after = calibrate(
+        _judge_answering({"a": "fail", "b": "pass", "c": "pass"}, version="v2"), items
+    )
+    table = compare_reports(before, after)
+    assert "0.500 (1/2) [0.095, 0.905]" in table  # v1 TNR, with its interval
+    assert "those intervals are **not the comparison**" in table
+    assert "the columns are paired" in table

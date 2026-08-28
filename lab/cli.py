@@ -85,6 +85,7 @@ from lab.report import (
     VoiceMetrics,
 )
 from lab.simulator import RunOutcome, ScriptedCaller, StabilityVerdict, run_pass_k
+from lab.stats import wilson_lower_bound
 from lab.trace.io import read_jsonl, write_jsonl
 from lab.trace.schema import EventKind, Trace
 
@@ -1759,22 +1760,14 @@ def _wilson_lower_bound(successes: int, trials: int, z: float = _Z_95) -> float:
 
     Reproduces the figures already quoted in prose elsewhere in the tree:
     3/3 -> 0.439, 5/5 -> 0.566, 8/8 -> 0.676, 16/16 -> 0.806.
+
+    The arithmetic itself lives in `lab.stats`, which is the single copy in this
+    tree. It used to be written out here as well; two implementations of one
+    closed form is exactly the drift a repository arguing for auditable numbers
+    should not ship, so this is now a delegation and the tests that pin these
+    figures pin the shared implementation through it.
     """
-    if trials <= 0:
-        raise ValueError(f"a Wilson bound needs at least one trial, got {trials}")
-    if not 0 <= successes <= trials:
-        raise ValueError(
-            f"{successes} of {trials} is not a proportion: successes must be "
-            "between 0 and trials"
-        )
-    p_hat = successes / trials
-    z2 = z * z
-    denominator = 1.0 + z2 / trials
-    centre = (p_hat + z2 / (2 * trials)) / denominator
-    half = (z / denominator) * math.sqrt(
-        p_hat * (1.0 - p_hat) / trials + z2 / (4 * trials * trials)
-    )
-    return max(0.0, centre - half)
+    return wilson_lower_bound(successes, trials, z=z)
 
 
 def _unanimity_caveat(k: int) -> str:

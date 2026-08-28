@@ -905,6 +905,11 @@ def study_markdown(*, directory: Path | None = None) -> str:
         ]
         parts += [f"- {failure}" for failure in failures]
         parts += [""]
+        # Which of the two numbers that verdict stands on. `to_text()` above
+        # prints the interval beside every rate; this says out loud whether the
+        # threshold is cleared by the point estimate, by the lower bound, or by
+        # neither, which is the difference between a gate and a decoration.
+        parts += reports[version].gate_evidence()
 
     parts += [
         "## Did v2 beat v1?",

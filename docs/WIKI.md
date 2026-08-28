@@ -6741,7 +6741,7 @@ instability *invisible*.
 
 #### 8.2.3 `lab/judges/calibration.py` — measuring the measuring instrument
 
-**Size:** 1,378 lines. **Public names that matter:** `calibrate()`,
+**Size:** 1,693 lines. **Public names that matter:** `calibrate()`,
 `CalibrationReport`, `ConfusionMatrix`, `Rate`, `LabelledTrace`,
 `CalibrationThresholds`, `Disagreement`, `compare_reports()`,
 `mcnemar()`, `PairedComparison`, `exact_mcnemar_p()`, `detectability_floor()`,
@@ -6966,13 +6966,34 @@ grades them — the labelled set must be drawn from the **post-filter** populati
 not from all traffic. §8.2.6 does exactly this and enforces it in code. The module
 docstring calls this "the difference between a calibration and a demo".
 
-**What it explicitly does not claim.** No confidence intervals: with a few dozen
-items the honest statement is the fraction itself, and quoting a Wilson interval
-on 8/8 would suggest the sample size is adequate when the real answer is "label
-more items". No inter-*human* agreement either — this measures a judge against a
-label set, so if the label set is noisy, that noise is charged to the judge.
-Labelling the same items twice, by two people, is named as the right next step
-and declared out of scope.
+**A position this module held, and reversed.** The docstring used to decline
+confidence intervals: *"with a few dozen items the honest statement is the
+fraction itself, and quoting a Wilson interval on 8/8 would suggest the sample
+size is adequate when the real answer is 'label more items'."* That was backwards,
+and the reversal is recorded in the docstring rather than quietly edited out.
+`TPR 1.000` is the number that implies a precision the set cannot support; it
+reads as "this judge does not miss". `TPR 1.000 (8/8), 95% CI [0.676, 1.000]` is
+the number that refuses that reading. An interval does not suggest the sample is
+adequate — its width is the only direct measure in the report of how inadequate
+it is, and the old argument's own conclusion is exactly what it quantifies.
+
+So every rate now prints its Wilson interval, and each report carries a section
+saying whether the gate was cleared by the point estimate, by the lower bound, or
+by neither. On the shipped judge the answer is the first: 8/8 clears TPR ≥ 0.85 on
+a point estimate whose 95% lower bound is 0.676. `CalibrationThresholds.gate_on`
+selects which figure the gate scores and defaults to `"point"` — deliberately,
+because a perfect score clears 0.85 on its lower bound only from **22** trials
+upward, so `"wilson_lower"` would fail every judge in this repository, none of
+which regressed. The arithmetic lives in `lab/stats.py`, once, standard library
+only.
+
+**What it still explicitly does not claim.** No inter-*human* agreement — this
+measures a judge against a label set, so if the label set is noisy, that noise is
+charged to the judge. Labelling the same items twice, by two people, is named as
+the right next step and declared out of scope. And the interval is sampling error
+over *items* only: it assumes the judge's answer per item is fixed, which
+[§8.2.5](#825-self-consistency-and-the-trap-inside-it) measures separately and
+shows to be false.
 
 ---
 

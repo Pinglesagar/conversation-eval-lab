@@ -254,12 +254,17 @@ def test_v2_has_no_disagreements_and_quotes_its_positives() -> None:
 
 def test_iteration_table_reports_the_improvement() -> None:
     table = story.iteration_summary()
+    # Each cell carries the rate, its fraction and its 95% Wilson interval. The
+    # intervals are asserted here as well as the deltas because they are the point
+    # of the row: v1's TPR is 2/8 and its interval reaches 0.591, so "0.250" is
+    # not a number anybody should quote to three decimals on its own.
     assert (
-        "| true positive rate (recall) | 0.250 (2/8) | 1.000 (8/8) | +0.750 |" in table
+        "| true positive rate (recall) | 0.250 (2/8) [0.071, 0.591] "
+        "| 1.000 (8/8) [0.676, 1.000] | +0.750 |" in table
     )
     assert (
-        "| true negative rate (specificity) | 1.000 (16/16) | 1.000 (16/16) | +0.000 |"
-        in table
+        "| true negative rate (specificity) | 1.000 (16/16) [0.806, 1.000] "
+        "| 1.000 (16/16) [0.806, 1.000] | +0.000 |" in table
     )
     assert "| false negatives | 6 | 0 | -6 |" in table
     assert "| false positives | 0 | 0 | +0 |" in table

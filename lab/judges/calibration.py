@@ -99,15 +99,46 @@ them — then the labelled set must be drawn from the *post-filter* population, 
 from all traffic. `lab.judges.hallucinated_confirmation` does exactly this and
 documents it; it is the difference between a calibration and a demo.
 
-WHAT THIS DOES NOT CLAIM
-------------------------
-No confidence intervals. With a few dozen items the honest statement is the
-fraction itself — a Wilson interval on 8/8 would imply a precision the set cannot
-support, and quoting one would suggest the sample size is adequate when the real
-answer is "label more items". No inter-*human* agreement either: this measures a
-judge against a label set, and if the label set itself is noisy that noise is
-attributed to the judge. Labelling the same items twice, by two people, is the
-right next step and is out of scope here.
+CONFIDENCE INTERVALS — A POSITION THAT WAS HELD HERE, AND IS REVERSED
+---------------------------------------------------------------------
+This docstring used to decline confidence intervals, in these words:
+
+    "No confidence intervals. With a few dozen items the honest statement is the
+    fraction itself — a Wilson interval on 8/8 would imply a precision the set
+    cannot support, and quoting one would suggest the sample size is adequate
+    when the real answer is 'label more items'."
+
+That was backwards, and it is recorded here rather than deleted because the
+reversal is the useful part. **`TPR 1.000` is the number that implies a precision
+the set cannot support.** It reads as "this judge does not miss". The interval is
+what refuses that reading: `TPR 1.000 (8/8), 95% CI [0.676, 1.000]` says, in the
+same breath, that no error was observed and that the true rate could be near two
+thirds. Far from suggesting the sample is adequate, an interval is the only line
+in the report whose width is a direct measure of how inadequate it is — and the
+old argument's own conclusion, *label more items*, is exactly what the interval
+quantifies: at the default 0.85 threshold, a lower bound that clears the gate
+needs 22 consecutive correct answers in the gated class
+(`lab.stats.min_trials_for_lower_bound`). The set has 8 positives.
+
+So every rate here prints its Wilson interval, and the report states plainly
+whether the gate is cleared by the point estimate, by the lower bound, or by
+neither. `CalibrationThresholds.gate_on` chooses which one the gate actually
+scores; it defaults to `"point"`, and the reasoning for that default — including
+the fact that `"wilson_lower"` would fail every judge committed to this
+repository — is in `CalibrationThresholds` and printed in every report.
+
+Two things an interval here does *not* cover, both stated in the artefact rather
+than left for the reader:
+
+*   **It is sampling error over items only.** It assumes the judge's answer for a
+    given item is fixed. `SelfConsistency` shows that it is not. The second source
+    of uncertainty is measured separately and printed beside the first as a band
+    across identical runs (`ReplicateBands`); the two are never added, because
+    adding them would invent a combined distribution nobody measured.
+*   **It says nothing about label quality.** This measures a judge against a label
+    set, and if the label set is noisy that noise is charged to the judge. No
+    inter-*human* agreement is measured. Labelling the same items twice is the
+    right next step and is out of scope here.
 """
 
 from __future__ import annotations
@@ -121,6 +152,12 @@ from typing import Iterable, Literal, Sequence
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 from lab.judges.judge import Judge, Label, Verdict
+from lab.stats import (
+    format_interval,
+    min_trials_for_lower_bound,
+    rule_of_three_upper_bound,
+    wilson_interval,
+)
 from lab.trace.schema import Trace
 
 __all__ = [
@@ -272,6 +309,54 @@ class Rate(BaseModel):
     def __repr__(self) -> str:
         return f"Rate(name={self.name!r}, {self})"
 
+    # ------------------------------------------------------- the interval
+
+    def interval(self, confidence: float = 0.95) -> tuple[float, float] | None:
+        """The Wilson score interval, or None when the denominator is zero.
+
+        Deliberately a method and not a `computed_field`: an interval is a
+        function of the two counts already serialised, so storing it would put a
+        derived number in the JSON that a reader could not check against anything.
+        The rule this repository follows everywhere else — a summary that cannot
+        be recomputed from the counts is a claim rather than a result — applies to
+        its own confidence intervals too.
+        """
+        if self.denominator == 0:
+            return None
+        return wilson_interval(
+            self.numerator, self.denominator, confidence=confidence
+        )
+
+    def interval_text(self, confidence: float = 0.95) -> str:
+        """`[0.676, 1.000]`, or `undefined` on an empty denominator."""
+        return format_interval(self.interval(confidence))
+
+    def with_interval(self, confidence: float = 0.95) -> str:
+        """`1.000 (8/8) 95% CI [0.676, 1.000]` — the whole claim on one line."""
+        return f"{self} {confidence:.0%} CI {self.interval_text(confidence)}"
+
+    def zero_error(self) -> bool:
+        """True when every trial in the denominator went the right way.
+
+        The case the rule of three exists for, and the case a point estimate
+        flatters hardest.
+        """
+        return self.denominator > 0 and self.numerator == self.denominator
+
+    def rule_of_three_text(self) -> str | None:
+        """The 3/n sentence, or None when there was an observed error.
+
+        Returned rather than printed so the caller decides where it goes; the
+        reports put it under the rates table, once per rate that earned it.
+        """
+        if not self.zero_error():
+            return None
+        bound = rule_of_three_upper_bound(self.denominator)
+        return (
+            f"{self.name}: 0 errors in {self.denominator}, so the 95% upper bound "
+            f"on the true error rate is about 3/{self.denominator} = {bound:.3f}"
+        )
+
 
 class ConfusionMatrix(BaseModel):
     """The 2x2 table. Everything else in the report is a function of these four.
@@ -381,6 +466,33 @@ class CalibrationThresholds(BaseModel):
     dependent, so a fixed minimum would pass or fail the same judge depending on
     how the label set happened to be balanced. Set `min_kappa` yourself when
     comparing judges on one fixed set.
+
+    WHICH NUMBER THE GATE SCORES, AND WHY THE DEFAULT IS THE WEAKER ONE
+    -------------------------------------------------------------------
+    `gate_on` chooses between the point estimate and the Wilson lower bound, and
+    the choice is printed in every report rather than being an implementation
+    detail, because the two answer different questions:
+
+        "point"         is the measured rate at least 0.85?
+        "wilson_lower"  is the rate at least 0.85 with 95% confidence?
+
+    The second is the stronger claim and the honest one, and it is **not** the
+    default. The reason is a number, not a preference. With a perfect score the
+    95% lower bound clears 0.85 only from 22 trials upward, so the default gate
+    scored on the lower bound would fail every judge committed to this repository
+    — 8 positives and 16 negatives on `hallucinated_confirmation`, 15 and 12 on
+    the advisory scorer — none of which regressed, and none of which has been
+    measured on enough items to demonstrate the threshold either way. Switching
+    the default would not raise the standard; it would replace a gate that passes
+    on a point estimate with a gate that nothing can pass, which gets deleted
+    within a week and then guards nothing.
+
+    What is *not* acceptable is leaving the reader to assume the gate stands on
+    more than it does, so both numbers are printed next to the verdict and the
+    report says in words which one it was scored on. Setting
+    `gate_on="wilson_lower"` is a one-word change for anyone who wants the
+    stronger gate, and the label sets that would clear it are the deliverable
+    that earns it.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -390,6 +502,20 @@ class CalibrationThresholds(BaseModel):
     min_items: int = Field(default=10, ge=1)
     max_parse_error_rate: float = Field(default=0.0, ge=0.0, le=1.0)
     min_kappa: float | None = Field(default=None, ge=-1.0, le=1.0)
+    gate_on: Literal["point", "wilson_lower"] = Field(
+        default="point",
+        description=(
+            "Which figure TPR and TNR are scored on: the point estimate, or the "
+            "lower limit of its Wilson interval. See the class docstring for why "
+            "the weaker one is the default."
+        ),
+    )
+    confidence: float = Field(
+        default=0.95,
+        gt=0.0,
+        lt=1.0,
+        description="Confidence level for every interval printed or gated on.",
+    )
 
     def describe(self) -> str:
         parts = [
@@ -400,6 +526,12 @@ class CalibrationThresholds(BaseModel):
         ]
         if self.min_kappa is not None:
             parts.append(f"kappa >= {self.min_kappa:.2f}")
+        scored = (
+            "the point estimate"
+            if self.gate_on == "point"
+            else f"the {self.confidence:.0%} Wilson lower bound"
+        )
+        parts.append(f"scored on {scored}")
         return ", ".join(parts)
 
 
@@ -481,6 +613,11 @@ class CalibrationReport(BaseModel):
         An undefined rate fails rather than passing. A judge that never returned a
         positive has an undefined precision and has demonstrated nothing; treating
         "undefined" as "fine" is how a silent judge gets through a gate.
+
+        `thresholds.gate_on` decides whether TPR and TNR are scored on the point
+        estimate or on the Wilson lower bound. Under `"wilson_lower"` the failure
+        sentence names both numbers, because "TPR 1.000 (8/8) failed" without the
+        bound that failed it reads like a bug in the gate.
         """
         thr = thresholds if thresholds is not None else CalibrationThresholds()
         failures: list[str] = []
@@ -500,6 +637,24 @@ class CalibrationReport(BaseModel):
                     f"set contains no items of that class, so the judge has not been "
                     f"measured on it"
                 )
+            elif thr.gate_on == "wilson_lower":
+                bounds = rate.interval(thr.confidence)
+                assert bounds is not None  # a defined rate has a denominator
+                lower = bounds[0]
+                if lower >= minimum:
+                    continue
+                if rate.value >= minimum:
+                    failures.append(
+                        f"{name} {rate} has a {thr.confidence:.0%} Wilson lower bound "
+                        f"of {lower:.3f}, below the required {minimum:.2f}: the point "
+                        f"estimate clears the threshold and the evidence does not"
+                    )
+                else:
+                    failures.append(
+                        f"{name} {rate} is below the required {minimum:.2f} on both the "
+                        f"point estimate and the {thr.confidence:.0%} Wilson lower "
+                        f"bound ({lower:.3f})"
+                    )
             elif rate.value < minimum:
                 failures.append(
                     f"{name} {rate} is below the required {minimum:.2f}"
@@ -552,8 +707,15 @@ class CalibrationReport(BaseModel):
             "",
         ]
         width = max(len(rate.name) for rate in self.rates())
+        value_width = max(len(str(rate)) for rate in self.rates())
         for rate in self.rates():
-            lines.append(f"  {rate.name:<{width}} : {rate}")
+            cell = self.interval_cell(rate)
+            suffix = (
+                f"95% CI {cell}"
+                if cell.startswith("[") or cell == "undefined"
+                else f"no interval — {cell}"
+            )
+            lines.append(f"  {rate.name:<{width}} : {str(rate):<{value_width}}  {suffix}")
         lines.append(f"  {'Cohen kappa':<{width}} : {_fmt_kappa(self.cohens_kappa)}")
         lines.append(
             f"  {'':<{width}}   (observed {self.kappa_observed_agreement:.3f}, "
@@ -570,6 +732,128 @@ class CalibrationReport(BaseModel):
                     f"human={item.human_label} judge={item.judge_label}"
                 )
         return "\n".join(lines)
+
+    # --------------------------------------------------- intervals and the gate
+
+    def interval_cell(self, rate: Rate, confidence: float = 0.95) -> str:
+        """The interval for one reported rate, or a refusal for the ones it fits.
+
+        F1 is printed as a fraction like the others and is **not** a binomial
+        proportion: its numerator is `2*TP` and its denominator `2*TP + FP + FN`,
+        so the same item is counted twice and the trials are not independent. A
+        Wilson interval on it would be arithmetic applied to the wrong quantity,
+        which is the failure mode this whole section exists to argue against, so
+        the cell says so instead.
+
+        TPR, TNR, raw agreement and prevalence are proportions over denominators
+        fixed by the label set, which is exactly the case Wilson covers. Precision
+        is the one to read with care: its denominator is the judge's own positive
+        count, which varies from run to run, so its interval is conditional on
+        that count rather than on anything the label set fixed.
+        """
+        if rate is self.f1:
+            return "not a proportion"
+        return rate.interval_text(confidence)
+
+    def gate_evidence(
+        self, thresholds: CalibrationThresholds | None = None
+    ) -> list[str]:
+        """The two gated rates, their intervals, and which of them the gate read.
+
+        Markdown lines. The section exists because a threshold cleared by a point
+        estimate whose lower bound sits below that threshold is not clearing the
+        bar it claims to clear, and the only defensible thing to do about it is to
+        show both numbers and say which one was scored.
+        """
+        thr = thresholds if thresholds is not None else CalibrationThresholds()
+        conf = thr.confidence
+        gated = (
+            (self.true_positive_rate, thr.min_tpr, "TPR"),
+            (self.true_negative_rate, thr.min_tnr, "TNR"),
+        )
+        lines = [
+            f"## The interval, and which number the gate is standing on",
+            "",
+            f"Gate: {thr.describe()}.",
+            "",
+            f"| gated rate | point estimate | {conf:.0%} Wilson CI | clears on the "
+            "point? | clears on the lower bound? |",
+            "|---|---|---|---|---|",
+        ]
+        clears_point = True
+        clears_lower = True
+        for rate, minimum, name in gated:
+            bounds = rate.interval(conf)
+            if bounds is None:
+                clears_point = clears_lower = False
+                lines.append(
+                    f"| {name} >= {minimum:.2f} | undefined "
+                    f"({rate.numerator}/{rate.denominator}) | undefined | no | no |"
+                )
+                continue
+            assert rate.value is not None
+            point_ok = rate.value >= minimum
+            lower_ok = bounds[0] >= minimum
+            clears_point = clears_point and point_ok
+            clears_lower = clears_lower and lower_ok
+            lines.append(
+                f"| {name} >= {minimum:.2f} | {rate} | {format_interval(bounds)} | "
+                f"{'yes' if point_ok else '**no**'} | "
+                f"{'yes' if lower_ok else '**no**'} |"
+            )
+        lines.append("")
+
+        rule_of_three = [
+            text for rate, _, _ in gated if (text := rate.rule_of_three_text())
+        ]
+        if rule_of_three:
+            lines.append(
+                "Rule of three, the same fact in the form that is easier to hold on to:"
+            )
+            lines.append("")
+            lines += [f"- {text}" for text in rule_of_three]
+            lines.append("")
+
+        if clears_point and not clears_lower:
+            needed = min_trials_for_lower_bound(
+                max(thr.min_tpr, thr.min_tnr), confidence=conf
+            )
+            lines += [
+                "**The gate is cleared by the point estimate and not by the "
+                "evidence.** That is stated rather than hidden, and it is not a "
+                "reason to abandon the gate: it is the reason the interval is "
+                "printed next to it. A perfect score clears a "
+                f"{max(thr.min_tpr, thr.min_tnr):.2f} threshold on its {conf:.0%} "
+                f"lower bound only from **{needed}** trials upward, so the fix is "
+                "more labelled items in the class that falls short — not a weaker "
+                "threshold, and not a better prompt.",
+                "",
+            ]
+        elif clears_lower:
+            lines += [
+                f"Both gated rates clear the threshold on the {conf:.0%} lower "
+                "bound as well as on the point estimate, so the gate verdict does "
+                "not depend on which of the two is scored.",
+                "",
+            ]
+
+        if thr.gate_on == "point":
+            lines += [
+                "This report was scored on the point estimate. "
+                "`CalibrationThresholds(gate_on='wilson_lower')` scores the lower "
+                "bound instead; it is not the default because at these set sizes "
+                "it fails every judge in this repository, none of which regressed "
+                "— see the class docstring.",
+                "",
+            ]
+        else:
+            lines += [
+                "This report was scored on the Wilson lower bound, which is the "
+                "stronger claim: the threshold is met with "
+                f"{conf:.0%} confidence and not merely on the observed fraction.",
+                "",
+            ]
+        return lines
 
     def to_markdown(self) -> str:
         """A self-contained markdown report: matrix, rates, and every disagreement."""
@@ -592,21 +876,25 @@ class CalibrationReport(BaseModel):
             "",
             "## Rates",
             "",
-            "| metric | value | numerator / denominator |",
-            "|---|---|---|",
+            "| metric | value | numerator / denominator | 95% Wilson CI |",
+            "|---|---|---|---|",
         ]
         for rate in self.rates():
             value = "undefined" if rate.value is None else f"{rate.value:.3f}"
-            lines.append(f"| {rate.name} | {value} | {rate.numerator} / {rate.denominator} |")
+            lines.append(
+                f"| {rate.name} | {value} | {rate.numerator} / {rate.denominator} | "
+                f"{self.interval_cell(rate)} |"
+            )
         lines.append(
             f"| Cohen's kappa | {_fmt_kappa(self.cohens_kappa)} | "
             f"observed {self.kappa_observed_agreement:.3f}, "
-            f"chance {self.kappa_expected_agreement:.3f} |"
+            f"chance {self.kappa_expected_agreement:.3f} | not a proportion |"
         )
         if self.parse_errors:
             per = self.parse_error_rate
             lines.append(
-                f"| parse errors | {per.value:.3f} | {per.numerator} / {per.denominator} |"
+                f"| parse errors | {per.value:.3f} | {per.numerator} / {per.denominator} "
+                f"| {per.interval_text()} |"
             )
 
         lines += [
@@ -616,6 +904,20 @@ class CalibrationReport(BaseModel):
             "majority class scores the majority fraction. Kappa subtracts the "
             "agreement two graders with these marginals would reach by chance.",
             "",
+            "The interval is the Wilson score interval at 95%, computed from the two "
+            "counts in the row beside it and from nothing else, so a reader can "
+            "recheck it. It is sampling error over items only: it assumes the judge "
+            "would give the same answer on a second run, which is a separate "
+            "question with a separate measurement. No interval is given for Cohen's "
+            "kappa or for F1 — neither is a proportion of independent trials, and a "
+            "binomial interval on either would be arithmetic applied to the wrong "
+            "quantity. Precision is the one to read with care: its denominator is "
+            "the judge's own positive count rather than a class the label set "
+            "fixed, so its interval is conditional on that count.",
+            "",
+        ]
+        lines += self.gate_evidence()
+        lines += [
             "## Disagreements",
             "",
         ]
@@ -1157,10 +1459,13 @@ def compare_reports(before: CalibrationReport, after: CalibrationReport) -> str:
             "difference would mix a prompt change with a label change"
         )
 
-    def row(name: str, a: Rate, b: Rate) -> str:
+    def row(name: str, a: Rate, b: Rate, *, interval: bool = True) -> str:
         def cell(rate: Rate) -> str:
             value = "undefined" if rate.value is None else f"{rate.value:.3f}"
-            return f"{value} ({rate.numerator}/{rate.denominator})"
+            text = f"{value} ({rate.numerator}/{rate.denominator})"
+            if interval and rate.defined:
+                text += f" {rate.interval_text()}"
+            return text
 
         if a.value is None or b.value is None:
             delta = "—"
@@ -1193,7 +1498,7 @@ def compare_reports(before: CalibrationReport, after: CalibrationReport) -> str:
             after.true_negative_rate,
         ),
         row("precision", before.precision, after.precision),
-        row("F1", before.f1, after.f1),
+        row("F1", before.f1, after.f1, interval=False),
         row("raw agreement", before.raw_agreement, after.raw_agreement),
         f"| Cohen's kappa | {_fmt_kappa(before.cohens_kappa)} | "
         f"{_fmt_kappa(after.cohens_kappa)} | {kappa_delta} |",
@@ -1216,6 +1521,16 @@ def compare_reports(before: CalibrationReport, after: CalibrationReport) -> str:
         "which direction the errors ran, and the direction is the whole story here: a "
         "judge that misses defects and a judge that invents them fail the same "
         "threshold and require opposite fixes.",
+        "",
+        "Each rate carries its 95% Wilson interval, and those intervals are **not "
+        "the comparison**. They are computed as though the two columns were "
+        "independent samples, and they are not: the same items were graded twice, "
+        "so the columns are paired and the pairing carries most of the information. "
+        "Reading two intervals for overlap discards it — it can call a real "
+        "difference inconclusive because both intervals are wide, and it can flatter "
+        "a difference driven by two items. The paired test below is what the "
+        "comparison is decided on; the intervals are here to say how much each "
+        "column on its own is worth.",
         "",
         *_paired_section(before, after, mcnemar(before, after)),
     ]

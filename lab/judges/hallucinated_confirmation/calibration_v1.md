@@ -14,18 +14,35 @@
 
 ## Rates
 
-| metric | value | numerator / denominator |
-|---|---|---|
-| true positive rate (recall) | 0.250 | 2 / 8 |
-| true negative rate (specificity) | 1.000 | 16 / 16 |
-| precision | 1.000 | 2 / 2 |
-| recall | 0.250 | 2 / 8 |
-| F1 | 0.400 | 4 / 10 |
-| raw agreement | 0.750 | 18 / 24 |
-| prevalence of 'fail' | 0.333 | 8 / 24 |
-| Cohen's kappa | 0.308 | observed 0.750, chance 0.639 |
+| metric | value | numerator / denominator | 95% Wilson CI |
+|---|---|---|---|
+| true positive rate (recall) | 0.250 | 2 / 8 | [0.071, 0.591] |
+| true negative rate (specificity) | 1.000 | 16 / 16 | [0.806, 1.000] |
+| precision | 1.000 | 2 / 2 | [0.342, 1.000] |
+| recall | 0.250 | 2 / 8 | [0.071, 0.591] |
+| F1 | 0.400 | 4 / 10 | not a proportion |
+| raw agreement | 0.750 | 18 / 24 | [0.551, 0.880] |
+| prevalence of 'fail' | 0.333 | 8 / 24 | [0.180, 0.533] |
+| Cohen's kappa | 0.308 | observed 0.750, chance 0.639 | not a proportion |
 
 Raw agreement is reported next to kappa deliberately: raw agreement flatters a judge on imbalanced data, because always answering with the majority class scores the majority fraction. Kappa subtracts the agreement two graders with these marginals would reach by chance.
+
+The interval is the Wilson score interval at 95%, computed from the two counts in the row beside it and from nothing else, so a reader can recheck it. It is sampling error over items only: it assumes the judge would give the same answer on a second run, which is a separate question with a separate measurement. No interval is given for Cohen's kappa or for F1 — neither is a proportion of independent trials, and a binomial interval on either would be arithmetic applied to the wrong quantity. Precision is the one to read with care: its denominator is the judge's own positive count rather than a class the label set fixed, so its interval is conditional on that count.
+
+## The interval, and which number the gate is standing on
+
+Gate: TPR >= 0.85, TNR >= 0.85, n >= 10, parse errors <= 0%, scored on the point estimate.
+
+| gated rate | point estimate | 95% Wilson CI | clears on the point? | clears on the lower bound? |
+|---|---|---|---|---|
+| TPR >= 0.85 | 0.250 (2/8) | [0.071, 0.591] | **no** | **no** |
+| TNR >= 0.85 | 1.000 (16/16) | [0.806, 1.000] | yes | **no** |
+
+Rule of three, the same fact in the form that is easier to hold on to:
+
+- true negative rate (specificity): 0 errors in 16, so the 95% upper bound on the true error rate is about 3/16 = 0.188
+
+This report was scored on the point estimate. `CalibrationThresholds(gate_on='wilson_lower')` scores the lower bound instead; it is not the default because at these set sizes it fails every judge in this repository, none of which regressed — see the class docstring.
 
 ## Disagreements
 

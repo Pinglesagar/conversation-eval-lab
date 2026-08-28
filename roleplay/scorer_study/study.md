@@ -39,13 +39,13 @@ Judge calibration: roleplay_rubric_scorer v1
      judge: fail            TP 9            FP 0
      judge: pass            FN 6           TN 12
 
-  true positive rate (recall)      : 0.600 (9/15)
-  true negative rate (specificity) : 1.000 (12/12)
-  precision                        : 1.000 (9/9)
-  recall                           : 0.600 (9/15)
-  F1                               : 0.750 (18/24)
-  raw agreement                    : 0.778 (21/27)
-  prevalence of 'fail'             : 0.556 (15/27)
+  true positive rate (recall)      : 0.600 (9/15)   95% CI [0.357, 0.802]
+  true negative rate (specificity) : 1.000 (12/12)  95% CI [0.758, 1.000]
+  precision                        : 1.000 (9/9)    95% CI [0.701, 1.000]
+  recall                           : 0.600 (9/15)   95% CI [0.357, 0.802]
+  F1                               : 0.750 (18/24)  no interval — not a proportion
+  raw agreement                    : 0.778 (21/27)  95% CI [0.592, 0.894]
+  prevalence of 'fail'             : 0.556 (15/27)  95% CI [0.373, 0.724]
   Cohen kappa                      : 0.571
                                      (observed 0.778, expected by chance 0.481)
 
@@ -115,10 +115,25 @@ Items that did not hold still:
 
 No item changed verdict between runs. Stability on this set is not a guarantee for unseen items, but an unstable judge would have shown it here.
 
-**Gate (TPR >= 0.85, TNR >= 0.85, n >= 10, parse errors <= 0%): FAIL**
+**Gate (TPR >= 0.85, TNR >= 0.85, n >= 10, parse errors <= 0%, scored on the point estimate): FAIL**
 
 - TPR 0.600 (9/15) is below the required 0.85
 - registry refused this judge in CI mode: JudgeBelowThresholdError
+
+## The interval, and which number the gate is standing on
+
+Gate: TPR >= 0.85, TNR >= 0.85, n >= 10, parse errors <= 0%, scored on the point estimate.
+
+| gated rate | point estimate | 95% Wilson CI | clears on the point? | clears on the lower bound? |
+|---|---|---|---|---|
+| TPR >= 0.85 | 0.600 (9/15) | [0.357, 0.802] | **no** | **no** |
+| TNR >= 0.85 | 1.000 (12/12) | [0.758, 1.000] | yes | **no** |
+
+Rule of three, the same fact in the form that is easier to hold on to:
+
+- true negative rate (specificity): 0 errors in 12, so the 95% upper bound on the true error rate is about 3/12 = 0.250
+
+This report was scored on the point estimate. `CalibrationThresholds(gate_on='wilson_lower')` scores the lower bound instead; it is not the default because at these set sizes it fails every judge in this repository, none of which regressed — see the class docstring.
 
 ## Rubric `v2`
 
@@ -133,13 +148,13 @@ Judge calibration: roleplay_rubric_scorer v2
      judge: fail           TP 15            FP 0
      judge: pass            FN 0           TN 12
 
-  true positive rate (recall)      : 1.000 (15/15)
-  true negative rate (specificity) : 1.000 (12/12)
-  precision                        : 1.000 (15/15)
-  recall                           : 1.000 (15/15)
-  F1                               : 1.000 (30/30)
-  raw agreement                    : 1.000 (27/27)
-  prevalence of 'fail'             : 0.556 (15/27)
+  true positive rate (recall)      : 1.000 (15/15)  95% CI [0.796, 1.000]
+  true negative rate (specificity) : 1.000 (12/12)  95% CI [0.758, 1.000]
+  precision                        : 1.000 (15/15)  95% CI [0.796, 1.000]
+  recall                           : 1.000 (15/15)  95% CI [0.796, 1.000]
+  F1                               : 1.000 (30/30)  no interval — not a proportion
+  raw agreement                    : 1.000 (27/27)  95% CI [0.875, 1.000]
+  prevalence of 'fail'             : 0.556 (15/27)  95% CI [0.373, 0.724]
   Cohen kappa                      : 1.000
                                      (observed 1.000, expected by chance 0.506)
 ```
@@ -204,8 +219,26 @@ Items that did not hold still:
 
 - `label-aggressive-both-objections-answered` (human: **pass**) — pass, pass, fail
 
-**Gate (TPR >= 0.85, TNR >= 0.85, n >= 10, parse errors <= 0%): PASS**
+**Gate (TPR >= 0.85, TNR >= 0.85, n >= 10, parse errors <= 0%, scored on the point estimate): PASS**
 
+
+## The interval, and which number the gate is standing on
+
+Gate: TPR >= 0.85, TNR >= 0.85, n >= 10, parse errors <= 0%, scored on the point estimate.
+
+| gated rate | point estimate | 95% Wilson CI | clears on the point? | clears on the lower bound? |
+|---|---|---|---|---|
+| TPR >= 0.85 | 1.000 (15/15) | [0.796, 1.000] | yes | **no** |
+| TNR >= 0.85 | 1.000 (12/12) | [0.758, 1.000] | yes | **no** |
+
+Rule of three, the same fact in the form that is easier to hold on to:
+
+- true positive rate (recall): 0 errors in 15, so the 95% upper bound on the true error rate is about 3/15 = 0.200
+- true negative rate (specificity): 0 errors in 12, so the 95% upper bound on the true error rate is about 3/12 = 0.250
+
+**The gate is cleared by the point estimate and not by the evidence.** That is stated rather than hidden, and it is not a reason to abandon the gate: it is the reason the interval is printed next to it. A perfect score clears a 0.85 threshold on its 95% lower bound only from **22** trials upward, so the fix is more labelled items in the class that falls short — not a weaker threshold, and not a better prompt.
+
+This report was scored on the point estimate. `CalibrationThresholds(gate_on='wilson_lower')` scores the lower bound instead; it is not the default because at these set sizes it fails every judge in this repository, none of which regressed — see the class docstring.
 
 ## Did v2 beat v1?
 
@@ -215,11 +248,11 @@ Same label set (`3bf9c1b846b078e2`, 27 items), same model (`azure/gpt-4.1`). Onl
 
 | metric | v1 | v2 | delta |
 |---|---|---|---|
-| true positive rate (recall) | 0.600 (9/15) | 1.000 (15/15) | +0.400 |
-| true negative rate (specificity) | 1.000 (12/12) | 1.000 (12/12) | +0.000 |
-| precision | 1.000 (9/9) | 1.000 (15/15) | +0.000 |
+| true positive rate (recall) | 0.600 (9/15) [0.357, 0.802] | 1.000 (15/15) [0.796, 1.000] | +0.400 |
+| true negative rate (specificity) | 1.000 (12/12) [0.758, 1.000] | 1.000 (12/12) [0.758, 1.000] | +0.000 |
+| precision | 1.000 (9/9) [0.701, 1.000] | 1.000 (15/15) [0.796, 1.000] | +0.000 |
 | F1 | 0.750 (18/24) | 1.000 (30/30) | +0.250 |
-| raw agreement | 0.778 (21/27) | 1.000 (27/27) | +0.222 |
+| raw agreement | 0.778 (21/27) [0.592, 0.894] | 1.000 (27/27) [0.875, 1.000] | +0.222 |
 | Cohen's kappa | 0.571 | 1.000 | +0.429 |
 | true positives | 9 | 15 | +6 |
 | true negatives | 12 | 12 | +0 |
@@ -228,6 +261,8 @@ Same label set (`3bf9c1b846b078e2`, 27 items), same model (`azure/gpt-4.1`). Onl
 | unparseable answers | 0 | 0 | +0 |
 
 All four confusion cells are printed, not just the two rates. A rate hides which direction the errors ran, and the direction is the whole story here: a judge that misses defects and a judge that invents them fail the same threshold and require opposite fixes.
+
+Each rate carries its 95% Wilson interval, and those intervals are **not the comparison**. They are computed as though the two columns were independent samples, and they are not: the same items were graded twice, so the columns are paired and the pairing carries most of the information. Reading two intervals for overlap discards it — it can call a real difference inconclusive because both intervals are wide, and it can flatter a difference driven by two items. The paired test below is what the comparison is decided on; the intervals are here to say how much each column on its own is worth.
 
 ## Is the difference distinguishable from chance?
 

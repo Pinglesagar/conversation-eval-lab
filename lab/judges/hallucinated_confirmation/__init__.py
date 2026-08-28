@@ -174,6 +174,7 @@ from typing import Sequence
 
 from lab.judges.calibration import (
     CalibrationReport,
+    Rate,
     CalibrationThresholds,
     LabelledTrace,
     SelfConsistency,
@@ -427,7 +428,7 @@ def iteration_summary(*, directory: str | Path | None = None) -> str:
         parts.append(
             stability(version, items=items, directory=directory).to_markdown()
         )
-    parts.append(_HOW_TO_READ)
+    parts.append(_how_to_read(reports[VERSIONS[-1]]))
     return "\n".join(parts)
 
 
@@ -455,13 +456,37 @@ def _disagreement_section(report: CalibrationReport) -> str:
     return "\n".join(lines)
 
 
-#: The caveats belong in the generated file, not only in a docstring, because the
-#: generated file is the one that gets pasted into a slide.
-_HOW_TO_READ = """## How to read this
+# The caveats belong in the generated file, not only in a docstring, because the
+# generated file is the one that gets pasted into a slide.
+def _how_to_read(report: CalibrationReport) -> str:
+    """The caveats, with the two Wilson bounds computed from the report itself.
+
+    The bounds used to be written into this string by hand. They were correct,
+    and a hardcoded statistic sitting beside a computed one is a defect waiting
+    for the first relabelled item: the table would move and the sentence under it
+    would not. They are interpolated now, from the same `Rate` objects the table
+    above is rendered from.
+    """
+    tpr, tnr = report.true_positive_rate, report.true_negative_rate
+    fractions = (
+        f"{report.prompt_version}'s {tpr.numerator}/{tpr.denominator} and "
+        f"{tnr.numerator}/{tnr.denominator}"
+    )
+
+
+    def lower(rate: "Rate") -> str:
+        interval = rate.interval()
+        return "undefined" if interval is None else f"{interval[0]:.3f}"
+
+    bounds = f"{lower(tpr)} and {lower(tnr)}"
+    return f"""## How to read this
 
 - **Twenty-four items.** One relabelled item moves a rate by four to six points.
-  v2's 8/8 and 16/16 are consistent with true rates near 0.68 and 0.81
-  respectively (95% Wilson lower bounds) — "no measured error", not "no error".
+  {fractions} are consistent with true rates as low as {bounds} respectively
+  (95% Wilson lower bounds) — "no measured error", not "no error". Both
+  calibration reports print the full interval next to every rate, and both say
+  in words that the gate is cleared by the point estimate and not by the lower
+  bound.
 - **v2 scores 1.000, which means this label set is finished, not that the judge
   is.** A set on which a judge makes no mistakes cannot measure that judge any
   further, and cannot detect a regression in it. The honest next step is harder
