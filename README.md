@@ -586,6 +586,51 @@ is already here and says plainly where the name would overreach.
 
 ---
 
+## Test coverage — the number, and what it is worth
+
+Published rather than declined, because a repository arguing that instruments
+must be measured before they are trusted cannot be silent about the most
+conspicuous measurement of its own tests. Reproduce with `make coverage`.
+
+Measured at commit `006dbd4` over 1,992 offline tests, branch mode, all seven
+packages:
+
+| denominator | coverage.py reports | statements never executed | branches taken one way only |
+| --- | --- | --- | --- |
+| whole tree | **84%** | 2,566 of 17,839 | 614 of 5,056 |
+| omitting the five recording scripts that need vendor keys | **87%** | 1,892 of 17,091 | 611 of 4,854 |
+
+Per package, statements missed of statements total: `lab` **90%** (812/9,199),
+`ragcheck` **88%** (109/999), `scenarios` **87%** (86/852), `roleplay` **84%**
+(581/4,297), `tablemate` **84%** (225/1,603), `error_analysis` **42%** (79/141),
+`scripts` **9%** (674/748).
+
+**What it excludes.** Nothing is omitted from the headline figure — the earlier
+config named three packages of seven and produced a number whose denominator was
+silently wrong, which is now fixed. Seven modules sit at 0%: four recording
+scripts (504 statements) that need vendor keys and spend money, so no offline run
+can reach them; and three `__main__` entry points (83 statements). One of those is
+worth naming rather than burying — **`ragcheck/__main__.py`, 73 statements, 0%,
+is what `make ragcheck` runs.** A documented entry point that no test executes is
+a real gap and it is listed here rather than left for a reviewer to find.
+
+**What it does not tell you, which is most of what you want to know.** Coverage
+says a line ran. It says nothing about whether an assertion would have noticed
+had the line been wrong, and this repository's substance is in what it *refuses*
+to print — refusals whose value is in the branch that raises, not the branch that
+returns. A suite that executes every line and asserts nothing scores 100%. The
+measurement that would actually answer the question is mutation testing — seed a
+defect, check the suite catches it — and it has not been run here; three seeded
+defects in `tablemate/` are the hand-built version of that idea, not a kill rate.
+Read 84% as evidence that the code is exercised, not as evidence that it is
+guarded.
+
+**Not a CI gate, deliberately.** A coverage floor fails for reasons unrelated to
+the change in front of it, and adopting an uncalibrated instrument as a gate is
+the thing this repository spends its length arguing against.
+
+---
+
 ## Limitations
 
 Read this section as part of every number above.
@@ -679,6 +724,7 @@ Read this section as part of every number above.
 | --- | --- |
 | `make install` | editable install with dev extras |
 | `make test` | the full offline suite |
+| `make coverage` | line and branch coverage, whole tree and offline-executable subset |
 | `make demo` | the case study end to end, into `reports/` |
 | `make replay` | re-check every committed trace, no agent involved |
 | `make validate` | validate the scenario corpus, with coverage |

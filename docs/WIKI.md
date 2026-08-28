@@ -1346,7 +1346,8 @@ clone can run every row below.
 | Target | What it does |
 | --- | --- |
 | `make install` | the package plus dev extras, editable |
-| `make test` | the full offline suite — 1,976 pass, 4 skip |
+| `make test` | the full offline suite — 1,992 pass, 4 skip at commit `006dbd4` |
+| `make coverage` | line and branch coverage: whole tree, then the offline-executable subset ([§10.4](#104-the-harness-itself)) |
 | `make calibrate` | the timing and judge gates; **non-zero if either fails** |
 | `make validate` | the corpus against its schema, with coverage |
 | `make roleplay-validate` | the same, for the advisory corpus |
@@ -6508,7 +6509,7 @@ is not evidence.*
 - [8.2.1 What an LLM judge is, and why it cannot be trusted unmeasured](#821-what-an-llm-judge-is-and-why-it-cannot-be-trusted-unmeasured)
 - [8.2.2 `lab/judges/judge.py` — the judge itself, deliberately dull](#822-labjudgesjudgepy--the-judge-itself-deliberately-dull)
 - [8.2.3 `lab/judges/calibration.py` — measuring the measuring instrument](#823-labjudgescalibrationpy--measuring-the-measuring-instrument)
-- [8.2.4 `lab/judges/registry.py` — the gate that refuses](#824-labjudgesregistrypy--the-gate-that-refuses)
+- [8.2.4 `lab/judges/registry.py` — the gates that refuse](#824-labjudgesregistrypy--the-gates-that-refuse)
 - [8.2.5 Self-consistency, and the trap inside it](#825-self-consistency-and-the-trap-inside-it)
 - [8.2.6 `lab/judges/hallucinated_confirmation/` — the worked v1 → v2 study](#826-labjudgeshallucinated_confirmation--the-worked-v1--v2-study)
 - [8.2.7 `lab/simulator/persona.py` — personas, goals and gated facts](#827-labsimulatorpersonapy--personas-goals-and-gated-facts)
@@ -6740,9 +6741,10 @@ instability *invisible*.
 
 #### 8.2.3 `lab/judges/calibration.py` — measuring the measuring instrument
 
-**Size:** 1,088 lines. **Public names that matter:** `calibrate()`,
+**Size:** 1,378 lines. **Public names that matter:** `calibrate()`,
 `CalibrationReport`, `ConfusionMatrix`, `Rate`, `LabelledTrace`,
 `CalibrationThresholds`, `Disagreement`, `compare_reports()`,
+`mcnemar()`, `PairedComparison`, `exact_mcnemar_p()`, `detectability_floor()`,
 `self_consistency()`, `SelfConsistency`, `labels_digest()`.
 
 ##### 8.2.3.1 Its job in one plain sentence
@@ -6938,6 +6940,26 @@ prevents, and it is worth quoting the shape of it: *improve the prompt, quietly
 drop the three items it kept getting wrong, and the numbers move.* A "v1 → v2
 improvement" measured on two different label sets is not a comparison.
 
+**And it now says whether the difference is distinguishable from chance, plus
+what the set could never have proved.** The comparison is *paired* — same items,
+same labels, two prompts — so the correct test is McNemar's over the discordant
+items, computed exactly (`exact_mcnemar_p`) rather than by the chi-square
+approximation, which is not trustworthy at these counts. On the worked study the
+answer is 6 fixed, 0 broken, exact two-sided p = 0.03125.
+
+The more useful half is the **detectability floor** (`detectability_floor`). With
+`d` discordant pairs all pointing one way the exact two-sided p is `2/2**d`,
+which depends on `d` alone — not on the set size, not on either version's
+accuracy. At alpha = 0.05 that puts a hard floor of **6** under every paired
+comparison: five items moving together gives p = 0.0625 and publishes nothing.
+So the committed v1 → v2 result is significant and *exactly* on the floor, and a
+v3 fixing three items and breaking none would score p = 0.250 and be
+unpublishable however real the improvement was. Printing that says in advance
+what the labelled set cannot prove, and names the fix — more labelled items, not
+a better prompt. Both figures are recomputed on every regeneration of
+`iteration.md` and `roleplay/scorer_study/study.md`, so neither is a number
+somebody once wrote down.
+
 **Calibrate on the population the judge will actually see.** If the judge is the
 second stage of a cascade — a deterministic check selects candidates, the judge
 grades them — the labelled set must be drawn from the **post-filter** population,
@@ -6954,16 +6976,18 @@ and declared out of scope.
 
 ---
 
-#### 8.2.4 `lab/judges/registry.py` — the gate that refuses
+#### 8.2.4 `lab/judges/registry.py` — the gates that refuse
 
-**Size:** 387 lines. **Public names that matter:** `require_calibrated()`,
-`JudgeRegistry`, `UncalibratedJudgeError`, `JudgeBelowThresholdError`,
+**Size:** 568 lines. **Public names that matter:** `require_calibrated()`,
+`require_independent_judge()`, `self_grading_conflict()`, `JudgeRegistry`,
+`UncalibratedJudgeError`, `JudgeBelowThresholdError`, `SelfGradingError`,
 `JudgeStatus`, `in_ci_mode()`, `DEFAULT_REGISTRY`.
 
 ##### 8.2.4.1 Its job in one plain sentence
 
 Stop the pipeline when a judge that has never been measured, or has been measured
-and is not good enough, tries to decide whether a build is green.
+and is not good enough, or is about to grade its own output, tries to decide
+whether a build is green.
 
 ##### 8.2.4.2 How it works
 
@@ -7068,6 +7092,46 @@ Read the message once more and note what it is telling you. **TNR is 1.000
 survivable. The judge was in fact missing three out of every four real defects.
 
 ---
+
+##### 8.2.4.5 The second gate: the judge is not the thing it grades
+
+`require_calibrated` answers "is this instrument any good". It cannot answer "is
+this instrument pointed at itself", and that is a separate way for a green
+dashboard to mean nothing: `make live-record` runs `--live-agent --live-caller
+--live-judge`, every route is read from the environment, and on a machine with
+one provider configured the obvious thing to do is point them all at it. The
+judge is then grading the agent's output with the agent's model, and
+self-enhancement bias — a model scoring text it wrote above equivalent text it
+did not — inflates every verdict in a known direction that the judge's
+calibration figure does not describe, because that figure was measured on
+somebody else's text.
+
+`require_independent_judge(judge_route=…, subject_route=…)` raises
+`SelfGradingError`. Two things differ from `require_calibrated`, both deliberate:
+
+- **It refuses in and out of CI.** Its neighbour advises interactively because an
+  uncalibrated judge produces numbers of *unknown* quality that a human can
+  discount. A self-grading judge produces numbers wrong in a *known* direction,
+  which read exactly like a good result.
+- **The bypass is `allow_self_grading=True` at the call site and nowhere else** —
+  no environment variable, no config key, no flag, and there is a test asserting
+  that. Same rule `allow_uncalibrated` follows, for the same reason: an override
+  settable outside the source becomes permanent within a month.
+
+Two record-time seams call it. `lab.cli._live_refusals` compares the judge route
+against the **agent** route only — the caller is an input to the verdict rather
+than the graded party, and refusing a shared caller route would break the one
+configuration `lab.simulator.flake_band` needs. `roleplay.livescorer` compares
+the scorer route against the trainee's, through `live_completion`, gated on the
+trainee actually being live.
+
+What the check does *not* claim is stated in the docstring rather than implied:
+route equality is the only fact available, two different routes may point at the
+same weights, and a private deployment name reveals nothing about the model
+behind it. So a passing check means "the two routes are not written the same
+way", which is weaker than independence and is all a configuration check can
+honestly claim. The strong version is the panel of judges, and that needs three
+credentials at record time.
 
 #### 8.2.5 Self-consistency, and the trap inside it
 
@@ -14016,6 +14080,25 @@ none of them has to be taken on trust.
 - **The offline RAG retriever is lexical**, and every line it prints says so. It is a
   keyless stand-in, not a claim about embedding retrieval.
   [§8.5.4](#854-the-retriever-is-lexical-and-that-is-deliberate)
+- **Test coverage is published, and it is a weak signal.** `make coverage`, at commit
+  `006dbd4` over 1,992 offline tests in branch mode: coverage.py reports **84%** over all
+  seven packages — 2,566 of 17,839 statements never executed, 614 of 5,056 branches taken
+  one way only — and **87%** with the five recording scripts omitted (1,892 of 17,091
+  statements; those five need vendor keys and spend money, so no offline run reaches them).
+  Per package: `lab` 90%, `ragcheck` 88%, `scenarios` 87%, `roleplay` 84%, `tablemate` 84%,
+  `error_analysis` 42%, `scripts` 9%. Seven modules are at 0%, four of them recording
+  scripts; the one that is a genuine gap rather than an unreachable one is
+  **`ragcheck/__main__.py` — 73 statements, 0%, and it is what `make ragcheck` runs**.
+  The figure is published because silence on it is indefensible, and it is labelled weak
+  because coverage says a line ran and nothing about whether an assertion would have caught
+  it being wrong — which in a repository whose substance is *refusals* is most of the
+  question. Mutation testing is the measurement that would answer it and it has not been
+  run. It is deliberately **not** a CI gate: a coverage floor fails for reasons unrelated
+  to the change in front of it.
+- **The coverage config used to measure three packages of seven.** `[tool.coverage.run]
+  source` named `lab`, `roleplay` and `tablemate` only, so anyone running coverage per the
+  committed config got a figure with a silently wrong denominator. Fixed; recorded here
+  because it is the same class of defect this wiki spends its length warning about.
 - **It is Python.** Porting to another runtime means rewriting the adapters; the trace
   schema, the contracts and the calibration logic are not language-specific.
 
@@ -14217,6 +14300,7 @@ Supports [§2](#2-architecture-with-the-diagrams).
 | judge v1 vs v2 | `evallab calibrate` | TPR `0.250 (2/8)` → `1.000 (8/8)`; TNR `1.000 (16/16)` both; kappa 0.308 → 1.000; raw agreement `0.750 (18/24)` → `1.000 (24/24)`; gate v1 **FAIL**, v2 **PASS** |
 | self-consistency trap | same | v1 `0.917 (22/24)` unanimous; unstable `all-set-saturday: fail→pass→fail`, `claim-buried-in-policy-answer: pass→fail→pass`; v2 `1.000 (24/24)` |
 | timing gate | `evallab calibrate --timing` | PASS, 20 repeats × 5 delays; worst `+0.266%` at 100 ms; naive whole-turn control **FAIL** |
+| coverage, whole tree and offline subset | `make coverage` | coverage.py **84%** (2,566/17,839 statements missed, 614/5,056 branches partial); **87%** omitting the five key-requiring recording scripts (1,892/17,091); `ragcheck/__main__.py` **0%** of 73 |
 | 15 event kinds, 2 reserved | `python -c "from lab.trace.schema import EventKind; …"` | `len(KNOWN)==15`; `V2_RESERVED == {interruption_started, interruption_acknowledged}`, disjoint from `KNOWN` |
 | barge-in: emitter, reader, tests, no committed trace | `grep -rn "emit_barge_in" lab tests`; `grep -rl interruption_started fixtures reports` | the emitter is called from `tests/test_voice_interaction.py` and nowhere else; the two fixture hits are the *blocked* row's note, not trace events |
 | spoken trace shape | `python -c` over `fixtures/audio/spoken_call/trace.jsonl` | 80 events, 8 turns, kinds as listed in §2 |
