@@ -14167,8 +14167,9 @@ qualifies something above:
    sharply, why parallel execution is deliberately absent when a full replay run takes **1.44
    seconds** for 47 scenarios.
 
-The plan is also explicit that **§8 of it applies to this document**: at 14,802 lines this
-wiki is 65.3% of all documentation in the repository, and the recommendation is to stop
+The plan is also explicit that **§8 of it applies to this document**: this wiki was 65.3%
+of all documentation in the repository when the plan was written (14,803 of 22,683 lines at
+`032eab7`), and the recommendation is to stop
 treating that size as an asset and to write no new volume until the corrections listed above
 are made.
 

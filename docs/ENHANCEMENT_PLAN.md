@@ -245,7 +245,7 @@ finding, because it means the gap is real from more than one direction.
 
 | # | Gap | Tag | Note |
 |---|---|---|---|
-| G32 | Guardrails / red-teaming / golden-dataset management | **ALREADY-DO, invisibly** | `lab/checks/contracts.py` **is** guardrails (6 of 18 postings); the 12 adversarial scenarios **are** red-teaming — the words "red team" and "jailbreak" appear 0 times in the tree; `evallab validate --coverage` over the corpus **is** golden-dataset management (12 of 32). Three top-half market rows already satisfied under names no reviewer will search for [R3 §6.1] |
+| G32 | Guardrails / red-teaming / golden-dataset management | **ALREADY-DO, invisibly** | `lab/checks/contracts.py` **is** guardrails (6 of 18 postings); the 12 adversarial scenarios **are** red-teaming — the words "red team" and "jailbreak" appear 0 times in the code, scenarios and tests (this plan and the wiki section pointing at it are now the only occurrences); `evallab validate --coverage` over the corpus **is** golden-dataset management (12 of 32). Three top-half market rows already satisfied under names no reviewer will search for [R3 §6.1] |
 | G33 | Production ingestion / online evals | **MISSING** | 11 of 18. The repo's answer is a one-way export [R3 §4.1] |
 | G34 | OpenTelemetry | **MISSING** | 0 references anywhere including prose; the only observability standard the market names (3 of 18) [R3 §4.2] |
 | G35 | Cost and token accounting | **MISSING** | 3 of 18 [R3 §4.3] |
@@ -300,7 +300,7 @@ owner's. Change it to the name the wiki already uses, `conversation-eval-lab`
 
 **Why it matters.** It is the first line a reader sees, and it points at a different
 project. Verified: the name appears in exactly one file in the tree, and 0 times in the
-14,802-line wiki — so this is a leftover from before the rename in commit `032eab7`
+14,803-line wiki (at `032eab7`) — so this is a leftover from before the rename in commit `032eab7`
 ("docs: name the repository after itself"), not a deliberate choice.
 
 **Effort.** Minutes. **Zero-keys.** Unaffected.
@@ -317,7 +317,7 @@ the README and the wiki:
 | Already in the repo | The name a reviewer searches for |
 |---|---|
 | `lab/checks/contracts.py` — six declarative contracts | **guardrails** (6 of 18 postings) |
-| 12 adversarial scenarios of 55 — injection, impersonation, abuse, disclosure, over-reach | **red-teaming** (3 of 18 + secondary). "red team" and "jailbreak" appear **0 times** in the tree |
+| 12 adversarial scenarios of 55 — injection, impersonation, abuse, disclosure, over-reach | **red-teaming** (3 of 18 + secondary). "red team" and "jailbreak" appear **0 times** in code, scenarios and tests |
 | `evallab validate --coverage` over 194 committed YAML rows | **golden-dataset management** (12 of 32 combined) |
 | `agent_audio_first_byte` → `audio_delivered` as two event kinds | **TTFT vs TTFA**, made structural rather than derived |
 | the 5 `digits-and-names` rows asserting values, all-or-nothing | **Entity Error Rate**, at n=1 per row |
@@ -525,7 +525,7 @@ to make; rule 14 says classify product / harness / invalid-scenario / label-erro
 before believing a red; `make reference` prints its own diff, which is how you tell "fixed"
 from "stopped applying" [R5 §A3].
 
-**Why it matters.** The word "debug" appears **once in 14,802 lines**, in an aside. Every
+**Why it matters.** The word "debug" appears **once in the wiki's 14,803 lines** (at `032eab7`), in an aside. Every
 part of the wiki is add-shaped or explain-shaped and none is diagnose-shaped. This is
 assembly, not research, and it is the single largest increase in what a reader can *do* per
 line written.
@@ -884,7 +884,7 @@ as features.
 | R10 | **Running the public voice benchmarks as suites** | They score *models*. This scores an *application* with tools and contracts. Borrow the vocabulary (item 3), not the harness [R1 §3.1, §5] |
 | R11 | **MOS prediction on synthesised audio** | Same objection as R7: an uncalibrated judge. One narrow exception is flagged in the research — a perceptual axis on the transport tier's *received* audio, where an unperturbed control arm already exists — and even that is a MAYBE at best [R1 §7.5] |
 | R12 | **A 114-perturbation bank** | The admission rule ("a row belongs in the audio tier only if the audio layer is the thing under test") argues against a sweep, and a ladder that never breaks reports nothing. Two additions (reverb, codec) would be defensible; a bank would look more thorough and be less true [R1 §6.1] |
-| R13 | **Parallel execution** | The entire parallelism apparatus in a production suite exists to make one number bearable: **1.25 h for 439 rows**. The equivalent number here is **1.44 s for 47 scenarios**. It would buy nothing measurable and would import the whole class of contention flake that the machinery exists to paper over. **Writing down why it is absent, with both numbers, is more impressive than having it** [R4 §3.17] |
+| R13 | **Parallel execution** | The entire parallelism apparatus in a production suite exists to make one number bearable: **1.25 h for 439 rows**. The equivalent number here is **under 2 s for 47 scenarios** (1.44 s and 0.69 s on two runs). It would buy nothing measurable and would import the whole class of contention flake that the machinery exists to paper over. **Writing down why it is absent, with both numbers, is more impressive than having it** [R4 §3.17] |
 | R14 | **A server-backed review dashboard** | A web app with auth, a database and dozens of routes is an operations product, not a portfolio artefact, and it breaks the clean-clone rule outright. A single self-contained static HTML file generated from the run JSON would survive the constraints — that is the only version worth considering, and it is a MAYBE, not a DO [R4 §3.13] |
 | R15 | **A spreadsheet export layer** | Do not add a dependency for it. Readers of *this* repository read markdown [R4 §3.14] |
 | R16 | **Self-healing result amendment** | Automatic re-runs that rewrite the primary results file exist in production because of resource contention this repo does not have. A harness that rewrites its own verdicts is exactly what this repo should never build [R4 §3.5] |
@@ -1500,17 +1500,24 @@ Cutting is as valuable as adding, and this section is the one most likely to be 
 treating size as an asset and to stop spending the next hour on the thing that already has the
 most hours in it.
 
-### 8.1 The wiki — stop treating 14,802 lines as a feature
+### 8.1 The wiki — stop treating its line count as a feature
 
-`docs/WIKI.md` is 14,802 lines with 72 Mermaid diagrams and **65.3% of all documentation in
-the repository** (22,682 lines across all `.md` files) [verified]. It is asked for by **0 of
-18** postings; the nearest requirement is "communication of findings" (7 of 18), and every one
-of those phrases it as clarity, not volume [R3 §5.1].
+`docs/WIKI.md` is 14,803 lines with 72 Mermaid diagrams and **65.3% of all documentation in
+the repository** (22,683 lines across all `.md` files) — *measured at commit `032eab7`, the
+baseline this plan was written against* [verified]. It is asked for by **0 of 18** postings;
+the nearest requirement is "communication of findings" (7 of 18), and every one of those
+phrases it as clarity, not volume [R3 §5.1].
 
-It is also, on the evidence of R5's audit, a genuinely good document: 527 headings, **zero
-broken internal anchors** out of 254 distinct internal links, every headline number
-re-derived, all 30 `make` targets documented. That is precisely why the recommendation is not
-to cut it.
+Committing this plan changes those two numbers, so the appendix command no longer returns
+them: at `e4ee307` the wiki is 14,853 lines of 24,447 total = **60.8%**. The share fell
+because this document added 1,714 lines of non-wiki prose, which is a change in the
+denominator and not evidence of restraint. Both figures are given so the reader can
+reproduce either; the argument below depends on neither.
+
+It is also, on the evidence of R5's audit, a genuinely good document: **zero broken internal
+anchors** — re-verified at `e4ee307` across 449 distinct heading slugs and 313 internal
+links — every headline number re-derived, all 30 `make` targets documented. That is precisely
+why the recommendation is not to cut it.
 
 **The recommendation is to change what it is *for*.** Three costs a reviewer feels
 immediately: it signals that documentation is the output rather than the measurement; it makes
@@ -1655,13 +1662,13 @@ carry their `[R#]` tag inline instead and are reproducible from those files' own
 | Figure | Command |
 |---|---|
 | `1976 passed, 4 skipped in 55.47s` | `.venv/bin/python -m pytest -q` |
-| 47/55 scenarios driven, **1.44 s** wall clock | `time .venv/bin/python -m lab.cli run --no-traces` |
+| 47/55 scenarios driven, **1.4 s** wall clock (re-measured at 0.69 s on a later pass; wall clock varies with machine load, the scenario count does not) | `time .venv/bin/python -m lab.cli run --no-traces` |
 | calibrate exits 0; v1 2/24 items unstable, v2 24/24 unanimous | `.venv/bin/python -m lab.cli calibrate` |
 | **12 failures**, 36/369 (9.8%) contract evaluations failed, 44/47 (93.6%) stable-pass, 5 of 12 failures are `propagation:*` | `python -c "import json,collections; d=json.load(open('reports/run_report.json')); print(len(d['failures']), d['headline'], collections.Counter(f['contract'] for f in d['failures']))"` |
 | `lab/` 31,541 · `roleplay/` 15,817 · `tablemate/` 5,091 · `ragcheck/` 3,108 · `tests/` 28,307 · `scenarios/` 2,404 · `error_analysis/` 288 | `find <pkg> -name '*.py' \| xargs wc -l \| tail -1` |
 | `lab/voice` 15,851 (50.3% of `lab/`); `lab/voice/transport` 4,267 | same, on those directories |
 | `lab/judges/*.py` 2,966; `lab/judges/hallucinated_confirmation/*.py` 1,319 | `wc -l lab/judges/*.py \| tail -1` etc. |
-| `docs/WIKI.md` 14,802 of 22,682 total doc lines = 65.3% | `wc -l docs/*.md README.md DESIGN.md INTERVIEW_NOTES.md` |
+| `docs/WIKI.md` 14,803 of 22,683 total doc lines = 65.3% **at `032eab7`**; 14,853 of 24,447 = 60.8% at `e4ee307`, because this plan is itself 1,714 of those lines | `git stash` or `git checkout 032eab7 --` then `wc -l docs/*.md README.md DESIGN.md INTERVIEW_NOTES.md`; same command on `HEAD` for the second pair |
 | `roleplay/scorecard.py` 1,724 · `regime_eval.py` 2,732 · `register.py` 462 · `ADVISORY_TEST_STRATEGY.md` 1,081 · `SCORECARD.md` 1,086 (≈5,400 for the apparatus) | `wc -l` on those paths |
 | `lab/checks/contracts.py` 1,749; 6 concrete contracts + 1 abstract base | `wc -l`; `grep -n '^class ' lab/checks/contracts.py` |
 | `EventKind`: 15 known kinds, 2 in `V2_RESERVED`, none carrying tokens or cost | `python -c "from lab.trace.schema import EventKind; print(len(EventKind.KNOWN), sorted(EventKind.V2_RESERVED))"` |
