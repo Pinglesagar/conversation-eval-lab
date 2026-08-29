@@ -6,6 +6,17 @@
       "line": 170,
       "source": "if body.endswith(\"?\"):"
     },
+    "punctuation_in_the_graded_transcript": {
+      "all_16_turns": [
+        "'",
+        "-"
+      ],
+      "note": "Characters that are neither a letter, a digit nor a space. There is no full stop, comma, colon or question mark anywhere in the scored channel. Across all sixteen turns the inventory is the apostrophe and one hyphen (`brother-in-law`, the customer's turn at order 1); across the eight adviser turns the detector actually reads, it is the apostrophe alone.",
+      "sentence_punctuation_found": [],
+      "the_8_adviser_turns": [
+        "'"
+      ]
+    },
     "question_marks": {
       "adviser_turns": 8,
       "contains_a_question_mark_anywhere": {
@@ -19,9 +30,9 @@
         "text_sent": 5
       },
       "which_transcript_is_graded": "text_heard",
-      "why": "The graded transcript is the unformatted one. The formatted transcript is a second, separately billed request whose prettifying fabricates a word error rate, so the scored channel carries no punctuation at all."
+      "why": "The graded transcript is the unformatted one. The formatted transcript is a second, separately billed request whose prettifying fabricates a word error rate, so the scored channel carries no sentence punctuation at all — see `punctuation_in_the_graded_transcript` for the whole inventory, which is two characters and neither of them is a question mark."
     },
-    "summary": "The turn classifier decides a turn is a question with body.endswith(\"?\"). The graded transcript is unformatted and carries no punctuation, so no spoken turn can end in a question mark and no spoken adviser can be credited with asking anything.",
+    "summary": "The turn classifier decides a turn is a question with body.endswith(\"?\"). The graded transcript is unformatted and carries no sentence punctuation, so no spoken turn can end in a question mark and no spoken adviser can be credited with asking anything.",
     "turn_kinds": {
       "banding_source": "roleplay/scorer.py::RubricScorer._discovery",
       "discovery_banding": {
@@ -159,6 +170,47 @@
     "make spoken-replay",
     "python -m pytest tests/test_roleplay_spoken.py -q"
   ],
+  "second_opinion": {
+    "criteria_where_they_disagree": [
+      "closing",
+      "discovery",
+      "mandatory_disclosure"
+    ],
+    "discovery": {
+      "by_the_judge": 4,
+      "by_the_rule": 0,
+      "max": 4
+    },
+    "graded_transcript": "text_heard — the same trace for both instruments",
+    "judge": {
+      "criteria": {
+        "closing": 4,
+        "discovery": 4,
+        "mandatory_disclosure": 0,
+        "no_unlicensed_advice": 4,
+        "objection_handling": 4
+      },
+      "model": "gpt-4.1",
+      "name": "roleplay.livescorer.LiveRubricScorer",
+      "total": 16,
+      "verdict": "fail"
+    },
+    "question": "Were the questions really in the graded transcript, or is the rule right that nothing question-shaped survived?",
+    "reading": "On discovery the two instruments disagree by the whole range: the judge reads the same unpunctuated words and finds the questions the rule cannot. That is corroboration for the mechanism, not a claim that the judge is the better instrument: on mandatory_disclosure it moves the opposite way, 0 against the rule's 4, and the rule's 4 is a count of compliance keywords rather than a read of the disclosure register — a seeded defect of its own, roleplay/scorer.py::RubricScorer._mandatory_disclosure. Both verdicts are still `fail`.",
+    "rule": {
+      "criteria": {
+        "closing": 0,
+        "discovery": 0,
+        "mandatory_disclosure": 4,
+        "no_unlicensed_advice": 4,
+        "objection_handling": 4
+      },
+      "name": "roleplay.scorer.RubricScorer",
+      "total": 12,
+      "verdict": "fail"
+    },
+    "source": "fixtures/audio/spoken_call/scorecards.json"
+  },
   "source": {
     "agrees_with_committed_artefacts": {
       "scorecards_json": {
@@ -189,7 +241,8 @@
       }
     },
     "manifest": "fixtures/audio/spoken_call/manifest.json",
-    "recomputed_by": "roleplay.spoken.replay_spoken_call"
+    "recomputed_by": "roleplay.spoken.replay_spoken_call",
+    "scorer": "roleplay.scorer.RubricScorer — deterministic, no model"
   },
   "totals": {
     "as_heard": 12,

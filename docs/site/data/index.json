@@ -7,15 +7,15 @@
     },
     {
       "path": "call.json",
-      "sha256": "b5f0cff31ea6a2d6ed7e6453a0b32783ad1bd6458fe2029c79d166796f1fdfea"
+      "sha256": "2d10d8bd81ec543330a7f930fc959512ca3839599754d1e54405f9e892e96872"
     },
     {
       "path": "finding.json",
-      "sha256": "7b2c71dec781ddb703e5084d56402a8eb7e69ea15dd1cbc1f94a73748284175f"
+      "sha256": "dc279b343598768528e94aea15f2aad9773ac41c850292f1241f41ec1b68e957"
     },
     {
       "path": "question_turns.json",
-      "sha256": "5cc9ed6a473573477f7588c58495cc8cc2377e6969b20d869d3edd41853e755d"
+      "sha256": "f3340c8ffab2413eb37e08140661a5f40bfcfd0642fce1d01feef715f5fa0484"
     },
     {
       "path": "recognition.json",
@@ -23,7 +23,7 @@
     },
     {
       "path": "secondary_findings.json",
-      "sha256": "aba2c800f62010d66c6cd68040d22b2e2407678cd9214b1a40ffc8ceac6da5fb"
+      "sha256": "65abd1e918cc22c8feb0a83db0aa0d68662a2c81b7962cbdbddc8b6fcf42a798"
     }
   ],
   "house_rules": [

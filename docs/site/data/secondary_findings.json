@@ -199,7 +199,7 @@
       "parameter": "snr_db",
       "reading": "A wrong postcode at high confidence is worse than no postcode: an empty transcript is a re-ask, a wrong one is a delivery to the wrong address. This is why the row asserts the field rather than a word error rate.",
       "recomputed": true,
-      "reproduce": "make audio-suite",
+      "reproduce": "make audio-suite-evidence",
       "source": {
         "row": "scenarios/audio.py::audio-line-quality-noise-ladder",
         "transcripts": "fixtures/audio/cloud/audio_suite_transcripts.json",

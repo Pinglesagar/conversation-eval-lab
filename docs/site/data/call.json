@@ -42,9 +42,17 @@
     "total_s": 181.303625
   },
   "engines": {
-    "grading_model": "gpt-4.1",
-    "note": "Two vendors: one synthesised every line, another transcribed the assembled audio back. The recognition engine string ends in `raw`, which is the unformatted transcript — the one that was graded.",
+    "model_label": {
+      "note": "One label, three roles in the recording: the adviser's turns, the customer's turns, and the SEPARATE live judge. It is not the source of the scores on the page — see `scorer` above. roleplay/spoken.py passes it to both ModelSpeakers and to LiveRubricScorer.",
+      "value": "gpt-4.1"
+    },
+    "note": "Two vendors in the audio path: one synthesised every line, another transcribed the assembled audio back. The recognition engine string ends in `raw`, which is the unformatted transcript — the one that was graded.",
     "recognition": "stt:deepgram/nova-3/en/raw",
+    "scorer": {
+      "kind": "deterministic, no model",
+      "name": "roleplay.scorer.RubricScorer",
+      "note": "Every criterion figure on the demo page is this scorer's output, by way of roleplay.spoken.channel_effect, which calls RubricScorer() on both channels. No model graded them."
+    },
     "synthesis": {
       "adviser": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
       "customer": "tts:elevenlabs/eleven_flash_v2_5/Xb7hH8MSUJpSbSDYk0k2"
