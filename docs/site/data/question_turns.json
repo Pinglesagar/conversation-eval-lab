@@ -1,0 +1,60 @@
+{
+  "note": "Verbatim from the committed manifest. `text_heard` is the transcript that was graded; the only punctuation it contains is the apostrophe.",
+  "source": "fixtures/audio/spoken_call/manifest.json",
+  "turns": [
+    {
+      "classified_as_heard": "pitch",
+      "classified_as_sent": "closed_question",
+      "display_ends_with_question_mark": true,
+      "display_text": "Good morning, mister Novak. Thank you for coming in today. Before we discuss any investment options, I'd like to understand your goals, your time frame, and how you feel about risk. Could you tell me a bit about what you're hoping to achieve with your investments?",
+      "duration_s": 14.86075,
+      "heard_contains_a_question_mark": false,
+      "heard_punctuation_characters": [
+        "'"
+      ],
+      "order": 0,
+      "sent_ends_with_question_mark": true,
+      "spoken_form": "Good morning, Mr Novak. Thank you for coming in today. Before we discuss any investment options, I'd like to understand your goals, your timeframe, and how you feel about risk. Could you tell me a bit about what you're hoping to achieve with your investments?",
+      "stt_confidence": 1.0,
+      "text_heard": "good morning mister novak thank you for coming in today before we discuss any investment options i'd like to understand your goals your time frame and how you feel about risk could you tell me a bit about what you're hoping to achieve with your investments",
+      "text_sent": "Good morning, Mr Novak. Thank you for coming in today. Before we discuss any investment options, I’d like to understand your goals, your timeframe, and how you feel about risk. Could you tell me a bit about what you’re hoping to achieve with your investments?",
+      "turn": 1
+    },
+    {
+      "classified_as_heard": "pitch",
+      "classified_as_sent": "closed_question",
+      "display_ends_with_question_mark": true,
+      "display_text": "Thank you. One more important area to cover is how you feel about risk. Investments can go up and down in value, and there's always a chance you could get back less than you put in. How comfortable are you with the possibility of losing some of your investment even temporarily?",
+      "duration_s": 16.6255,
+      "heard_contains_a_question_mark": false,
+      "heard_punctuation_characters": [
+        "'"
+      ],
+      "order": 10,
+      "sent_ends_with_question_mark": true,
+      "spoken_form": "Thank you. One more important area to cover is how you feel about risk--investments can go up and down in value, and there's always a chance you could get back less than you put in. How comfortable are you with the possibility of losing some of your investment, even temporarily?",
+      "stt_confidence": 1.0,
+      "text_heard": "thank you one more important area to cover is how you feel about risk investments can go up and down in value and there's always a chance you could get back less than you put in how comfortable are you with the possibility of losing some of your investment even temporarily",
+      "text_sent": "Thank you. One more important area to cover is how you feel about risk—investments can go up and down in value, and there’s always a chance you could get back less than you put in. How comfortable are you with the possibility of losing some of your investment, even temporarily?",
+      "turn": 6
+    },
+    {
+      "classified_as_heard": "pitch",
+      "classified_as_sent": "open_probe",
+      "display_ends_with_question_mark": true,
+      "display_text": "Thank you for considering that. To summarize, we've discussed your goals, your time frame, how much you might invest, and your feelings about risk. Based on what you've shared, I can outline some options and explain the trade offs, but I won't make any recommendations until I have a full picture of your circumstances. Would you like to continue with a full suitability assessment, or do you have any other questions or concerns before we proceed?",
+      "duration_s": 25.30975,
+      "heard_contains_a_question_mark": false,
+      "heard_punctuation_characters": [
+        "'"
+      ],
+      "order": 12,
+      "sent_ends_with_question_mark": true,
+      "spoken_form": "Thank you for considering that. To summarise, we've discussed your goals, your timeframe, how much you might invest, and your feelings about risk. Based on what you've shared, I can outline some options and explain the trade-offs, but I won't make any recommendations until I have a full picture of your circumstances. Would you like to continue with a full suitability assessment, or do you have any other questions or concerns before we proceed?",
+      "stt_confidence": 1.0,
+      "text_heard": "thank you for considering that to summarize we've discussed your goals your time frame how much you might invest and your feelings about risk based on what you've shared i can outline some options and explain the trade offs but i won't make any recommendations until i have a full picture of your circumstances would you like to continue with a full suitability assessment or do you have any other questions or concerns before we proceed",
+      "text_sent": "Thank you for considering that. To summarise, we’ve discussed your goals, your timeframe, how much you might invest, and your feelings about risk. Based on what you’ve shared, I can outline some options and explain the trade-offs, but I won’t make any recommendations until I have a full picture of your circumstances. Would you like to continue with a full suitability assessment, or do you have any other questions or concerns before we proceed?",
+      "turn": 7
+    }
+  ]
+}

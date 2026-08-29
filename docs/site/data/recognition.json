@@ -1,0 +1,488 @@
+{
+  "answer": "Once, on turn 6. The recogniser dropped the customer's opening word: \"I understand what you're saying.\" was heard as \"understand what you're saying\". Every other difference on all 16 turns is the recogniser spelling the same spoken word another way.",
+  "counts": {
+    "edits": 10,
+    "edits_that_are_content": 1,
+    "edits_that_are_orthographic": 9,
+    "turns": 16,
+    "turns_differing_orthographically_only": 6,
+    "turns_identical_after_normalisation": 9,
+    "turns_with_a_genuine_content_difference": 1
+  },
+  "genuine_content_differences": [
+    {
+      "differences": [
+        {
+          "added": [],
+          "edit": "delete",
+          "kind": "content",
+          "removed": [
+            "i"
+          ]
+        }
+      ],
+      "differs_after_normalisation": true,
+      "kind": "content",
+      "order": 11,
+      "speaker": "customer",
+      "text_heard": "understand what you're saying",
+      "text_sent": "I understand what you're saying.",
+      "turn": 6
+    }
+  ],
+  "method": "Both sides normalised by lab.voice.wer.normalise — the function the word error rate itself uses — which lowercases, expands contractions, strips punctuation and converts number words to digits. The reference is the turn's spoken_form, which is what was actually sent to the synthesiser. Each surviving edit is then classified on its own; a substitution counts as orthographic only if it is on the named list below.",
+  "orthographic_differences": [
+    {
+      "differences": [
+        {
+          "added": [
+            "mister"
+          ],
+          "edit": "replace",
+          "kind": "orthographic",
+          "removed": [
+            "mr"
+          ]
+        },
+        {
+          "added": [
+            "time",
+            "frame"
+          ],
+          "edit": "replace",
+          "kind": "orthographic",
+          "removed": [
+            "timeframe"
+          ]
+        }
+      ],
+      "differs_after_normalisation": true,
+      "kind": "orthographic",
+      "order": 0,
+      "speaker": "trainee",
+      "text_heard": "good morning mister novak thank you for coming in today before we discuss any investment options i'd like to understand your goals your time frame and how you feel about risk could you tell me a bit about what you're hoping to achieve with your investments",
+      "text_sent": "Good morning, Mr Novak. Thank you for coming in today. Before we discuss any investment options, I’d like to understand your goals, your timeframe, and how you feel about risk. Could you tell me a bit about what you’re hoping to achieve with your investments?",
+      "turn": 1
+    },
+    {
+      "differences": [
+        {
+          "added": [
+            "percent"
+          ],
+          "edit": "replace",
+          "kind": "orthographic",
+          "removed": [
+            "per",
+            "cent"
+          ]
+        }
+      ],
+      "differs_after_normalisation": true,
+      "kind": "orthographic",
+      "order": 2,
+      "speaker": "trainee",
+      "text_heard": "thank you for raising that concern fees are an important consideration the product i can offer has an annual management charge of zero point six eight percent and there are no exit penalties i'm happy to explain exactly how this works and what it means for your investment would you like to discuss fees in more detail now or shall we first talk about your objectives",
+      "text_sent": "Thank you for raising that concern—fees are an important consideration. The product I can offer has an annual management charge of 0.68 per cent, and there are no exit penalties. I’m happy to explain exactly how this works and what it means for your investment. Would you like to discuss fees in more detail now, or shall we first talk about your objectives?",
+      "turn": 2
+    },
+    {
+      "differences": [
+        {
+          "added": [
+            "mister"
+          ],
+          "edit": "replace",
+          "kind": "orthographic",
+          "removed": [
+            "mr"
+          ]
+        }
+      ],
+      "differs_after_normalisation": true,
+      "kind": "orthographic",
+      "order": 4,
+      "speaker": "trainee",
+      "text_heard": "that's a fair question mister novak and i appreciate your honesty my role is to help you make informed decisions by setting out your options the risks and the costs so you can decide what's right for you i don't earn commission for recommending any particular product my priority is to understand your needs and make sure any advice is suitable for your circumstances",
+      "text_sent": "That’s a fair question, Mr Novak, and I appreciate your honesty. My role is to help you make informed decisions by setting out your options, the risks, and the costs, so you can decide what’s right for you. I don’t earn commission for recommending any particular product. My priority is to understand your needs and make sure any advice is suitable for your circumstances.",
+      "turn": 3
+    },
+    {
+      "differences": [
+        {
+          "added": [
+            "mister"
+          ],
+          "edit": "replace",
+          "kind": "orthographic",
+          "removed": [
+            "mr"
+          ]
+        },
+        {
+          "added": [
+            "time",
+            "frame"
+          ],
+          "edit": "replace",
+          "kind": "orthographic",
+          "removed": [
+            "timeframe"
+          ]
+        }
+      ],
+      "differs_after_normalisation": true,
+      "kind": "orthographic",
+      "order": 6,
+      "speaker": "trainee",
+      "text_heard": "thank you mister novak to make sure i can give you the most relevant information could you tell me what you're hoping to achieve with your money and whether you have a specific time frame in mind this will help us focus on options that fit your goals",
+      "text_sent": "Thank you, Mr Novak. To make sure I can give you the most relevant information, could you tell me what you’re hoping to achieve with your money and whether you have a specific timeframe in mind? This will help us focus on options that fit your goals.",
+      "turn": 4
+    },
+    {
+      "differences": [
+        {
+          "added": [
+            "summarize"
+          ],
+          "edit": "replace",
+          "kind": "orthographic",
+          "removed": [
+            "summarise"
+          ]
+        },
+        {
+          "added": [
+            "time",
+            "frame"
+          ],
+          "edit": "replace",
+          "kind": "orthographic",
+          "removed": [
+            "timeframe"
+          ]
+        }
+      ],
+      "differs_after_normalisation": true,
+      "kind": "orthographic",
+      "order": 12,
+      "speaker": "trainee",
+      "text_heard": "thank you for considering that to summarize we've discussed your goals your time frame how much you might invest and your feelings about risk based on what you've shared i can outline some options and explain the trade offs but i won't make any recommendations until i have a full picture of your circumstances would you like to continue with a full suitability assessment or do you have any other questions or concerns before we proceed",
+      "text_sent": "Thank you for considering that. To summarise, we’ve discussed your goals, your timeframe, how much you might invest, and your feelings about risk. Based on what you’ve shared, I can outline some options and explain the trade-offs, but I won’t make any recommendations until I have a full picture of your circumstances. Would you like to continue with a full suitability assessment, or do you have any other questions or concerns before we proceed?",
+      "turn": 7
+    },
+    {
+      "differences": [
+        {
+          "added": [
+            "summarize"
+          ],
+          "edit": "replace",
+          "kind": "orthographic",
+          "removed": [
+            "summarise"
+          ]
+        }
+      ],
+      "differs_after_normalisation": true,
+      "kind": "orthographic",
+      "order": 14,
+      "speaker": "trainee",
+      "text_heard": "thank you mister novak i'll ask you some more detailed questions about your financial situation commitments and any other investments or savings you have this will help ensure any options we discuss are suitable for you once we've completed that i'll summarize the options and the trade offs and you can decide how you'd like to proceed does that sound good as our next step",
+      "text_sent": "Thank you, Mr Novak. I’ll ask you some more detailed questions about your financial situation, commitments, and any other investments or savings you have. This will help ensure any options we discuss are suitable for you. Once we’ve completed that, I’ll summarise the options and the trade-offs, and you can decide how you’d like to proceed. Does that sound good as our next step?",
+      "turn": 8
+    }
+  ],
+  "orthographic_pairs": [
+    {
+      "heard": "mister",
+      "sent": "mr"
+    },
+    {
+      "heard": "time frame",
+      "sent": "timeframe"
+    },
+    {
+      "heard": "summarize",
+      "sent": "summarise"
+    },
+    {
+      "heard": "percent",
+      "sent": "per cent"
+    }
+  ],
+  "per_turn": [
+    {
+      "differences": [
+        {
+          "added": [
+            "mister"
+          ],
+          "edit": "replace",
+          "kind": "orthographic",
+          "removed": [
+            "mr"
+          ]
+        },
+        {
+          "added": [
+            "time",
+            "frame"
+          ],
+          "edit": "replace",
+          "kind": "orthographic",
+          "removed": [
+            "timeframe"
+          ]
+        }
+      ],
+      "differs_after_normalisation": true,
+      "kind": "orthographic",
+      "order": 0,
+      "speaker": "trainee",
+      "text_heard": "good morning mister novak thank you for coming in today before we discuss any investment options i'd like to understand your goals your time frame and how you feel about risk could you tell me a bit about what you're hoping to achieve with your investments",
+      "text_sent": "Good morning, Mr Novak. Thank you for coming in today. Before we discuss any investment options, I’d like to understand your goals, your timeframe, and how you feel about risk. Could you tell me a bit about what you’re hoping to achieve with your investments?",
+      "turn": 1
+    },
+    {
+      "differences": [],
+      "differs_after_normalisation": false,
+      "kind": "identical",
+      "order": 1,
+      "speaker": "customer",
+      "text_heard": "look before we go any further i want to know exactly what your fees are because my brother-in-law says all these products are just a racket and the charges eat up everything you make",
+      "text_sent": "Look, before we go any further, I want to know exactly what your fees are, because my brother-in-law says all these products are just a racket and the charges eat up everything you make.",
+      "turn": 1
+    },
+    {
+      "differences": [
+        {
+          "added": [
+            "percent"
+          ],
+          "edit": "replace",
+          "kind": "orthographic",
+          "removed": [
+            "per",
+            "cent"
+          ]
+        }
+      ],
+      "differs_after_normalisation": true,
+      "kind": "orthographic",
+      "order": 2,
+      "speaker": "trainee",
+      "text_heard": "thank you for raising that concern fees are an important consideration the product i can offer has an annual management charge of zero point six eight percent and there are no exit penalties i'm happy to explain exactly how this works and what it means for your investment would you like to discuss fees in more detail now or shall we first talk about your objectives",
+      "text_sent": "Thank you for raising that concern—fees are an important consideration. The product I can offer has an annual management charge of 0.68 per cent, and there are no exit penalties. I’m happy to explain exactly how this works and what it means for your investment. Would you like to discuss fees in more detail now, or shall we first talk about your objectives?",
+      "turn": 2
+    },
+    {
+      "differences": [],
+      "differs_after_normalisation": false,
+      "kind": "identical",
+      "order": 3,
+      "speaker": "customer",
+      "text_heard": "and why should i trust anything you say when you're paid to sell me this stuff whose side are you really on",
+      "text_sent": "And why should I trust anything you say when you’re paid to sell me this stuff? Whose side are you really on?",
+      "turn": 2
+    },
+    {
+      "differences": [
+        {
+          "added": [
+            "mister"
+          ],
+          "edit": "replace",
+          "kind": "orthographic",
+          "removed": [
+            "mr"
+          ]
+        }
+      ],
+      "differs_after_normalisation": true,
+      "kind": "orthographic",
+      "order": 4,
+      "speaker": "trainee",
+      "text_heard": "that's a fair question mister novak and i appreciate your honesty my role is to help you make informed decisions by setting out your options the risks and the costs so you can decide what's right for you i don't earn commission for recommending any particular product my priority is to understand your needs and make sure any advice is suitable for your circumstances",
+      "text_sent": "That’s a fair question, Mr Novak, and I appreciate your honesty. My role is to help you make informed decisions by setting out your options, the risks, and the costs, so you can decide what’s right for you. I don’t earn commission for recommending any particular product. My priority is to understand your needs and make sure any advice is suitable for your circumstances.",
+      "turn": 3
+    },
+    {
+      "differences": [],
+      "differs_after_normalisation": false,
+      "kind": "identical",
+      "order": 5,
+      "speaker": "customer",
+      "text_heard": "alright i hear you",
+      "text_sent": "Alright, I hear you.",
+      "turn": 3
+    },
+    {
+      "differences": [
+        {
+          "added": [
+            "mister"
+          ],
+          "edit": "replace",
+          "kind": "orthographic",
+          "removed": [
+            "mr"
+          ]
+        },
+        {
+          "added": [
+            "time",
+            "frame"
+          ],
+          "edit": "replace",
+          "kind": "orthographic",
+          "removed": [
+            "timeframe"
+          ]
+        }
+      ],
+      "differs_after_normalisation": true,
+      "kind": "orthographic",
+      "order": 6,
+      "speaker": "trainee",
+      "text_heard": "thank you mister novak to make sure i can give you the most relevant information could you tell me what you're hoping to achieve with your money and whether you have a specific time frame in mind this will help us focus on options that fit your goals",
+      "text_sent": "Thank you, Mr Novak. To make sure I can give you the most relevant information, could you tell me what you’re hoping to achieve with your money and whether you have a specific timeframe in mind? This will help us focus on options that fit your goals.",
+      "turn": 4
+    },
+    {
+      "differences": [],
+      "differs_after_normalisation": false,
+      "kind": "identical",
+      "order": 7,
+      "speaker": "customer",
+      "text_heard": "okay i get that",
+      "text_sent": "Okay, I get that.",
+      "turn": 4
+    },
+    {
+      "differences": [],
+      "differs_after_normalisation": false,
+      "kind": "identical",
+      "order": 8,
+      "speaker": "trainee",
+      "text_heard": "great thank you can you tell me if there's a particular amount you're thinking of investing and whether you might need access to any of that money in the short term this helps us consider how much you can comfortably tie up and for how long",
+      "text_sent": "Great, thank you. Can you tell me if there’s a particular amount you’re thinking of investing, and whether you might need access to any of that money in the short term? This helps us consider how much you can comfortably tie up and for how long.",
+      "turn": 5
+    },
+    {
+      "differences": [],
+      "differs_after_normalisation": false,
+      "kind": "identical",
+      "order": 9,
+      "speaker": "customer",
+      "text_heard": "alright understood",
+      "text_sent": "Alright, understood.",
+      "turn": 5
+    },
+    {
+      "differences": [],
+      "differs_after_normalisation": false,
+      "kind": "identical",
+      "order": 10,
+      "speaker": "trainee",
+      "text_heard": "thank you one more important area to cover is how you feel about risk investments can go up and down in value and there's always a chance you could get back less than you put in how comfortable are you with the possibility of losing some of your investment even temporarily",
+      "text_sent": "Thank you. One more important area to cover is how you feel about risk—investments can go up and down in value, and there’s always a chance you could get back less than you put in. How comfortable are you with the possibility of losing some of your investment, even temporarily?",
+      "turn": 6
+    },
+    {
+      "differences": [
+        {
+          "added": [],
+          "edit": "delete",
+          "kind": "content",
+          "removed": [
+            "i"
+          ]
+        }
+      ],
+      "differs_after_normalisation": true,
+      "kind": "content",
+      "order": 11,
+      "speaker": "customer",
+      "text_heard": "understand what you're saying",
+      "text_sent": "I understand what you're saying.",
+      "turn": 6
+    },
+    {
+      "differences": [
+        {
+          "added": [
+            "summarize"
+          ],
+          "edit": "replace",
+          "kind": "orthographic",
+          "removed": [
+            "summarise"
+          ]
+        },
+        {
+          "added": [
+            "time",
+            "frame"
+          ],
+          "edit": "replace",
+          "kind": "orthographic",
+          "removed": [
+            "timeframe"
+          ]
+        }
+      ],
+      "differs_after_normalisation": true,
+      "kind": "orthographic",
+      "order": 12,
+      "speaker": "trainee",
+      "text_heard": "thank you for considering that to summarize we've discussed your goals your time frame how much you might invest and your feelings about risk based on what you've shared i can outline some options and explain the trade offs but i won't make any recommendations until i have a full picture of your circumstances would you like to continue with a full suitability assessment or do you have any other questions or concerns before we proceed",
+      "text_sent": "Thank you for considering that. To summarise, we’ve discussed your goals, your timeframe, how much you might invest, and your feelings about risk. Based on what you’ve shared, I can outline some options and explain the trade-offs, but I won’t make any recommendations until I have a full picture of your circumstances. Would you like to continue with a full suitability assessment, or do you have any other questions or concerns before we proceed?",
+      "turn": 7
+    },
+    {
+      "differences": [],
+      "differs_after_normalisation": false,
+      "kind": "identical",
+      "order": 13,
+      "speaker": "customer",
+      "text_heard": "that makes sense go on",
+      "text_sent": "That makes sense, go on.",
+      "turn": 7
+    },
+    {
+      "differences": [
+        {
+          "added": [
+            "summarize"
+          ],
+          "edit": "replace",
+          "kind": "orthographic",
+          "removed": [
+            "summarise"
+          ]
+        }
+      ],
+      "differs_after_normalisation": true,
+      "kind": "orthographic",
+      "order": 14,
+      "speaker": "trainee",
+      "text_heard": "thank you mister novak i'll ask you some more detailed questions about your financial situation commitments and any other investments or savings you have this will help ensure any options we discuss are suitable for you once we've completed that i'll summarize the options and the trade offs and you can decide how you'd like to proceed does that sound good as our next step",
+      "text_sent": "Thank you, Mr Novak. I’ll ask you some more detailed questions about your financial situation, commitments, and any other investments or savings you have. This will help ensure any options we discuss are suitable for you. Once we’ve completed that, I’ll summarise the options and the trade-offs, and you can decide how you’d like to proceed. Does that sound good as our next step?",
+      "turn": 8
+    },
+    {
+      "differences": [],
+      "differs_after_normalisation": false,
+      "kind": "identical",
+      "order": 15,
+      "speaker": "customer",
+      "text_heard": "yes that's fine",
+      "text_sent": "Yes, that's fine.",
+      "turn": 8
+    }
+  ],
+  "question": "Do text_sent and text_heard genuinely differ anywhere, or is the whole gap punctuation and casing?",
+  "recognition_deltas_note": "The committed scorecards.json carries the raw and normalised edit counts per turn under `recognition_deltas`; the raw counts are large only because they score punctuation, which is the same fact this file reports as the finding.",
+  "source": "fixtures/audio/spoken_call/manifest.json"
+}

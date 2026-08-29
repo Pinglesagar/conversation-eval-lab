@@ -1,0 +1,272 @@
+{
+  "cause": {
+    "detector": {
+      "file": "roleplay/persona.py",
+      "function": "classify_trainee_turn",
+      "line": 170,
+      "source": "if body.endswith(\"?\"):"
+    },
+    "question_marks": {
+      "adviser_turns": 8,
+      "contains_a_question_mark_anywhere": {
+        "display_text": 7,
+        "text_heard": 0,
+        "text_sent": 7
+      },
+      "ends_with_question_mark": {
+        "display_text": 5,
+        "text_heard": 0,
+        "text_sent": 5
+      },
+      "which_transcript_is_graded": "text_heard",
+      "why": "The graded transcript is the unformatted one. The formatted transcript is a second, separately billed request whose prettifying fabricates a word error rate, so the scored channel carries no punctuation at all."
+    },
+    "summary": "The turn classifier decides a turn is a question with body.endswith(\"?\"). The graded transcript is unformatted and carries no punctuation, so no spoken turn can end in a question mark and no spoken adviser can be credited with asking anything.",
+    "turn_kinds": {
+      "banding_source": "roleplay/scorer.py::RubricScorer._discovery",
+      "discovery_banding": {
+        "0 open probes": 0,
+        "1 open probe": 2,
+        "2 open probes": 3,
+        "3 or more": 4
+      },
+      "open_probes_as_heard": 0,
+      "open_probes_as_sent": 1,
+      "per_turn": [
+        {
+          "as_heard": "pitch",
+          "as_sent": "closed_question",
+          "order": 0,
+          "turn": 1
+        },
+        {
+          "as_heard": "pitch",
+          "as_sent": "closed_question",
+          "order": 2,
+          "turn": 2
+        },
+        {
+          "as_heard": "pitch",
+          "as_sent": "pitch",
+          "order": 4,
+          "turn": 3
+        },
+        {
+          "as_heard": "pitch",
+          "as_sent": "pitch",
+          "order": 6,
+          "turn": 4
+        },
+        {
+          "as_heard": "pitch",
+          "as_sent": "pitch",
+          "order": 8,
+          "turn": 5
+        },
+        {
+          "as_heard": "pitch",
+          "as_sent": "closed_question",
+          "order": 10,
+          "turn": 6
+        },
+        {
+          "as_heard": "pitch",
+          "as_sent": "open_probe",
+          "order": 12,
+          "turn": 7
+        },
+        {
+          "as_heard": "pitch",
+          "as_sent": "closed_question",
+          "order": 14,
+          "turn": 8
+        }
+      ],
+      "tally_as_heard": {
+        "pitch": 8
+      },
+      "tally_as_sent": {
+        "closed_question": 4,
+        "open_probe": 1,
+        "pitch": 3
+      }
+    }
+  },
+  "caveats": [
+    "n = 1. This is a mechanism, not a rate.",
+    "The `as_sent` column is a counterfactual: the same notes are re-run with text_heard replaced by text_sent, so the customer's state machine and the disclosure register re-decide from those words. That is why objection_handling moves at all — see roleplay/spoken.py::channel_effect. The discovery mechanism does not depend on the re-simulation: the question-mark census and the turn-kind tally above are read straight off the committed turns."
+  ],
+  "criteria_that_moved": [
+    "discovery",
+    "objection_handling"
+  ],
+  "disclosure_ledgers": {
+    "as_heard": [
+      "capital_at_risk",
+      "fees_and_charges"
+    ],
+    "as_sent": [
+      "capital_at_risk",
+      "fees_and_charges"
+    ],
+    "identical": true
+  },
+  "headline": "The grader scored discovery 0 out of 4 on a spoken call where 5 of the adviser's 8 turns ended in a question mark and 7 of 8 contained one.",
+  "per_criterion": [
+    {
+      "as_heard": 0,
+      "as_sent": 0,
+      "criterion": "closing",
+      "delta": 0,
+      "max": 4,
+      "moved": false
+    },
+    {
+      "as_heard": 0,
+      "as_sent": 2,
+      "criterion": "discovery",
+      "delta": -2,
+      "max": 4,
+      "moved": true
+    },
+    {
+      "as_heard": 4,
+      "as_sent": 4,
+      "criterion": "mandatory_disclosure",
+      "delta": 0,
+      "max": 4,
+      "moved": false
+    },
+    {
+      "as_heard": 4,
+      "as_sent": 4,
+      "criterion": "no_unlicensed_advice",
+      "delta": 0,
+      "max": 4,
+      "moved": false
+    },
+    {
+      "as_heard": 4,
+      "as_sent": 2,
+      "criterion": "objection_handling",
+      "delta": 2,
+      "max": 4,
+      "moved": true
+    }
+  ],
+  "reproduce": [
+    "make start",
+    "make spoken-replay",
+    "python -m pytest tests/test_roleplay_spoken.py -q"
+  ],
+  "source": {
+    "agrees_with_committed_artefacts": {
+      "scorecards_json": {
+        "disclosure_ledgers": true,
+        "file": "fixtures/audio/spoken_call/scorecards.json",
+        "heard_criteria": true,
+        "sent_criteria": true,
+        "totals": true,
+        "verdicts": true
+      },
+      "trace_jsonl": {
+        "census": {
+          "agent_audio_complete": 8,
+          "agent_audio_first_byte": 8,
+          "agent_utterance": 8,
+          "audio_emitted": 16,
+          "caller_utterance": 8,
+          "session_end": 1,
+          "session_start": 1,
+          "tool_call": 7,
+          "tool_result": 7,
+          "transcript_in": 8,
+          "transcript_out": 8
+        },
+        "event_kinds": true,
+        "events": true,
+        "file": "fixtures/audio/spoken_call/trace.jsonl"
+      }
+    },
+    "manifest": "fixtures/audio/spoken_call/manifest.json",
+    "recomputed_by": "roleplay.spoken.replay_spoken_call"
+  },
+  "totals": {
+    "as_heard": 12,
+    "as_sent": 12,
+    "identical": true,
+    "max": 20
+  },
+  "verdicts": {
+    "as_heard": "fail",
+    "as_sent": "fail",
+    "identical": true
+  },
+  "why_it_nearly_escaped": {
+    "checks_that_would_have_missed_it": [
+      {
+        "as_heard": 12,
+        "as_sent": 12,
+        "check": "compare the totals",
+        "would_have_found_it": false
+      },
+      {
+        "as_heard": "fail",
+        "as_sent": "fail",
+        "check": "compare the verdicts",
+        "would_have_found_it": false
+      },
+      {
+        "as_heard": [
+          "capital_at_risk",
+          "fees_and_charges"
+        ],
+        "as_sent": [
+          "capital_at_risk",
+          "fees_and_charges"
+        ],
+        "check": "compare the disclosure ledgers",
+        "would_have_found_it": false
+      },
+      {
+        "as_heard": {
+          "closing": 0,
+          "discovery": 0,
+          "mandatory_disclosure": 4,
+          "no_unlicensed_advice": 4,
+          "objection_handling": 4
+        },
+        "as_sent": {
+          "closing": 0,
+          "discovery": 2,
+          "mandatory_disclosure": 4,
+          "no_unlicensed_advice": 4,
+          "objection_handling": 2
+        },
+        "check": "compare criterion by criterion",
+        "would_have_found_it": true
+      }
+    ],
+    "dropped": [
+      {
+        "as_heard": 0,
+        "as_sent": 2,
+        "criterion": "discovery",
+        "delta": -2,
+        "max": 4,
+        "moved": true
+      }
+    ],
+    "gained": [
+      {
+        "as_heard": 4,
+        "as_sent": 2,
+        "criterion": "objection_handling",
+        "delta": 2,
+        "max": 4,
+        "moved": true
+      }
+    ],
+    "summary": "objection_handling moved the opposite way and cancelled the loss. A check on the total, on the verdict, or on the disclosure ledger would each have concluded the audio channel changed nothing. Only the per-criterion comparison surfaced it."
+  }
+}
