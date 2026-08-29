@@ -133,12 +133,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     add(f"    {'the detector':<22} {site}   {source_line}")
     add("")
     add(
-        "  The graded transcript is the unpunctuated one, because the word-error-rate"
+        "  The graded transcript is the one with the sentence punctuation stripped,"
     )
     add(
-        "  rules require it. So no spoken turn can ever end in a question mark, and no"
+        "  because the word-error-rate rules require it. So no spoken turn can ever"
     )
-    add("  spoken adviser can ever be credited with asking anything.")
+    add("  end in a question mark, and no spoken adviser can ever be credited with")
+    add("  asking anything.")
     add("")
     add("WHY IT ALMOST ESCAPED")
     if gained:
