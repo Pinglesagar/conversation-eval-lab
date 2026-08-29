@@ -49,7 +49,7 @@
   <div class="hero__body">
     <ul class="lede">
       <li>A trainee adviser's call was <strong>spoken</strong> — every line synthesised to audio, the audio transcribed back, and the transcript graded by the same rubric that grades text.</li>
-      <li>The question detector is <code>body.endswith("?")</code>. The transcript that actually gets graded is the unformatted one, and the only punctuation character in it is an apostrophe.</li>
+      <li>The question detector is <code>body.endswith("?")</code>. The transcript that actually gets graded is the unformatted one, and across the adviser&rsquo;s eight turns the only punctuation character in it is an apostrophe.</li>
       <li>So <em>discovery</em> scored <b class="num">0/4</b> on a call where <b class="num">5/8</b> adviser turns ended in a question mark and <b class="num">7/8</b> contained one.</li>
     </ul>
   </div>
@@ -125,7 +125,7 @@
     </div>
     <div class="minicard">
       <p class="label">Cost to replay</p>
-      <p class="minicard__big">0 <span class="minicard__unit">money</span></p>
+      <p class="minicard__big">0 <span class="minicard__unit">charged</span></p>
       <p class="minicard__sub">0 network calls, 0 keys required</p>
     </div>
   </div>
@@ -137,7 +137,8 @@
         <div><dt>Synthesis, adviser</dt><dd><code>tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb</code></dd></div>
         <div><dt>Synthesis, customer</dt><dd><code>tts:elevenlabs/eleven_flash_v2_5/Xb7hH8MSUJpSbSDYk0k2</code></dd></div>
         <div><dt>Recognition</dt><dd><code>stt:deepgram/nova-3/en/raw</code> — the string ends in <code>raw</code>, the unformatted transcript, which is the one that was graded</dd></div>
-        <div><dt>Grading model</dt><dd><code>gpt-4.1</code></dd></div>
+        <div><dt>Scorer</dt><dd><code>roleplay.scorer.RubricScorer</code> — deterministic, and no model is involved. Every criterion figure on this page is its output, by way of <code>roleplay.spoken.channel_effect</code>.</dd></div>
+        <div><dt>Model label</dt><dd><code>gpt-4.1</code> — one label covering three roles in the recording: the adviser&rsquo;s turns, the customer&rsquo;s turns, and the separate LLM judge. It did not produce the scores above.</dd></div>
         <div><dt>Scenario</dt><dd><code>spoken-eu-challenger-exemplary</code> — persona <code>aggressive_challenger</code>, competence <code>exemplary</code>, jurisdiction <code>eu-retail</code>, rubric <code>v2</code>, temperature 0.0</dd></div>
       </dl>
 
@@ -192,7 +193,7 @@
       <p class="stack__verdict stack__verdict--bad">No <span class="mono">?</span> anywhere</p>
     </div>
   </div>
-  <p class="stack__note" id="stack-note">The only punctuation character in the graded transcript, on any of the sixteen turns, is the apostrophe.</p>
+  <p class="stack__note" id="stack-note">Across the eight adviser turns the graded transcript&rsquo;s only punctuation character is the apostrophe. Over all sixteen it adds exactly one more &mdash; the hyphen in <span class="q">brother-in-law</span>. There is no full stop, no comma and no question mark anywhere in it.</p>
 
   <ol class="chain">
     <li>
@@ -232,13 +233,24 @@
   <p class="why">
     <span class="why__tag">Why the graded one is bare</span>
     The formatted transcript is a second, separately billed request, and its prettifying fabricates a word error rate. So
-    the harness grades the raw channel — which carries no punctuation at all.
+    the harness grades the raw channel — which carries no sentence punctuation at all.
+  </p>
+
+  <p class="why why--alt">
+    <span class="why__tag">The questions really were still there</span>
+    This call carries a second, independent grade of the <em>same</em> unpunctuated transcript: an LLM judge rather than
+    the rule. It scores discovery <b class="num">4/4</b> where the rule scores <b class="num">0/4</b>. So the words were
+    there to be read, and one of the two instruments could not see them. Not a claim that the judge is the better
+    instrument. It moves the opposite way on <code>mandatory_disclosure</code> — <b class="num">0/4</b> against the
+    rule&rsquo;s <b class="num">4/4</b>, and that rule counts compliance keywords rather than reading the disclosure
+    register, which is a seeded defect of its own. Both still return <b>fail</b>.
+    <span class="why__src">fixtures/audio/spoken_call/scorecards.json <span aria-hidden="true">/</span> <code>deterministic</code> against <code>live</code></span>
   </p>
 
   <details class="disc">
     <summary><span class="disc__t">The three real question turns, verbatim</span></summary>
     <div class="disc__body">
-      <p class="disc__intro">Orders 0, 10 and 12. Turn 12 is the pivotal one — the only turn the classifier calls an <code>open_probe</code>. Each ends in a question mark as sent and in the display transcript; in the graded version the only punctuation character is the apostrophe.</p>
+      <p class="disc__intro">Orders 0, 10 and 12. Turn 12 is the pivotal one — the only turn the classifier calls an <code>open_probe</code>. Each ends in a question mark as sent and in the display transcript; in the graded version of each of the three, the only punctuation character left is the apostrophe.</p>
 
       <article class="turn">
         <p class="label">Order 0 <span class="label__sep" aria-hidden="true">/</span> turn 1 <span class="label__sep" aria-hidden="true">/</span> 14.86075 s <span class="label__sep" aria-hidden="true">/</span> stt confidence 1.0</p>
@@ -478,10 +490,12 @@
     <span class="sec__num" aria-hidden="true">03</span>
     <div>
       <p class="eyebrow">What else it found</p>
-      <h2 class="h2">Four more, each with its denominator.</h2>
+      <h2 class="h2">Four more instruments that were wrong.</h2>
       <p class="sec__lede">
-        Every rate below is recomputed from a committed artefact by the named command, unless it is explicitly labelled
-        <span class="tag tag--hist">historical</span>.
+        The finding above is a detector that could not see a question. These four are the same shape &mdash; the thing
+        doing the measuring was the thing at fault. Three of them are this harness&rsquo;s own; the fourth is a vendor&rsquo;s
+        recogniser. Every rate below is recomputed from a committed artefact by the command beside it, unless it is
+        explicitly labelled <span class="tag tag--hist">historical</span>.
       </p>
     </div>
   </div>
@@ -550,7 +564,7 @@
         <li><span class="twin__l">Rungs captured</span><span class="twin__n">0.667 <span class="twin__d">(6/9)</span></span></li>
         <li><span class="twin__l">Broke at</span><span class="twin__n twin__n--bad">&minus;5.0 dB</span></li>
       </ul>
-      <p class="card__read">Declared <span class="mono">SW1A 1AA</span>. At &minus;5.0 dB it heard <span class="q">&ldquo;The postcode SW1A1AF.&rdquo;</span> at confidence <b class="num">0.907</b>. A wrong postcode at high confidence is worse than none: an empty transcript is a re-ask, a wrong one is a delivery to the wrong address.</p>
+      <p class="card__read">Declared <span class="mono">SW1A 1AA</span>. At &minus;5.0 dB it heard <span class="q">&ldquo;The postcode SW1A1AF.&rdquo;</span> at confidence <b class="num">0.907</b> <span class="q">(0.90722656, rounded here and exact in the ladder)</span>. A wrong postcode at high confidence is worse than none: an empty transcript is a re-ask, a wrong one is a delivery to the wrong address.</p>
       <details class="disc disc--in">
         <summary><span class="disc__t">The whole ladder, rung by rung</span></summary>
         <div class="disc__body">
@@ -578,7 +592,7 @@
           </ul>
         </div>
       </details>
-      <p class="card__cmd"><code>make audio-suite</code></p>
+      <p class="card__cmd"><code>make audio-suite-evidence</code></p>
     </article>
 
     <!-- card 4 -->
@@ -668,9 +682,9 @@
     <div>
       <p class="label">Documentation</p>
       <ul class="foot__list">
-        <li><a href="README.md">The docs index, by question</a></li>
-        <li><a href="WIKI.md">The wiki</a></li>
-        <li><a href="SPOKEN_CALL.md">This finding, in full</a></li>
+        <li><a href="https://github.com/Pinglesagar/conversation-eval-lab/blob/main/docs/README.md">The docs index, by question</a></li>
+        <li><a href="https://github.com/Pinglesagar/conversation-eval-lab/blob/main/docs/WIKI.md">The wiki</a></li>
+        <li><a href="https://github.com/Pinglesagar/conversation-eval-lab/blob/main/docs/SPOKEN_CALL.md">This finding, in full</a></li>
       </ul>
     </div>
     <div>

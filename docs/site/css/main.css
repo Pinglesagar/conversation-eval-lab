@@ -649,6 +649,15 @@ main { display: block; }
   text-transform: uppercase; letter-spacing: 0.18em;
   color: var(--accent); margin-bottom: 0.45rem;
 }
+.why--alt { margin-top: 0.9rem; border-left-color: var(--fg-mute); }
+.why--alt .why__tag { color: var(--fg-dim); }
+.why__src {
+  display: block; margin-top: 0.6rem;
+  font-family: var(--mono); font-size: 0.64rem;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--fg-mute);
+  overflow-wrap: anywhere;
+}
 
 /* ---------- turns ---------- */
 
