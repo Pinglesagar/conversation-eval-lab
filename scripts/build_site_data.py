@@ -3,7 +3,7 @@
 WHAT THIS IS FOR
 ----------------
 A designed page tells **one** finding. This script produces the small JSON files
-that page loads, plus a short audio excerpt, so that every number and every quote
+that page loads, plus the call's audio, so that every number and every quote
 on it is real, sourced, and regenerable by re-running this file.
 
 WHAT IT WILL NOT DO
@@ -25,6 +25,7 @@ WHAT IT WRITES  (all of it under docs/site/data/)
     secondary_findings.json  four other headline findings, each with its
                           denominator and the command that reproduces it
     index.json            every file above with its sha256, and the commands
+    audio/full_call.wav   the whole call, 181.30s, served so the page can play it
     audio/excerpt.wav     15.21s cut around the adviser's opening question
 
 DETERMINISM
@@ -58,6 +59,10 @@ FULL_CALL = SPOKEN / "full_call.wav"
 #: than a derived path because `--check` writes to a scratch directory and the
 #: declared location must not follow it there.
 EXCERPT_PATH = "docs/site/data/audio/excerpt.wav"
+
+#: Where the served copy of the whole call lives. Same reasoning as above: the
+#: declared path is the canonical one, not wherever `--check` happens to build.
+FULL_CALL_SITE_PATH = "docs/site/data/audio/full_call.wav"
 
 #: The excerpt is one whole adviser turn plus the inter-turn gap that follows it.
 #: Turn-aligned on purpose: a cut inside a turn cannot be checked against the
@@ -680,6 +685,53 @@ def _turn_offsets(manifest: dict) -> list[dict[str, Any]]:
     return offsets
 
 
+def serve_full_call(manifest: dict, destination: Path) -> dict[str, Any]:
+    """Put the whole call where the page can play it, byte for byte.
+
+    A straight copy of `fixtures/audio/spoken_call/full_call.wav` — no re-encode,
+    no trim, no resample — so the served file and the fixture have the same
+    digest and the page is playing the artefact the harness pins, not a
+    rendition of it. It is 5.5 MB, and the page carries `preload="none"` so
+    those bytes are only fetched when a reader presses play.
+    """
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_bytes(FULL_CALL.read_bytes())
+
+    with wave.open(str(destination), "rb") as served:
+        channels = served.getnchannels()
+        width = served.getsampwidth()
+        rate = served.getframerate()
+        frames = served.getnframes()
+
+    assembly = manifest["assembly"]
+    return {
+        # The canonical location, not `destination`: see EXCERPT_PATH.
+        "path": FULL_CALL_SITE_PATH,
+        "source_file": _rel(FULL_CALL),
+        "contains": (
+            f"the whole call, all {len(manifest['turns'])} turns, exactly as the "
+            "harness assembled it"
+        ),
+        "copied_verbatim": True,
+        "duration_s": assembly["duration_s"],
+        "channels": channels,
+        "sample_width_bytes": width,
+        "sample_rate_hz": rate,
+        "frames": frames,
+        "bytes": destination.stat().st_size,
+        # Same digest as the fixture, by construction. The assertion is the
+        # point: if these two ever differ, the page is playing something else.
+        "sha256": _sha256(destination),
+        "source_file_sha256": _sha256(FULL_CALL),
+        "verify": (
+            "python -c \"import hashlib,pathlib;"
+            + f"print(hashlib.sha256(pathlib.Path('{FULL_CALL_SITE_PATH}')"
+            + ".read_bytes()).hexdigest())\""
+        ),
+        "verify_expects": _sha256(FULL_CALL),
+    }
+
+
 def cut_excerpt(manifest: dict, destination: Path) -> dict[str, Any]:
     """One turn plus its trailing gap, cut with the standard library only.
 
@@ -753,7 +805,12 @@ def cut_excerpt(manifest: dict, destination: Path) -> dict[str, Any]:
     }
 
 
-def build_call(manifest: dict, result: Any, excerpt: dict[str, Any]) -> dict[str, Any]:
+def build_call(
+    manifest: dict,
+    result: Any,
+    served: dict[str, Any],
+    excerpt: dict[str, Any],
+) -> dict[str, Any]:
     from roleplay.scorer import RubricScorer
 
     assembly, spend, session = manifest["assembly"], manifest["spend"], manifest["session"]
@@ -788,10 +845,12 @@ def build_call(manifest: dict, result: Any, excerpt: dict[str, Any]) -> dict[str
                 "bytes": FULL_CALL.stat().st_size,
                 "file_sha256": _sha256(FULL_CALL),
                 "pcm_sha256": assembly["audio_sha256"],
+                "served_at": FULL_CALL_SITE_PATH,
                 "note": (
-                    "The whole call, kept where it already lives. It is not copied "
-                    "into docs/site/ because a second 5.5 MB copy in git buys a "
-                    "page that should feel instant nothing at all."
+                    "The whole call. A byte-identical copy is served from "
+                    "docs/site/data/audio/ so the page can play it; the page "
+                    "carries preload=\"none\", so the 5.5 MB is fetched only "
+                    "when a reader presses play and the page still loads instantly."
                 ),
                 "digest_note": (
                     "`file_sha256` hashes the WAV bytes; `pcm_sha256` is the "
@@ -799,6 +858,7 @@ def build_call(manifest: dict, result: Any, excerpt: dict[str, Any]) -> dict[str
                     "harness pins. They are different numbers of different things."
                 ),
             },
+            "full_call_served": served,
             "excerpt": excerpt,
         },
         "engines": {
@@ -1236,6 +1296,7 @@ def build(out: Path) -> dict[str, str]:
     manifest = json.loads((SPOKEN / "manifest.json").read_text("utf-8"))
     result = replay_spoken_call()
 
+    served = serve_full_call(manifest, out / "audio" / "full_call.wav")
     excerpt = cut_excerpt(manifest, out / "audio" / "excerpt.wav")
     digests: dict[str, str] = {}
     digests["finding.json"] = _dump(out / "finding.json", build_finding(manifest, result))
@@ -1245,10 +1306,13 @@ def build(out: Path) -> dict[str, str]:
     digests["recognition.json"] = _dump(
         out / "recognition.json", build_recognition(manifest)
     )
-    digests["call.json"] = _dump(out / "call.json", build_call(manifest, result, excerpt))
+    digests["call.json"] = _dump(
+        out / "call.json", build_call(manifest, result, served, excerpt)
+    )
     digests["secondary_findings.json"] = _dump(
         out / "secondary_findings.json", build_secondary()
     )
+    digests["audio/full_call.wav"] = served["sha256"]
     digests["audio/excerpt.wav"] = excerpt["sha256"]
 
     index = {

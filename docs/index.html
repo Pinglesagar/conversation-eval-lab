@@ -90,15 +90,29 @@
 
   <div class="listen">
     <div class="listen__player">
-      <p class="label">Excerpt <span class="label__sep" aria-hidden="true">/</span> adviser turn 1 <span class="label__sep" aria-hidden="true">/</span> 15.21075 s</p>
-      <audio controls preload="none" src="site/data/audio/excerpt.wav">
-        Your browser cannot play audio. The file is
-        <a href="site/data/audio/excerpt.wav">site/data/audio/excerpt.wav</a> — 16&nbsp;kHz mono WAV, 486,788 bytes.
-      </audio>
-      <p class="listen__meta">
-        Frames 0&#8202;&#8594;&#8202;243372 of <code>full_call.wav</code> <span aria-hidden="true">/</span>
-        0.0&#8202;&#8594;&#8202;15.21075 s <span aria-hidden="true">/</span> 16 kHz mono 16-bit
-      </p>
+      <div class="play">
+        <p class="label">The whole call <span class="label__sep" aria-hidden="true">/</span> 16 turns <span class="label__sep" aria-hidden="true">/</span> 181.303625 s</p>
+        <audio controls preload="none" src="site/data/audio/full_call.wav">
+          Your browser cannot play audio. The file is
+          <a href="site/data/audio/full_call.wav">site/data/audio/full_call.wav</a> — 16&nbsp;kHz mono WAV, 5,801,760 bytes.
+        </audio>
+        <p class="listen__meta">
+          A byte-identical copy of <code>fixtures/audio/spoken_call/full_call.wav</code> <span aria-hidden="true">/</span>
+          16 kHz mono 16-bit <span aria-hidden="true">/</span> 5,801,760 bytes, fetched only when you press play
+        </p>
+      </div>
+
+      <div class="play play--second">
+        <p class="label">Just the turn that scored zero <span class="label__sep" aria-hidden="true">/</span> adviser turn 1 <span class="label__sep" aria-hidden="true">/</span> 15.21075 s</p>
+        <audio controls preload="none" src="site/data/audio/excerpt.wav">
+          Your browser cannot play audio. The file is
+          <a href="site/data/audio/excerpt.wav">site/data/audio/excerpt.wav</a> — 16&nbsp;kHz mono WAV, 486,788 bytes.
+        </audio>
+        <p class="listen__meta">
+          Frames 0&#8202;&#8594;&#8202;243372 of <code>full_call.wav</code> <span aria-hidden="true">/</span>
+          0.0&#8202;&#8594;&#8202;15.21075 s <span aria-hidden="true">/</span> 16 kHz mono 16-bit
+        </p>
+      </div>
     </div>
 
     <div class="listen__text">
@@ -153,7 +167,7 @@
       <p class="disc__h">The audio, verifiable</p>
       <ul class="bullets">
         <li>The excerpt is turn-aligned, so it checks against the manifest rather than being an arbitrary crop.</li>
-        <li>Whole call: <code>fixtures/audio/spoken_call/full_call.wav</code>, 5,801,760 bytes — kept where it lives rather than duplicated into this page.</li>
+        <li>Whole call: <code>fixtures/audio/spoken_call/full_call.wav</code>, 5,801,760 bytes — copied verbatim to <code>site/data/audio/full_call.wav</code> so this page can play it, same sha256 either side.</li>
         <li>Two different digests of two different things: <code>file_sha256</code> hashes the WAV bytes; <code>pcm_sha256</code> is the manifest's digest of the decoded samples, which is what the harness pins.</li>
       </ul>
       <pre class="code"><code>python -c "import wave;w=wave.open('fixtures/audio/spoken_call/full_call.wav');w.setpos(0);import hashlib;print(hashlib.sha256(w.readframes(243372)).hexdigest())"
