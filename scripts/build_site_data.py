@@ -65,7 +65,7 @@ EXCERPT_PATH = "docs/site/data/audio/excerpt.wav"
 EXCERPT_TURN_ORDER = 0
 
 #: The three adviser turns quoted verbatim on the page. Every one of them ends in
-#: a question mark as sent, and carries no punctuation at all as heard. Chosen,
+#: a question mark as sent, and carries no sentence punctuation as heard. Chosen,
 #: not sampled: the opener is the discovery probe the criterion is about, the risk
 #: turn carries a disclosure as well, and turn 7 is the single turn that the
 #: classifier calls an `open_probe` — the only reason `discovery` is 2 rather
@@ -149,7 +149,48 @@ def _question_census(adviser: Sequence[dict]) -> dict[str, Any]:
         "why": (
             "The graded transcript is the unformatted one. The formatted transcript "
             "is a second, separately billed request whose prettifying fabricates a "
-            "word error rate, so the scored channel carries no punctuation at all."
+            "word error rate, so the scored channel carries no sentence punctuation "
+            "at all — see `punctuation_in_the_graded_transcript` for the whole "
+            "inventory, which is two characters and neither of them is a question "
+            "mark."
+        ),
+    }
+
+
+def _graded_punctuation(turns: Sequence[dict]) -> dict[str, Any]:
+    """Every non-alphanumeric, non-space character in the graded transcript.
+
+    An inventory rather than a sentence, because the claim the page makes about
+    this — that nothing in the scored channel can end a question — is only worth
+    making if it is derived. The first draft of this page asserted "the only
+    punctuation character is an apostrophe" over all sixteen turns and was wrong:
+    one customer turn says `brother-in-law`. The adviser's eight, which are the
+    only turns the discovery detector reads, do carry the apostrophe alone.
+    """
+
+    def inventory(rows: Iterable[dict]) -> list[str]:
+        return sorted(
+            {
+                c
+                for t in rows
+                for c in t["text_heard"]
+                if not c.isalnum() and not c.isspace()
+            }
+        )
+
+    adviser = [t for t in turns if t["speaker"] == "trainee"]
+    everything = inventory(turns)
+    return {
+        "all_16_turns": everything,
+        "the_8_adviser_turns": inventory(adviser),
+        "sentence_punctuation_found": sorted(set(everything) & set(".,;:!?")),
+        "note": (
+            "Characters that are neither a letter, a digit nor a space. There is "
+            "no full stop, comma, colon or question mark anywhere in the scored "
+            "channel. Across all sixteen turns the inventory is the apostrophe "
+            "and one hyphen (`brother-in-law`, the customer's turn at order 1); "
+            "across the eight adviser turns the detector actually reads, it is "
+            "the apostrophe alone."
         ),
     }
 
@@ -190,6 +231,8 @@ def _turn_kinds(adviser: Sequence[dict]) -> dict[str, Any]:
 
 
 def build_finding(manifest: dict, result: Any) -> dict[str, Any]:
+    from roleplay.scorer import RubricScorer
+
     effect = result.effect
     adviser = [t for t in manifest["turns"] if t["speaker"] == "trainee"]
     names = sorted(set(effect.sent_criteria) | set(effect.heard_criteria))
@@ -242,11 +285,15 @@ def build_finding(manifest: dict, result: Any) -> dict[str, Any]:
             "summary": (
                 "The turn classifier decides a turn is a question with "
                 'body.endswith("?"). The graded transcript is unformatted and '
-                "carries no punctuation, so no spoken turn can end in a question "
-                "mark and no spoken adviser can be credited with asking anything."
+                "carries no sentence punctuation, so no spoken turn can end in a "
+                "question mark and no spoken adviser can be credited with asking "
+                "anything."
             ),
             "detector": _detector_site(),
             "question_marks": _question_census(adviser),
+            "punctuation_in_the_graded_transcript": _graded_punctuation(
+                manifest["turns"]
+            ),
             "turn_kinds": _turn_kinds(adviser),
         },
         "why_it_nearly_escaped": {
@@ -307,8 +354,76 @@ def build_finding(manifest: dict, result: Any) -> dict[str, Any]:
         "source": {
             "manifest": _rel(SPOKEN / "manifest.json"),
             "recomputed_by": "roleplay.spoken.replay_spoken_call",
+            "scorer": (
+                f"{RubricScorer.__module__}.{RubricScorer.__qualname__}"
+                " — deterministic, no model"
+            ),
             "agrees_with_committed_artefacts": _cross_check(result),
         },
+        "second_opinion": _second_opinion(manifest),
+    }
+
+
+def _second_opinion(manifest: dict) -> dict[str, Any]:
+    """The same graded transcript, put to the LLM judge instead of the rule.
+
+    Worth surfacing because it is the closest thing this call has to a control.
+    The rule and the judge read the identical `text_heard` trace, so a criterion
+    where they disagree by the full range is not a transcript problem — the words
+    were there to be read, and one of the two instruments could not see them.
+
+    It cuts both ways, and both directions are reported: the judge also loses the
+    disclosure the ledger recorded. Neither instrument is "the right one", which
+    is the reason the number is given with its opposite beside it rather than as
+    a vindication.
+    """
+    from roleplay.livescorer import LiveRubricScorer
+    from roleplay.scorer import RubricScorer
+
+    def where(cls: type) -> str:
+        return f"{cls.__module__}.{cls.__qualname__}"
+
+    cards = json.loads((SPOKEN / "scorecards.json").read_text("utf-8"))
+    rule = cards["deterministic"]["criteria"]
+    judge = cards["live"]["criteria"]
+    return {
+        "question": (
+            "Were the questions really in the graded transcript, or is the rule "
+            "right that nothing question-shaped survived?"
+        ),
+        "graded_transcript": "text_heard — the same trace for both instruments",
+        "rule": {
+            "name": where(RubricScorer),
+            "criteria": rule,
+            "total": cards["deterministic"]["total"],
+            "verdict": cards["deterministic"]["verdict"],
+        },
+        "judge": {
+            "name": where(LiveRubricScorer),
+            "model": manifest["session"]["model_label"],
+            "criteria": judge,
+            "total": cards["live"]["total"],
+            "verdict": cards["live"]["verdict"],
+        },
+        "discovery": {
+            "by_the_rule": rule["discovery"],
+            "by_the_judge": judge["discovery"],
+            "max": 4,
+        },
+        "reading": (
+            "On discovery the two instruments disagree by the whole range: the "
+            "judge reads the same unpunctuated words and finds the questions the "
+            "rule cannot. That is corroboration for the mechanism, not a claim "
+            "that the judge is the better instrument: on mandatory_disclosure it "
+            "moves the opposite way, 0 against the rule's 4, and the rule's 4 is "
+            "a count of compliance keywords rather than a read of the disclosure "
+            "register — a seeded defect of its own, roleplay/scorer.py::"
+            "RubricScorer._mandatory_disclosure. Both verdicts are still `fail`."
+        ),
+        "criteria_where_they_disagree": sorted(
+            name for name in rule if rule[name] != judge.get(name)
+        ),
+        "source": _rel(SPOKEN / "scorecards.json"),
     }
 
 
@@ -399,7 +514,9 @@ def build_question_turns(manifest: dict) -> dict[str, Any]:
     return {
         "note": (
             "Verbatim from the committed manifest. `text_heard` is the transcript "
-            "that was graded; the only punctuation it contains is the apostrophe."
+            "that was graded; on each of these three turns the only punctuation it "
+            "contains is the apostrophe, which "
+            "`heard_punctuation_characters` records per turn rather than asserts."
         ),
         "turns": turns,
         "source": _rel(SPOKEN / "manifest.json"),
@@ -637,6 +754,8 @@ def cut_excerpt(manifest: dict, destination: Path) -> dict[str, Any]:
 
 
 def build_call(manifest: dict, result: Any, excerpt: dict[str, Any]) -> dict[str, Any]:
+    from roleplay.scorer import RubricScorer
+
     assembly, spend, session = manifest["assembly"], manifest["spend"], manifest["session"]
     turns = manifest["turns"]
     adviser = [t for t in turns if t["speaker"] == "trainee"]
@@ -688,11 +807,32 @@ def build_call(manifest: dict, result: Any, excerpt: dict[str, Any]) -> dict[str
                 "customer": manifest["engines"]["tts_customer"],
             },
             "recognition": manifest["engines"]["stt"],
-            "grading_model": session["model_label"],
+            "scorer": {
+                "name": (
+                    f"{RubricScorer.__module__}.{RubricScorer.__qualname__}"
+                ),
+                "kind": "deterministic, no model",
+                "note": (
+                    "Every criterion figure on the demo page is this scorer's "
+                    "output, by way of roleplay.spoken.channel_effect, which calls "
+                    "RubricScorer() on both channels. No model graded them."
+                ),
+            },
+            "model_label": {
+                "value": session["model_label"],
+                "note": (
+                    "One label, three roles in the recording: the adviser's turns, "
+                    "the customer's turns, and the SEPARATE live judge. It is not "
+                    "the source of the scores on the page — see `scorer` above. "
+                    "roleplay/spoken.py passes it to both ModelSpeakers and to "
+                    "LiveRubricScorer."
+                ),
+            },
             "note": (
-                "Two vendors: one synthesised every line, another transcribed the "
-                "assembled audio back. The recognition engine string ends in `raw`, "
-                "which is the unformatted transcript — the one that was graded."
+                "Two vendors in the audio path: one synthesised every line, another "
+                "transcribed the assembled audio back. The recognition engine string "
+                "ends in `raw`, which is the unformatted transcript — the one that "
+                "was graded."
             ),
         },
         "session": {
@@ -950,7 +1090,7 @@ def _finding_noise_ladder() -> dict[str, Any]:
             "address. This is why the row asserts the field rather than a word "
             "error rate."
         ),
-        "reproduce": "make audio-suite",
+        "reproduce": "make audio-suite-evidence",
         "source": {
             "transcripts": _rel(cassette_path),
             "row": "scenarios/audio.py::audio-line-quality-noise-ladder",
