@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The grader marked it down for not asking questions — conversation-eval-lab</title>
+<meta name="description" content="A spoken call scored 0 out of 4 on discovery. Five of the adviser's eight turns ended in a question mark. One finding, told end to end, reproducible offline with no API key.">
+<meta name="color-scheme" content="dark">
+<link rel="stylesheet" href="site/css/main.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2308090A'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='20' font-weight='700' fill='%2300E5A0' text-anchor='middle'%3E%3F%3C/text%3E%3C/svg%3E">
+<script>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');</script>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <nav class="nav" aria-label="Sections">
+    <a class="nav__brand" href="#top">
+      <span class="nav__mark" aria-hidden="true">?</span>
+      <span class="nav__name">conversation&#8209;eval&#8209;lab</span>
+    </a>
+    <ul class="nav__list">
+      <li><a href="#call"><span class="nav__num" aria-hidden="true">00</span> The call</a></li>
+      <li><a href="#break"><span class="nav__num" aria-hidden="true">01</span> Where it breaks</a></li>
+      <li><a href="#hid"><span class="nav__num" aria-hidden="true">02</span> Why it nearly hid</a></li>
+      <li><a href="#else"><span class="nav__num" aria-hidden="true">03</span> What else</a></li>
+      <li><a href="#run">Run it</a></li>
+    </ul>
+    <p class="chip chip--status" role="status">
+      <span class="chip__dot" aria-hidden="true"></span>Replay <span class="chip__sep" aria-hidden="true">/</span> 0 keys
+    </p>
+  </nav>
+</header>
+
+<main id="main">
+
+<!-- ======================= HERO ======================= -->
+<section class="hero" id="top">
+  <p class="eyebrow">Evaluation harness <span aria-hidden="true">/</span> One finding <span aria-hidden="true">/</span> n&nbsp;=&nbsp;1</p>
+
+  <h1 class="display">
+    <span class="display__a">The grader marked it down</span>
+    <span class="display__b">for not asking questions.</span>
+  </h1>
+
+  <p class="hero__kicker">It asked five.</p>
+
+  <div class="hero__body">
+    <ul class="lede">
+      <li>A trainee adviser's call was <strong>spoken</strong> — every line synthesised to audio, the audio transcribed back, and the transcript graded by the same rubric that grades text.</li>
+      <li>The question detector is <code>body.endswith("?")</code>. The transcript that actually gets graded is the unformatted one, and the only punctuation character in it is an apostrophe.</li>
+      <li>So <em>discovery</em> scored <b class="num">0/4</b> on a call where <b class="num">5/8</b> adviser turns ended in a question mark and <b class="num">7/8</b> contained one.</li>
+    </ul>
+  </div>
+
+  <ul class="pills" aria-label="Call facts">
+    <li class="pill">16 turns</li>
+    <li class="pill">181.303625 s</li>
+    <li class="pill">Two vendors</li>
+    <li class="pill">0 API keys</li>
+    <li class="pill pill--hot">Discovery 0/4</li>
+  </ul>
+
+  <p class="hero__links">
+    <a class="btn" href="https://github.com/Pinglesagar/conversation-eval-lab">The repository <span aria-hidden="true">&#8599;</span></a>
+    <a class="btn btn--ghost" href="#run">Run it yourself</a>
+  </p>
+
+  <p class="note note--top">
+    <span class="note__tag">Honest note</span>
+    <b>n&nbsp;=&nbsp;1.</b> This is a mechanism, not a rate. One call, examined end to end, to show what the pipeline
+    surfaces — it is not a measured frequency and nothing here should be read as one.
+  </p>
+</section>
+
+<!-- ======================= 00 THE CALL ======================= -->
+<section class="sec" id="call">
+  <div class="sec__head">
+    <span class="sec__num" aria-hidden="true">00</span>
+    <div>
+      <p class="eyebrow">The call</p>
+      <h2 class="h2">Hear the turn that scored zero.</h2>
+      <p class="sec__lede">
+        This is the adviser's opening line, in full, from the committed audio. It is a question. Discovery — the criterion
+        it exists to satisfy — was scored <b class="num">0/4</b>.
+      </p>
+    </div>
+  </div>
+
+  <div class="listen">
+    <div class="listen__player">
+      <p class="label">Excerpt <span class="label__sep" aria-hidden="true">/</span> adviser turn 1 <span class="label__sep" aria-hidden="true">/</span> 15.21075 s</p>
+      <audio controls preload="none" src="site/data/audio/excerpt.wav">
+        Your browser cannot play audio. The file is
+        <a href="site/data/audio/excerpt.wav">site/data/audio/excerpt.wav</a> — 16&nbsp;kHz mono WAV, 486,788 bytes.
+      </audio>
+      <p class="listen__meta">
+        Frames 0&#8202;&#8594;&#8202;243372 of <code>full_call.wav</code> <span aria-hidden="true">/</span>
+        0.0&#8202;&#8594;&#8202;15.21075 s <span aria-hidden="true">/</span> 16 kHz mono 16-bit
+      </p>
+    </div>
+
+    <div class="listen__text">
+      <p class="label">What the voice says <span class="label__sep" aria-hidden="true">/</span> spoken form</p>
+      <blockquote class="quote">
+        <p>Good morning, Mr Novak. Thank you for coming in today. Before we discuss any investment options, I'd like to
+        understand your goals, your timeframe, and how you feel about risk. Could you tell me a bit about what you're
+        hoping to achieve with your investments<span class="mark">?</span></p>
+      </blockquote>
+      <p class="listen__why">Chosen because it is the adviser's opening discovery question, and discovery is the criterion that scored zero.</p>
+    </div>
+  </div>
+
+  <div class="cardgrid cardgrid--3">
+    <div class="minicard">
+      <p class="label">Session</p>
+      <p class="minicard__big">16 turns</p>
+      <p class="minicard__sub">8 adviser + 8 customer, 8 exchanges</p>
+    </div>
+    <div class="minicard">
+      <p class="label">Duration</p>
+      <p class="minicard__big">181.303625 s</p>
+      <p class="minicard__sub">176.053625 s speech + 5.25 s of gaps (15 &times; 0.35)</p>
+    </div>
+    <div class="minicard">
+      <p class="label">Cost to replay</p>
+      <p class="minicard__big">0 <span class="minicard__unit">money</span></p>
+      <p class="minicard__sub">0 network calls, 0 keys required</p>
+    </div>
+  </div>
+
+  <details class="disc">
+    <summary><span class="disc__t">The engines, and what this actually billed</span></summary>
+    <div class="disc__body">
+      <dl class="kv">
+        <div><dt>Synthesis, adviser</dt><dd><code>tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb</code></dd></div>
+        <div><dt>Synthesis, customer</dt><dd><code>tts:elevenlabs/eleven_flash_v2_5/Xb7hH8MSUJpSbSDYk0k2</code></dd></div>
+        <div><dt>Recognition</dt><dd><code>stt:deepgram/nova-3/en/raw</code> — the string ends in <code>raw</code>, the unformatted transcript, which is the one that was graded</dd></div>
+        <div><dt>Grading model</dt><dd><code>gpt-4.1</code></dd></div>
+        <div><dt>Scenario</dt><dd><code>spoken-eu-challenger-exemplary</code> — persona <code>aggressive_challenger</code>, competence <code>exemplary</code>, jurisdiction <code>eu-retail</code>, rubric <code>v2</code>, temperature 0.0</dd></div>
+      </dl>
+
+      <p class="disc__h">Spend</p>
+      <ul class="bullets">
+        <li>This recording charged <b class="num">0 credits</b> and <b class="num">0 characters</b> — <b class="num">16/16</b> lines were digest-cache hits.</li>
+        <li>Cost of <em>making</em> it: <b class="num">3,014 characters</b> submitted to synthesis.</li>
+        <li>Recognition: <b class="num">32 requests</b> over <b class="num">16 clips</b>. <b class="num">176.054</b> audio seconds, but <b class="num">352.107</b> metered seconds.</li>
+        <li>The formatted transcript is a <em>second billed request over the same audio</em>. Reporting only the audio length understates the bill by exactly a factor of two.</li>
+      </ul>
+
+      <p class="disc__h">The audio, verifiable</p>
+      <ul class="bullets">
+        <li>The excerpt is turn-aligned, so it checks against the manifest rather than being an arbitrary crop.</li>
+        <li>Whole call: <code>fixtures/audio/spoken_call/full_call.wav</code>, 5,801,760 bytes — kept where it lives rather than duplicated into this page.</li>
+        <li>Two different digests of two different things: <code>file_sha256</code> hashes the WAV bytes; <code>pcm_sha256</code> is the manifest's digest of the decoded samples, which is what the harness pins.</li>
+      </ul>
+      <pre class="code"><code>python -c "import wave;w=wave.open('fixtures/audio/spoken_call/full_call.wav');w.setpos(0);import hashlib;print(hashlib.sha256(w.readframes(243372)).hexdigest())"
+# expects 2f81115c1382988a0d0224eb7ffd88d38b7d9a7a4b99e36c334dc02d35111880</code></pre>
+    </div>
+  </details>
+</section>
+
+<!-- ======================= 01 WHERE IT BREAKS ======================= -->
+<section class="sec" id="break">
+  <div class="sec__head">
+    <span class="sec__num" aria-hidden="true">01</span>
+    <div>
+      <p class="eyebrow">Where it breaks</p>
+      <h2 class="h2">The detector wants a <span class="accent">?</span>. The scored transcript has none.</h2>
+      <p class="sec__lede">
+        Three versions of the same sentence exist in this pipeline. Only one of them is graded, and it is the one with the
+        punctuation stripped out.
+      </p>
+    </div>
+  </div>
+
+  <div class="stack" aria-describedby="stack-note">
+    <div class="stack__row">
+      <p class="stack__tag">Sent</p>
+      <p class="stack__text">&hellip;hoping to achieve with your investments<span class="mark">?</span></p>
+      <p class="stack__verdict stack__verdict--ok">Ends in <span class="mono">?</span></p>
+    </div>
+    <div class="stack__row">
+      <p class="stack__tag">Display <span class="stack__tag2">vendor&rsquo;s formatted transcript</span></p>
+      <p class="stack__text">&hellip;hoping to achieve with your investments<span class="mark">?</span></p>
+      <p class="stack__verdict stack__verdict--ok">Ends in <span class="mono">?</span> <span class="stack__aside">but is not graded</span></p>
+    </div>
+    <div class="stack__row stack__row--hot">
+      <p class="stack__tag">Graded <span class="stack__tag2">unformatted, <code>text_heard</code></span></p>
+      <p class="stack__text">&hellip;hoping to achieve with your investments<span class="ghost"><span aria-hidden="true">?</span><span class="sr-only">no question mark here</span></span></p>
+      <p class="stack__verdict stack__verdict--bad">No <span class="mono">?</span> anywhere</p>
+    </div>
+  </div>
+  <p class="stack__note" id="stack-note">The only punctuation character in the graded transcript, on any of the sixteen turns, is the apostrophe.</p>
+
+  <ol class="chain">
+    <li>
+      <p class="chain__lead">The detector asks one question of the string.</p>
+      <pre class="code code--tight"><code>if body.endswith("?"):</code></pre>
+      <p class="chain__src">roleplay/persona.py:170 <span aria-hidden="true">/</span> <code>classify_trainee_turn</code></p>
+    </li>
+    <li>
+      <p class="chain__lead">The census, over all 8 adviser turns.</p>
+      <table class="census">
+        <caption class="sr-only">Question marks by transcript version, over eight adviser turns</caption>
+        <thead>
+          <tr><th scope="col">Version</th><th scope="col">Ends in <span class="mono">?</span></th><th scope="col">Contains one</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Sent</th><td><b class="num">5/8</b></td><td><b class="num">7/8</b></td></tr>
+          <tr><th scope="row">Display</th><td><b class="num">5/8</b></td><td><b class="num">7/8</b></td></tr>
+          <tr class="census__hot"><th scope="row">Graded</th><td><b class="num">0/8</b></td><td><b class="num">0/8</b></td></tr>
+        </tbody>
+      </table>
+    </li>
+    <li>
+      <p class="chain__lead">So every turn classifies as a pitch.</p>
+      <div class="tally">
+        <p class="tally__side"><span class="label">As sent</span> <code>{closed_question: 4, open_probe: 1, pitch: 3}</code></p>
+        <p class="tally__arrow" aria-hidden="true">&#8595;</p>
+        <p class="tally__side tally__side--hot"><span class="label">As heard</span> <code>{pitch: 8}</code></p>
+      </div>
+    </li>
+    <li>
+      <p class="chain__lead">And the band collapses.</p>
+      <p class="chain__body">Discovery bands on open probes — <span class="mono">0&#8202;&#8594;&#8202;0</span>, <span class="mono">1&#8202;&#8594;&#8202;2</span>, <span class="mono">2&#8202;&#8594;&#8202;3</span>, <span class="mono">&#8805;3&#8202;&#8594;&#8202;4</span>. One open probe scores 2. Zero scores <b class="num">0</b>.</p>
+      <p class="chain__src">roleplay/scorer.py <span aria-hidden="true">/</span> <code>RubricScorer._discovery</code></p>
+    </li>
+  </ol>
+
+  <p class="why">
+    <span class="why__tag">Why the graded one is bare</span>
+    The formatted transcript is a second, separately billed request, and its prettifying fabricates a word error rate. So
+    the harness grades the raw channel — which carries no punctuation at all.
+  </p>
+
+  <details class="disc">
+    <summary><span class="disc__t">The three real question turns, verbatim</span></summary>
+    <div class="disc__body">
+      <p class="disc__intro">Orders 0, 10 and 12. Turn 12 is the pivotal one — the only turn the classifier calls an <code>open_probe</code>. Each ends in a question mark as sent and in the display transcript; in the graded version the only punctuation character is the apostrophe.</p>
+
+      <article class="turn">
+        <p class="label">Order 0 <span class="label__sep" aria-hidden="true">/</span> turn 1 <span class="label__sep" aria-hidden="true">/</span> 14.86075 s <span class="label__sep" aria-hidden="true">/</span> stt confidence 1.0</p>
+        <p class="turn__k">Sent</p>
+        <p class="turn__sent">Good morning, Mr Novak. Thank you for coming in today. Before we discuss any investment options, I&rsquo;d like to understand your goals, your timeframe, and how you feel about risk. Could you tell me a bit about what you&rsquo;re hoping to achieve with your investments<span class="mark">?</span></p>
+        <p class="turn__k">Graded</p>
+        <p class="turn__heard">good morning mister novak thank you for coming in today before we discuss any investment options i'd like to understand your goals your time frame and how you feel about risk could you tell me a bit about what you're hoping to achieve with your investments</p>
+        <p class="turn__cls"><span class="tag tag--ok">as sent: closed_question</span> <span class="tag tag--bad">as heard: pitch</span></p>
+      </article>
+
+      <article class="turn">
+        <p class="label">Order 10 <span class="label__sep" aria-hidden="true">/</span> turn 6 <span class="label__sep" aria-hidden="true">/</span> 16.6255 s <span class="label__sep" aria-hidden="true">/</span> stt confidence 1.0</p>
+        <p class="turn__k">Sent</p>
+        <p class="turn__sent">Thank you. One more important area to cover is how you feel about risk&mdash;investments can go up and down in value, and there&rsquo;s always a chance you could get back less than you put in. How comfortable are you with the possibility of losing some of your investment, even temporarily<span class="mark">?</span></p>
+        <p class="turn__k">Graded</p>
+        <p class="turn__heard">thank you one more important area to cover is how you feel about risk investments can go up and down in value and there's always a chance you could get back less than you put in how comfortable are you with the possibility of losing some of your investment even temporarily</p>
+        <p class="turn__cls"><span class="tag tag--ok">as sent: closed_question</span> <span class="tag tag--bad">as heard: pitch</span></p>
+      </article>
+
+      <article class="turn turn--pivot">
+        <p class="label">Order 12 <span class="label__sep" aria-hidden="true">/</span> turn 7 <span class="label__sep" aria-hidden="true">/</span> 25.30975 s <span class="label__sep" aria-hidden="true">/</span> stt confidence 1.0 <span class="label__sep" aria-hidden="true">/</span> <span class="accent">the pivotal turn</span></p>
+        <p class="turn__k">Sent</p>
+        <p class="turn__sent">Thank you for considering that. To summarise, we&rsquo;ve discussed your goals, your timeframe, how much you might invest, and your feelings about risk. Based on what you&rsquo;ve shared, I can outline some options and explain the trade-offs, but I won&rsquo;t make any recommendations until I have a full picture of your circumstances. Would you like to continue with a full suitability assessment, or do you have any other questions or concerns before we proceed<span class="mark">?</span></p>
+        <p class="turn__k">Graded</p>
+        <p class="turn__heard">thank you for considering that to summarize we've discussed your goals your time frame how much you might invest and your feelings about risk based on what you've shared i can outline some options and explain the trade offs but i won't make any recommendations until i have a full picture of your circumstances would you like to continue with a full suitability assessment or do you have any other questions or concerns before we proceed</p>
+        <p class="turn__cls"><span class="tag tag--ok">as sent: open_probe</span> <span class="tag tag--bad">as heard: pitch</span></p>
+      </article>
+    </div>
+  </details>
+
+  <details class="disc">
+    <summary><span class="disc__t">All eight adviser turns, classified both ways</span></summary>
+    <div class="disc__body">
+      <div class="scroller">
+        <table class="grid">
+          <caption class="sr-only">Turn classification, as sent against as heard, for eight adviser turns</caption>
+          <thead>
+            <tr><th scope="col">Turn</th><th scope="col">Order</th><th scope="col">As sent</th><th scope="col">As heard</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">1</th><td>0</td><td>closed_question</td><td class="grid__hot">pitch</td></tr>
+            <tr><th scope="row">2</th><td>2</td><td>closed_question</td><td class="grid__hot">pitch</td></tr>
+            <tr><th scope="row">3</th><td>4</td><td>pitch</td><td>pitch</td></tr>
+            <tr><th scope="row">4</th><td>6</td><td>pitch</td><td>pitch</td></tr>
+            <tr><th scope="row">5</th><td>8</td><td>pitch</td><td>pitch</td></tr>
+            <tr><th scope="row">6</th><td>10</td><td>closed_question</td><td class="grid__hot">pitch</td></tr>
+            <tr><th scope="row">7</th><td>12</td><td class="grid__pivot">open_probe</td><td class="grid__hot">pitch</td></tr>
+            <tr><th scope="row">8</th><td>14</td><td>closed_question</td><td class="grid__hot">pitch</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="disc__foot">Open probes: <b class="num">1</b> as sent, <b class="num">0</b> as heard. That single probe is the whole of the discovery score.</p>
+    </div>
+  </details>
+
+  <details class="disc">
+    <summary><span class="disc__t">Is the gap just punctuation? Almost — but not entirely</span></summary>
+    <div class="disc__body">
+      <p class="disc__intro">Both sides were normalised by <code>lab.voice.wer.normalise</code> — the same function the word error rate uses, which lowercases, expands contractions, strips punctuation and converts number words to digits. The reference is each turn's <code>spoken_form</code>, which is what was sent to the synthesiser. Each surviving edit is then classified <em>on its own</em>.</p>
+
+      <ul class="stats stats--4">
+        <li><span class="stats__n">16</span><span class="stats__l">turns</span></li>
+        <li><span class="stats__n">10</span><span class="stats__l">edits</span></li>
+        <li><span class="stats__n">9</span><span class="stats__l">orthographic</span></li>
+        <li class="stats--hot"><span class="stats__n">1</span><span class="stats__l">content</span></li>
+      </ul>
+
+      <p class="disc__h">The one content difference</p>
+      <ul class="bullets">
+        <li>Turn 6, order 11, the customer speaking.</li>
+        <li>Sent <span class="q">&ldquo;I understand what you&rsquo;re saying.&rdquo;</span> &#8594; heard <span class="q">&ldquo;understand what you&rsquo;re saying&rdquo;</span>.</li>
+        <li>The recogniser dropped the word <b>I</b>. That is the only genuine content edit on the whole call.</li>
+      </ul>
+
+      <p class="disc__h">The nine orthographic ones</p>
+      <ul class="pairs">
+        <li><code>mr</code> &#8594; <code>mister</code> <span class="pairs__n">&times;3</span></li>
+        <li><code>timeframe</code> &#8594; <code>time frame</code> <span class="pairs__n">&times;3</span></li>
+        <li><code>summarise</code> &#8594; <code>summarize</code> <span class="pairs__n">&times;2</span></li>
+        <li><code>per cent</code> &#8594; <code>percent</code> <span class="pairs__n">&times;1</span></li>
+      </ul>
+
+      <p class="disc__foot">Which is the point: the recogniser did its job. The transcript is faithful. The failure is entirely in what the detector demands of it.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ======================= 02 WHY IT NEARLY HID ======================= -->
+<section class="sec" id="hid">
+  <div class="sec__head">
+    <span class="sec__num" aria-hidden="true">02</span>
+    <div>
+      <p class="eyebrow">Why it nearly hid</p>
+      <h2 class="h2">Two criteria moved in opposite directions to the <span class="accent">same total</span>.</h2>
+      <p class="sec__lede">
+        Switch the channel. Discovery falls <span class="mono">2&#8202;&#8594;&#8202;0</span>. Objection handling rises
+        <span class="mono">2&#8202;&#8594;&#8202;4</span>. The total does not move at all.
+      </p>
+    </div>
+  </div>
+
+  <div class="scorepanel">
+    <div class="switch" data-switch hidden>
+      <p class="switch__label" id="switch-label">Show the score</p>
+      <div class="switch__btns" role="group" aria-labelledby="switch-label">
+        <button type="button" class="switch__btn" data-channel="sent" aria-pressed="false">What was sent</button>
+        <button type="button" class="switch__btn is-on" data-channel="heard" aria-pressed="true">What was heard</button>
+      </div>
+      <p class="switch__status" data-switch-status role="status">
+        <b>What was heard</b> — the unformatted transcript that was actually graded.
+      </p>
+    </div>
+
+    <table class="score" data-score>
+      <caption class="sr-only">Rubric score by criterion, as sent against as heard, out of four each</caption>
+      <thead>
+        <tr>
+          <th scope="col">Criterion</th>
+          <th scope="col"><span data-score-head>As heard</span></th>
+          <th scope="col"><abbr title="Change from as sent to as heard">&Delta;</abbr> heard &minus; sent</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr data-row data-sent="0" data-heard="0">
+          <th scope="row">closing</th>
+          <td class="score__cell">
+            <span class="bar" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+            <span class="score__n"><b data-value>0</b><span class="score__max">/4</span></span>
+          </td>
+          <td class="score__d">&mdash;</td>
+        </tr>
+        <tr data-row data-sent="2" data-heard="0" class="score__moved">
+          <th scope="row">discovery</th>
+          <td class="score__cell">
+            <span class="bar" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+            <span class="score__n"><b data-value>0</b><span class="score__max">/4</span></span>
+          </td>
+          <td class="score__d score__d--down">&minus;2</td>
+        </tr>
+        <tr data-row data-sent="4" data-heard="4">
+          <th scope="row">mandatory_disclosure</th>
+          <td class="score__cell">
+            <span class="bar" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span>
+            <span class="score__n"><b data-value>4</b><span class="score__max">/4</span></span>
+          </td>
+          <td class="score__d">&mdash;</td>
+        </tr>
+        <tr data-row data-sent="4" data-heard="4">
+          <th scope="row">no_unlicensed_advice</th>
+          <td class="score__cell">
+            <span class="bar" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span>
+            <span class="score__n"><b data-value>4</b><span class="score__max">/4</span></span>
+          </td>
+          <td class="score__d">&mdash;</td>
+        </tr>
+        <tr data-row data-sent="2" data-heard="4" class="score__moved">
+          <th scope="row">objection_handling</th>
+          <td class="score__cell">
+            <span class="bar" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span>
+            <span class="score__n"><b data-value>4</b><span class="score__max">/4</span></span>
+          </td>
+          <td class="score__d score__d--up">+2</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="score__total">
+          <th scope="row">Total</th>
+          <td class="score__cell"><span class="score__n score__n--big"><b>12</b><span class="score__max">/20</span></span></td>
+          <td class="score__d">0</td>
+        </tr>
+        <tr class="score__verdict">
+          <th scope="row">Verdict</th>
+          <td colspan="2"><span class="tag tag--bad">fail</span> either way</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <p class="scorepanel__punch">The total sits at <b class="num">12/20</b> in both channels. The verdict is <b>fail</b> in both. The disclosure ledger is identical in both.</p>
+  </div>
+
+  <div class="checks">
+    <p class="label">Four ways to look for it</p>
+    <ul class="checks__list">
+      <li class="checks__miss"><span class="checks__mark" aria-hidden="true">&times;</span><span class="checks__what">Compare the totals</span><span class="checks__res">12 = 12 &mdash; missed it</span></li>
+      <li class="checks__miss"><span class="checks__mark" aria-hidden="true">&times;</span><span class="checks__what">Compare the verdicts</span><span class="checks__res">fail = fail &mdash; missed it</span></li>
+      <li class="checks__miss"><span class="checks__mark" aria-hidden="true">&times;</span><span class="checks__what">Compare the disclosure ledgers</span><span class="checks__res"><code>capital_at_risk</code>, <code>fees_and_charges</code> both sides &mdash; missed it</span></li>
+      <li class="checks__hit"><span class="checks__mark" aria-hidden="true">&#10003;</span><span class="checks__what">Compare criterion by criterion</span><span class="checks__res">found it</span></li>
+    </ul>
+  </div>
+
+  <p class="lesson"><span class="lesson__tag">The lesson</span> Aggregate agreement is not agreement.</p>
+
+  <p class="note">
+    <span class="note__tag">Caveat, recorded not hidden</span>
+    The <em>as sent</em> column is a counterfactual re-simulation: the same notes are re-run with <code>text_heard</code>
+    replaced by <code>text_sent</code>, so the customer's state machine and the disclosure register re-decide from those
+    words. That is <em>why</em> objection handling moves — the objection ledger differs. The discovery mechanism does not
+    depend on it: the question-mark census and the turn-kind tally read straight off the committed turns.
+  </p>
+
+  <details class="disc">
+    <summary><span class="disc__t">Both columns side by side, and where these numbers come from</span></summary>
+    <div class="disc__body">
+      <div class="scroller">
+        <table class="grid">
+          <caption class="sr-only">Full criterion table, as sent and as heard</caption>
+          <thead>
+            <tr><th scope="col">Criterion</th><th scope="col">As sent</th><th scope="col">As heard</th><th scope="col">Max</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">closing</th><td>0</td><td>0</td><td>4</td></tr>
+            <tr class="grid__moved"><th scope="row">discovery</th><td>2</td><td class="grid__hot">0</td><td>4</td></tr>
+            <tr><th scope="row">mandatory_disclosure</th><td>4</td><td>4</td><td>4</td></tr>
+            <tr><th scope="row">no_unlicensed_advice</th><td>4</td><td>4</td><td>4</td></tr>
+            <tr class="grid__moved"><th scope="row">objection_handling</th><td>2</td><td class="grid__hot">4</td><td>4</td></tr>
+          </tbody>
+          <tfoot>
+            <tr><th scope="row">Total</th><td>12</td><td>12</td><td>20</td></tr>
+            <tr><th scope="row">Verdict</th><td>fail</td><td>fail</td><td></td></tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <p class="disc__h">Provenance</p>
+      <ul class="bullets">
+        <li>Recomputed by <code>roleplay.spoken.replay_spoken_call</code> from <code>fixtures/audio/spoken_call/manifest.json</code>.</li>
+        <li>All five figures agree with the committed <code>fixtures/audio/spoken_call/scorecards.json</code> — criteria both ways, totals, verdicts and disclosure ledgers.</li>
+        <li>The trace event census agrees too: 16 <code>audio_emitted</code>, 8 <code>agent_utterance</code>, 8 <code>caller_utterance</code>, 8 <code>transcript_in</code>, 8 <code>transcript_out</code>, 7 <code>tool_call</code>, 7 <code>tool_result</code>.</li>
+      </ul>
+    </div>
+  </details>
+</section>
+
+<!-- ======================= 03 WHAT ELSE ======================= -->
+<section class="sec" id="else">
+  <div class="sec__head">
+    <span class="sec__num" aria-hidden="true">03</span>
+    <div>
+      <p class="eyebrow">What else it found</p>
+      <h2 class="h2">Four more, each with its denominator.</h2>
+      <p class="sec__lede">
+        Every rate below is recomputed from a committed artefact by the named command, unless it is explicitly labelled
+        <span class="tag tag--hist">historical</span>.
+      </p>
+    </div>
+  </div>
+
+  <div class="cardgrid cardgrid--2">
+
+    <!-- card 1 -->
+    <article class="card">
+      <p class="card__eyebrow">Finding <span aria-hidden="true">/</span> the grader itself</p>
+      <h3 class="card__h">It will not fail anybody.</h3>
+      <p class="card__p">The rubric scorer agrees with the reviewer on who to pass, and almost never agrees on who to stop.</p>
+      <ul class="twin">
+        <li><span class="twin__l">Recall, on sessions a reviewer would fail</span><span class="twin__n twin__n--bad">0.281 <span class="twin__d">(9/32)</span></span></li>
+        <li><span class="twin__l">Specificity</span><span class="twin__n">0.947 <span class="twin__d">(36/38)</span></span></li>
+      </ul>
+      <p class="card__read">The two rates point opposite ways, and that is the finding: the instrument is not noisy, it is biased toward passing. Quoting either alone inverts the conclusion.</p>
+      <details class="disc disc--in">
+        <summary><span class="disc__t">The full confusion matrix, and the refusal</span></summary>
+        <div class="disc__body">
+          <ul class="bullets">
+            <li>Positive class <code>fail</code>. n = <b class="num">70</b>: TP 9, FP 2, FN 23, TN 36.</li>
+            <li>Precision <b class="num">0.818 (9/11)</b>. Cohen's &kappa; 0.241.</li>
+            <li>It certifies roughly seven in ten of the sessions a competent reviewer would stop.</li>
+          </ul>
+          <p class="disc__h">The gate refused it</p>
+          <ul class="bullets">
+            <li><code>TPR 0.281 (9/32) is below the required 0.85</code></li>
+            <li><code>registry refused the judge in CI mode: JudgeBelowThresholdError</code></li>
+          </ul>
+        </div>
+      </details>
+      <p class="card__cmd"><code>make roleplay-demo</code></p>
+    </article>
+
+    <!-- card 2 -->
+    <article class="card">
+      <p class="card__eyebrow">Finding <span aria-hidden="true">/</span> the judge</p>
+      <h3 class="card__h">A judge whose own gate refused it.</h3>
+      <p class="card__p">Written for a gate, measured against it, and turned away. The rewrite cleared.</p>
+      <ul class="twin">
+        <li><span class="twin__l">v1 recall</span><span class="twin__n twin__n--bad">0.250 <span class="twin__d">(2/8)</span></span></li>
+        <li><span class="twin__l">v2 recall</span><span class="twin__n">1.000 <span class="twin__d">(8/8)</span></span></li>
+      </ul>
+      <p class="card__read">Both versions score a perfect specificity — <b class="num">1.000 (16/16)</b>. A gate on specificity alone would have passed a judge that missed six real defects in eight.</p>
+      <details class="disc disc--in">
+        <summary><span class="disc__t">Thresholds, and how it was decided</span></summary>
+        <div class="disc__body">
+          <ul class="bullets">
+            <li>Thresholds 0.85 true-positive rate and 0.85 true-negative rate, minimum 10 items, scored on <code>point</code>.</li>
+            <li>v1: &kappa; 0.308, refused &mdash; <code>TPR 0.250 (2/8) is below the required 0.85</code>.</li>
+            <li>v2: &kappa; 1.000, cleared.</li>
+            <li>24 items each, model <code>azure/gpt-4.1</code>.</li>
+            <li>Decided by re-running <code>CalibrationReport.meets</code>, not by reading a printed rate.</li>
+          </ul>
+        </div>
+      </details>
+      <p class="card__cmd"><code>evallab calibrate --ci</code></p>
+    </article>
+
+    <!-- card 3 -->
+    <article class="card">
+      <p class="card__eyebrow">Finding <span aria-hidden="true">/</span> the recogniser under noise</p>
+      <h3 class="card__h">Wrong before it goes silent.</h3>
+      <p class="card__p">Rising noise does not fade the recogniser into silence. One rung before it goes quiet, it returns a different, plausible, wrong value.</p>
+      <ul class="twin">
+        <li><span class="twin__l">Rungs captured</span><span class="twin__n">0.667 <span class="twin__d">(6/9)</span></span></li>
+        <li><span class="twin__l">Broke at</span><span class="twin__n twin__n--bad">&minus;5.0 dB</span></li>
+      </ul>
+      <p class="card__read">Declared <span class="mono">SW1A 1AA</span>. At &minus;5.0 dB it heard <span class="q">&ldquo;The postcode SW1A1AF.&rdquo;</span> at confidence <b class="num">0.907</b>. A wrong postcode at high confidence is worse than none: an empty transcript is a re-ask, a wrong one is a delivery to the wrong address.</p>
+      <details class="disc disc--in">
+        <summary><span class="disc__t">The whole ladder, rung by rung</span></summary>
+        <div class="disc__body">
+          <div class="scroller">
+            <table class="grid">
+              <caption class="sr-only">Noise ladder: signal-to-noise ratio against transcript and confidence</caption>
+              <thead><tr><th scope="col">SNR</th><th scope="col">Captured</th><th scope="col">Display text</th><th scope="col">Confidence</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">20.0 dB</th><td class="ok">yes</td><td>The postcode is SW1A1AA.</td><td>0.9970703</td></tr>
+                <tr><th scope="row">15.0 dB</th><td class="ok">yes</td><td>The postcode is SW1A1AA.</td><td>0.9970703</td></tr>
+                <tr><th scope="row">10.0 dB</th><td class="ok">yes</td><td>The postcode is SW1A1AA.</td><td>0.9970703</td></tr>
+                <tr><th scope="row">6.0 dB</th><td class="ok">yes</td><td>The postcode is SW1A1AA.</td><td>0.9980469</td></tr>
+                <tr><th scope="row">3.0 dB</th><td class="ok">yes</td><td>The postcode is SW1A1AA.</td><td>0.9975586</td></tr>
+                <tr><th scope="row">0.0 dB</th><td class="ok">yes</td><td>The postcode is SW1A1AA.</td><td>0.99365234</td></tr>
+                <tr class="grid__moved"><th scope="row">&minus;5.0 dB</th><td class="bad">no</td><td class="grid__hot">The postcode SW1A1AF.</td><td>0.90722656</td></tr>
+                <tr><th scope="row">&minus;10.0 dB</th><td class="bad">no</td><td><span class="empty">(empty)</span></td><td>0.0</td></tr>
+                <tr><th scope="row">&minus;15.0 dB</th><td class="bad">no</td><td><span class="empty">(empty)</span></td><td>0.0</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <ul class="bullets">
+            <li>Axis <code>add_noise</code>, parameter <code>snr_db</code>. Walked by <code>lab.voice.suite.ladder_result</code> over the committed cassette.</li>
+            <li>This is why the row asserts the field rather than a word error rate.</li>
+            <li><b>Caveat:</b> one row, one declared postcode, one seed. The ladder locates a breaking point on this line; it does not estimate a rate.</li>
+          </ul>
+        </div>
+      </details>
+      <p class="card__cmd"><code>make audio-suite</code></p>
+    </article>
+
+    <!-- card 4 -->
+    <article class="card">
+      <p class="card__eyebrow">Finding <span aria-hidden="true">/</span> the promise detector</p>
+      <h3 class="card__h">A literal is a check that works once.</h3>
+      <p class="card__p">A detector matching literal strings had full recall against a scripted agent, then went blind against a paraphrasing model. Same defect, both times.</p>
+      <ul class="twin">
+        <li><span class="twin__l">Against the scripted agent</span><span class="twin__n">1.000 <span class="twin__d">(2/2)</span></span></li>
+        <li><span class="twin__l">Against the paraphrasing model <span class="tag tag--hist">historical</span></span><span class="twin__n twin__n--bad">0.143 <span class="twin__d">(1/7)</span></span></li>
+      </ul>
+      <p class="card__read">Over 30 conversations a generous hand-written detector found <b class="num">7/30</b> unbacked confirmations. The literal detector caught <b class="num">1</b> of those 7. Four misses were ordinary synonyms; two were not a vocabulary problem at all — the patterns use an ASCII apostrophe and the model types <code>U+2019</code>, so a correct pattern never matched.</p>
+      <details class="disc disc--in">
+        <summary><span class="disc__t">The denominators, and what was replaced</span></summary>
+        <div class="disc__body">
+          <ul class="bullets">
+            <li><b>2/2 is a floor, not a rate.</b> Two selected rows, one run each, over <code>fixtures/replay_run</code>, against seeded defect BUG-1 — a booking claimed with no committing tool call. The scripted agent says one string every time, so a literal pattern is correct forever.</li>
+            <li><b>1/7 is labelled <span class="tag tag--hist">historical</span>.</b> The literal pattern set it measured was replaced by the rewrite and is not in the tree, so the numerator cannot be recomputed. The denominator can be, and is.</li>
+            <li><b>Denominator warning.</b> The 1/7 is the <code>fixtures/live_run</code> corpus of 30 conversations. A separate 1/6 exists over the six large-party conversations of <code>fixtures/live_full</code>. Two runs, two denominators; they are not the same measurement.</li>
+            <li><b>Today's detector:</b> <b class="num">7/7</b>, plus one more the hand-written detector missed. On the 24-item hand-labelled set, recall <b class="num">1.000 (8/8)</b> and specificity <b class="num">1.000 (16/16)</b>.</li>
+            <li>It decides on a regex over the agent's words <em>plus event-stream position</em>: the first spoken commitment with no <code>create_booking</code>, <code>modify_booking</code> or <code>cancel_booking</code> before it.</li>
+          </ul>
+        </div>
+      </details>
+      <p class="card__cmd"><code>python -m tablemate --score fixtures/replay_run</code><br><code>python -m pytest tests/test_checks_paraphrase.py -q</code></p>
+    </article>
+
+  </div>
+</section>
+
+<!-- ======================= RUN IT ======================= -->
+<section class="sec sec--run" id="run">
+  <div class="sec__head">
+    <span class="sec__num" aria-hidden="true">&#8594;</span>
+    <div>
+      <p class="eyebrow">Run it</p>
+      <h2 class="h2">Three commands. <span class="accent">No API key.</span></h2>
+      <p class="sec__lede">
+        Every number on this page recomputes offline from a clean checkout. Nothing here needs a credential, and the
+        replay makes zero network calls.
+      </p>
+    </div>
+  </div>
+
+  <ol class="cmds" data-cmds>
+    <li>
+      <p class="cmds__what">Print the finding</p>
+      <div class="cmds__row">
+        <code class="cmds__code">make start</code>
+        <button type="button" class="copy" data-copy="make start">Copy<span class="sr-only"> the command: make start</span></button>
+      </div>
+    </li>
+    <li>
+      <p class="cmds__what">Recompute the spoken call from the manifest</p>
+      <div class="cmds__row">
+        <code class="cmds__code">make spoken-replay</code>
+        <button type="button" class="copy" data-copy="make spoken-replay">Copy<span class="sr-only"> the command: make spoken-replay</span></button>
+      </div>
+    </li>
+    <li>
+      <p class="cmds__what">Check it against the committed artefacts</p>
+      <div class="cmds__row">
+        <code class="cmds__code">python -m pytest tests/test_roleplay_spoken.py -q</code>
+        <button type="button" class="copy" data-copy="python -m pytest tests/test_roleplay_spoken.py -q">Copy<span class="sr-only"> the command: python -m pytest tests/test_roleplay_spoken.py -q</span></button>
+      </div>
+    </li>
+  </ol>
+
+  <ul class="rules">
+    <li>Every rate carries its denominator.</li>
+    <li>Every number is reproducible by a named command.</li>
+    <li>Sourced or labelled historical. There is no third category.</li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="foot__cols">
+    <div>
+      <p class="label">Repository</p>
+      <ul class="foot__list">
+        <li><a href="https://github.com/Pinglesagar/conversation-eval-lab">github.com/Pinglesagar/conversation-eval-lab</a></li>
+        <li><a href="https://github.com/Pinglesagar/conversation-eval-lab#readme">README &mdash; sixty seconds</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="label">Documentation</p>
+      <ul class="foot__list">
+        <li><a href="README.md">The docs index, by question</a></li>
+        <li><a href="WIKI.md">The wiki</a></li>
+        <li><a href="SPOKEN_CALL.md">This finding, in full</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="label">The evidence behind this page</p>
+      <ul class="foot__list">
+        <li><a href="site/data/finding.json">finding.json</a></li>
+        <li><a href="site/data/call.json">call.json</a></li>
+        <li><a href="site/data/question_turns.json">question_turns.json</a></li>
+        <li><a href="site/data/recognition.json">recognition.json</a></li>
+        <li><a href="site/data/secondary_findings.json">secondary_findings.json</a></li>
+      </ul>
+    </div>
+  </div>
+  <p class="foot__note">
+    Every figure and quotation on this page is generated by <code>python -m scripts.build_site_data</code> from artefacts
+    committed to the repository, and verified unchanged by <code>python -m scripts.build_site_data --check</code>.
+    <b>n&nbsp;=&nbsp;1</b> &mdash; a mechanism, not a rate.
+  </p>
+</footer>
+
+<script src="site/js/main.js"></script>
+</body>
+</html>
