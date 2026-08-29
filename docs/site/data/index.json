@@ -6,8 +6,12 @@
       "sha256": "cd4cbd7ce57bda32a884c725f8968a750dec2ce50a535fc43b2c37a2398844ea"
     },
     {
+      "path": "audio/full_call.wav",
+      "sha256": "3a6e20a3d2bf206899f37baab08155a58579ad413c3b55dda8157a9cde5e703c"
+    },
+    {
       "path": "call.json",
-      "sha256": "2d10d8bd81ec543330a7f930fc959512ca3839599754d1e54405f9e892e96872"
+      "sha256": "6599ae52aaefe1163337afe17794dfe4d5dd75fbd3ff83e05c5d8a05ebab5ddc"
     },
     {
       "path": "finding.json",

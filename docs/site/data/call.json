@@ -28,9 +28,26 @@
       "bytes": 5801760,
       "digest_note": "`file_sha256` hashes the WAV bytes; `pcm_sha256` is the manifest's digest of the decoded samples, which is what the harness pins. They are different numbers of different things.",
       "file_sha256": "3a6e20a3d2bf206899f37baab08155a58579ad413c3b55dda8157a9cde5e703c",
-      "note": "The whole call, kept where it already lives. It is not copied into docs/site/ because a second 5.5 MB copy in git buys a page that should feel instant nothing at all.",
+      "note": "The whole call. A byte-identical copy is served from docs/site/data/audio/ so the page can play it; the page carries preload=\"none\", so the 5.5 MB is fetched only when a reader presses play and the page still loads instantly.",
       "path": "fixtures/audio/spoken_call/full_call.wav",
-      "pcm_sha256": "b93882d47a68625c99e26256942820caa7202af81b6952c68d6bdd22d44293f2"
+      "pcm_sha256": "b93882d47a68625c99e26256942820caa7202af81b6952c68d6bdd22d44293f2",
+      "served_at": "docs/site/data/audio/full_call.wav"
+    },
+    "full_call_served": {
+      "bytes": 5801760,
+      "channels": 1,
+      "contains": "the whole call, all 16 turns, exactly as the harness assembled it",
+      "copied_verbatim": true,
+      "duration_s": 181.303625,
+      "frames": 2900858,
+      "path": "docs/site/data/audio/full_call.wav",
+      "sample_rate_hz": 16000,
+      "sample_width_bytes": 2,
+      "sha256": "3a6e20a3d2bf206899f37baab08155a58579ad413c3b55dda8157a9cde5e703c",
+      "source_file": "fixtures/audio/spoken_call/full_call.wav",
+      "source_file_sha256": "3a6e20a3d2bf206899f37baab08155a58579ad413c3b55dda8157a9cde5e703c",
+      "verify": "python -c \"import hashlib,pathlib;print(hashlib.sha256(pathlib.Path('docs/site/data/audio/full_call.wav').read_bytes()).hexdigest())\"",
+      "verify_expects": "3a6e20a3d2bf206899f37baab08155a58579ad413c3b55dda8157a9cde5e703c"
     },
     "sample_rate_hz": 16000
   },
