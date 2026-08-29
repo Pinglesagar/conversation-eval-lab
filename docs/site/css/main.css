@@ -1,29 +1,43 @@
 /* conversation-eval-lab — one finding, told once.
-   Editorial meets terminal. Near-black, one cold accent, everything else greyscale.
-   No external requests: system fonts only. */
+   Claude, rendered in a dot-matrix. A warm near-black ground, one coral accent,
+   an off-white, two greys, and hard edges everywhere: no gradients, no soft
+   shadows, no rounded corners, no blur.
+
+   The rule the styling is held to: pixel is a texture here, not a costume. If
+   an effect and legibility disagree, the effect loses. The dot-matrix mask is
+   on the hero headline and the decorative section numerals only; body copy,
+   numbers and tables are untouched, and the scanlines sit *behind* the content
+   so they can never dim a glyph.
+
+   No external requests: system fonts only, and every mark is drawn in markup. */
 
 :root {
-  --bg:        #08090A;
-  --bg-raise:  #0D0F11;
-  --bg-sink:   #050607;
-  --line:      #1D2226;
-  --line-soft: #14181B;
-  --faint:     #545C62;
-  --fg:        #F3F5F6;
-  --fg-dim:    #A7AEB3;
-  --fg-mute:   #7E868C;
-  --accent:    #00E5A0;
-  --accent-2:  #00B57E;
-  --accent-w:  rgba(0, 229, 160, 0.10);
-  --accent-b:  rgba(0, 229, 160, 0.32);
-  --warn:      #FF6B6B;
+  /* The coral is #D97757. It could not be read out of Claude Code's own
+     terminal palette on the machine this was built on — the CLI is not
+     installed here — so that hex is an ASSUMPTION, recorded as one rather than
+     asserted. Everything else is derived from it. */
+  --bg:        #0C0B0A;
+  --bg-raise:  #14120F;
+  --bg-sink:   #070605;
+  --line:      #2A241F;
+  --line-soft: #1B1714;
+  --faint:     rgba(244, 239, 233, 0.26);
+  --fg:        #F4EFE9;
+  --fg-dim:    #ADA69E;
+  --fg-mute:   #938C84;
+  --accent:    #D97757;
+  --accent-2:  #E79273;
+  --accent-w:  rgba(217, 119, 87, 0.12);
+  --accent-b:  rgba(217, 119, 87, 0.42);
+  --on-accent: #140A06;
 
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
   --gut: clamp(1.25rem, 5vw, 4rem);
   --max: 74rem;
-  --rad: 3px;
+  --rad: 0px;
+  --edge: 2px;
 }
 
 * { box-sizing: border-box; }
@@ -48,7 +62,7 @@ a:hover { text-decoration-color: var(--accent); }
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
-  border-radius: 2px;
+  border-radius: 0;
 }
 
 code, .mono { font-family: var(--mono); font-size: 0.88em; }
@@ -65,7 +79,7 @@ em { font-style: italic; color: var(--fg-dim); }
 
 .skip {
   position: absolute; left: 0; top: -100px; z-index: 100;
-  background: var(--accent); color: #04120C;
+  background: var(--accent); color: var(--on-accent);
   padding: 0.6rem 1rem; font-family: var(--mono); font-size: 0.8rem;
   text-transform: uppercase; letter-spacing: 0.1em; text-decoration: none;
 }
@@ -122,10 +136,10 @@ em { font-style: italic; color: var(--fg-dim); }
   top: 0;
   z-index: 50;
   padding: 0.7rem var(--gut);
-  background: rgba(8, 9, 10, 0.86);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--line-soft);
+  /* Solid, not blurred: a hard band is the point, and the scanlines below it
+     have nothing to say through a sticky bar. */
+  background: var(--bg);
+  border-bottom: var(--edge) solid var(--line);
 }
 
 .nav {
@@ -143,12 +157,7 @@ em { font-style: italic; color: var(--fg-dim); }
   letter-spacing: 0.06em; white-space: nowrap;
   flex: none;
 }
-.nav__mark {
-  display: inline-grid; place-items: center;
-  width: 1.5rem; height: 1.5rem;
-  border: 1px solid var(--accent-b); border-radius: var(--rad);
-  color: var(--accent); font-weight: 700;
-}
+/* .nav__mark is drawn in THE PIXEL LAYER, at the foot of this file. */
 
 .nav__list {
   list-style: none; margin: 0; padding: 0;
@@ -162,7 +171,7 @@ em { font-style: italic; color: var(--fg-dim); }
 .nav__list a {
   display: inline-flex; align-items: baseline; gap: 0.45em;
   padding: 0.4rem 0.7rem;
-  border: 1px solid transparent; border-radius: 100px;
+  border: 1px solid transparent; border-radius: 0;
   font-family: var(--mono); font-size: 0.7rem;
   text-transform: uppercase; letter-spacing: 0.12em;
   color: var(--fg-mute); text-decoration: none;
@@ -181,21 +190,19 @@ em { font-style: italic; color: var(--fg-dim); }
   flex: none; margin: 0;
   display: inline-flex; align-items: center; gap: 0.45em;
   padding: 0.35rem 0.75rem;
-  border: 1px solid var(--line); border-radius: 100px;
+  border: 1px solid var(--line); border-radius: 0;
   font-family: var(--mono); font-size: 0.66rem;
   text-transform: uppercase; letter-spacing: 0.14em;
   color: var(--fg-dim);
 }
 .chip__dot {
-  width: 6px; height: 6px; border-radius: 50%;
+  width: 7px; height: 7px;
   background: var(--accent);
-  box-shadow: 0 0 0 0 var(--accent-b);
-  animation: pulse 2.6s ease-out infinite;
+  animation: blink 2.4s steps(1, end) infinite;
 }
-@keyframes pulse {
-  0%   { box-shadow: 0 0 0 0 var(--accent-b); }
-  70%  { box-shadow: 0 0 0 7px rgba(0, 229, 160, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(0, 229, 160, 0); }
+@keyframes blink {
+  0%, 72%   { opacity: 1; }
+  73%, 100% { opacity: 0.2; }
 }
 @media (prefers-reduced-motion: reduce) { .chip__dot { animation: none; } }
 
@@ -304,7 +311,7 @@ main { display: block; }
 }
 .pill {
   padding: 0.45rem 0.9rem;
-  border: 1px solid var(--line); border-radius: 100px;
+  border: 1px solid var(--line); border-radius: 0;
   font-family: var(--mono); font-size: 0.7rem;
   text-transform: uppercase; letter-spacing: 0.14em;
   color: var(--fg-dim);
@@ -319,8 +326,8 @@ main { display: block; }
 .btn {
   display: inline-flex; align-items: center; gap: 0.5em;
   padding: 0.7rem 1.2rem;
-  border: 1px solid var(--accent); border-radius: var(--rad);
-  background: var(--accent); color: #04120C;
+  border: 1px solid var(--accent); border-radius: 0;
+  background: var(--accent); color: var(--on-accent);
   font-family: var(--mono); font-size: 0.72rem;
   text-transform: uppercase; letter-spacing: 0.14em; font-weight: 600;
   text-decoration: none;
@@ -337,7 +344,7 @@ main { display: block; }
   padding: 1.1rem 1.3rem;
   border: 1px solid var(--line);
   border-left: 2px solid var(--fg-mute);
-  border-radius: var(--rad);
+  border-radius: 0;
   background: var(--bg-raise);
   color: var(--fg-dim);
   font-size: 0.95rem;
@@ -360,7 +367,7 @@ main { display: block; }
   align-items: start;
   padding: clamp(1.3rem, 3vw, 2rem);
   border: 1px solid var(--line);
-  border-radius: var(--rad);
+  border-radius: 0;
   background: var(--bg-raise);
 }
 @media (max-width: 780px) { .listen { grid-template-columns: minmax(0, 1fr); } }
@@ -368,8 +375,12 @@ main { display: block; }
 .play audio {
   width: 100%;
   height: 40px;
-  border-radius: var(--rad);
-  filter: invert(0.92) hue-rotate(180deg) contrast(0.92);
+  /* The native control is the one thing on this page that cannot be drawn
+     here, so it is asked for in the theme it should already be in rather than
+     inverted into it. The old invert() was fighting the page's own
+     `color-scheme: dark`: it took a dark native player and made it a light
+     grey pill, which is the least arcade object imaginable. */
+  color-scheme: dark;
 }
 .play--second {
   margin-top: 1.5rem;
@@ -414,7 +425,7 @@ main { display: block; }
   min-width: 0;
   padding: 1.1rem 1.2rem;
   border: 1px solid var(--line);
-  border-radius: var(--rad);
+  border-radius: 0;
   background: var(--bg-sink);
 }
 .minicard__big {
@@ -433,7 +444,7 @@ main { display: block; }
 .disc {
   margin-top: 1rem;
   border: 1px solid var(--line);
-  border-radius: var(--rad);
+  border-radius: 0;
   background: var(--bg-raise);
 }
 .disc > summary {
@@ -451,7 +462,7 @@ main { display: block; }
   flex: none;
   display: inline-grid; place-items: center;
   width: 1.15rem; height: 1.15rem;
-  border: 1px solid var(--line); border-radius: 2px;
+  border: 1px solid var(--line); border-radius: 0;
   color: var(--accent); font-size: 0.85rem; line-height: 1;
 }
 .disc[open] > summary::before { content: "\2212"; }
@@ -492,7 +503,7 @@ main { display: block; }
   margin: 0.8rem 0 0;
   padding: 0.85rem 1rem;
   border: 1px solid var(--line);
-  border-radius: var(--rad);
+  border-radius: 0;
   background: var(--bg-sink);
   overflow-x: auto;
   font-size: 0.78rem;
@@ -506,7 +517,7 @@ main { display: block; }
 
 .stack {
   border: 1px solid var(--line);
-  border-radius: var(--rad);
+  border-radius: 0;
   background: var(--bg-raise);
   overflow: hidden;
 }
@@ -519,7 +530,7 @@ main { display: block; }
   border-bottom: 1px solid var(--line-soft);
 }
 .stack__row:last-child { border-bottom: 0; }
-.stack__row--hot { background: rgba(0, 229, 160, 0.035); }
+.stack__row--hot { background: rgba(217, 119, 87, 0.06); }
 
 .stack__tag {
   margin: 0;
@@ -556,7 +567,7 @@ main { display: block; }
   min-width: 1.05em;
   text-align: center;
   border: 1px dashed var(--accent);
-  border-radius: 2px;
+  border-radius: 0;
   color: transparent;
   background: var(--accent-w);
   margin-left: 0.15em;
@@ -586,7 +597,7 @@ main { display: block; }
   gap: 1px;
   background: var(--line-soft);
   border: 1px solid var(--line);
-  border-radius: var(--rad);
+  border-radius: 0;
   overflow: hidden;
 }
 .chain > li {
@@ -600,7 +611,7 @@ main { display: block; }
   position: absolute; left: clamp(1rem, 2.5vw, 1.5rem); top: 1.35rem;
   font-family: var(--mono); font-size: 0.7rem; font-weight: 600;
   color: var(--accent);
-  border: 1px solid var(--accent-b); border-radius: 2px;
+  border: 1px solid var(--accent-b); border-radius: 0;
   width: 1.4rem; height: 1.4rem;
   display: grid; place-items: center;
 }
@@ -642,7 +653,7 @@ main { display: block; }
   padding: 1.1rem 1.3rem;
   border: 1px solid var(--line);
   border-left: 2px solid var(--accent);
-  border-radius: var(--rad);
+  border-radius: 0;
   background: var(--bg-raise);
   color: var(--fg-dim);
   font-size: 0.97rem;
@@ -685,7 +696,7 @@ main { display: block; }
   color: var(--fg-dim); line-height: 1.7;
   overflow-wrap: anywhere;
   padding: 0.7rem 0.85rem;
-  border: 1px solid var(--line); border-radius: var(--rad);
+  border: 1px solid var(--line); border-radius: 0;
   background: var(--bg-sink);
 }
 .turn__cls { margin: 0.7rem 0 0; display: flex; flex-wrap: wrap; gap: 0.4rem; }
@@ -694,7 +705,7 @@ main { display: block; }
 .tag {
   display: inline-block;
   padding: 0.2rem 0.55rem;
-  border: 1px solid var(--line); border-radius: 100px;
+  border: 1px solid var(--line); border-radius: 0;
   font-family: var(--mono); font-size: 0.62rem;
   text-transform: uppercase; letter-spacing: 0.1em;
   color: var(--fg-mute);
@@ -737,7 +748,7 @@ main { display: block; }
 .grid__pivot { color: var(--fg) !important; }
 .grid__moved th { color: var(--fg) !important; }
 .grid .ok { color: var(--fg-dim); }
-.grid .bad { color: var(--warn); }
+.grid .bad { color: var(--accent); }
 .empty { color: var(--fg-mute); font-style: italic; }
 
 /* ---------- 01 recognition stats ---------- */
@@ -748,7 +759,7 @@ main { display: block; }
   grid-template-columns: minmax(0, 1fr);
   background: var(--line-soft);
   border: 1px solid var(--line);
-  border-radius: var(--rad);
+  border-radius: 0;
   overflow: hidden;
 }
 .stats--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
@@ -774,7 +785,7 @@ main { display: block; }
 
 .scorepanel {
   border: 1px solid var(--line);
-  border-radius: var(--rad);
+  border-radius: 0;
   background: var(--bg-raise);
   padding: clamp(1.2rem, 3vw, 2rem);
 }
@@ -789,13 +800,13 @@ main { display: block; }
   display: inline-flex;
   padding: 3px;
   border: 1px solid var(--line);
-  border-radius: 100px;
+  border-radius: 0;
   background: var(--bg-sink);
   gap: 3px;
 }
 .switch__btn {
   appearance: none;
-  border: 0; border-radius: 100px;
+  border: 0; border-radius: 0;
   padding: 0.55rem 1.1rem;
   background: transparent;
   color: var(--fg-mute);
@@ -805,7 +816,7 @@ main { display: block; }
   transition: color 0.15s, background 0.15s;
 }
 .switch__btn:hover { color: var(--fg); }
-.switch__btn.is-on { background: var(--accent); color: #04120C; font-weight: 600; }
+.switch__btn.is-on { background: var(--accent); color: var(--on-accent); font-weight: 600; }
 .switch__status {
   margin: 0.85rem 0 0;
   font-size: 0.92rem; color: var(--fg-mute);
@@ -846,7 +857,7 @@ main { display: block; }
   display: block;
   width: 15px; height: 15px;
   border: 1px solid var(--line);
-  border-radius: 2px;
+  border-radius: 0;
   background: transparent;
   transition: background 0.28s ease, border-color 0.28s ease;
 }
@@ -918,7 +929,7 @@ main { display: block; }
   list-style: none; margin: 0; padding: 0;
   display: grid; grid-template-columns: minmax(0, 1fr); gap: 1px;
   background: var(--line-soft);
-  border: 1px solid var(--line); border-radius: var(--rad);
+  border: 1px solid var(--line); border-radius: 0;
   overflow: hidden;
 }
 .checks__list li {
@@ -965,7 +976,7 @@ main { display: block; }
   min-width: 0;
   padding: clamp(1.2rem, 2.5vw, 1.7rem);
   border: 1px solid var(--line);
-  border-radius: var(--rad);
+  border-radius: 0;
   background: var(--bg-raise);
 }
 .card__eyebrow {
@@ -986,7 +997,7 @@ main { display: block; }
   list-style: none; margin: 0 0 1.2rem; padding: 0;
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px; background: var(--line-soft);
-  border: 1px solid var(--line); border-radius: var(--rad);
+  border: 1px solid var(--line); border-radius: 0;
   overflow: hidden;
 }
 .twin li { background: var(--bg-sink); padding: 0.9rem 1rem; min-width: 0; }
@@ -1024,7 +1035,7 @@ main { display: block; }
   margin: 0; padding: 0;
   display: grid; grid-template-columns: minmax(0, 1fr); gap: 1px;
   background: var(--line-soft);
-  border: 1px solid var(--line); border-radius: var(--rad);
+  border: 1px solid var(--line); border-radius: 0;
   overflow: hidden;
 }
 .cmds > li {
@@ -1043,7 +1054,7 @@ main { display: block; }
   flex: 1 1 18rem;
   min-width: 0;
   padding: 0.7rem 0.9rem;
-  border: 1px solid var(--line); border-radius: var(--rad);
+  border: 1px solid var(--line); border-radius: 0;
   background: var(--bg-sink);
   color: var(--accent);
   font-size: 0.85rem;
@@ -1054,7 +1065,7 @@ main { display: block; }
   flex: none;
   appearance: none; cursor: pointer;
   padding: 0.55rem 0.9rem;
-  border: 1px solid var(--line); border-radius: var(--rad);
+  border: 1px solid var(--line); border-radius: 0;
   background: transparent; color: var(--fg-mute);
   font-family: var(--mono); font-size: 0.64rem;
   text-transform: uppercase; letter-spacing: 0.14em;
@@ -1070,7 +1081,7 @@ main { display: block; }
 }
 .rules li {
   padding: 0.45rem 0.9rem;
-  border: 1px dashed var(--line); border-radius: 100px;
+  border: 1px dashed var(--line); border-radius: 0;
   font-family: var(--mono); font-size: 0.66rem;
   text-transform: uppercase; letter-spacing: 0.12em;
   color: var(--fg-mute);
@@ -1104,3 +1115,133 @@ main { display: block; }
   font-size: 0.85rem; color: var(--fg-mute);
   max-width: 78ch;
 }
+
+/* =========================================================================
+   THE PIXEL LAYER
+   Everything below is the arcade skin. It is deliberately the last thing in
+   the file, and deliberately separable: delete this block and the page is the
+   same page, in the same palette, without the texture. Three rules govern it.
+
+     1. Nothing here may dim a glyph. The scanlines sit behind the content, not
+        over it; the dot mask is the ground colour, so outside a glyph it is
+        invisible, and it is applied only to the hero headline and the
+        decorative section numerals.
+     2. Nothing here is soft. No gradients as fills, no shadows, no blur, no
+        rounded corners — `--rad` is 0 and every border is a hard edge.
+     3. Anything that moves stops under `prefers-reduced-motion`.
+   ========================================================================= */
+
+/* ---------- scanlines, behind everything ---------- */
+
+/* z-index -1 is doing the work: the overlay paints over the body background
+   and under every box and every glyph, so a text-bearing element can only ever
+   sit on the plain ground or on a darkened line of it. Contrast can go up. It
+   cannot go down. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.42) 0 1px,
+    transparent 1px 3px
+  );
+}
+@media (prefers-reduced-motion: reduce) { body::before { display: none; } }
+
+/* ---------- the dot-matrix mask ---------- */
+
+/* Dots of the ground colour, punched through the glyph on a grid that scales
+   with the type (em, not px) so the hole-to-stroke ratio is the same at 2.4rem
+   on a phone as at 5.5rem on a desktop. Coverage is 22%, which is the number
+   that matters: it is what the mask costs in contrast, and it is measured, not
+   guessed. The text underneath is real, solid, selectable text. */
+.display,
+.sec__num { position: relative; }
+
+.display::after,
+.sec__num::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(
+    var(--bg) 0.0165em,
+    transparent 0.0235em
+  );
+  background-size: 0.075em 0.075em;
+}
+/* The numerals are decorative and aria-hidden, so they can take a coarser
+   grid — it reads as a display board rather than a texture. */
+.sec__num::after { background-size: 0.1em 0.1em; }
+
+/* ---------- the mark ---------- */
+
+/* An eight-pointed burst drawn on a 15x15 integer grid — four cardinal spikes,
+   four diagonals, a circular envelope. Hand-plotted here rather than lifted
+   from anywhere: it is a pixel rendering of an asterisk form, not a brand
+   asset. `shape-rendering: crispEdges` keeps every cell square at every size. */
+.pixmark { display: block; fill: currentColor; }
+
+.nav__mark {
+  display: inline-grid; place-items: center;
+  width: 1.5rem; height: 1.5rem;
+  border: var(--edge) solid var(--accent-b);
+  color: var(--accent);
+}
+.nav__mark .pixmark { width: 0.9rem; height: 0.9rem; }
+.nav__brand:hover .nav__mark { border-color: var(--accent); }
+
+.hero__mark {
+  margin: 0 0 clamp(1.5rem, 4vw, 2.2rem);
+  color: var(--accent);
+  line-height: 0;
+}
+.hero__mark .pixmark {
+  width: clamp(3.5rem, 9vw, 6.5rem);
+  height: clamp(3.5rem, 9vw, 6.5rem);
+}
+
+/* ---------- hard edges ---------- */
+
+.listen, .scorepanel, .stack, .chain, .disc, .card, .cmds, .checks__list,
+.stats, .twin, .minicard, .note, .why, .code, .turn__heard, .cmds__code,
+.pill, .btn, .chip, .copy, .rules li, .switch__btns, .tag, .ghost,
+.play--second {
+  border-width: var(--edge);
+}
+.nav__list a { border-width: var(--edge); }
+
+/* The hairline grids become real gutters: at 2px the ground shows between the
+   cells and each one reads as its own block. */
+.chain, .stats, .checks__list, .twin, .cmds {
+  gap: var(--edge);
+  background: var(--line);
+}
+
+.disc > summary::before,
+.chain > li::before { border-width: var(--edge); }
+
+.turn--pivot { border-left-width: 3px; border-left-color: var(--accent); }
+
+:focus-visible { border-radius: 0; }
+
+/* ---------- segmented score bars ---------- */
+
+/* Four cells, lit or unlit, so 2/4 reads as two lit blocks of four without
+   reading the number beside it. The step timing is the arcade detail: the
+   cells snap on rather than fading. */
+.bar { gap: var(--edge); }
+.bar i {
+  width: 17px; height: 17px;
+  border: var(--edge) solid var(--line);
+  transition: background 0.12s steps(2, end), border-color 0.12s steps(2, end);
+}
+.bar i.on { background: var(--accent); border-color: var(--accent); }
+@media (max-width: 560px) { .bar i { width: 14px; height: 14px; } }
+
+/* ---------- raster ---------- */
+
+img, canvas, video { image-rendering: pixelated; }
