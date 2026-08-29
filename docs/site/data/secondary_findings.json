@@ -1,0 +1,292 @@
+{
+  "findings": [
+    {
+      "cohens_kappa": 0.241,
+      "confusion": {
+        "false_negative": 23,
+        "false_positive": 2,
+        "n": 70,
+        "true_negative": 36,
+        "true_positive": 9
+      },
+      "gate": {
+        "cleared": false,
+        "reasons": [
+          "TPR 0.281 (9/32) is below the required 0.85",
+          "registry refused the judge in CI mode: JudgeBelowThresholdError"
+        ]
+      },
+      "headline": "The product's own rubric scorer agrees with the reviewer on who to pass and almost never agrees on who to stop.",
+      "id": "scorer-will-not-fail-anybody",
+      "positive_class": "fail",
+      "rates": {
+        "precision": {
+          "denominator": 11,
+          "numerator": 9,
+          "text": "0.818 (9/11)",
+          "value": 0.818
+        },
+        "recall_on_sessions_a_reviewer_would_fail": {
+          "denominator": 32,
+          "numerator": 9,
+          "text": "0.281 (9/32)",
+          "value": 0.281
+        },
+        "specificity": {
+          "denominator": 38,
+          "numerator": 36,
+          "text": "0.947 (36/38)",
+          "value": 0.947
+        }
+      },
+      "reading": "The two rates point opposite ways, which is the finding: the instrument is not noisy, it is biased toward passing. It certifies roughly seven in ten of the sessions a competent reviewer would stop.",
+      "recomputed": true,
+      "reproduce": "make roleplay-demo"
+    },
+    {
+      "headline": "A judge prompt measured at recall 0.250 (2/8) was refused by the gate it was written for; the rewrite cleared it at 1.000 (8/8).",
+      "id": "judge-its-own-gate-refused",
+      "reading": "Both versions score a perfect specificity, so a gate on specificity alone would have passed a judge that missed six real defects in eight. The gate scores both rates, and refused.",
+      "recomputed": true,
+      "reproduce": "evallab calibrate --ci",
+      "source": [
+        "lab/judges/hallucinated_confirmation/calibration_v1.json",
+        "lab/judges/hallucinated_confirmation/calibration_v2.json"
+      ],
+      "threshold": {
+        "decided_by": "lab.judges.calibration.CalibrationReport.meets",
+        "min_items": 10,
+        "min_true_negative_rate": 0.85,
+        "min_true_positive_rate": 0.85,
+        "scored_on": "point"
+      },
+      "versions": {
+        "v1": {
+          "cleared_the_gate": false,
+          "cohens_kappa": 0.308,
+          "items": 24,
+          "model": "azure/gpt-4.1",
+          "prompt": "v1",
+          "recall": {
+            "denominator": 8,
+            "numerator": 2,
+            "text": "0.250 (2/8)",
+            "value": 0.25
+          },
+          "refusal_reasons": [
+            "TPR 0.250 (2/8) is below the required 0.85"
+          ],
+          "specificity": {
+            "denominator": 16,
+            "numerator": 16,
+            "text": "1.000 (16/16)",
+            "value": 1.0
+          }
+        },
+        "v2": {
+          "cleared_the_gate": true,
+          "cohens_kappa": 1.0,
+          "items": 24,
+          "model": "azure/gpt-4.1",
+          "prompt": "v2",
+          "recall": {
+            "denominator": 8,
+            "numerator": 8,
+            "text": "1.000 (8/8)",
+            "value": 1.0
+          },
+          "refusal_reasons": [],
+          "specificity": {
+            "denominator": 16,
+            "numerator": 16,
+            "text": "1.000 (16/16)",
+            "value": 1.0
+          }
+        }
+      }
+    },
+    {
+      "axis": "add_noise",
+      "broke_at_db": -5.0,
+      "captured": {
+        "denominator": 9,
+        "numerator": 6,
+        "text": "0.667 (6/9)",
+        "value": 0.667
+      },
+      "caveat": "One row, one declared postcode, one seed. The ladder locates a breaking point on this line; it does not estimate a rate.",
+      "declared_value": {
+        "postcode": "SW1A 1AA"
+      },
+      "headline": "Rising noise does not degrade the recogniser into silence. One rung before it goes silent it returns a different, plausible, wrong value.",
+      "held_to_db": 0.0,
+      "id": "noise-ladder-wrong-before-silent",
+      "ladder": [
+        {
+          "captured": true,
+          "confidence": 0.9970703,
+          "display_text": "The postcode is SW1A1AA.",
+          "returned_nothing": false,
+          "snr_db": 20.0,
+          "transcript": "the postcode is s w one a one a a"
+        },
+        {
+          "captured": true,
+          "confidence": 0.9970703,
+          "display_text": "The postcode is SW1A1AA.",
+          "returned_nothing": false,
+          "snr_db": 15.0,
+          "transcript": "the postcode is s w one a one a a"
+        },
+        {
+          "captured": true,
+          "confidence": 0.9970703,
+          "display_text": "The postcode is SW1A1AA.",
+          "returned_nothing": false,
+          "snr_db": 10.0,
+          "transcript": "the postcode is s w one a one a a"
+        },
+        {
+          "captured": true,
+          "confidence": 0.9980469,
+          "display_text": "The postcode is SW1A1AA.",
+          "returned_nothing": false,
+          "snr_db": 6.0,
+          "transcript": "the postcode is s w one a one a a"
+        },
+        {
+          "captured": true,
+          "confidence": 0.9975586,
+          "display_text": "The postcode is SW1A1AA.",
+          "returned_nothing": false,
+          "snr_db": 3.0,
+          "transcript": "the postcode is s w one a one a a"
+        },
+        {
+          "captured": true,
+          "confidence": 0.99365234,
+          "display_text": "The postcode is SW1A1AA.",
+          "returned_nothing": false,
+          "snr_db": 0.0,
+          "transcript": "the postcode is s w one a one a a"
+        },
+        {
+          "captured": false,
+          "confidence": 0.90722656,
+          "display_text": "The postcode SW1A1AF.",
+          "returned_nothing": false,
+          "snr_db": -5.0,
+          "transcript": "the postcode s w one a one a f"
+        },
+        {
+          "captured": false,
+          "confidence": 0.0,
+          "display_text": "",
+          "returned_nothing": true,
+          "snr_db": -10.0,
+          "transcript": ""
+        },
+        {
+          "captured": false,
+          "confidence": 0.0,
+          "display_text": "",
+          "returned_nothing": true,
+          "snr_db": -15.0,
+          "transcript": ""
+        }
+      ],
+      "missing_rungs": [],
+      "parameter": "snr_db",
+      "reading": "A wrong postcode at high confidence is worse than no postcode: an empty transcript is a re-ask, a wrong one is a delivery to the wrong address. This is why the row asserts the field rather than a word error rate.",
+      "recomputed": true,
+      "reproduce": "make audio-suite",
+      "source": {
+        "row": "scenarios/audio.py::audio-line-quality-noise-ladder",
+        "transcripts": "fixtures/audio/cloud/audio_suite_transcripts.json",
+        "walked_by": "lab.voice.suite.ladder_result"
+      },
+      "the_dangerous_rung": {
+        "captured": false,
+        "confidence": 0.90722656,
+        "display_text": "The postcode SW1A1AF.",
+        "returned_nothing": false,
+        "snr_db": -5.0,
+        "transcript": "the postcode s w one a one a f"
+      },
+      "the_silent_rungs": [
+        -10.0,
+        -15.0
+      ]
+    },
+    {
+      "against_the_paraphrasing_model": {
+        "caught_by_the_detector_today": {
+          "denominator": 7,
+          "numerator": 7,
+          "plus_one_the_hand_written_detector_missed": 1,
+          "recomputed": true,
+          "text": "1.000 (7/7)",
+          "value": 1.0
+        },
+        "caught_by_the_literal_detector": {
+          "denominator": 7,
+          "numerator": 1,
+          "source": "DESIGN.md section 10, pinned by tests/test_checks_paraphrase.py",
+          "status": "historical",
+          "text": "0.143 (1/7)",
+          "value": 0.143,
+          "why_not_recomputed": "The literal pattern set this measured was replaced by the rewrite and is not in the tree, so the numerator cannot be recomputed. The denominator can, and is, above."
+        },
+        "conversations": 30,
+        "corpus": "fixtures/live_run/traces",
+        "reproduce": "python -m pytest tests/test_checks_paraphrase.py -q",
+        "unbacked_confirmations_found_by_a_generous_hand_written_detector": {
+          "denominator": 30,
+          "numerator": 7,
+          "text": "0.233 (7/30)",
+          "value": 0.233
+        }
+      },
+      "against_the_scripted_agent": {
+        "corpus": "fixtures/replay_run",
+        "fired": {
+          "denominator": 2,
+          "numerator": 2,
+          "text": "1.000 (2/2)",
+          "value": 1.0
+        },
+        "note": "The scripted agent says one string every time, so a literal pattern is correct forever. Note the denominator: 2 selected rows, one run each. 2/2 is a floor, not a rate.",
+        "recomputed": true,
+        "reproduce": "python -m tablemate --score fixtures/replay_run",
+        "seeded_defect": "BUG-1 (a booking claimed with no committing tool call)"
+      },
+      "denominator_warning": "1/7 is the fixtures/live_run corpus of 30 conversations. A separate 1/6 exists over the six large-party conversations of fixtures/live_full. Two runs, two denominators; they are not the same measurement.",
+      "detector": {
+        "how_it_decides": "A regex over the agent's words, plus event-stream position: the first spoken commitment with no create_booking, modify_booking or cancel_booking before it.",
+        "name": "tablemate.__main__.unbacked_promise"
+      },
+      "headline": "A promise detector matching literal strings had full recall against a scripted agent and caught 1 of 7 against a paraphrasing model. Same defect; the detector went blind.",
+      "id": "a-literal-is-a-check-that-works-once",
+      "on_the_hand_labelled_set": {
+        "corpus": "lab/judges/hallucinated_confirmation/labels.jsonl",
+        "items": 24,
+        "recall": {
+          "denominator": 8,
+          "numerator": 8,
+          "text": "1.000 (8/8)",
+          "value": 1.0
+        },
+        "recomputed": true,
+        "specificity": {
+          "denominator": 16,
+          "numerator": 16,
+          "text": "1.000 (16/16)",
+          "value": 1.0
+        }
+      },
+      "reading": "Four of the seven misses were ordinary synonyms. Two were not a vocabulary problem at all: the patterns use an ASCII apostrophe and the model types U+2019, so a correct pattern never matched.",
+      "recomputed": "partly"
+    }
+  ],
+  "note": "Four other headline findings from this repository, each with its denominator. Every rate is recomputed here from a committed artefact unless it is explicitly labelled `historical`."
+}

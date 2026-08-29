@@ -1,0 +1,100 @@
+{
+  "audio": {
+    "channels": 1,
+    "excerpt": {
+      "bytes": 486788,
+      "channels": 1,
+      "contains": "adviser turn 1 in full, plus the 0.35s inter-turn gap that follows it",
+      "duration_s": 15.21075,
+      "frames": 243372,
+      "path": "docs/site/data/audio/excerpt.wav",
+      "sample_rate_hz": 16000,
+      "sample_width_bytes": 2,
+      "sha256": "cd4cbd7ce57bda32a884c725f8968a750dec2ce50a535fc43b2c37a2398844ea",
+      "source_file": "fixtures/audio/spoken_call/full_call.wav",
+      "source_file_sha256": "3a6e20a3d2bf206899f37baab08155a58579ad413c3b55dda8157a9cde5e703c",
+      "source_offsets": {
+        "end_frame": 243372,
+        "end_s": 15.21075,
+        "sample_rate_hz": 16000,
+        "start_frame": 0,
+        "start_s": 0.0
+      },
+      "verify": "python -c \"import wave;w=wave.open('fixtures/audio/spoken_call/full_call.wav');w.setpos(0);import hashlib;print(hashlib.sha256(w.readframes(243372)).hexdigest())\"",
+      "verify_expects": "2f81115c1382988a0d0224eb7ffd88d38b7d9a7a4b99e36c334dc02d35111880",
+      "why_this_turn": "It is the adviser's opening discovery question, and discovery is the criterion that was scored 0 out of 4."
+    },
+    "full_call": {
+      "bytes": 5801760,
+      "digest_note": "`file_sha256` hashes the WAV bytes; `pcm_sha256` is the manifest's digest of the decoded samples, which is what the harness pins. They are different numbers of different things.",
+      "file_sha256": "3a6e20a3d2bf206899f37baab08155a58579ad413c3b55dda8157a9cde5e703c",
+      "note": "The whole call, kept where it already lives. It is not copied into docs/site/ because a second 5.5 MB copy in git buys a page that should feel instant nothing at all.",
+      "path": "fixtures/audio/spoken_call/full_call.wav",
+      "pcm_sha256": "b93882d47a68625c99e26256942820caa7202af81b6952c68d6bdd22d44293f2"
+    },
+    "sample_rate_hz": 16000
+  },
+  "duration": {
+    "identity": "176.053625 s of speech + 5.25 s of gaps = 181.303625 s",
+    "inter_turn_gap_s": 0.35,
+    "silence_s": 5.25,
+    "speech_s": 176.053625,
+    "total_s": 181.303625
+  },
+  "engines": {
+    "grading_model": "gpt-4.1",
+    "note": "Two vendors: one synthesised every line, another transcribed the assembled audio back. The recognition engine string ends in `raw`, which is the unformatted transcript — the one that was graded.",
+    "recognition": "stt:deepgram/nova-3/en/raw",
+    "synthesis": {
+      "adviser": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+      "customer": "tts:elevenlabs/eleven_flash_v2_5/Xb7hH8MSUJpSbSDYk0k2"
+    }
+  },
+  "reproduce": [
+    "make spoken-replay"
+  ],
+  "session": {
+    "adapter": "roleplay:spoken",
+    "competence": "exemplary",
+    "jurisdiction": "eu-retail",
+    "language": "en",
+    "persona": "aggressive_challenger",
+    "scenario_id": "spoken-eu-challenger-exemplary",
+    "scorer_rubric": "v2",
+    "temperature": 0.0
+  },
+  "source": {
+    "manifest": "fixtures/audio/spoken_call/manifest.json",
+    "recomputed_by": "roleplay.spoken.replay_spoken_call",
+    "replay_agrees": {
+      "characters_submitted": true,
+      "duration_s": true,
+      "recognition_requests": true
+    }
+  },
+  "spend": {
+    "money_charged": {
+      "note": "16/16 lines were served from the committed digest cache, so this recording billed nothing. The cost of *making* the call is 3014 characters.",
+      "synthesis_characters": 0,
+      "synthesis_credits": 0
+    },
+    "recognition_audio_seconds": 176.054,
+    "recognition_requests": 32,
+    "recognition_submitted_seconds": 352.107,
+    "replay_cost": {
+      "keys_required": 0,
+      "money": 0,
+      "network_calls": 0,
+      "note": "Every number on this page recomputes offline from the checkout."
+    },
+    "synthesis_characters_submitted": 3014,
+    "synthesis_lines_cached": 16,
+    "why_submitted_is_double": "32 requests over 16 clips: the formatted transcript is a second request over the same audio, so the metered seconds double while the audio length does not. Reporting only the first number would understate the bill by exactly a factor of two."
+  },
+  "turns": {
+    "adviser": 8,
+    "customer": 8,
+    "exchanges": 8,
+    "total": 16
+  }
+}
