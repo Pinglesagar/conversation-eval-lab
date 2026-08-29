@@ -1240,6 +1240,9 @@ body::before {
   transition: background 0.12s steps(2, end), border-color 0.12s steps(2, end);
 }
 .bar i.on { background: var(--accent); border-color: var(--accent); }
+/* This block restates `transition`, so it also has to restate the reduced-motion
+   opt-out: the earlier one is 380 lines up and loses on source order. */
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
 @media (max-width: 560px) { .bar i { width: 14px; height: 14px; } }
 
 /* ---------- raster ---------- */
