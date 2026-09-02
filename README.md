@@ -640,6 +640,8 @@ docs/                   trace schema, CLI reference, how to add a scenario
                         RAG_NOTES.md — the retrieval boundary, and the metrics
 ```
 
+**A ten-minute guided tour: [docs/WALKTHROUGH.md](docs/WALKTHROUGH.md)**
+
 **Full documentation: [docs/WIKI.md](docs/WIKI.md)** — the in-depth wiki, written for a
 product manager and an engineer at the same time. The architecture in diagrams, the
 sixteen golden rules and what enforces each, one call followed end to end, the complete
