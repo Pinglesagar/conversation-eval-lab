@@ -1,5 +1,9 @@
 # The documentation, indexed by question
 
+**Presenting this to someone in ten minutes?** Start at
+[WALKTHROUGH.md](WALKTHROUGH.md) — the guided path. [WIKI.md](WIKI.md) is the full
+reference underneath it, not a thing to read aloud.
+
 Behind this page: seventeen documents, 25,423 lines
 (`ls docs/*.md | grep -v README | xargs wc -l`). You should never need to open
 more than one of them. Find your question below, open the file next to it, stop.
