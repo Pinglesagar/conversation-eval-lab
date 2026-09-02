@@ -1,7 +1,8 @@
 # The documentation, indexed by question
 
 **Presenting this to someone in ten minutes?** Start at
-[WALKTHROUGH.md](WALKTHROUGH.md) — the guided path. [WIKI.md](WIKI.md) is the full
+[WALKTHROUGH.md](WALKTHROUGH.md) — the guided path, and
+[ARCHITECTURE_ONE_PAGE.md](ARCHITECTURE_ONE_PAGE.md) — the whole system in one diagram. [WIKI.md](WIKI.md) is the full
 reference underneath it, not a thing to read aloud.
 
 Behind this page: seventeen documents, 25,423 lines

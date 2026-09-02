@@ -11,6 +11,10 @@ with what the command prints, the command is right and this page is stale.
 
 ---
 
+**One picture of the whole thing:** [ARCHITECTURE_ONE_PAGE.md](ARCHITECTURE_ONE_PAGE.md) — the diagram to draw on a whiteboard, with eight plain-English pointers.
+
+---
+
 ## The one-sentence version
 
 > A test harness for conversational AI that grades sales conversations against a rubric
