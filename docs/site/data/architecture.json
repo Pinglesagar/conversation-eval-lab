@@ -1,0 +1,290 @@
+{
+  "contracts": {
+    "contracts": [
+      {
+        "file": "lab/checks/contracts.py",
+        "line": 575,
+        "name": "ToolContract",
+        "owns": "What the agent must and must not call, how often, in what order, with what arguments."
+      },
+      {
+        "file": "lab/checks/contracts.py",
+        "line": 954,
+        "name": "PromiseContract",
+        "owns": "Every spoken commitment must be backed by the tool call that realises it."
+      },
+      {
+        "file": "lab/checks/contracts.py",
+        "line": 1110,
+        "name": "NoReAskContract",
+        "owns": "Information the caller already gave must not be requested again."
+      },
+      {
+        "file": "lab/checks/contracts.py",
+        "line": 1252,
+        "name": "FieldPropagationContract",
+        "owns": "A value given in one turn must survive a handoff and reach a tool argument."
+      },
+      {
+        "file": "lab/checks/contracts.py",
+        "line": 1397,
+        "name": "NoProgressContract",
+        "owns": "A question repeated with nothing accomplished in between is a stuck agent."
+      },
+      {
+        "file": "lab/checks/contracts.py",
+        "line": 1601,
+        "name": "PhraseContract",
+        "owns": "Language that must appear, and language that must not."
+      }
+    ],
+    "count": 6,
+    "decided_on": "event position in the stream (lab/checks/contracts.py::_positions), never on ts",
+    "flagship": "PromiseContract — what the agent said, cross-referenced with what it did"
+  },
+  "counts": {
+    "commands": {
+      "commits": "git rev-list --count HEAD -- . ':(exclude)docs' ':(exclude)scripts/build_site_data.py'",
+      "scenarios": "make validate && make roleplay-validate",
+      "tests": "python -m pytest --collect-only -q"
+    },
+    "commits_outside_docs_and_this_generator": 64,
+    "first_commit_date": "2026-08-22",
+    "note": "tests_collected is the collection count; the suite's pass/skip split is not recomputed here (it needs a 70 s run) — `pytest` prints it. The commit count excludes docs/ and this generator so that committing this pack does not stale it; every other commit does, and should.",
+    "scenario_rows": 182,
+    "scenario_rows_by_corpus": {
+      "advisory_coaching": 70,
+      "advisory_regimes": 18,
+      "audio_tier": 18,
+      "restaurant_booking": 55,
+      "retrieval_questions": 18,
+      "transport_tier": 3
+    },
+    "test_files": 60,
+    "tests_collected": 2342,
+    "yaml_files_under_scenarios": 195
+  },
+  "event_kinds": {
+    "actors": [
+      "caller",
+      "agent",
+      "system"
+    ],
+    "count": 15,
+    "kinds": [
+      {
+        "kind": "agent_audio_complete",
+        "payload_keys": [
+          "turn",
+          "num_bytes"
+        ]
+      },
+      {
+        "kind": "agent_audio_first_byte",
+        "payload_keys": [
+          "turn"
+        ]
+      },
+      {
+        "kind": "agent_handoff",
+        "payload_keys": [
+          "from",
+          "to",
+          "reason"
+        ]
+      },
+      {
+        "kind": "agent_utterance",
+        "payload_keys": [
+          "text",
+          "agent"
+        ]
+      },
+      {
+        "kind": "audio_delivered",
+        "payload_keys": [
+          "turn",
+          "participant"
+        ]
+      },
+      {
+        "kind": "audio_emitted",
+        "payload_keys": [
+          "num_bytes",
+          "duration_s"
+        ]
+      },
+      {
+        "kind": "caller_utterance",
+        "payload_keys": [
+          "text"
+        ]
+      },
+      {
+        "kind": "session_end",
+        "payload_keys": [
+          "reason",
+          "turns"
+        ]
+      },
+      {
+        "kind": "session_start",
+        "payload_keys": [
+          "session_id",
+          "scenario_id",
+          "adapter"
+        ]
+      },
+      {
+        "kind": "tool_call",
+        "payload_keys": [
+          "name",
+          "args",
+          "call_id"
+        ]
+      },
+      {
+        "kind": "tool_result",
+        "payload_keys": [
+          "name",
+          "call_id",
+          "ok",
+          "result"
+        ]
+      },
+      {
+        "kind": "transcript_in",
+        "payload_keys": [
+          "text",
+          "confidence"
+        ]
+      },
+      {
+        "kind": "transcript_out",
+        "payload_keys": [
+          "text"
+        ]
+      },
+      {
+        "kind": "transport_connected",
+        "payload_keys": [
+          "participant",
+          "attempt"
+        ]
+      },
+      {
+        "kind": "transport_disconnected",
+        "payload_keys": [
+          "participant",
+          "reason"
+        ]
+      }
+    ],
+    "reserved_v2": [
+      {
+        "kind": "interruption_acknowledged",
+        "payload_keys": [
+          "turn",
+          "overlap_s",
+          "yielded"
+        ]
+      },
+      {
+        "kind": "interruption_started",
+        "payload_keys": [
+          "turn",
+          "agent_started_s",
+          "agent_would_end_s"
+        ]
+      }
+    ],
+    "source": "lab/trace/schema.py::EventKind"
+  },
+  "one_idea": "The trace is the product. Every verdict, latency figure and judge call is a function of one JSONL event stream with an injected clock; every check is decided on event position, not timestamp.",
+  "packages": {
+    "error_analysis": "hand-coded failure modes, counted from codes.csv",
+    "lab": "the engine: trace, checks, judges, simulator, voice, selection, report",
+    "ragcheck": "retrieval and groundedness",
+    "roleplay": "advisory sales coaching — the scorer is the system under test",
+    "scenarios": "the corpora, as YAML",
+    "tablemate": "restaurant booking — the portability proof"
+  },
+  "regimes": {
+    "count": 4,
+    "entries_total": 36,
+    "evidence_vocabulary": [
+      "sourced",
+      "secondary",
+      "assumption"
+    ],
+    "kind_vocabulary": [
+      "gate",
+      "not-required",
+      "prescribed-unit",
+      "prohibition",
+      "substance",
+      "verbatim"
+    ],
+    "regimes": {
+      "fca": {
+        "by_evidence": {
+          "sourced": 10
+        },
+        "by_kind": {
+          "gate": 1,
+          "prescribed-unit": 2,
+          "prohibition": 1,
+          "substance": 4,
+          "verbatim": 2
+        },
+        "entries": 10,
+        "file": "scenarios/advisory/registers/fca.yaml",
+        "name": "Financial Conduct Authority (COBS / PRIN), United Kingdom"
+      },
+      "mas": {
+        "by_evidence": {
+          "sourced": 9
+        },
+        "by_kind": {
+          "gate": 2,
+          "not-required": 1,
+          "prescribed-unit": 2,
+          "substance": 4
+        },
+        "entries": 9,
+        "file": "scenarios/advisory/registers/mas.yaml",
+        "name": "Monetary Authority of Singapore"
+      },
+      "reg-bi": {
+        "by_evidence": {
+          "secondary": 1,
+          "sourced": 7
+        },
+        "by_kind": {
+          "not-required": 4,
+          "prohibition": 1,
+          "substance": 3
+        },
+        "entries": 8,
+        "file": "scenarios/advisory/registers/reg-bi.yaml",
+        "name": "SEC Regulation Best Interest, United States"
+      },
+      "sfc-ia": {
+        "by_evidence": {
+          "secondary": 1,
+          "sourced": 8
+        },
+        "by_kind": {
+          "gate": 1,
+          "prescribed-unit": 2,
+          "substance": 5,
+          "verbatim": 1
+        },
+        "entries": 9,
+        "file": "scenarios/advisory/registers/sfc-ia.yaml",
+        "name": "Securities and Futures Commission and Insurance Authority, Hong Kong"
+      }
+    },
+    "source": "roleplay/advisory.py — every entry carries a paragraph-level citation or is labelled an assumption"
+  }
+}

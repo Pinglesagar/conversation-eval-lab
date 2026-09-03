@@ -1,0 +1,113 @@
+{
+  "about": "How an external agent is plugged in. Two seams, both a dotted path to a factory and a protocol with no base class: the harness is an instrument pointed at the system, not a framework the system adopts.",
+  "agent_under_test": {
+    "default_factory": "tablemate.runtime:build_agent",
+    "factory_flag": "--agent-factory pkg.mod:factory",
+    "file": "lab/simulator/driver.py",
+    "line": 300,
+    "methods": {
+      "__call__": "(self, utterance: 'str') -> 'AgentReply'"
+    },
+    "protocol": "lab.simulator.driver.AgentUnderTest",
+    "source": "@runtime_checkable\nclass AgentUnderTest(Protocol):\n    \"\"\"Anything that answers an utterance. The entire contract on the SUT.\n\n    Deliberately narrow. A system under test should not have to know it is being\n    evaluated, and anything wider (session objects, lifecycle hooks, a base\n    class) would make `lab` a framework the SUT has to adopt instead of an\n    instrument pointed at it.\n\n    Statefulness is the implementer's business: a multi-turn agent keeps its own\n    conversation state across calls. `lab.simulator.passk` therefore takes a\n    *factory*, so each repeat of a scenario starts from a clean agent.\n    \"\"\"\n\n    def __call__(self, utterance: str) -> AgentReply: ...\n",
+    "statefulness": "the implementer's; pass^k takes a factory so every repeat starts clean"
+  },
+  "cli_flag": {
+    "name": "--trainee-factory",
+    "present_in": {
+      "roleplay/live.py": true,
+      "roleplay/spoken.py": true
+    },
+    "seam_present": true,
+    "status": "landed"
+  },
+  "commands": {
+    "booking_agent": "evallab run --agent-factory pkg.mod:factory",
+    "trainee": "python -m roleplay.live --trainee-factory pkg.mod:factory",
+    "trainee_example_offline": "LAB_TRAINEE_FACTORY=examples.adapters.echo_trainee:build_trainee python -m roleplay.live --scripted-customer --only eu --root /tmp/echo_run",
+    "trainee_example_source": "examples/adapters/echo_trainee.py — module docstring"
+  },
+  "example_files": {
+    "booking_agent_factory": "tablemate/runtime.py::build_agent",
+    "guide": "docs/ADAPTER.md",
+    "model_trainee_factory": "roleplay/live.py::model_trainee",
+    "runnable_adapters": [
+      "callable_trainee.py",
+      "echo_trainee.py",
+      "http_trainee.py"
+    ],
+    "runnable_adapters_directory": "examples/adapters/",
+    "scripted_trainee": "roleplay/runtime.py::ScriptedTrainee"
+  },
+  "source": {
+    "agent_under_test": "lab/simulator/driver.py",
+    "importer": "lab/cli.py::_import_object — the same importer for both seams",
+    "trainee": "roleplay/runtime.py",
+    "trainee_seam": "roleplay/live.py"
+  },
+  "trainee": {
+    "contract_in_one_sentence": "open() returns the adviser's first turn or None to decline; reply(customer_turn) returns the next turn or None to stop; stop_reason, if present, says why.",
+    "factory_env_var": "LAB_TRAINEE_FACTORY",
+    "factory_receives": [
+      {
+        "field": "scenario_id",
+        "type": "str"
+      },
+      {
+        "field": "profile",
+        "type": "CustomerProfile"
+      },
+      {
+        "field": "competence",
+        "type": "str"
+      },
+      {
+        "field": "jurisdiction",
+        "type": "str"
+      },
+      {
+        "field": "language",
+        "type": "str"
+      },
+      {
+        "field": "max_turns",
+        "type": "int"
+      },
+      {
+        "field": "model_label",
+        "type": "str"
+      },
+      {
+        "field": "temperature",
+        "type": "float"
+      },
+      {
+        "field": "cassette",
+        "type": "SessionCassette | None"
+      },
+      {
+        "field": "trainee_model",
+        "type": "str | None"
+      },
+      {
+        "field": "completion",
+        "type": "Callable[..., str] | None"
+      }
+    ],
+    "file": "roleplay/runtime.py",
+    "implementations_in_tree": [
+      "roleplay.live.LiveTrainee",
+      "roleplay.runtime.ScriptedTrainee",
+      "roleplay.spoken.FixtureSpokenTrainee",
+      "roleplay.spoken.SpokenTrainee"
+    ],
+    "line": 168,
+    "methods": {
+      "open": "(self) -> 'str | None'",
+      "reply": "(self, customer_turn: 'str') -> 'str | None'"
+    },
+    "protocol": "roleplay.runtime.Trainee",
+    "resolution_order": "argument, then the environment variable, then the built-in model trainee",
+    "source": "@runtime_checkable\nclass Trainee(Protocol):\n    \"\"\"The adviser under test: whatever can produce the next thing they say.\n\n    Two methods, because the first turn of a sales meeting is not a reply to\n    anything and a caller-shaped `reply(...)` interface would have to invent a\n    customer utterance to prompt it with. `None` from either means \"I am done\",\n    and the reason should be readable afterwards from `stop_reason` — a session\n    that ended because the adviser closed the sale and one that ended because the\n    turn budget ran out are different results.\n    \"\"\"\n\n    def open(self) -> str | None:\n        \"\"\"The adviser's first turn, or None to decline the session.\"\"\"\n        ...\n\n    def reply(self, customer_turn: str) -> str | None:\n        \"\"\"The next turn given what the customer just said, or None to stop.\"\"\"\n        ...\n"
+  }
+}
