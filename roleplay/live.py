@@ -133,6 +133,8 @@ from roleplay.runtime import (
     DEFAULT_MAX_TURNS,
     RoleplayCoach,
     RoleplayResult,
+    Trainee,
+    stop_reason_of,
 )
 from roleplay.scorer import PASS_TOTAL, RubricScorer
 
@@ -162,6 +164,13 @@ __all__ = [
     "run_live_session",
     "LIVE_MATRIX",
     "main",
+    # The trainee seam: how an external agent is plugged in as the adviser.
+    "TRAINEE_FACTORY_ENV_VAR",
+    "TraineeFactoryError",
+    "TraineeContext",
+    "model_trainee",
+    "resolve_trainee_factory",
+    "build_trainee",
 ]
 
 # --------------------------------------------------------------------------- #
@@ -184,6 +193,14 @@ CUSTOMER_MODEL_ENV_VAR: str = "LAB_CUSTOMER_MODEL"
 #: so the label is the model family a reader needs and the route is infrastructure
 #: that has no business in git.
 MODEL_LABEL_ENV_VAR: str = "LAB_LIVE_MODEL_LABEL"
+
+#: A dotted path — `package.module:callable` — to a factory that builds the
+#: trainee under test. The callable receives one `TraineeContext` and returns
+#: anything satisfying `roleplay.runtime.Trainee` (two methods: `open()` and
+#: `reply(customer_turn)`). Unset, `model_trainee` is used: the model-backed
+#: `LiveTrainee` every committed cassette was recorded with, so nothing about an
+#: existing run changes. `--trainee-factory` on the two runners overrides it.
+TRAINEE_FACTORY_ENV_VAR: str = "LAB_TRAINEE_FACTORY"
 
 #: Env vars checked for a provider key, in order. Presence only is ever read.
 KEY_ENV_VARS: tuple[str, ...] = (
@@ -242,6 +259,15 @@ class StaleCassetteError(RuntimeError):
 
 class MissingTurnError(RuntimeError):
     """A recorded turn was needed and the cassette does not hold it."""
+
+
+class TraineeFactoryError(ValueError):
+    """The trainee factory could not be resolved, or built something that is not a trainee.
+
+    Raised with the dotted path in the message, because the only two things a
+    reader needs are *which* setting was wrong and *what* it should have looked
+    like — a `ModuleNotFoundError` three frames deep names neither.
+    """
 
 
 class ContentFilterError(RuntimeError):
@@ -1280,6 +1306,156 @@ class LiveOutcome:
         )
 
 
+# --------------------------------------------------------------------------- #
+# The trainee seam
+# --------------------------------------------------------------------------- #
+#
+# `roleplay.runtime.Trainee` is two methods. Everything below exists so that a
+# system satisfying those two methods — in this process, over HTTP, anywhere — can
+# be the adviser under test without touching the loop, the register, the persona,
+# the scorer or the reports. One seam, two callers (`run_live_session` here and
+# `roleplay.spoken.run_spoken_call`), and one default that is exactly what both
+# callers hardcoded before the seam existed.
+
+
+@dataclass(frozen=True)
+class TraineeContext:
+    """What a trainee factory is told about the session it is joining.
+
+    The first seven fields are the session: which scenario, which customer, at
+    what competence, under which regulator's register, in which language, with
+    what turn budget, and what label the fixture will carry. An external trainee
+    may use them or ignore them. The last three are what the *built-in* model
+    trainee needs to replay and record — its cassette, its litellm route and the
+    injectable completion seam — and an external factory has no reason to read
+    them. They are here rather than in a second constructor so that both callers
+    build one object and pass it through one function.
+    """
+
+    scenario_id: str
+    profile: CustomerProfile
+    competence: str
+    jurisdiction: str
+    language: str
+    max_turns: int
+    model_label: str
+    temperature: float = 0.0
+    cassette: SessionCassette | None = None
+    trainee_model: str | None = None
+    completion: Callable[..., str] | None = None
+
+
+TraineeFactory = Callable[[TraineeContext], Trainee]
+
+
+def model_trainee(context: TraineeContext) -> LiveTrainee:
+    """The default factory: the model-backed adviser, replayed from the cassette.
+
+    This is, line for line, what `run_live_session` and `run_spoken_call` used to
+    construct inline. Keeping it as the default means every committed cassette
+    still replays: the system prompt is the same text, so the digest each recorded
+    turn is keyed on is unchanged.
+    """
+    if context.cassette is None:
+        raise TraineeFactoryError(
+            "the built-in model trainee needs a cassette to replay from and record "
+            "into; the runners always supply one, so this context was built by hand."
+        )
+    speaker = ModelSpeaker(
+        role="trainee",
+        cassette=context.cassette,
+        live_env_var=LIVE_TRAINEE_ENV_VAR,
+        model_env_var=TRAINEE_MODEL_ENV_VAR,
+        model=context.trainee_model,
+        model_label=context.model_label,
+        temperature=context.temperature,
+        max_tokens=TRAINEE_MAX_TOKENS,
+        completion=context.completion,
+    )
+    return LiveTrainee(
+        speaker=speaker,
+        system_prompt=trainee_prompt(
+            competence=context.competence,
+            profile=context.profile,
+            jurisdiction=context.jurisdiction,
+            language=context.language,
+        ),
+        max_turns=context.max_turns,
+    )
+
+
+def resolve_trainee_factory(spec: str | TraineeFactory | None = None) -> TraineeFactory:
+    """The factory to use: an explicit callable or path, else the env var, else the default.
+
+    Resolution order is argument, then `LAB_TRAINEE_FACTORY`, then `model_trainee`,
+    so a flag on the command line beats the shell and an unset shell changes
+    nothing. A path is imported with `lab.cli`'s importer — the same one
+    `--agent-factory` uses for the booking agent — so the two case studies accept
+    the same spelling and look in the same places. Every way the import can fail
+    is turned into one `TraineeFactoryError` that names the path.
+    """
+    if spec is not None and not isinstance(spec, str):
+        if not callable(spec):
+            raise TraineeFactoryError(
+                f"trainee factory must be callable, got {type(spec).__name__}"
+            )
+        return spec
+    dotted = spec or os.environ.get(TRAINEE_FACTORY_ENV_VAR) or ""
+    if not dotted:
+        return model_trainee
+    origin = "--trainee-factory" if spec else TRAINEE_FACTORY_ENV_VAR
+    from lab.cli import _import_object  # local: `lab.cli` is argparse-heavy
+
+    try:
+        factory = _import_object(dotted)
+    except (ImportError, AttributeError, ValueError, SystemExit) as exc:
+        # `SystemExit` because lab.cli's importer exits with the case-study
+        # explanation when a module is missing; here the missing thing is the
+        # reader's own adapter, and that is what the message must say.
+        cause = exc.__cause__ if isinstance(exc, SystemExit) and exc.__cause__ else exc
+        raise TraineeFactoryError(
+            f"{origin}={dotted!r} could not be imported as a trainee factory "
+            f"({type(cause).__name__}: {cause}). Expected `package.module:callable`, where the "
+            "module is importable from this directory and the callable takes one "
+            "TraineeContext and returns an object with open() and reply(). "
+            "Runnable examples: examples/adapters/."
+        ) from exc
+    if not callable(factory):
+        raise TraineeFactoryError(
+            f"{origin}={dotted!r} names {type(factory).__name__}, which is not "
+            "callable. Point it at the factory function, not at the module or the "
+            "trainee class instance."
+        )
+    return factory
+
+
+def build_trainee(
+    context: TraineeContext, *, factory: str | TraineeFactory | None = None
+) -> Trainee:
+    """Resolve the factory, call it, and refuse anything that is not a trainee."""
+    resolved = resolve_trainee_factory(factory)
+    trainee = resolved(context)
+    if not isinstance(trainee, Trainee):
+        name = getattr(resolved, "__qualname__", repr(resolved))
+        raise TraineeFactoryError(
+            f"trainee factory {name} returned {type(trainee).__name__}, which does "
+            "not satisfy roleplay.runtime.Trainee: it needs open() -> str | None "
+            "and reply(customer_turn: str) -> str | None."
+        )
+    return trainee
+
+
+def _speaker_count(trainee: object, counter: str) -> int:
+    """A `ModelSpeaker` counter read off a trainee that has one, else 0.
+
+    An external trainee has no cassette and so records and replays nothing; the
+    outcome says 0 for it rather than pretending, and the report's "turns
+    recorded live this run" line stays a statement about model calls made here.
+    """
+    speaker = getattr(trainee, "speaker", None)
+    return int(getattr(speaker, counter, 0) or 0)
+
+
 def _model_label(explicit: str | None = None) -> str:
     """What the fixture says the turns came from. Never a route, never a key."""
     return explicit or os.environ.get(MODEL_LABEL_ENV_VAR) or "unspecified-model"
@@ -1300,8 +1476,14 @@ def run_live_session(
     customer_completion: Callable[..., str] | None = None,
     live_customer: bool = True,
     save: bool = True,
+    trainee_factory: str | TraineeFactory | None = None,
 ) -> LiveOutcome:
     """Run one session with a live trainee, and record or replay it.
+
+    `trainee_factory` is the adapter seam: a callable or a `module:callable` path
+    that builds the adviser under test from a `TraineeContext`. Left as None it
+    falls back to `LAB_TRAINEE_FACTORY`, and with that unset to the model-backed
+    `LiveTrainee` — the behaviour every committed cassette was recorded under.
 
     `live_customer=False` runs the live trainee against the scripted customer
     voice — the ablation that separates "the adviser did this" from "the customer
@@ -1335,26 +1517,21 @@ def run_live_session(
         ),
     }
 
-    trainee_speaker = ModelSpeaker(
-        role="trainee",
-        cassette=cassette,
-        live_env_var=LIVE_TRAINEE_ENV_VAR,
-        model_env_var=TRAINEE_MODEL_ENV_VAR,
-        model=trainee_model,
-        model_label=label,
-        temperature=temperature,
-        max_tokens=TRAINEE_MAX_TOKENS,
-        completion=trainee_completion,
-    )
-    trainee = LiveTrainee(
-        speaker=trainee_speaker,
-        system_prompt=trainee_prompt(
-            competence=row.competence,
+    trainee = build_trainee(
+        TraineeContext(
+            scenario_id=row.scenario_id,
             profile=profile,
+            competence=row.competence,
             jurisdiction=row.jurisdiction,
             language=row.language,
+            max_turns=max_turns,
+            model_label=label,
+            temperature=temperature,
+            cassette=cassette,
+            trainee_model=trainee_model,
+            completion=trainee_completion,
         ),
-        max_turns=max_turns,
+        factory=trainee_factory,
     )
 
     voice: Any = None
@@ -1401,16 +1578,16 @@ def run_live_session(
         result=result,
         cassette_path=cassette.path,
         shadow=result.keyword_shadow(),
-        trainee_stop=trainee.stop_reason or "unknown",
+        trainee_stop=stop_reason_of(trainee, "unknown"),
         customer_leaks=int(getattr(voice, "leaks", 0) or 0),
         leaked_topics=tuple(getattr(voice, "leaked_topics", ()) or ()),
         voice_fallbacks=int(getattr(voice, "fallbacks", 0) or 0),
-        impersonations=trainee.truncated_impersonations,
-        trainee_filtered=trainee.filtered_turns,
+        impersonations=int(getattr(trainee, "truncated_impersonations", 0) or 0),
+        trainee_filtered=int(getattr(trainee, "filtered_turns", 0) or 0),
         customer_filtered=int(getattr(voice, "filtered_turns", 0) or 0),
-        recorded_turns=trainee_speaker.recorded
+        recorded_turns=_speaker_count(trainee, "recorded")
         + (customer_speaker.recorded if customer_speaker else 0),
-        replayed_turns=trainee_speaker.replayed
+        replayed_turns=_speaker_count(trainee, "replayed")
         + (customer_speaker.replayed if customer_speaker else 0),
     )
 
@@ -1615,7 +1792,23 @@ def main(argv: Sequence[str] | None = None) -> int:
             "the cohort curve cannot move the numbers."
         ),
     )
+    parser.add_argument(
+        "--trainee-factory",
+        default=None,
+        metavar="MODULE:CALLABLE",
+        help=(
+            "Dotted path to a factory that builds the adviser under test from a "
+            f"TraineeContext (default: ${TRAINEE_FACTORY_ENV_VAR}, else the built-in "
+            "model trainee). See docs/ADAPTER.md and examples/adapters/."
+        ),
+    )
     args = parser.parse_args(argv)
+
+    try:
+        trainee_factory = resolve_trainee_factory(args.trainee_factory)
+    except TraineeFactoryError as exc:
+        print(f"trainee factory: {exc}", file=sys.stderr)
+        return 2
 
     profiles = load_customer_profiles()
     rows = [
@@ -1642,9 +1835,15 @@ def main(argv: Sequence[str] | None = None) -> int:
                     max_turns=args.max_turns,
                     temperature=args.temperature,
                     live_customer=not args.scripted_customer,
+                    trainee_factory=trainee_factory,
                 )
             )
-        except (NotLiveError, MissingTurnError, StaleCassetteError) as exc:
+        except (
+            NotLiveError,
+            MissingTurnError,
+            StaleCassetteError,
+            TraineeFactoryError,
+        ) as exc:
             failures.append(f"{row.scenario_id}: {type(exc).__name__}: {exc}")
 
     if outcomes:
