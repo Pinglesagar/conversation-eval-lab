@@ -1,13 +1,25 @@
 /* conversation-eval-lab — the demo page.
  *
- * Three jobs, all optional. With JavaScript off the page is still complete:
+ * Four jobs, all optional. With JavaScript off the page is still complete:
  * the score table renders the graded ("as heard") channel, both columns sit in
- * a disclosure below it, and the commands are selectable text.
+ * a disclosure below it, the commands are selectable text, and nothing is
+ * hidden waiting for a scroll.
  *
  * No network, no dependencies, works from file://.
  */
 (function () {
   "use strict";
+
+  var hasIO = "IntersectionObserver" in window;
+  var reduced =
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // The motion CSS is gated on this class so a browser without the observer,
+  // or a script that never ran, shows every element exactly where it belongs.
+  if (hasIO && !reduced) {
+    document.documentElement.className += " has-io";
+  }
 
   /* ---------------------------------------------------------------
    * 1. The one interaction: sent against heard, on the same table.
@@ -74,6 +86,36 @@
     // behaviour. Reveal it, then repaint the channel the HTML already shows.
     switcher.removeAttribute("hidden");
     paint("heard");
+
+    // First reveal: if the table is still below the fold, clear the cells now
+    // and let paint() light them, staggered, when it scrolls into view. A
+    // table already on screen keeps its lit cells and never blinks.
+    if (
+      hasIO &&
+      !reduced &&
+      table.getBoundingClientRect().top > window.innerHeight
+    ) {
+      var lit = table.querySelectorAll(".bar i.on");
+      for (var k = 0; k < lit.length; k++) {
+        lit[k].classList.remove("on");
+      }
+      table.classList.add("is-snapping");
+      var snap = new IntersectionObserver(
+        function (entries, self) {
+          for (var e = 0; e < entries.length; e++) {
+            if (entries[e].isIntersecting) {
+              paint("heard");
+              self.disconnect();
+              window.setTimeout(function () {
+                table.classList.remove("is-snapping");
+              }, 600);
+            }
+          }
+        },
+        { threshold: 0.35 }
+      );
+      snap.observe(table);
+    }
   }
 
   /* ---------------------------------------------------------------
@@ -136,7 +178,39 @@
   );
 
   /* ---------------------------------------------------------------
-   * 3. Mark the section being read, in the nav.
+   * 3. Settle the section headers in as they arrive.
+   *    Only headers below the fold at load are marked, so nothing the
+   *    reader can already see ever starts transparent.
+   * ------------------------------------------------------------- */
+
+  if (hasIO && !reduced) {
+    var heads = Array.prototype.filter.call(
+      document.querySelectorAll(".sec__head"),
+      function (head) {
+        return head.getBoundingClientRect().top > window.innerHeight;
+      }
+    );
+    if (heads.length) {
+      var settle = new IntersectionObserver(
+        function (entries, self) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-in");
+              self.unobserve(entry.target);
+            }
+          });
+        },
+        { rootMargin: "0px 0px -12% 0px", threshold: 0 }
+      );
+      heads.forEach(function (head) {
+        head.classList.add("settle");
+        settle.observe(head);
+      });
+    }
+  }
+
+  /* ---------------------------------------------------------------
+   * 4. Mark the section being read, in the nav.
    * ------------------------------------------------------------- */
 
   if ("IntersectionObserver" in window) {

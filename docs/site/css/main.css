@@ -1,35 +1,51 @@
-/* conversation-eval-lab — one finding, told once.
-   Claude, rendered in a dot-matrix. A warm near-black ground, one coral accent,
-   an off-white, two greys, and hard edges everywhere: no gradients, no soft
-   shadows, no rounded corners, no blur.
+/* conversation-eval-lab — the demo page.
 
-   The rule the styling is held to: pixel is a texture here, not a costume. If
-   an effect and legibility disagree, the effect loses. The dot-matrix mask is
-   on the hero headline and the decorative section numerals only; body copy,
-   numbers and tables are untouched, and the scanlines sit *behind* the content
-   so they can never dim a glyph.
+   PALETTE. Deep ink ground, one mineral-teal accent, warm off-white text.
+   Chosen to read as an instrument rather than a product: the ground is a cool
+   near-black (#0A0C10) so the warm text (#F2EEE6) sits forward of it, and the
+   single accent (#5FCBBB) is a desaturated teal that belongs to no vendor's
+   brand — it is the colour of an oscilloscope trace, which is what this page
+   is about. There is exactly one accent. It marks the thing to look at, the
+   value that moved, the control that is on; nothing else is coloured.
 
-   No external requests: system fonts only, and every mark is drawn in markup. */
+   CONTRAST, measured (WCAG 2.x ratios, computed from the hex values below):
+     fg      on bg 16.9   on raised 16.1   on sunk 17.4
+     fg-dim  on bg  8.2   on raised  7.8   on sunk  8.5
+     fg-mute on bg  5.8   on raised  5.5   on sunk  5.9
+     accent  on bg 10.0   on raised  9.5   on sunk 10.3
+     on-accent text on an accent fill 9.8
+   The dot-matrix mask punches ground-coloured holes over 22% of a glyph's
+   area. After the mask the hero headline measures 13.4 (off-white line) and
+   8.0 (accent line). Every text-bearing element clears AA; everything but
+   fg-mute clears AAA.
+
+   TEXTURE. Dot-matrix on the hero headline and the decorative section
+   numerals; scanlines behind the content; hard edges everywhere. The rule
+   the styling is held to: if an effect and legibility disagree, the effect
+   loses. No gradients as fills, no shadows, no blur, no rounded corners.
+
+   MOTION. Section headers settle in on scroll and score cells snap on in
+   steps. Nothing loops except the status dot, and everything stops under
+   prefers-reduced-motion.
+
+   No external requests: system fonts only, and every mark is drawn in
+   markup. */
 
 :root {
-  /* The coral is #D97757. It could not be read out of Claude Code's own
-     terminal palette on the machine this was built on — the CLI is not
-     installed here — so that hex is an ASSUMPTION, recorded as one rather than
-     asserted. Everything else is derived from it. */
-  --bg:        #0C0B0A;
-  --bg-raise:  #14120F;
-  --bg-sink:   #070605;
-  --line:      #2A241F;
-  --line-soft: #1B1714;
-  --faint:     rgba(244, 239, 233, 0.26);
-  --fg:        #F4EFE9;
-  --fg-dim:    #ADA69E;
-  --fg-mute:   #938C84;
-  --accent:    #D97757;
-  --accent-2:  #E79273;
-  --accent-w:  rgba(217, 119, 87, 0.12);
-  --accent-b:  rgba(217, 119, 87, 0.42);
-  --on-accent: #140A06;
+  --bg:        #0A0C10;
+  --bg-raise:  #10131A;
+  --bg-sink:   #060709;
+  --line:      #222835;
+  --line-soft: #171B24;
+  --faint:     rgba(242, 238, 230, 0.26);
+  --fg:        #F2EEE6;
+  --fg-dim:    #ABA89F;
+  --fg-mute:   #8E8B84;
+  --accent:    #5FCBBB;
+  --accent-2:  #7FDCCE;
+  --accent-w:  rgba(95, 203, 187, 0.10);
+  --accent-b:  rgba(95, 203, 187, 0.42);
+  --on-accent: #06110F;
 
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -151,7 +167,7 @@ em { font-style: italic; color: var(--fg-dim); }
 }
 
 .nav__brand {
-  display: inline-flex; align-items: center; gap: 0.5rem;
+  display: inline-flex; align-items: center; gap: 0.55rem;
   text-decoration: none; color: var(--fg);
   font-family: var(--mono); font-size: 0.74rem;
   letter-spacing: 0.06em; white-space: nowrap;
@@ -377,9 +393,7 @@ main { display: block; }
   height: 40px;
   /* The native control is the one thing on this page that cannot be drawn
      here, so it is asked for in the theme it should already be in rather than
-     inverted into it. The old invert() was fighting the page's own
-     `color-scheme: dark`: it took a dark native player and made it a light
-     grey pill, which is the least arcade object imaginable. */
+     inverted into it. */
   color-scheme: dark;
 }
 .play--second {
@@ -513,7 +527,7 @@ main { display: block; }
 .code--tight { margin: 0.6rem 0 0.5rem; display: inline-block; min-width: min(100%, 22rem); }
 .code--tight code { color: var(--accent); }
 
-/* ---------- 01 the stack ---------- */
+/* ---------- the stack ---------- */
 
 .stack {
   border: 1px solid var(--line);
@@ -530,7 +544,7 @@ main { display: block; }
   border-bottom: 1px solid var(--line-soft);
 }
 .stack__row:last-child { border-bottom: 0; }
-.stack__row--hot { background: rgba(217, 119, 87, 0.06); }
+.stack__row--hot { background: rgba(95, 203, 187, 0.05); }
 
 .stack__tag {
   margin: 0;
@@ -585,7 +599,7 @@ main { display: block; }
   .stack__aside { display: inline; }
 }
 
-/* ---------- 01 the chain ---------- */
+/* ---------- the chain ---------- */
 
 .chain {
   list-style: none;
@@ -751,7 +765,7 @@ main { display: block; }
 .grid .bad { color: var(--accent); }
 .empty { color: var(--fg-mute); font-style: italic; }
 
-/* ---------- 01 recognition stats ---------- */
+/* ---------- recognition stats ---------- */
 
 .stats {
   list-style: none; margin: 0 0 1.2rem; padding: 0;
@@ -781,7 +795,7 @@ main { display: block; }
 .pairs li { font-family: var(--mono); font-size: 0.82rem; color: var(--fg-dim); }
 .pairs__n { color: var(--accent); margin-left: 0.5rem; }
 
-/* ---------- 02 score panel ---------- */
+/* ---------- score panel ---------- */
 
 .scorepanel {
   border: 1px solid var(--line);
@@ -922,7 +936,7 @@ main { display: block; }
   .bar i { width: 13px; height: 13px; }
 }
 
-/* ---------- 02 checks + lesson ---------- */
+/* ---------- checks + lesson ---------- */
 
 .checks { margin-top: clamp(1.5rem, 4vw, 2.2rem); }
 .checks__list {
@@ -969,7 +983,7 @@ main { display: block; }
   color: var(--accent); margin-bottom: 0.5rem;
 }
 
-/* ---------- 03 cards ---------- */
+/* ---------- cards ---------- */
 
 .card {
   display: flex; flex-direction: column;
@@ -1117,9 +1131,36 @@ main { display: block; }
 }
 
 /* =========================================================================
+   MOTION
+   Two movements, both one-shot, both gated on JavaScript having confirmed
+   IntersectionObserver exists (`html.has-io`). Without that class nothing here
+   applies and every element is simply visible: the page never depends on a
+   script to become readable.
+
+     1. Settle-in. Section headers below the fold start 14px low and
+        transparent and settle into place when they enter the viewport. The
+        script only marks headers that are *below the fold at load*, so nothing
+        the reader can already see ever flickers.
+     2. Score cells snap on in steps (see THE PIXEL LAYER) with a small stagger
+        the first time the score table enters the viewport.
+
+   Both are removed under prefers-reduced-motion.
+   ========================================================================= */
+
+.has-io .settle {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.6s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.has-io .settle.is-in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .has-io .settle { opacity: 1; transform: none; transition: none; }
+}
+
+/* =========================================================================
    THE PIXEL LAYER
-   Everything below is the arcade skin. It is deliberately the last thing in
-   the file, and deliberately separable: delete this block and the page is the
+   Everything below is the texture. It is deliberately the last thing in the
+   file, and deliberately separable: delete this block and the page is the
    same page, in the same palette, without the texture. Three rules govern it.
 
      1. Nothing here may dim a glyph. The scanlines sit behind the content, not
@@ -1156,8 +1197,9 @@ body::before {
 /* Dots of the ground colour, punched through the glyph on a grid that scales
    with the type (em, not px) so the hole-to-stroke ratio is the same at 2.4rem
    on a phone as at 5.5rem on a desktop. Coverage is 22%, which is the number
-   that matters: it is what the mask costs in contrast, and it is measured, not
-   guessed. The text underneath is real, solid, selectable text. */
+   that matters: it is what the mask costs in contrast, and the ratios after it
+   are in the header of this file. The text underneath is real, solid,
+   selectable text. */
 .display,
 .sec__num { position: relative; }
 
@@ -1179,11 +1221,12 @@ body::before {
 
 /* ---------- the mark ---------- */
 
-/* An eight-pointed burst drawn on a 15x15 integer grid — four cardinal spikes,
-   four diagonals, a circular envelope. Hand-plotted here rather than lifted
-   from anywhere: it is a pixel rendering of an asterisk form, not a brand
-   asset. `shape-rendering: crispEdges` keeps every cell square at every size. */
-.pixmark { display: block; fill: currentColor; }
+/* Five bars on a 15x15 integer grid, two cells wide with a one-cell gutter,
+   heights 5 / 9 / 15 / 11 / 3 centred on the middle row: a pixel waveform,
+   which is the object this page grades. Drawn here for this project, not a
+   brand asset of anyone's. `shape-rendering: crispEdges` keeps every cell
+   square at every size, and the same five rectangles are the favicon. */
+.wavemark { display: block; fill: currentColor; }
 
 .nav__mark {
   display: inline-grid; place-items: center;
@@ -1191,18 +1234,8 @@ body::before {
   border: var(--edge) solid var(--accent-b);
   color: var(--accent);
 }
-.nav__mark .pixmark { width: 0.9rem; height: 0.9rem; }
+.nav__mark .wavemark { width: 0.85rem; height: 0.85rem; }
 .nav__brand:hover .nav__mark { border-color: var(--accent); }
-
-.hero__mark {
-  margin: 0 0 clamp(1.5rem, 4vw, 2.2rem);
-  color: var(--accent);
-  line-height: 0;
-}
-.hero__mark .pixmark {
-  width: clamp(3.5rem, 9vw, 6.5rem);
-  height: clamp(3.5rem, 9vw, 6.5rem);
-}
 
 /* ---------- hard edges ---------- */
 
@@ -1231,8 +1264,9 @@ body::before {
 /* ---------- segmented score bars ---------- */
 
 /* Four cells, lit or unlit, so 2/4 reads as two lit blocks of four without
-   reading the number beside it. The step timing is the arcade detail: the
-   cells snap on rather than fading. */
+   reading the number beside it. The step timing is the detail: the cells snap
+   on rather than fading, and while the table carries `is-snapping` (set by the
+   script for the first reveal only) each cell waits its turn. */
 .bar { gap: var(--edge); }
 .bar i {
   width: 17px; height: 17px;
@@ -1240,9 +1274,12 @@ body::before {
   transition: background 0.12s steps(2, end), border-color 0.12s steps(2, end);
 }
 .bar i.on { background: var(--accent); border-color: var(--accent); }
+.is-snapping .bar i:nth-child(2) { transition-delay: 0.09s; }
+.is-snapping .bar i:nth-child(3) { transition-delay: 0.18s; }
+.is-snapping .bar i:nth-child(4) { transition-delay: 0.27s; }
 /* This block restates `transition`, so it also has to restate the reduced-motion
-   opt-out: the earlier one is 380 lines up and loses on source order. */
-@media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+   opt-out: the earlier one is far above and loses on source order. */
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none; transition-delay: 0s; } }
 @media (max-width: 560px) { .bar i { width: 14px; height: 14px; } }
 
 /* ---------- raster ---------- */
