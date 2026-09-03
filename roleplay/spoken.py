@@ -121,19 +121,22 @@ from roleplay.live import (
     LIVE_CUSTOMER_ENV_VAR,
     LIVE_TRAINEE_ENV_VAR,
     MODEL_LABEL_ENV_VAR,
-    TRAINEE_MAX_TOKENS,
+    TRAINEE_FACTORY_ENV_VAR,
     TRAINEE_MODEL_ENV_VAR,
     CUSTOMER_MAX_TOKENS,
     LiveCustomerVoice,
     LiveRow,
-    LiveTrainee,
     ModelSpeaker,
     NotLiveError,
     SessionCassette,
     SessionKey,
+    TraineeContext,
+    TraineeFactory,
+    TraineeFactoryError,
+    build_trainee,
     customer_prompt,
     load_customer_profiles,
-    trainee_prompt,
+    resolve_trainee_factory,
 )
 from roleplay.livescorer import (
     LIVE_ENV_VAR as LIVE_SCORER_ENV_VAR,
@@ -144,7 +147,7 @@ from roleplay.livescorer import (
     replay_completion,
 )
 from roleplay.persona import CustomerProfile, CustomerPersona, PersonaTurn
-from roleplay.runtime import RoleplayCoach, RoleplayConversation
+from roleplay.runtime import RoleplayCoach, RoleplayConversation, Trainee
 from roleplay.scorer import RubricScorer, ScoreCard, session_view
 
 __all__ = [
@@ -544,9 +547,13 @@ class SpokenTrainee:
     register, the persona and the scorer all receive what the recogniser heard.
     The character cap is enforced here, before a model turn is bought, because
     a stop decided after synthesis is a stop that already spent the characters.
+
+    `inner` is any `Trainee`, not specifically the model-backed one: whatever
+    `build_trainee` returned — the built-in adviser or an external agent behind
+    `LAB_TRAINEE_FACTORY` — is heard through the same channel.
     """
 
-    inner: LiveTrainee
+    inner: Trainee
     channel: AudioChannel
     _stop: str | None = None
     _pending: AudioTurnNote | None = None
@@ -1020,8 +1027,16 @@ def channel_effect(
 # --------------------------------------------------------------------------- #
 
 
-def missing_for_live() -> list[str]:
-    """Everything standing between this process and a live spoken call, by name."""
+def missing_for_live(*, external_trainee: bool | None = None) -> list[str]:
+    """Everything standing between this process and a live spoken call, by name.
+
+    `external_trainee` says whether the adviser comes from a trainee factory
+    rather than the built-in model trainee; None reads `LAB_TRAINEE_FACTORY`. An
+    external adviser needs no litellm route of its own, so that line is dropped
+    from the list — the customer's route and the scorer's are still required.
+    """
+    if external_trainee is None:
+        external_trainee = bool(os.environ.get(TRAINEE_FACTORY_ENV_VAR))
     missing: list[str] = []
     if not os.environ.get(LIVE_SPOKEN_ENV_VAR):
         missing.append(f"{LIVE_SPOKEN_ENV_VAR}=1 (the spoken-call opt-in)")
@@ -1034,7 +1049,7 @@ def missing_for_live() -> list[str]:
             f"a model-provider key (one of {', '.join(KEY_ENV_VARS)}) for the two "
             "speakers and the scorer"
         )
-    if not os.environ.get(TRAINEE_MODEL_ENV_VAR):
+    if not external_trainee and not os.environ.get(TRAINEE_MODEL_ENV_VAR):
         missing.append(f"{TRAINEE_MODEL_ENV_VAR} (the adviser's litellm route)")
     if not os.environ.get(CUSTOMER_MODEL_ENV_VAR):
         missing.append(f"{CUSTOMER_MODEL_ENV_VAR} (the customer's litellm route)")
@@ -1043,14 +1058,14 @@ def missing_for_live() -> list[str]:
     return missing
 
 
-def require_live() -> None:
+def require_live(*, external_trainee: bool | None = None) -> None:
     """Refuse to spend unless everything is in place, naming all of it at once.
 
     On success, sets the five implied switches, so a caller who set
     `LAB_LIVE_SPOKEN=1` has genuinely turned on the whole path — a spoken call
     with a replaying half is not a spoken call.
     """
-    missing = missing_for_live()
+    missing = missing_for_live(external_trainee=external_trainee)
     if missing:
         raise NotLiveError(
             "a live spoken call needs everything below, and this environment is "
@@ -1274,8 +1289,15 @@ def run_spoken_call(
     max_turns: int = DEFAULT_MAX_TURNS,
     character_cap: int = DEFAULT_CHARACTER_CAP,
     model_label: str | None = None,
+    trainee_factory: str | TraineeFactory | None = None,
 ) -> SpokenCallResult:
     """Run THE spoken call live, record everything, and write the fixtures.
+
+    `trainee_factory` is the same seam `roleplay.live.run_live_session` has: a
+    callable or `module:callable` path building the adviser under test, falling
+    back to `LAB_TRAINEE_FACTORY`, then to the built-in model trainee. An external
+    adviser still speaks through the real TTS -> STT channel and is graded on
+    what the recogniser heard.
 
     One call, by design: the scenario, the session id and the fixture paths are
     module constants because the deliverable is a single auditable artifact,
@@ -1290,7 +1312,8 @@ def run_spoken_call(
 
     plus the model-turn cassette under `fixtures/roleplay_live/<scenario>/`.
     """
-    require_live()
+    external = trainee_factory is not None or bool(os.environ.get(TRAINEE_FACTORY_ENV_VAR))
+    require_live(external_trainee=external)
     profiles = load_customer_profiles()
     profile = profiles[SPOKEN_ROW.customer]
     label = model_label or os.environ.get(MODEL_LABEL_ENV_VAR) or "unspecified-model"
@@ -1318,14 +1341,19 @@ def run_spoken_call(
             "fixtures/audio/spoken_call/manifest.json."
         ),
     }
-    trainee_speaker = ModelSpeaker(
-        role="trainee",
-        cassette=cassette,
-        live_env_var=LIVE_TRAINEE_ENV_VAR,
-        model_env_var=TRAINEE_MODEL_ENV_VAR,
-        model_label=label,
-        temperature=0.0,
-        max_tokens=TRAINEE_MAX_TOKENS,
+    inner_trainee = build_trainee(
+        TraineeContext(
+            scenario_id=SPOKEN_ROW.scenario_id,
+            profile=profile,
+            competence=SPOKEN_ROW.competence,
+            jurisdiction=SPOKEN_ROW.jurisdiction,
+            language=SPOKEN_ROW.language,
+            max_turns=max_turns,
+            model_label=label,
+            temperature=0.0,
+            cassette=cassette,
+        ),
+        factory=trainee_factory,
     )
     customer_speaker = ModelSpeaker(
         role="customer",
@@ -1335,16 +1363,6 @@ def run_spoken_call(
         model_label=label,
         temperature=0.0,
         max_tokens=CUSTOMER_MAX_TOKENS,
-    )
-    inner_trainee = LiveTrainee(
-        speaker=trainee_speaker,
-        system_prompt=trainee_prompt(
-            competence=SPOKEN_ROW.competence,
-            profile=profile,
-            jurisdiction=SPOKEN_ROW.jurisdiction,
-            language=SPOKEN_ROW.language,
-        ),
-        max_turns=max_turns,
     )
     inner_voice = LiveCustomerVoice(
         speaker=customer_speaker,
@@ -1744,16 +1762,34 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     parser.add_argument("--max-turns", type=int, default=DEFAULT_MAX_TURNS)
     parser.add_argument("--character-cap", type=int, default=DEFAULT_CHARACTER_CAP)
+    parser.add_argument(
+        "--trainee-factory",
+        default=None,
+        metavar="MODULE:CALLABLE",
+        help=(
+            "With --record: dotted path to a factory that builds the adviser under "
+            f"test (default: ${TRAINEE_FACTORY_ENV_VAR}, else the built-in model "
+            "trainee). See docs/ADAPTER.md."
+        ),
+    )
     args = parser.parse_args(argv)
+
+    try:
+        trainee_factory = resolve_trainee_factory(args.trainee_factory)
+    except TraineeFactoryError as exc:
+        print(f"trainee factory: {exc}", file=sys.stderr)
+        return 2
 
     try:
         if args.record:
             result = run_spoken_call(
-                max_turns=args.max_turns, character_cap=args.character_cap
+                max_turns=args.max_turns,
+                character_cap=args.character_cap,
+                trainee_factory=trainee_factory,
             )
         else:
             result = replay_spoken_call()
-    except (NotLiveError, FileNotFoundError) as exc:
+    except (NotLiveError, FileNotFoundError, TraineeFactoryError) as exc:
         print(f"{type(exc).__name__}: {exc}", file=sys.stderr)
         return 1
     print(result.report())
