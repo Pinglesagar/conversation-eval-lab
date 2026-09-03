@@ -5,7 +5,7 @@
 [ARCHITECTURE_ONE_PAGE.md](ARCHITECTURE_ONE_PAGE.md) — the whole system in one diagram. [WIKI.md](WIKI.md) is the full
 reference underneath it, not a thing to read aloud.
 
-Behind this page: seventeen documents, 25,423 lines
+Behind this page: twenty documents, 26,305 lines
 (`ls docs/*.md | grep -v README | xargs wc -l`). You should never need to open
 more than one of them. Find your question below, open the file next to it, stop.
 
@@ -47,6 +47,7 @@ If you have not run anything yet, close this page and run `make start`.
 | your question | the answer |
 | --- | --- |
 | How do I add a scenario? | [adding_a_scenario.md](adding_a_scenario.md) — two files |
+| How do I plug in my own agent as the adviser under test? | [ADAPTER.md](ADAPTER.md) — a two-method wrapper, three runnable examples, one command; contracts, judges, scorecard and reports run unchanged |
 | How do I extend the engine? | [WIKI.md §11](WIKI.md#11-how-to-extend-it) |
 
 ## The domains and the packs
