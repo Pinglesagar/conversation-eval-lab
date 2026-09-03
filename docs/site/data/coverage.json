@@ -1,0 +1,779 @@
+{
+  "about": "What a QA-for-AI role asks for, mapped to what in this repository demonstrates it: the files, the one command that proves it, and the headline figure with its denominator. Every figure is recomputed by scripts/build_site_data.py from a committed artefact, by the same code the suite uses, unless its `recomputed` field says otherwise.",
+  "not_covered": [
+    {
+      "area": "UI and end-to-end browser automation",
+      "status": "not covered",
+      "why": "There is no browser, no DOM and no screen anywhere in the system under test; the unit is the conversation trace."
+    },
+    {
+      "area": "Load and performance testing",
+      "status": "not covered",
+      "why": "Latency is measured per turn behind a calibrated stopwatch (n=12 on the transport row); nothing here drives concurrency or throughput."
+    },
+    {
+      "area": "Desktop and mobile clients",
+      "status": "not covered",
+      "why": "No client application exists in this repository to test."
+    },
+    {
+      "area": "Observability backend",
+      "status": "export only",
+      "why": "Traces export to langfuse and promptfoo shapes; there is no collector, storage, sampling or alerting."
+    },
+    {
+      "area": "Interruption and barge-in on a live channel",
+      "status": "reserved",
+      "why": "The two interruption event kinds are emitted from constructed timings only; no adapter discovers one."
+    },
+    {
+      "area": "Label quality beyond one labeller",
+      "status": "stated, not measured",
+      "why": "Every hand label set here has one labeller with reasons recorded; inter-rater agreement is not measured."
+    }
+  ],
+  "requirements": [
+    {
+      "command": "make roleplay-demo && make calibrate",
+      "figures": {
+        "advisory_scorer": {
+          "cohens_kappa": 0.241,
+          "gate_cleared": false,
+          "items": 70,
+          "refusal_reasons": [
+            "TPR 0.281 (9/32) is below the required 0.85",
+            "registry refused the judge in CI mode: JudgeBelowThresholdError"
+          ],
+          "true_negative_rate": {
+            "denominator": 38,
+            "numerator": 36,
+            "text": "0.947 (36/38)",
+            "value": 0.947
+          },
+          "true_positive_rate": {
+            "denominator": 32,
+            "numerator": 9,
+            "text": "0.281 (9/32)",
+            "value": 0.281
+          }
+        },
+        "judge_v1": {
+          "gate_cleared": false,
+          "true_negative_rate": {
+            "denominator": 16,
+            "numerator": 16,
+            "text": "1.000 (16/16)",
+            "value": 1.0
+          },
+          "true_positive_rate": {
+            "denominator": 8,
+            "numerator": 2,
+            "text": "0.250 (2/8)",
+            "value": 0.25
+          }
+        },
+        "judge_v2": {
+          "gate_cleared": true,
+          "true_negative_rate": {
+            "denominator": 16,
+            "numerator": 16,
+            "text": "1.000 (16/16)",
+            "value": 1.0
+          },
+          "true_positive_rate": {
+            "denominator": 8,
+            "numerator": 8,
+            "text": "1.000 (8/8)",
+            "value": 1.0
+          }
+        },
+        "threshold": {
+          "min_items": 10,
+          "min_true_negative_rate": 0.85,
+          "min_true_positive_rate": 0.85,
+          "scored_on": "point"
+        }
+      },
+      "headline": "The advisory scorer catches 9 of 32 sessions a reviewer would fail and the gate refuses it; judge prompt v1 scored TPR 0.250 (2/8) and was refused, v2 scored 1.000 (8/8) and cleared.",
+      "id": "llm-as-judge-calibrated-and-gated",
+      "recomputed": true,
+      "requirement": "LLM-as-judge, calibrated against human labels and gated before it can decide anything",
+      "what_demonstrates_it": [
+        "lab/judges/calibration.py — TPR, TNR, kappa, Wilson intervals, McNemar, run-to-run stability",
+        "lab/judges/registry.py — require_calibrated() raises JudgeBelowThresholdError in CI mode",
+        "lab/judges/hallucinated_confirmation/ — a worked v1 -> v2 iteration with six committed recordings",
+        "roleplay/calibration.py — the product's own rubric scorer measured as a judge"
+      ]
+    },
+    {
+      "caveats": [
+        "k=3 bounds a pass rate loosely: 3/3 has a 95% Wilson lower bound of 0.44.",
+        "The flake band is a property of the caller-agent pair at one temperature on one day."
+      ],
+      "command": "make live-replay && python -m lab.simulator.flake_band --check",
+      "figures": {
+        "flake_band_k5": {
+          "budget_12": {
+            "agrees_with_committed_summary": true,
+            "caller_turn_budget": 12,
+            "flaky": {
+              "denominator": 8,
+              "numerator": 1,
+              "text": "0.125 (1/8)",
+              "value": 0.125
+            },
+            "stable_pass": {
+              "denominator": 8,
+              "numerator": 7,
+              "text": "0.875 (7/8)",
+              "value": 0.875
+            }
+          },
+          "budget_8": {
+            "agrees_with_committed_summary": true,
+            "caller_turn_budget": 8,
+            "flaky": {
+              "denominator": 8,
+              "numerator": 3,
+              "text": "0.375 (3/8)",
+              "value": 0.375
+            },
+            "stable_pass": {
+              "denominator": 8,
+              "numerator": 5,
+              "text": "0.625 (5/8)",
+              "value": 0.625
+            }
+          }
+        },
+        "live_run_k3": {
+          "agrees_with_committed_report": true,
+          "flaky": {
+            "denominator": 47,
+            "numerator": 6,
+            "text": "0.128 (6/47)",
+            "value": 0.128
+          },
+          "stable_fail": {
+            "denominator": 47,
+            "numerator": 7,
+            "text": "0.149 (7/47)",
+            "value": 0.149
+          },
+          "stable_pass": {
+            "denominator": 47,
+            "numerator": 34,
+            "text": "0.723 (34/47)",
+            "value": 0.723
+          },
+          "total_runs": 141
+        }
+      },
+      "headline": "34/47 scenarios stable-pass, 6/47 FLAKY at k=3; the same 8 scenarios at k=5 came back 7/8 stable with a 12-turn caller and 5/8 with an 8-turn one.",
+      "id": "non-deterministic-output-passk-flake-band",
+      "recomputed": true,
+      "requirement": "Non-deterministic output: pass^k with FLAKY as its own verdict, and a measured flake band",
+      "what_demonstrates_it": [
+        "lab/simulator/passk.py — STABLE_PASS / STABLE_FAIL / FLAKY; FLAKY is never a pass",
+        "lab/simulator/flake_band.py — one live variable (the caller), k=5, two turn budgets",
+        "fixtures/live_full/ — 47 rows, k=3, a model in all three seats, replayed offline",
+        "fixtures/live_caller/ — 80 recorded caller conversations behind the two bands"
+      ]
+    },
+    {
+      "command": "make validate && make roleplay-validate",
+      "figures": {
+        "closed_vocabularies": {
+          "kpi_gates": 8,
+          "kpi_groups": 7,
+          "kpis": 28,
+          "regimes": 4,
+          "register_entries": 36,
+          "restaurant_tags": 34
+        },
+        "human_verdicts_in_coaching_corpus": {
+          "fail": 32,
+          "pass": 38
+        },
+        "rows_by_corpus": {
+          "advisory_coaching": 70,
+          "advisory_regimes": 18,
+          "audio_tier": 18,
+          "restaurant_booking": 55,
+          "retrieval_questions": 18,
+          "transport_tier": 3
+        },
+        "rows_total": 182,
+        "suites": {
+          "advisory_coaching": {
+            "compliance": 13,
+            "consistency": 2,
+            "locale": 21,
+            "objection": 13,
+            "pitch": 21
+          },
+          "advisory_regimes": {
+            "clause": 3,
+            "conflict": 3,
+            "divergence": 5,
+            "lang": 2,
+            "nearmiss": 3,
+            "survival": 2
+          },
+          "restaurant_booking": {
+            "adversarial": 12,
+            "edge": 20,
+            "happy": 15,
+            "voice": 8
+          }
+        },
+        "yaml_files_by_directory": {
+          "adversarial": 12,
+          "advisory": 31,
+          "audio": 21,
+          "edge": 20,
+          "happy": 15,
+          "personas": 9,
+          "roleplay": 78,
+          "voice": 8
+        },
+        "yaml_files_under_scenarios": 195,
+        "yaml_note": "The file count includes persona, customer-profile and register files and one override file, which are data the rows refer to and not rows. Quote rows_total as the number of scenarios."
+      },
+      "headline": "182 scenario rows across six corpora (55 restaurant booking, 70 advisory coaching, 18 advisory regimes, 18 audio tier, 3 transport tier, 18 retrieval questions), all loaded through validating loaders; 195 YAML files under scenarios/.",
+      "id": "golden-datasets-validated-corpus",
+      "recomputed": true,
+      "requirement": "Golden datasets: a validated corpus with closed vocabularies, so a typo is a load error and not a green row",
+      "what_demonstrates_it": [
+        "scenarios/loader.py — schema validation, tag and tool vocabularies, expected_failure must name a declared contract",
+        "roleplay/corpus.py + roleplay/advisory.py — KPI groups, regimes and register entries are closed sets",
+        "lab/judges/hallucinated_confirmation/labels.jsonl — 24 hand labels with reasons",
+        "ragcheck/fixtures/ — 16 chunks, 18 questions, 18 claim labels"
+      ]
+    },
+    {
+      "command": "evallab calibrate --ci && git diff --exit-code -- fixtures lab/judges",
+      "figures": {
+        "detectability_floor_items": 6,
+        "labels_digest": "cd660a33b628a6cae1019202bbf3b5cc1782eaf475b71e0da92cd4c3204ba77e",
+        "model": {
+          "v1": "azure/gpt-4.1",
+          "v2": "azure/gpt-4.1"
+        },
+        "paired_comparison": {
+          "both_correct": 18,
+          "both_wrong": 0,
+          "broken_by_v2": 0,
+          "exact_mcnemar_p": 0.03125,
+          "fixed_by_v2": 6,
+          "items": 24
+        },
+        "prompt_digests": {
+          "v1": "e42ea843fa8fc1092ef50a10bafbd60b383c67d9feaebf27d0ea2a4d4ab6b318",
+          "v2": "38e34c2450a3673e18b1739042060192d5c1232b01794e6eb8a18ab0eb6e14f0"
+        },
+        "true_positive_rate": {
+          "v1": {
+            "denominator": 8,
+            "numerator": 2,
+            "text": "0.250 (2/8)",
+            "value": 0.25
+          },
+          "v2": {
+            "denominator": 8,
+            "numerator": 8,
+            "text": "1.000 (8/8)",
+            "value": 1.0
+          }
+        }
+      },
+      "headline": "v1 -> v2 fixed 6 of 24 items and broke 0; exact McNemar p = 0.03125; prompts are pinned by sha256.",
+      "id": "prompt-regression-detection",
+      "recomputed": true,
+      "requirement": "Prompt regression detection: a prompt change is measured on the same labelled items, paired, and recordings refuse a stale prompt",
+      "what_demonstrates_it": [
+        "lab/judges/judge.py — every recording is keyed by prompt digest; ReplayJudge refuses a mismatch",
+        "lab/judges/calibration.py — compare_reports(): paired McNemar, detectability floor, instability floor",
+        "lab/judges/hallucinated_confirmation/iteration.md — the v1 -> v2 study, regenerated by `evallab calibrate`",
+        "roleplay/scorer_study/ — the same discipline on the advisory rubric, v1 and v2"
+      ]
+    },
+    {
+      "caveats": [
+        "The judged metrics come from the offline lexical stand-in, which is not a model; its measured error rate is the point of the section, not a limitation of it."
+      ],
+      "command": "make ragcheck",
+      "figures": {
+        "corpus": {
+          "chunks": 16,
+          "claim_labels": 18,
+          "k": 3,
+          "questions": 18
+        },
+        "generation": {
+          "answer_relevance": {
+            "denominator": 8,
+            "numerator": 7,
+            "text": "0.875 (7/8)",
+            "value": 0.875
+          },
+          "answers": 8,
+          "context_recall_reference": {
+            "denominator": 2,
+            "numerator": 1,
+            "text": "0.500 (1/2)",
+            "value": 0.5
+          },
+          "groundedness_macro_answers": 0.875,
+          "groundedness_micro_claims": {
+            "denominator": 14,
+            "numerator": 12,
+            "text": "0.857 (12/14)",
+            "value": 0.857
+          }
+        },
+        "retrieval": {
+          "context_precision_gold_mean": 1.0,
+          "context_precision_judged_mean": 0.979,
+          "recall_of_gold_pooled": {
+            "denominator": 10,
+            "numerator": 9,
+            "text": "0.900 (9/10)",
+            "value": 0.9
+          }
+        },
+        "support_judge": {
+          "cohens_kappa": 0.723,
+          "gate_refused_with": "JudgeBelowThresholdError",
+          "items": 18,
+          "name": "claim_support",
+          "true_negative_rate": {
+            "denominator": 13,
+            "numerator": 12,
+            "text": "0.923 (12/13)",
+            "value": 0.923
+          },
+          "true_positive_rate": {
+            "denominator": 5,
+            "numerator": 4,
+            "text": "0.800 (4/5)",
+            "value": 0.8
+          },
+          "version": "v1"
+        }
+      },
+      "headline": "groundedness 0.857 (12/14) on claims, context recall 0.500 (1/2), answer relevance 0.875 (7/8); the support judge scores TPR 0.800 (4/5) and the gate refuses it.",
+      "id": "rag-retrieval-vs-groundedness",
+      "recomputed": true,
+      "requirement": "RAG: retrieval scored separately from groundedness, never averaged, with the grader's own agreement printed beside the metric",
+      "what_demonstrates_it": [
+        "ragcheck/report.py — recall of gold, context precision, groundedness per claim, answer relevance",
+        "ragcheck/calibration.py — the claim-support judge measured against 18 hand labels and gated",
+        "ragcheck/offline.py — the lexical stand-in that runs with no key, labelled as not a model"
+      ]
+    },
+    {
+      "command": "make spoken-replay && make audio-suite",
+      "figures": {
+        "audio_tier_rows": 18,
+        "noise_ladder": {
+          "broke_at_db": -5.0,
+          "captured": {
+            "denominator": 9,
+            "numerator": 6,
+            "text": "0.667 (6/9)",
+            "value": 0.667
+          },
+          "held_to_db": 0.0
+        },
+        "spoken_call": {
+          "criteria_that_moved": [
+            "discovery",
+            "objection_handling"
+          ],
+          "detail": "finding.json",
+          "duration_s": 181.303625,
+          "engines": {
+            "adviser_voice": "JBFqnCBsd6RMkjVDRZzb",
+            "customer_voice": "Xb7hH8MSUJpSbSDYk0k2",
+            "stt": "stt:deepgram/nova-3/en/raw",
+            "tts_adviser": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+            "tts_customer": "tts:elevenlabs/eleven_flash_v2_5/Xb7hH8MSUJpSbSDYk0k2"
+          },
+          "total_as_heard": 12,
+          "total_as_sent": 12,
+          "turns": 16
+        }
+      },
+      "headline": "A 16-turn, 181 s spoken call: discovery 2 as sent -> 0 as heard while both totals stayed 12/20; the noise ladder held to 0.0 dB and broke at -5.0 dB.",
+      "id": "voice-stt-tts-graded-on-what-was-heard",
+      "recomputed": true,
+      "requirement": "Voice: real synthesis and recognition, and the grade is computed on the transcript the recogniser produced",
+      "what_demonstrates_it": [
+        "roleplay/spoken.py — a whole advisory call through TTS -> STT, graded as heard; channel_effect() diffs the two gradings",
+        "lab/voice/suite.py + scenarios/audio/ — 18 declared rows: captured fields, noise ladders, silence, yield",
+        "lab/voice/wer.py — normalised word error rate; the display transcript is refused as a WER reference",
+        "lab/voice/engines/ — Deepgram and ElevenLabs behind recorded cassettes"
+      ]
+    },
+    {
+      "caveats": [
+        "Both ends of the room were in one process, so the gap is a floor and not a worst case.",
+        "Non-gating in CI by design: a network test that blocks a merge trains people to bypass it."
+      ],
+      "command": "make transport-report",
+      "figures": {
+        "delivery_gap": {
+          "agent_side_figure_ms": 0.0,
+          "mean_ms": 89.0,
+          "n": 12,
+          "net_of_send_queue_mean_ms": 86.0,
+          "other_sessions": [
+            {
+              "mean_ms": 128.3,
+              "n": 12,
+              "reportable": true,
+              "session": "delivery-gap-live-run"
+            },
+            {
+              "mean_ms": 137.6,
+              "n": 12,
+              "reportable": true,
+              "session": "delivery-gap-second-session"
+            }
+          ],
+          "p50": {
+            "label": "p50",
+            "min_n": 2,
+            "n": 12,
+            "reported": true,
+            "value_ms": 89.6
+          },
+          "p90": {
+            "label": "p90",
+            "min_n": 10,
+            "n": 12,
+            "reported": true,
+            "value_ms": 96.9
+          },
+          "p95": {
+            "label": "p95",
+            "min_n": 20,
+            "n": 12,
+            "reported": false,
+            "value_ms": null
+          },
+          "queue_correlation": 0.72
+        },
+        "rows": [
+          {
+            "category": "transport-degradation",
+            "id": "audio-transport-degradation",
+            "verdict": "PASS"
+          },
+          {
+            "category": "delivery-gap",
+            "id": "audio-transport-delivery-gap",
+            "verdict": "PASS"
+          },
+          {
+            "category": "connection-lifecycle",
+            "id": "audio-transport-lifecycle",
+            "verdict": "PASS"
+          }
+        ],
+        "tier_verdict": "PASS",
+        "timing_gate": {
+          "naive_whole_turn_control": "FAIL",
+          "tolerance": "|relative error| <= 5.0% and stdev <= 15.0 ms",
+          "verdict": "PASS"
+        }
+      },
+      "headline": "Delivery gap mean 89.0 ms over n=12 turns (p50 89.6 ms, p90 96.9 ms, p95 refused at n<20); an agent-side stopwatch reports 0.0 ms for the same turns.",
+      "id": "real-time-transport-latency",
+      "recomputed": true,
+      "requirement": "Real-time transport: latency measured at the far participant over a real WebRTC room, behind a calibrated stopwatch",
+      "what_demonstrates_it": [
+        "lab/voice/transport/ — three rows that only exist in transport: delivery gap, degradation, lifecycle",
+        "lab/voice/calibration.py — the timing gate; delivery_gap() refuses without a PASS",
+        "lab/voice/metrics.py — quantiles that refuse below their minimum sample count",
+        "fixtures/audio/transport/ — the recorded rooms every figure is recomputed from"
+      ]
+    },
+    {
+      "caveats": [
+        "Replay is blind to a prompt change: a green gate is necessary and not sufficient when a prompt, persona or rubric moved (docs/GATES.md, stage 9)."
+      ],
+      "command": "make gate",
+      "figures": {
+        "byte_for_byte_stages": [
+          4,
+          5
+        ],
+        "scripted_case_study": {
+          "agrees_with_committed_report": true,
+          "exit_status": 0,
+          "headline": "FAIL — 44/47 (93.6%) scenarios stable-pass — 36/369 (9.8%) contract evaluations failed",
+          "stability_summary": {
+            "flaky": 0,
+            "min_runs_per_scenario": 3,
+            "scenarios": 47,
+            "stable_fail": 3,
+            "stable_pass": 44,
+            "stable_pass_rate": "44/47 (93.6%)",
+            "total_runs": 141
+          }
+        },
+        "stages": [
+          {
+            "byte_for_byte": false,
+            "commands": [],
+            "stage": 1,
+            "title": "lint: syntax errors and undefined names"
+          },
+          {
+            "byte_for_byte": false,
+            "commands": [
+              "python -m lab.cli validate --coverage",
+              "python -m roleplay.corpus --coverage --list"
+            ],
+            "stage": 2,
+            "title": "the two corpora, against their schemas"
+          },
+          {
+            "byte_for_byte": false,
+            "commands": [
+              "python -m lab.cli replay --failures-only"
+            ],
+            "stage": 3,
+            "title": "the committed traces, re-checked with no agent and no runner"
+          },
+          {
+            "byte_for_byte": true,
+            "commands": [
+              "python -m lab.cli run --replay --ci --out fixtures/replay_run",
+              "git diff --exit-code -- fixtures/replay_run"
+            ],
+            "stage": 4,
+            "title": "the case study, against its baseline, then byte for byte"
+          },
+          {
+            "byte_for_byte": true,
+            "commands": [
+              "python -m lab.cli calibrate --ci",
+              "git diff --exit-code -- fixtures lab/judges"
+            ],
+            "stage": 5,
+            "title": "the calibration gates, then the artefacts they wrote"
+          },
+          {
+            "byte_for_byte": false,
+            "commands": [
+              "python -m error_analysis.pareto --check --no-chart"
+            ],
+            "stage": 6,
+            "title": "the error analysis still agrees with the artefacts"
+          },
+          {
+            "byte_for_byte": false,
+            "commands": [
+              "python -m roleplay.demo",
+              "python -m roleplay.regime_eval --divergence --shadow",
+              "python -m ragcheck",
+              "python -m roleplay.spoken",
+              "python -m lab.voice.transport.report --out reports/transport_report.md",
+              "python -m lab.cli run -k 3 --live-agent --live-caller --live-judge --out reports/live --no-traces --baseline fixtures/live_full/run_report.json --ci",
+              "python -m tablemate --score fixtures/live_full",
+              "python -m scripts.make_audio_fixtures --check"
+            ],
+            "stage": 7,
+            "title": "the other packs and the recorded tiers, all offline"
+          },
+          {
+            "byte_for_byte": false,
+            "commands": [
+              "python -m pytest -q"
+            ],
+            "stage": 8,
+            "title": "the offline suite"
+          }
+        ]
+      },
+      "headline": "8 stages, 17 commands, 2 of them followed by `git diff --exit-code`; the scripted case study reproduces 44/47 (93.6%) stable-pass.",
+      "id": "ci-cd-gating-from-scratch",
+      "recomputed": true,
+      "requirement": "CI/CD gating built from nothing: an ordered offline gate, cheapest first, with artefacts that must regenerate byte for byte",
+      "what_demonstrates_it": [
+        "Makefile — `gate`: eight stages, stops at the first red",
+        "docs/GATES.md — what each stage proves and what it cannot catch",
+        "fixtures/replay_run/ + lab/judges/ — the two artefact surfaces that are rewritten and then diffed"
+      ]
+    },
+    {
+      "caveats": [
+        "The selector study's failure counts are not run-to-run stable (the recall is); docs/TEST_SELECTION.md §5.2 prints three runs. Quote the recall and the selection ratio.",
+        "Regenerate the study with `python -m lab.selection.calibrate --sample 150 --enrich 120 --quiet --write`; it runs the suite hundreds of times."
+      ],
+      "command": "evallab calibrate --ci && evallab select --calibrate",
+      "figures": {
+        "judges_refused_today": [
+          {
+            "judge": "roleplay_pass_verdict v1",
+            "reasons": [
+              "TPR 0.281 (9/32) is below the required 0.85",
+              "registry refused the judge in CI mode: JudgeBelowThresholdError"
+            ]
+          },
+          {
+            "judge": "hallucinated_confirmation v1",
+            "reasons": [
+              "TPR 0.250 (2/8) is below the required 0.85"
+            ]
+          },
+          {
+            "judge": "claim_support v1 (ragcheck)",
+            "reasons": [
+              "judge 'claim_support' (v1) is below the calibration thresholds (TPR >= 0.85, TNR >= 0.85, n >= 10, parse errors <= 0%, scored on the point estimate): TPR 0.800 (4/5) is below the required 0.85"
+            ]
+          }
+        ],
+        "registry_raises_in_ci_mode": "JudgeBelowThresholdError",
+        "selector_join_check": {
+          "control_failures": [],
+          "controls_passed": 4,
+          "controls_total": 4,
+          "corpus_size": 73,
+          "corpus_skipped_mean": 30.333333333333336,
+          "floor_preserved": 324,
+          "floor_total": 324,
+          "mean_selected": 42.666666666666664,
+          "pairs_preserved": 444,
+          "pairs_total": 444,
+          "probes": 18,
+          "recall": 1.0
+        },
+        "selector_study": {
+          "calibrated": true,
+          "cases_total": 324,
+          "cases_usable": 300,
+          "cases_with_failures": 39,
+          "corpus_size": 73,
+          "discriminating_missed": 0,
+          "discriminating_recall": 1.0,
+          "discriminating_total": 125,
+          "evidence": "all",
+          "min_recall": 1.0,
+          "passed": true,
+          "recall": 1.0,
+          "regressions_missed": 0,
+          "regressions_total": 319,
+          "selection_mean": 66.467,
+          "selection_mean_stratum": "proportional",
+          "vacuous_confirmations": 194
+        },
+        "selector_study_mutants": {
+          "mutants_enumerated": 3819,
+          "mutants_sampled": 270,
+          "roots": [
+            "tablemate",
+            "lab/checks",
+            "lab/simulator"
+          ],
+          "seed": 0
+        },
+        "selector_study_strata": {
+          "observed-enriched": {
+            "cases": 103,
+            "corpus_size": 73,
+            "mean_selected": 45.097
+          },
+          "proportional": {
+            "cases": 197,
+            "corpus_size": 73,
+            "mean_selected": 66.467
+          }
+        }
+      },
+      "headline": "Three judges in this tree are refused by their own gate today; the selector kept 319/319 regressions and 125/125 of the ones it could actually have missed.",
+      "id": "release-quality-go-no-go",
+      "recomputed": "join_check and the refusals now; the selector study is the committed measurement",
+      "requirement": "Release quality and go/no-go: a gate that can say no, and a test selector that measures its own miss rate",
+      "what_demonstrates_it": [
+        "lab/judges/registry.py — the only way past a refusal is written at the call site and logs a warning",
+        "lab/selection/ — which scenarios a change can reach, fail-safe: unsure means run everything",
+        "lab/selection/calibration.json — the selector's recall with its denominators, from a mutation and history study"
+      ]
+    },
+    {
+      "caveats": [
+        "This is an evaluation harness that can export to an observability tool, not an observability tool: no collector, no backend, no retention, no alerting (lab/report/interop.py says so first)."
+      ],
+      "command": "python -m pytest tests/test_report_interop.py -q",
+      "figures": {
+        "events": 22,
+        "langfuse": {
+          "by_type": {
+            "event-create": 22,
+            "trace-create": 1
+          },
+          "entries": 23,
+          "round_trips": true,
+          "target": "langfuse POST /api/public/ingestion (batch of *-create events)"
+        },
+        "promptfoo": {
+          "assertions": 1,
+          "round_trips": false,
+          "target": "promptfoo config `tests[]` with `assert[]` entries",
+          "tests": 1
+        },
+        "trace": "fixtures/replay_run/traces/adversarial-abuse-demands-free-meal.jsonl"
+      },
+      "headline": "One committed trace of 22 events becomes 23 langfuse entries and reconstructs exactly (yes); the promptfoo projection yields 1 test case carrying 1 assertion.",
+      "id": "observability-interop",
+      "recomputed": true,
+      "requirement": "Observability and interop: the trace exports to the tools a team already watches, and the export round-trips",
+      "what_demonstrates_it": [
+        "lab/report/interop.py — to_langfuse_batch / from_langfuse_batch (lossless), to_promptfoo_tests (one-way projection)",
+        "lab/trace/schema.py — the schema the exports are a view of",
+        "tests/test_report_interop.py — the round-trip equality is a test"
+      ]
+    },
+    {
+      "command": "evallab run --agent-factory pkg.mod:factory",
+      "figures": {
+        "agent_under_test_methods": {
+          "__call__": "(self, utterance: 'str') -> 'AgentReply'"
+        },
+        "cli_flag": {
+          "name": "--trainee-factory",
+          "present_in": {
+            "roleplay/live.py": true,
+            "roleplay/spoken.py": true
+          },
+          "seam_present": true,
+          "status": "landed"
+        },
+        "trainee_implementations_in_tree": [
+          "roleplay.live.LiveTrainee",
+          "roleplay.runtime.ScriptedTrainee",
+          "roleplay.spoken.FixtureSpokenTrainee",
+          "roleplay.spoken.SpokenTrainee"
+        ],
+        "trainee_methods": {
+          "open": "(self) -> 'str | None'",
+          "reply": "(self, customer_turn: 'str') -> 'str | None'"
+        }
+      },
+      "headline": "AgentUnderTest is 1 method; Trainee is 2; the trainee CLI flag is landed.",
+      "id": "pointing-it-at-an-external-agent",
+      "recomputed": true,
+      "requirement": "Pointing the harness at somebody else's agent: a dotted-path factory and a protocol of one or two methods, no base class",
+      "what_demonstrates_it": [
+        "lab/simulator/driver.py — AgentUnderTest: one call, an utterance in, a turn out",
+        "lab/cli.py — `--agent-factory pkg.mod:factory`; `lab` never imports the case study",
+        "roleplay/runtime.py — Trainee: open() and reply(customer_turn)",
+        "roleplay/live.py — resolve_trainee_factory(): argument, then LAB_TRAINEE_FACTORY, then the built-in model trainee"
+      ]
+    }
+  ]
+}

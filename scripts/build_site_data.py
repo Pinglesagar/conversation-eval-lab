@@ -2,9 +2,10 @@
 
 WHAT THIS IS FOR
 ----------------
-A designed page tells **one** finding. This script produces the small JSON files
-that page loads, plus the call's audio, so that every number and every quote
-on it is real, sourced, and regenerable by re-running this file.
+A designed page tells **one** finding in depth and then shows the whole harness
+beside it. This script produces the JSON files that page loads, plus the call's
+audio, so that every number and every quote on it is real, sourced, and
+regenerable by re-running this file.
 
 WHAT IT WILL NOT DO
 -------------------
@@ -24,6 +25,14 @@ WHAT IT WRITES  (all of it under docs/site/data/)
     call.json             turns, duration, engines, spend, audio provenance
     secondary_findings.json  four other headline findings, each with its
                           denominator and the command that reproduces it
+    coverage.json         the requirement map: what a QA-for-AI role asks for,
+                          what here demonstrates it, the one command, the figure
+                          with its denominator — and an explicit not_covered list
+    findings.json         every headline finding, denominator and command
+    architecture.json     the event kinds, the six contracts, the four regimes and
+                          their registers, and the repository's counts
+    adapter.json          the two-method trainee contract and the one-call agent
+                          contract, as text, with the flag that points at them
     index.json            every file above with its sha256, and the commands
     audio/full_call.wav   the whole call, 181.30s, served so the page can play it
     audio/excerpt.wav     15.21s cut around the adviser's opening question
@@ -38,11 +47,17 @@ content, which `--check` asserts.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import difflib
+import functools
 import hashlib
 import inspect
+import io
 import json
+import re
+import subprocess
 import sys
+import tempfile
 import wave
 from pathlib import Path
 from typing import Any, Iterable, Sequence
@@ -1286,6 +1301,1656 @@ def build_secondary() -> dict[str, Any]:
 
 
 # --------------------------------------------------------------------------- #
+# The requirement map, the findings, the architecture, the adapter seam
+# --------------------------------------------------------------------------- #
+#
+# Everything below feeds four more files — coverage.json, findings.json,
+# architecture.json and adapter.json — for a page that shows the whole harness
+# rather than one finding. The rules are the ones the first five files obey:
+# every figure is recomputed here from a committed artefact by the code the suite
+# itself uses, or it is labelled with where it came from and why it could not be;
+# every rate carries its denominator; nothing is copied out of a document.
+#
+# Recomputations are cached per process because two files often need the same
+# one, and `--check` builds twice.
+
+
+def _quiet(fn: Any, *args: Any, **kwargs: Any) -> Any:
+    """Call `fn` with stdout and stderr swallowed.
+
+    Several of the repository's entry points print a screen as a side effect of
+    computing the thing this file wants. The screen is theirs; the numbers are
+    what is kept.
+    """
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(
+        io.StringIO()
+    ):
+        return fn(*args, **kwargs)
+
+
+def _rate_of(rate: Any) -> dict[str, Any]:
+    """A `lab.judges.calibration.Rate` (or anything with the two counts) as a rate."""
+    return _rate(int(rate.numerator), int(rate.denominator))
+
+
+def _round(value: float | None, places: int = 3) -> float | None:
+    return None if value is None else round(float(value), places)
+
+
+# ----------------------------------------------------------------- recomputations
+
+
+@functools.lru_cache(maxsize=None)
+def _scorer_calibration() -> tuple[Any, bool, tuple[str, ...]]:
+    """The advisory rubric scorer against the 70 hand-labelled rows."""
+    from roleplay.calibration import calibrate_scorer, gate_report
+
+    report, judge, _items = _quiet(calibrate_scorer)
+    ok, reasons = gate_report(report, judge)
+    return report, ok, tuple(reasons)
+
+
+@functools.lru_cache(maxsize=None)
+def _judge_study() -> dict[str, Any]:
+    """The `hallucinated_confirmation` judge, v1 and v2, from the committed recordings.
+
+    Every report is rebuilt through `ReplayJudge` — same prompt, same parser, same
+    arithmetic as the live call — so the digests, the confusion cells, the run-to-run
+    stability and the paired test are all recomputed rather than read back from
+    `calibration_v*.json`.
+    """
+    from lab.judges import hallucinated_confirmation as hc
+    from lab.judges.calibration import (
+        CalibrationThresholds,
+        detectability_floor,
+        labels_digest,
+        mcnemar,
+    )
+
+    thresholds = CalibrationThresholds()
+    items = hc.labels()
+    reports = {v: _quiet(hc.calibrate_version, v, with_bands=False) for v in hc.VERSIONS}
+    runs = {
+        v: [
+            _quiet(hc.calibrate_version, v, run=r, with_bands=False)
+            for r in range(1, hc.REPLICATES + 1)
+        ]
+        for v in hc.VERSIONS
+    }
+    stability = {v: _quiet(hc.stability, v) for v in hc.VERSIONS}
+    return {
+        "thresholds": thresholds,
+        "items": items,
+        "labels_digest": labels_digest(items),
+        "prompt_digests": {v: hc.prompt(v).digest for v in hc.VERSIONS},
+        "model": {v: hc.recorded_model(v) for v in hc.VERSIONS},
+        "reports": reports,
+        "runs": runs,
+        "stability": stability,
+        "paired": mcnemar(reports["v1"], reports["v2"]),
+        "floor": detectability_floor(),
+        "replicates": hc.REPLICATES,
+    }
+
+
+@functools.lru_cache(maxsize=None)
+def _rag() -> dict[str, Any]:
+    from lab.judges.registry import CalibrationGateError
+    from ragcheck.calibration import load_claim_labels
+    from ragcheck.corpus import load_corpus
+    from ragcheck.dataset import load_cases
+    from ragcheck.report import evaluate
+
+    corpus = load_corpus()
+    report = _quiet(evaluate)
+    try:
+        _quiet(evaluate, gate=True)
+        refusal: str | None = None
+    except CalibrationGateError as exc:
+        refusal = type(exc).__name__
+    return {
+        "report": report,
+        "chunks": len(corpus.chunks),
+        "cases": len(load_cases(corpus=corpus).cases),
+        "labels": len(load_claim_labels()),
+        "gate_refusal": refusal,
+    }
+
+
+@functools.lru_cache(maxsize=None)
+def _transport() -> Any:
+    from lab.voice.transport.report import build_report
+
+    return _quiet(build_report)
+
+
+def _run_cli(*args: str) -> tuple[dict[str, Any], int]:
+    """Run `evallab run ...` in process into a scratch directory; return its report.
+
+    The same code path as the Makefile target, with `--out` pointed at a temporary
+    directory so the recomputation leaves nothing behind. Only counts are read out
+    of the result, so a timestamp in the report's label cannot reach this file.
+    """
+    from lab import cli
+
+    with tempfile.TemporaryDirectory() as tmp:
+        out = Path(tmp) / "run"
+        status = _quiet(cli.main, [*args, "--out", str(out)])
+        payload = json.loads((out / "run_report.json").read_text("utf-8"))
+    return payload, int(status)
+
+
+def _declared_split(failures: Sequence[dict[str, Any]]) -> dict[str, int]:
+    """Findings the corpus declared as known gaps versus the ones it did not.
+
+    The same test `lab.cli` applies when it prints its regression line: a finding
+    whose note starts `declared known gap` was expected by the row that produced it.
+    """
+    declared = sum(
+        1 for f in failures if str(f.get("note") or "").startswith("declared known gap")
+    )
+    return {"total": len(failures), "declared": declared, "undeclared": len(failures) - declared}
+
+
+@functools.lru_cache(maxsize=None)
+def _live_run() -> dict[str, Any]:
+    """`make live-replay`, recomputed: models in all three seats, from recordings."""
+    baseline = REPO / "fixtures" / "live_full" / "run_report.json"
+    payload, status = _run_cli(
+        "run", "-k", "3", "--live-agent", "--live-caller", "--live-judge",
+        "--no-traces", "--baseline", str(baseline), "--ci",
+    )
+    committed = json.loads(baseline.read_text("utf-8"))
+    return {
+        "report": payload,
+        "exit_status": status,
+        "agrees_with_committed": (
+            payload["stability_summary"] == committed["stability_summary"]
+            and payload["headline"] == committed["headline"]
+        ),
+    }
+
+
+@functools.lru_cache(maxsize=None)
+def _scripted_run() -> dict[str, Any]:
+    """Stage 4 of the gate, recomputed: the scripted case study against its baseline."""
+    payload, status = _run_cli("run", "--replay", "--ci")
+    committed = json.loads((REPO / "fixtures" / "replay_run" / "run_report.json").read_text("utf-8"))
+    return {
+        "report": payload,
+        "exit_status": status,
+        "agrees_with_committed": (
+            payload["stability_summary"] == committed["stability_summary"]
+            and payload["headline"] == committed["headline"]
+        ),
+    }
+
+
+@functools.lru_cache(maxsize=None)
+def _flake_bands() -> dict[str, Any]:
+    """Both committed flake bands, replayed from their cassettes and re-decided."""
+    from lab.simulator import flake_band as fb
+
+    out: dict[str, Any] = {}
+    for label, budget, summary in (
+        ("budget_12", fb.CALLER_MAX_UTTERANCES, fb.DEFAULT_SUMMARY_PATH),
+        ("budget_8", 8, fb.TIGHT_BUDGET_SUMMARY_PATH),
+    ):
+        band = _quiet(
+            fb.run_flake_band,
+            max_utterances=budget,
+            max_turns=max(budget + 2, fb.DRIVER_MAX_TURNS),
+        )
+        committed = fb.FlakeBand.load(REPO / summary)
+        out[label] = {
+            "band": band,
+            "summary_path": summary,
+            "agrees_with_committed": (
+                band.model_dump(mode="json") == committed.model_dump(mode="json")
+            ),
+        }
+    return out
+
+
+@functools.lru_cache(maxsize=None)
+def _regime() -> dict[str, Any]:
+    """The advisory registers, decided against every advisory row.
+
+    Mirrors the arithmetic `python -m roleplay.regime_eval --divergence` prints,
+    using its own loader and evaluator, so the three agreement figures here are the
+    ones that command prints and not a summary of them.
+    """
+    from roleplay.regime_eval import _confusion, _load, run_corpus
+
+    corpus = _load()
+    rows = _quiet(run_corpus, corpus)
+    diverged = blocks = pairs = entry_agree = register_agree = 0
+    divergence_rows: list[dict[str, Any]] = []
+    for scenario_id, row in rows.items():
+        scenario = row.scenario
+        if scenario.divergence is None:
+            continue
+        hand = {r.regime: r for r in scenario.divergence.regimes}
+        computed = {v.verdict for v in row.verdicts.values()}
+        per_regime = []
+        for regime, verdict in row.verdicts.items():
+            block = hand.get(regime)
+            named = block.register_entry if block else None
+            entry = next((e for e in verdict.entries if e.entry_id == named), None)
+            if block is not None:
+                pairs += 1
+                expected = {"satisfied", "not-applicable"} if block.verdict == "pass" else {"missed"}
+                entry_agree += entry is not None and entry.status in expected
+                register_agree += verdict.verdict == block.verdict
+            per_regime.append(
+                {
+                    "regime": regime,
+                    "hand": block.verdict if block else None,
+                    "computed": verdict.verdict,
+                    "named_entry": named,
+                    "named_entry_status": entry.status if entry else None,
+                }
+            )
+        diverged += len(computed) > 1
+        blocks += 1
+        divergence_rows.append(
+            {
+                "scenario_id": scenario_id,
+                "axis": scenario.divergence.axis,
+                "regimes": per_regime,
+                "computed_verdicts": sorted(computed),
+                "diverges": len(computed) > 1,
+            }
+        )
+    return {
+        "rows": len(rows),
+        "agree": sum(1 for r in rows.values() if r.agrees),
+        "confusion_human_over_computed": _confusion(rows),
+        "divergence_blocks": blocks,
+        "blocks_that_diverge": diverged,
+        "regime_verdict_pairs": pairs,
+        "named_entry_agreement": entry_agree,
+        "whole_register_agreement": register_agree,
+        "divergence_rows": divergence_rows,
+    }
+
+
+@functools.lru_cache(maxsize=None)
+def _corpora() -> dict[str, Any]:
+    """Every committed corpus, loaded through its own loader and counted."""
+    from lab.voice.transport.rows import load_rows
+    from roleplay import advisory, scorecard
+    from roleplay.corpus import load_corpus as load_roleplay
+    from roleplay.corpus import validate_advisory_corpus
+    from scenarios.audio import tier
+    from scenarios.loader import load_corpus as load_tablemate
+
+    def by_suite(scenarios: Iterable[Any]) -> dict[str, int]:
+        counts: dict[str, int] = {}
+        for s in scenarios:
+            counts[s.suite] = counts.get(s.suite, 0) + 1
+        return dict(sorted(counts.items()))
+
+    booking = load_tablemate()
+    coaching = load_roleplay()
+    advisory_validation = validate_advisory_corpus()
+    if not advisory_validation.ok:
+        raise SystemExit("the advisory corpus does not validate")
+    advisory_rows = list(advisory_validation.corpus)
+    audio_rows = list(tier())
+    transport_rows = load_rows()
+    rag = _rag()
+    registers = advisory.load_registers()
+
+    yaml_files = sorted(p for p in (REPO / "scenarios").rglob("*.yaml"))
+    rows = {
+        "restaurant_booking": len(booking.scenarios),
+        "advisory_coaching": len(coaching),
+        "advisory_regimes": len(advisory_rows),
+        "audio_tier": len(audio_rows),
+        "transport_tier": len(transport_rows),
+        "retrieval_questions": rag["cases"],
+    }
+    return {
+        "rows": rows,
+        "rows_total": sum(rows.values()),
+        "suites": {
+            "restaurant_booking": by_suite(booking.scenarios),
+            "advisory_coaching": by_suite(coaching),
+            "advisory_regimes": by_suite(advisory_rows),
+        },
+        "tablemate_tags": sorted({t for s in booking.scenarios for t in s.tags}),
+        "personas": len(booking.personas),
+        "customer_profiles": len(coaching.profiles),
+        "human_verdicts_in_coaching_corpus": {
+            "pass": sum(1 for s in coaching if str(s.expectation.human_verdict) == "pass"),
+            "fail": sum(1 for s in coaching if str(s.expectation.human_verdict) == "fail"),
+        },
+        "kpi_groups": len(scorecard.GROUPS),
+        "kpis": len(scorecard.KPIS),
+        "kpi_gates": len(scorecard.gates()),
+        "regimes": len(advisory.REGIMES),
+        "register_entries": sum(len(r.entries) for r in registers.values()),
+        "retrieval_chunks": rag["chunks"],
+        "retrieval_claim_labels": rag["labels"],
+        "yaml_files_under_scenarios": len(yaml_files),
+        "yaml_files_by_directory": dict(
+            sorted(
+                {
+                    d: sum(1 for p in yaml_files if p.relative_to(REPO / "scenarios").parts[0] == d)
+                    for d in {
+                        p.relative_to(REPO / "scenarios").parts[0]
+                        for p in yaml_files
+                        if len(p.relative_to(REPO / "scenarios").parts) > 1
+                    }
+                }.items()
+            )
+        ),
+    }
+
+
+@functools.lru_cache(maxsize=None)
+def _selection() -> dict[str, Any]:
+    """The test selector: its deterministic self-check now, and its committed study."""
+    from lab.selection.select import calibrate
+
+    live = _quiet(calibrate).to_dict()
+    live.pop("probe_detail", None)
+    committed = json.loads((REPO / "lab" / "selection" / "calibration.json").read_text("utf-8"))
+    keep = (
+        "cases_total", "cases_usable", "cases_with_failures", "regressions_total",
+        "regressions_missed", "recall", "discriminating_total", "discriminating_missed",
+        "discriminating_recall", "vacuous_confirmations", "corpus_size", "selection_mean",
+        "selection_mean_stratum", "min_recall", "passed", "calibrated", "evidence",
+    )
+    return {
+        "join_check": live,
+        "study": {k: committed[k] for k in keep if k in committed},
+        "study_strata": committed.get("selection_by_stratum"),
+        "study_mutants": {
+            k: committed["mutation"][k]
+            for k in ("mutants_enumerated", "mutants_sampled", "seed", "roots")
+            if k in committed.get("mutation", {})
+        },
+        "study_command": committed.get("_provenance", {}).get("command"),
+        "study_commit": committed.get("_provenance", {}).get("commit"),
+    }
+
+
+@functools.lru_cache(maxsize=None)
+def _gate_stages() -> list[dict[str, Any]]:
+    """The eight stages of `make gate`, read off the Makefile recipe itself."""
+    text = (REPO / "Makefile").read_text("utf-8")
+    start = text.index("\ngate: python-ok")
+    recipe = text[start + 1 :]
+    recipe = recipe[: recipe.index("\n\n")]
+
+    # Join backslash continuations first, so a command that spans lines is one.
+    joined: list[str] = []
+    pending = ""
+    for raw in recipe.splitlines()[1:]:
+        line = raw.strip()
+        if line.endswith("\\"):
+            pending += line[:-1].strip() + " "
+            continue
+        joined.append((pending + line).strip())
+        pending = ""
+
+    stages: list[dict[str, Any]] = []
+    header = re.compile(r'^@echo "== (\d+)/8\s+(.*?) =="$')
+    for line in joined:
+        m = header.match(line)
+        if m:
+            stages.append({"stage": int(m.group(1)), "title": m.group(2), "commands": []})
+            continue
+        if not stages:
+            continue
+        if line.startswith("$(PYTHON)") or line.startswith("git "):
+            command = line.replace("$(PYTHON)", "python").rstrip(" ;")
+            stages[-1]["commands"].append(command)
+    for stage in stages:
+        stage["byte_for_byte"] = any(c.startswith("git diff --exit-code") for c in stage["commands"])
+    if len(stages) != 8:
+        raise SystemExit(f"expected 8 gate stages in the Makefile, found {len(stages)}")
+    return stages
+
+
+@functools.lru_cache(maxsize=None)
+def _gate_refusal_demo() -> dict[str, Any]:
+    """Does the registry really raise in CI mode? Asked, not asserted."""
+    from lab.judges.registry import CalibrationGateError
+    from ragcheck.calibration import gate_claim_support
+
+    try:
+        _quiet(gate_claim_support, ci=True)
+        return {"raised": None, "message": None}
+    except CalibrationGateError as exc:
+        return {"raised": type(exc).__name__, "message": str(exc).split(". Measured:")[0]}
+
+
+def _git(*args: str) -> str | None:
+    try:
+        return subprocess.run(
+            ["git", *args], cwd=REPO, check=True, capture_output=True, text=True
+        ).stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        return None
+
+
+@functools.lru_cache(maxsize=None)
+def _repo_counts() -> dict[str, Any]:
+    """Tests, test files, commits — each from the tool that owns the number.
+
+    The commit count deliberately excludes commits that touch only `docs/` or this
+    generator: a regeneration of this pack, or a rewrite of the page that reads it,
+    is not a change to the thing being counted, and counting it would make this file
+    stale the moment it was committed. Any other commit stales it, which is correct.
+    """
+    collected = subprocess.run(
+        [sys.executable, "-m", "pytest", "--collect-only", "-q", "-p", "no:cacheprovider"],
+        cwd=REPO, capture_output=True, text=True,
+    )
+    m = re.search(r"(\d+) tests? collected", collected.stdout)
+    if collected.returncode != 0 or not m:
+        raise SystemExit("could not collect the test suite:\n" + collected.stdout[-2000:])
+    test_files = sorted(p.name for p in (REPO / "tests").glob("test_*.py"))
+    commits = _git(
+        "rev-list", "--count", "HEAD", "--", ".", ":(exclude)docs", ":(exclude)scripts/build_site_data.py"
+    )
+    first = _git("log", "--max-parents=0", "--format=%ad", "--date=short")
+    return {
+        "tests_collected": int(m.group(1)),
+        "tests_collected_command": "python -m pytest --collect-only -q",
+        "test_files": len(test_files),
+        "commits_outside_docs_and_this_generator": int(commits) if commits else None,
+        "commits_command": (
+            "git rev-list --count HEAD -- . ':(exclude)docs' ':(exclude)scripts/build_site_data.py'"
+        ),
+        "first_commit_date": first.splitlines()[-1] if first else None,
+        "note": (
+            "tests_collected is the collection count; the suite's pass/skip split is "
+            "not recomputed here (it needs a 70 s run) — `pytest` prints it. The "
+            "commit count excludes docs/ and this generator so that committing this "
+            "pack does not stale it; every other commit does, and should."
+        ),
+    }
+
+
+# ----------------------------------------------------------------- coverage.json
+
+
+def _cov_llm_judge() -> dict[str, Any]:
+    report, cleared, reasons = _scorer_calibration()
+    c = report.confusion
+    study = _judge_study()
+    v1, v2 = study["reports"]["v1"], study["reports"]["v2"]
+    t = study["thresholds"]
+    return {
+        "id": "llm-as-judge-calibrated-and-gated",
+        "requirement": "LLM-as-judge, calibrated against human labels and gated before it can decide anything",
+        "what_demonstrates_it": [
+            "lab/judges/calibration.py — TPR, TNR, kappa, Wilson intervals, McNemar, run-to-run stability",
+            "lab/judges/registry.py — require_calibrated() raises JudgeBelowThresholdError in CI mode",
+            "lab/judges/hallucinated_confirmation/ — a worked v1 -> v2 iteration with six committed recordings",
+            "roleplay/calibration.py — the product's own rubric scorer measured as a judge",
+        ],
+        "command": "make roleplay-demo && make calibrate",
+        "headline": (
+            f"The advisory scorer catches {c.true_positive} of "
+            f"{c.true_positive + c.false_negative} sessions a reviewer would fail and the gate refuses it; "
+            f"judge prompt v1 scored TPR {_rate_of(v1.true_positive_rate)['text']} and was refused, "
+            f"v2 scored {_rate_of(v2.true_positive_rate)['text']} and cleared."
+        ),
+        "figures": {
+            "advisory_scorer": {
+                "true_positive_rate": _rate(c.true_positive, c.true_positive + c.false_negative),
+                "true_negative_rate": _rate(c.true_negative, c.true_negative + c.false_positive),
+                "cohens_kappa": _round(report.cohens_kappa),
+                "items": c.n,
+                "gate_cleared": cleared,
+                "refusal_reasons": list(reasons),
+            },
+            "judge_v1": {
+                "true_positive_rate": _rate_of(v1.true_positive_rate),
+                "true_negative_rate": _rate_of(v1.true_negative_rate),
+                "gate_cleared": v1.meets(t)[0],
+            },
+            "judge_v2": {
+                "true_positive_rate": _rate_of(v2.true_positive_rate),
+                "true_negative_rate": _rate_of(v2.true_negative_rate),
+                "gate_cleared": v2.meets(t)[0],
+            },
+            "threshold": {
+                "min_true_positive_rate": t.min_tpr,
+                "min_true_negative_rate": t.min_tnr,
+                "min_items": t.min_items,
+                "scored_on": t.gate_on,
+            },
+        },
+        "recomputed": True,
+    }
+
+
+def _cov_nondeterminism() -> dict[str, Any]:
+    from lab.stats import wilson_lower_bound
+
+    live = _live_run()["report"]
+    bands = _flake_bands()
+    s = live["stability_summary"]
+    b12, b8 = bands["budget_12"]["band"], bands["budget_8"]["band"]
+    return {
+        "id": "non-deterministic-output-passk-flake-band",
+        "requirement": "Non-deterministic output: pass^k with FLAKY as its own verdict, and a measured flake band",
+        "what_demonstrates_it": [
+            "lab/simulator/passk.py — STABLE_PASS / STABLE_FAIL / FLAKY; FLAKY is never a pass",
+            "lab/simulator/flake_band.py — one live variable (the caller), k=5, two turn budgets",
+            "fixtures/live_full/ — 47 rows, k=3, a model in all three seats, replayed offline",
+            "fixtures/live_caller/ — 80 recorded caller conversations behind the two bands",
+        ],
+        "command": "make live-replay && python -m lab.simulator.flake_band --check",
+        "headline": (
+            f"{s['stable_pass']}/{s['scenarios']} scenarios stable-pass, {s['flaky']}/{s['scenarios']} FLAKY "
+            f"at k={s['min_runs_per_scenario']}; the same 8 scenarios at k=5 came back "
+            f"{b12.stable_pass}/{b12.scenarios} stable with a 12-turn caller and "
+            f"{b8.stable_pass}/{b8.scenarios} with an 8-turn one."
+        ),
+        "figures": {
+            "live_run_k3": {
+                "stable_pass": _rate(s["stable_pass"], s["scenarios"]),
+                "stable_fail": _rate(s["stable_fail"], s["scenarios"]),
+                "flaky": _rate(s["flaky"], s["scenarios"]),
+                "total_runs": s["total_runs"],
+                "agrees_with_committed_report": _live_run()["agrees_with_committed"],
+            },
+            "flake_band_k5": {
+                label: {
+                    "caller_turn_budget": entry["band"].caller_turn_budget,
+                    "stable_pass": _rate(entry["band"].stable_pass, entry["band"].scenarios),
+                    "flaky": _rate(entry["band"].flaky, entry["band"].scenarios),
+                    "agrees_with_committed_summary": entry["agrees_with_committed"],
+                }
+                for label, entry in bands.items()
+            },
+        },
+        "recomputed": True,
+        "caveats": [
+            f"k=3 bounds a pass rate loosely: 3/3 has a 95% Wilson lower bound of {wilson_lower_bound(3, 3):.2f}.",
+            "The flake band is a property of the caller-agent pair at one temperature on one day.",
+        ],
+    }
+
+
+def _cov_golden_datasets() -> dict[str, Any]:
+    c = _corpora()
+    return {
+        "id": "golden-datasets-validated-corpus",
+        "requirement": "Golden datasets: a validated corpus with closed vocabularies, so a typo is a load error and not a green row",
+        "what_demonstrates_it": [
+            "scenarios/loader.py — schema validation, tag and tool vocabularies, expected_failure must name a declared contract",
+            "roleplay/corpus.py + roleplay/advisory.py — KPI groups, regimes and register entries are closed sets",
+            "lab/judges/hallucinated_confirmation/labels.jsonl — 24 hand labels with reasons",
+            "ragcheck/fixtures/ — 16 chunks, 18 questions, 18 claim labels",
+        ],
+        "command": "make validate && make roleplay-validate",
+        "headline": (
+            f"{c['rows_total']} scenario rows across six corpora "
+            f"({', '.join(f'{v} {k.replace(chr(95), chr(32))}' for k, v in c['rows'].items())}), "
+            f"all loaded through validating loaders; {c['yaml_files_under_scenarios']} YAML files under scenarios/."
+        ),
+        "figures": {
+            "rows_by_corpus": c["rows"],
+            "rows_total": c["rows_total"],
+            "suites": c["suites"],
+            "closed_vocabularies": {
+                "restaurant_tags": len(c["tablemate_tags"]),
+                "kpi_groups": c["kpi_groups"],
+                "kpis": c["kpis"],
+                "kpi_gates": c["kpi_gates"],
+                "regimes": c["regimes"],
+                "register_entries": c["register_entries"],
+            },
+            "human_verdicts_in_coaching_corpus": c["human_verdicts_in_coaching_corpus"],
+            "yaml_files_under_scenarios": c["yaml_files_under_scenarios"],
+            "yaml_files_by_directory": c["yaml_files_by_directory"],
+            "yaml_note": (
+                "The file count includes persona, customer-profile and register files and "
+                "one override file, which are data the rows refer to and not rows. Quote "
+                "rows_total as the number of scenarios."
+            ),
+        },
+        "recomputed": True,
+    }
+
+
+def _cov_prompt_regression() -> dict[str, Any]:
+    study = _judge_study()
+    v1, v2 = study["reports"]["v1"], study["reports"]["v2"]
+    paired = study["paired"]
+    return {
+        "id": "prompt-regression-detection",
+        "requirement": "Prompt regression detection: a prompt change is measured on the same labelled items, paired, and recordings refuse a stale prompt",
+        "what_demonstrates_it": [
+            "lab/judges/judge.py — every recording is keyed by prompt digest; ReplayJudge refuses a mismatch",
+            "lab/judges/calibration.py — compare_reports(): paired McNemar, detectability floor, instability floor",
+            "lab/judges/hallucinated_confirmation/iteration.md — the v1 -> v2 study, regenerated by `evallab calibrate`",
+            "roleplay/scorer_study/ — the same discipline on the advisory rubric, v1 and v2",
+        ],
+        "command": "evallab calibrate --ci && git diff --exit-code -- fixtures lab/judges",
+        "headline": (
+            f"v1 -> v2 fixed {paired.after_only_correct} of {paired.n_items} items and broke "
+            f"{paired.before_only_correct}; exact McNemar p = {paired.p_value:.5f}; prompts are pinned by sha256."
+        ),
+        "figures": {
+            "prompt_digests": study["prompt_digests"],
+            "labels_digest": study["labels_digest"],
+            "model": study["model"],
+            "true_positive_rate": {"v1": _rate_of(v1.true_positive_rate), "v2": _rate_of(v2.true_positive_rate)},
+            "paired_comparison": {
+                "items": paired.n_items,
+                "both_correct": paired.both_correct,
+                "both_wrong": paired.both_wrong,
+                "fixed_by_v2": paired.after_only_correct,
+                "broken_by_v2": paired.before_only_correct,
+                "exact_mcnemar_p": _round(paired.p_value, 5),
+            },
+            "detectability_floor_items": study["floor"],
+        },
+        "recomputed": True,
+    }
+
+
+def _cov_rag() -> dict[str, Any]:
+    r = _rag()
+    rep = r["report"]
+    g, cal = rep.generation, rep.calibration
+    gold = [row.context_recall_gold for row in g.rows]
+    return {
+        "id": "rag-retrieval-vs-groundedness",
+        "requirement": "RAG: retrieval scored separately from groundedness, never averaged, with the grader's own agreement printed beside the metric",
+        "what_demonstrates_it": [
+            "ragcheck/report.py — recall of gold, context precision, groundedness per claim, answer relevance",
+            "ragcheck/calibration.py — the claim-support judge measured against 18 hand labels and gated",
+            "ragcheck/offline.py — the lexical stand-in that runs with no key, labelled as not a model",
+        ],
+        "command": "make ragcheck",
+        "headline": (
+            f"groundedness {_rate_of(g.pooled_groundedness)['text']} on claims, "
+            f"context recall {_rate_of(g.pooled_context_recall)['text']}, answer relevance "
+            f"{_rate_of(g.relevance_rate)['text']}; the support judge scores TPR "
+            f"{_rate_of(cal.true_positive_rate)['text']} and the gate refuses it."
+        ),
+        "figures": {
+            "corpus": {"chunks": r["chunks"], "questions": r["cases"], "claim_labels": r["labels"], "k": rep.k},
+            "retrieval": {
+                "recall_of_gold_pooled": _rate(sum(x.numerator for x in gold), sum(x.denominator for x in gold)),
+                "context_precision_gold_mean": _round(g.mean_context_precision_gold.value),
+                "context_precision_judged_mean": _round(g.mean_context_precision_judged.value),
+            },
+            "generation": {
+                "groundedness_micro_claims": _rate_of(g.pooled_groundedness),
+                "groundedness_macro_answers": _round(g.mean_groundedness.value),
+                "answer_relevance": _rate_of(g.relevance_rate),
+                "context_recall_reference": _rate_of(g.pooled_context_recall),
+                "answers": g.n,
+            },
+            "support_judge": {
+                "name": cal.judge,
+                "version": cal.prompt_version,
+                "true_positive_rate": _rate_of(cal.true_positive_rate),
+                "true_negative_rate": _rate_of(cal.true_negative_rate),
+                "cohens_kappa": _round(cal.cohens_kappa),
+                "items": cal.confusion.n,
+                "gate_refused_with": r["gate_refusal"],
+            },
+        },
+        "recomputed": True,
+        "caveats": [
+            "The judged metrics come from the offline lexical stand-in, which is not a model; its measured "
+            "error rate is the point of the section, not a limitation of it."
+        ],
+    }
+
+
+def _cov_voice(result: Any, manifest: dict) -> dict[str, Any]:
+    effect = result.effect
+    c = _corpora()
+    ladder = _finding_noise_ladder()
+    return {
+        "id": "voice-stt-tts-graded-on-what-was-heard",
+        "requirement": "Voice: real synthesis and recognition, and the grade is computed on the transcript the recogniser produced",
+        "what_demonstrates_it": [
+            "roleplay/spoken.py — a whole advisory call through TTS -> STT, graded as heard; channel_effect() diffs the two gradings",
+            "lab/voice/suite.py + scenarios/audio/ — 18 declared rows: captured fields, noise ladders, silence, yield",
+            "lab/voice/wer.py — normalised word error rate; the display transcript is refused as a WER reference",
+            "lab/voice/engines/ — Deepgram and ElevenLabs behind recorded cassettes",
+        ],
+        "command": "make spoken-replay && make audio-suite",
+        "headline": (
+            f"A {len(manifest['turns'])}-turn, {manifest['assembly']['duration_s']:.0f} s spoken call: discovery "
+            f"{effect.sent_criteria['discovery']} as sent -> {effect.heard_criteria['discovery']} as heard "
+            f"while both totals stayed {effect.heard_total}/20; the noise ladder held to "
+            f"{ladder['held_to_db']} dB and broke at {ladder['broke_at_db']} dB."
+        ),
+        "figures": {
+            "spoken_call": {
+                "turns": len(manifest["turns"]),
+                "duration_s": manifest["assembly"]["duration_s"],
+                "engines": manifest["engines"],
+                "criteria_that_moved": sorted(
+                    n for n in effect.sent_criteria if effect.sent_criteria[n] != effect.heard_criteria.get(n)
+                ),
+                "total_as_sent": effect.sent_total,
+                "total_as_heard": effect.heard_total,
+                "detail": "finding.json",
+            },
+            "audio_tier_rows": c["rows"]["audio_tier"],
+            "noise_ladder": {
+                "held_to_db": ladder["held_to_db"],
+                "broke_at_db": ladder["broke_at_db"],
+                "captured": ladder["captured"],
+            },
+        },
+        "recomputed": True,
+    }
+
+
+def _cov_transport() -> dict[str, Any]:
+    t = _transport()
+    row = next(r for r in t.rows if r.delivery is not None)
+    d = row.delivery
+    dist = d.distribution
+
+    def quantile(q: float) -> dict[str, Any]:
+        qu = dist.quantile(q)
+        return {
+            "label": qu.label,
+            "value_ms": _round(qu.value_s * 1000.0, 1) if qu.value_s is not None else None,
+            "reported": qu.reported,
+            "n": qu.n,
+            "min_n": qu.min_n,
+        }
+
+    return {
+        "id": "real-time-transport-latency",
+        "requirement": "Real-time transport: latency measured at the far participant over a real WebRTC room, behind a calibrated stopwatch",
+        "what_demonstrates_it": [
+            "lab/voice/transport/ — three rows that only exist in transport: delivery gap, degradation, lifecycle",
+            "lab/voice/calibration.py — the timing gate; delivery_gap() refuses without a PASS",
+            "lab/voice/metrics.py — quantiles that refuse below their minimum sample count",
+            "fixtures/audio/transport/ — the recorded rooms every figure is recomputed from",
+        ],
+        "command": "make transport-report",
+        "headline": (
+            f"Delivery gap mean {_round(d.mean_ms, 1)} ms over n={dist.n} turns "
+            f"(p50 {quantile(0.5)['value_ms']} ms, p90 {quantile(0.9)['value_ms']} ms, p95 refused at n<{quantile(0.95)['min_n']}); "
+            f"an agent-side stopwatch reports {_round(d.agent_side_figure_s * 1000.0, 1)} ms for the same turns."
+        ),
+        "figures": {
+            "timing_gate": {
+                "verdict": t.calibration.verdict,
+                "naive_whole_turn_control": t.calibration.control_verdict,
+                "tolerance": t.calibration.tolerance.describe(),
+            },
+            "delivery_gap": {
+                "n": dist.n,
+                "mean_ms": _round(d.mean_ms, 1),
+                "net_of_send_queue_mean_ms": _round(d.net_mean_ms, 1),
+                "queue_correlation": _round(d.queue_correlation, 2),
+                "p50": quantile(0.5),
+                "p90": quantile(0.9),
+                "p95": quantile(0.95),
+                "agent_side_figure_ms": _round(d.agent_side_figure_s * 1000.0, 1),
+                "other_sessions": [
+                    {"session": name, "reportable": m.reportable, "mean_ms": _round(m.mean_ms, 1), "n": m.distribution.n if m.distribution else 0}
+                    for name, m in row.other_sessions
+                ],
+            },
+            "rows": [
+                {"id": r.row.id, "category": r.outcome.category, "verdict": r.outcome.verdict}
+                for r in t.rows
+            ],
+            "tier_verdict": t.verdict,
+        },
+        "recomputed": True,
+        "caveats": [
+            "Both ends of the room were in one process, so the gap is a floor and not a worst case.",
+            "Non-gating in CI by design: a network test that blocks a merge trains people to bypass it.",
+        ],
+    }
+
+
+def _cov_ci_gating() -> dict[str, Any]:
+    stages = _gate_stages()
+    scripted = _scripted_run()
+    return {
+        "id": "ci-cd-gating-from-scratch",
+        "requirement": "CI/CD gating built from nothing: an ordered offline gate, cheapest first, with artefacts that must regenerate byte for byte",
+        "what_demonstrates_it": [
+            "Makefile — `gate`: eight stages, stops at the first red",
+            "docs/GATES.md — what each stage proves and what it cannot catch",
+            "fixtures/replay_run/ + lab/judges/ — the two artefact surfaces that are rewritten and then diffed",
+        ],
+        "command": "make gate",
+        "headline": (
+            f"{len(stages)} stages, {sum(len(s['commands']) for s in stages)} commands, "
+            f"{sum(1 for s in stages if s['byte_for_byte'])} of them followed by `git diff --exit-code`; "
+            f"the scripted case study reproduces {scripted['report']['stability_summary']['stable_pass_rate']} stable-pass."
+        ),
+        "figures": {
+            "stages": stages,
+            "byte_for_byte_stages": [s["stage"] for s in stages if s["byte_for_byte"]],
+            "scripted_case_study": {
+                "headline": scripted["report"]["headline"],
+                "stability_summary": scripted["report"]["stability_summary"],
+                "exit_status": scripted["exit_status"],
+                "agrees_with_committed_report": scripted["agrees_with_committed"],
+            },
+        },
+        "recomputed": True,
+        "caveats": [
+            "Replay is blind to a prompt change: a green gate is necessary and not sufficient when a "
+            "prompt, persona or rubric moved (docs/GATES.md, stage 9)."
+        ],
+    }
+
+
+def _cov_release_quality() -> dict[str, Any]:
+    report, cleared, reasons = _scorer_calibration()
+    study = _judge_study()
+    sel = _selection()
+    demo = _gate_refusal_demo()
+    v1 = study["reports"]["v1"]
+    refused = [
+        {"judge": f"{report.judge} {report.prompt_version}", "reasons": list(reasons)},
+        {"judge": f"{v1.judge} {v1.prompt_version}", "reasons": list(v1.meets(study["thresholds"])[1])},
+        {"judge": "claim_support v1 (ragcheck)", "reasons": [demo["message"]] if demo["message"] else []},
+    ]
+    return {
+        "id": "release-quality-go-no-go",
+        "requirement": "Release quality and go/no-go: a gate that can say no, and a test selector that measures its own miss rate",
+        "what_demonstrates_it": [
+            "lab/judges/registry.py — the only way past a refusal is written at the call site and logs a warning",
+            "lab/selection/ — which scenarios a change can reach, fail-safe: unsure means run everything",
+            "lab/selection/calibration.json — the selector's recall with its denominators, from a mutation and history study",
+        ],
+        "command": "evallab calibrate --ci && evallab select --calibrate",
+        "headline": (
+            f"Three judges in this tree are refused by their own gate today; the selector kept "
+            f"{sel['study']['regressions_total'] - sel['study']['regressions_missed']}/{sel['study']['regressions_total']} "
+            f"regressions and {sel['study']['discriminating_total'] - sel['study']['discriminating_missed']}/{sel['study']['discriminating_total']} "
+            f"of the ones it could actually have missed."
+        ),
+        "figures": {
+            "judges_refused_today": refused,
+            "registry_raises_in_ci_mode": demo["raised"],
+            "selector_join_check": sel["join_check"],
+            "selector_study": sel["study"],
+            "selector_study_strata": sel["study_strata"],
+            "selector_study_mutants": sel["study_mutants"],
+        },
+        "recomputed": "join_check and the refusals now; the selector study is the committed measurement",
+        "caveats": [
+            "The selector study's failure counts are not run-to-run stable (the recall is); "
+            "docs/TEST_SELECTION.md §5.2 prints three runs. Quote the recall and the selection ratio.",
+            f"Regenerate the study with `{sel['study_command']}`; it runs the suite hundreds of times.",
+        ],
+    }
+
+
+def _cov_observability() -> dict[str, Any]:
+    from lab.report.interop import (
+        LANGFUSE_API_TARGET,
+        PROMPTFOO_API_TARGET,
+        from_langfuse_batch,
+        to_langfuse_batch,
+        to_promptfoo_tests,
+    )
+    from lab.trace.io import read_jsonl
+
+    path = sorted((REPO / "fixtures" / "replay_run" / "traces").glob("*.jsonl"))[0]
+    trace = read_jsonl(path)
+    batch = to_langfuse_batch(trace)
+    kinds: dict[str, int] = {}
+    for entry in batch["batch"]:
+        kinds[entry["type"]] = kinds.get(entry["type"], 0) + 1
+    tests = to_promptfoo_tests([trace])
+    return {
+        "id": "observability-interop",
+        "requirement": "Observability and interop: the trace exports to the tools a team already watches, and the export round-trips",
+        "what_demonstrates_it": [
+            "lab/report/interop.py — to_langfuse_batch / from_langfuse_batch (lossless), to_promptfoo_tests (one-way projection)",
+            "lab/trace/schema.py — the schema the exports are a view of",
+            "tests/test_report_interop.py — the round-trip equality is a test",
+        ],
+        "command": "python -m pytest tests/test_report_interop.py -q",
+        "headline": (
+            f"One committed trace of {len(trace.events)} events becomes {len(batch['batch'])} langfuse "
+            f"entries and reconstructs exactly ({'yes' if from_langfuse_batch(batch) == trace else 'NO'}); "
+            f"the promptfoo projection yields {len(tests)} test case carrying "
+            f"{len(tests[0]['assert'])} assertion{'s' if len(tests[0]['assert']) != 1 else ''}."
+        ),
+        "figures": {
+            "trace": _rel(path),
+            "events": len(trace.events),
+            "langfuse": {"target": LANGFUSE_API_TARGET, "entries": len(batch["batch"]), "by_type": dict(sorted(kinds.items())), "round_trips": from_langfuse_batch(batch) == trace},
+            "promptfoo": {"target": PROMPTFOO_API_TARGET, "tests": len(tests), "assertions": len(tests[0]["assert"]), "round_trips": False},
+        },
+        "recomputed": True,
+        "caveats": [
+            "This is an evaluation harness that can export to an observability tool, not an observability tool: "
+            "no collector, no backend, no retention, no alerting (lab/report/interop.py says so first)."
+        ],
+    }
+
+
+def _cov_external_agent() -> dict[str, Any]:
+    adapter = build_adapter()
+    return {
+        "id": "pointing-it-at-an-external-agent",
+        "requirement": "Pointing the harness at somebody else's agent: a dotted-path factory and a protocol of one or two methods, no base class",
+        "what_demonstrates_it": [
+            "lab/simulator/driver.py — AgentUnderTest: one call, an utterance in, a turn out",
+            "lab/cli.py — `--agent-factory pkg.mod:factory`; `lab` never imports the case study",
+            "roleplay/runtime.py — Trainee: open() and reply(customer_turn)",
+            "roleplay/live.py — resolve_trainee_factory(): argument, then LAB_TRAINEE_FACTORY, then the built-in model trainee",
+        ],
+        "command": adapter["commands"]["booking_agent"],
+        "headline": (
+            f"AgentUnderTest is {len(adapter['agent_under_test']['methods'])} method; Trainee is "
+            f"{len(adapter['trainee']['methods'])}; the trainee CLI flag is {adapter['cli_flag']['status']}."
+        ),
+        "figures": {
+            "agent_under_test_methods": adapter["agent_under_test"]["methods"],
+            "trainee_methods": adapter["trainee"]["methods"],
+            "trainee_implementations_in_tree": adapter["trainee"]["implementations_in_tree"],
+            "cli_flag": adapter["cli_flag"],
+        },
+        "recomputed": True,
+    }
+
+
+def build_coverage(result: Any, manifest: dict) -> dict[str, Any]:
+    return {
+        "about": (
+            "What a QA-for-AI role asks for, mapped to what in this repository "
+            "demonstrates it: the files, the one command that proves it, and the "
+            "headline figure with its denominator. Every figure is recomputed by "
+            "scripts/build_site_data.py from a committed artefact, by the same code "
+            "the suite uses, unless its `recomputed` field says otherwise."
+        ),
+        "requirements": [
+            _cov_llm_judge(),
+            _cov_nondeterminism(),
+            _cov_golden_datasets(),
+            _cov_prompt_regression(),
+            _cov_rag(),
+            _cov_voice(result, manifest),
+            _cov_transport(),
+            _cov_ci_gating(),
+            _cov_release_quality(),
+            _cov_observability(),
+            _cov_external_agent(),
+        ],
+        "not_covered": [
+            {
+                "area": "UI and end-to-end browser automation",
+                "status": "not covered",
+                "why": "There is no browser, no DOM and no screen anywhere in the system under test; the unit is the conversation trace.",
+            },
+            {
+                "area": "Load and performance testing",
+                "status": "not covered",
+                "why": "Latency is measured per turn behind a calibrated stopwatch (n=12 on the transport row); nothing here drives concurrency or throughput.",
+            },
+            {
+                "area": "Desktop and mobile clients",
+                "status": "not covered",
+                "why": "No client application exists in this repository to test.",
+            },
+            {
+                "area": "Observability backend",
+                "status": "export only",
+                "why": "Traces export to langfuse and promptfoo shapes; there is no collector, storage, sampling or alerting.",
+            },
+            {
+                "area": "Interruption and barge-in on a live channel",
+                "status": "reserved",
+                "why": "The two interruption event kinds are emitted from constructed timings only; no adapter discovers one.",
+            },
+            {
+                "area": "Label quality beyond one labeller",
+                "status": "stated, not measured",
+                "why": "Every hand label set here has one labeller with reasons recorded; inter-rater agreement is not measured.",
+            },
+        ],
+    }
+
+
+# ----------------------------------------------------------------- findings.json
+
+
+def _fd_discovery(result: Any, manifest: dict) -> dict[str, Any]:
+    effect = result.effect
+    adviser = [t for t in manifest["turns"] if t["speaker"] == "trainee"]
+    census = _question_census(adviser)
+    return {
+        "id": "spoken-call-grader-cannot-hear-a-question",
+        "headline": (
+            f"On a spoken call where {census['ends_with_question_mark']['text_sent']} of "
+            f"{census['adviser_turns']} adviser turns ended in a question mark, discovery scored "
+            f"{effect.heard_criteria['discovery']}/4 — and the total, the verdict and the disclosure ledger "
+            "were identical either way."
+        ),
+        "figures": {
+            "adviser_turns": census["adviser_turns"],
+            "turns_ending_in_question_mark_as_sent": _rate(census["ends_with_question_mark"]["text_sent"], census["adviser_turns"]),
+            "turns_ending_in_question_mark_as_heard": _rate(census["ends_with_question_mark"]["text_heard"], census["adviser_turns"]),
+            "discovery_as_sent": effect.sent_criteria["discovery"],
+            "discovery_as_heard": effect.heard_criteria["discovery"],
+            "objection_handling_as_sent": effect.sent_criteria["objection_handling"],
+            "objection_handling_as_heard": effect.heard_criteria["objection_handling"],
+            "total_as_sent": effect.sent_total,
+            "total_as_heard": effect.heard_total,
+            "verdicts_identical": effect.sent_verdict == effect.heard_verdict,
+        },
+        "command": "make start",
+        "detail": "finding.json",
+        "recomputed": True,
+        "caveat": "n = 1. A mechanism, not a rate.",
+    }
+
+
+def _fd_scorer() -> dict[str, Any]:
+    report, cleared, reasons = _scorer_calibration()
+    c = report.confusion
+    return {
+        "id": "grader-reluctant-to-fail",
+        "headline": (
+            f"The advisory scorer agrees with the reviewer on {c.true_negative} of "
+            f"{c.true_negative + c.false_positive} passes and on {c.true_positive} of "
+            f"{c.true_positive + c.false_negative} fails."
+        ),
+        "figures": {
+            "true_positive_rate": _rate(c.true_positive, c.true_positive + c.false_negative),
+            "true_negative_rate": _rate(c.true_negative, c.true_negative + c.false_positive),
+            "precision": _rate(c.true_positive, c.true_positive + c.false_positive),
+            "cohens_kappa": _round(report.cohens_kappa),
+            "confusion": {"tp": c.true_positive, "fp": c.false_positive, "fn": c.false_negative, "tn": c.true_negative, "n": c.n},
+            "gate_cleared": cleared,
+            "refusal_reasons": list(reasons),
+        },
+        "command": "make roleplay-demo",
+        "recomputed": True,
+    }
+
+
+def _fd_judge_gate() -> dict[str, Any]:
+    study = _judge_study()
+    t = study["thresholds"]
+    out = {}
+    for v in ("v1", "v2"):
+        r = study["reports"][v]
+        cleared, reasons = r.meets(t)
+        out[v] = {
+            "true_positive_rate": _rate_of(r.true_positive_rate),
+            "true_negative_rate": _rate_of(r.true_negative_rate),
+            "cohens_kappa": _round(r.cohens_kappa),
+            "cleared": cleared,
+            "refusal_reasons": list(reasons),
+            "prompt_digest": study["prompt_digests"][v],
+        }
+    return {
+        "id": "judge-refused-by-its-own-gate",
+        "headline": (
+            f"Judge prompt v1 measured TPR {out['v1']['true_positive_rate']['text']} and was refused by the "
+            f"gate it was written for; v2 measured {out['v2']['true_positive_rate']['text']} and cleared it. "
+            "Both scored a perfect specificity."
+        ),
+        "figures": {"versions": out, "threshold": {"min_tpr": t.min_tpr, "min_tnr": t.min_tnr, "min_items": t.min_items, "scored_on": t.gate_on}},
+        "command": "evallab calibrate --ci",
+        "recomputed": True,
+    }
+
+
+def _fd_identical_matrix() -> dict[str, Any]:
+    study = _judge_study()
+    runs = study["runs"]["v1"]
+    cells = [
+        {"run": i + 1, "tp": r.confusion.true_positive, "fp": r.confusion.false_positive,
+         "fn": r.confusion.false_negative, "tn": r.confusion.true_negative}
+        for i, r in enumerate(runs)
+    ]
+    matrices = {(c["tp"], c["fp"], c["fn"], c["tn"]) for c in cells}
+    stab = study["stability"]["v1"]
+    stab2 = study["stability"]["v2"]
+    return {
+        "id": "identical-confusion-matrix-three-runs",
+        "headline": (
+            f"Prompt v1 returned the same confusion matrix on all {len(runs)} runs while "
+            f"{len(stab.unstable)} of {stab.n} items changed verdict between runs — in opposite directions, so they cancelled."
+        ),
+        "figures": {
+            "confusion_per_run": cells,
+            "matrices_identical": len(matrices) == 1,
+            "items_unanimous_v1": _rate_of(stab.unanimity),
+            "unstable_items_v1": [
+                {"item": item.item_id, "human": item.human_label, "verdicts": list(item.verdicts)}
+                for item in stab.unstable
+            ],
+            "items_unanimous_v2": _rate_of(stab2.unanimity),
+            "runs": stab.runs,
+            "model": stab.model,
+        },
+        "command": "evallab calibrate",
+        "reading": "Aggregate stability is not instrument stability. Only the per-item view sees the flips.",
+        "recomputed": True,
+    }
+
+
+def _fd_wilson() -> dict[str, Any]:
+    from lab.stats import wilson_interval
+
+    study = _judge_study()
+    r = study["reports"]["v2"].true_positive_rate
+    lo, hi = wilson_interval(r.numerator, r.denominator)
+    t = study["thresholds"]
+    return {
+        "id": "wilson-interval-under-a-perfect-score",
+        "headline": (
+            f"v2's TPR of {_rate(r.numerator, r.denominator)['text']} has a 95% Wilson interval of "
+            f"[{lo:.3f}, {hi:.3f}] — a lower bound below the {t.min_tpr} it just cleared."
+        ),
+        "figures": {
+            "rate": _rate(r.numerator, r.denominator),
+            "wilson_95": {"lower": _round(lo), "upper": _round(hi)},
+            "gate_threshold": t.min_tpr,
+            "gate_scored_on": t.gate_on,
+            "lower_bound_clears_threshold": lo >= t.min_tpr,
+        },
+        "command": 'python -c "from lab.stats import wilson_interval; print(wilson_interval(8, 8))"',
+        "recomputed": True,
+    }
+
+
+def _fd_mcnemar() -> dict[str, Any]:
+    from lab.judges.calibration import exact_mcnemar_p
+
+    study = _judge_study()
+    paired = study["paired"]
+    floor = study["floor"]
+    return {
+        "id": "mcnemar-floor-on-twenty-four-items",
+        "headline": (
+            f"On {paired.n_items} paired items, {floor} must move together before any improvement is "
+            f"publishable at alpha 0.05; v1 -> v2 moved exactly {paired.after_only_correct} (p = {paired.p_value:.5f})."
+        ),
+        "figures": {
+            "items": paired.n_items,
+            "both_correct": paired.both_correct,
+            "both_wrong": paired.both_wrong,
+            "fixed_by_v2": paired.after_only_correct,
+            "broken_by_v2": paired.before_only_correct,
+            "exact_mcnemar_p": _round(paired.p_value, 5),
+            "detectability_floor_items": floor,
+            "p_if_d_items_all_move_one_way": {str(d): _round(exact_mcnemar_p(d, 0), 5) for d in range(1, 8)},
+        },
+        "command": "evallab calibrate",
+        "reading": "A v3 that fixed three items and broke none would be unpublishable at p = 0.25 however real the improvement.",
+        "recomputed": True,
+    }
+
+
+def _fd_noise_ladder() -> dict[str, Any]:
+    ladder = _finding_noise_ladder()
+    rung = ladder["the_dangerous_rung"]
+    return {
+        "id": "noise-ladder-wrong-before-silent",
+        "headline": (
+            f"At {rung['snr_db']} dB the recogniser returned a different, plausible, wrong value at "
+            f"confidence {rung['confidence']:.3f}; at {' and '.join(str(x) for x in ladder['the_silent_rungs'])} dB it returned nothing."
+        ) if rung else "The ladder produced no wrong-but-confident rung.",
+        "figures": {
+            "captured": ladder["captured"],
+            "held_to_db": ladder["held_to_db"],
+            "broke_at_db": ladder["broke_at_db"],
+            "dangerous_rung": rung,
+            "silent_rungs_db": ladder["the_silent_rungs"],
+            "declared_value": ladder["declared_value"],
+        },
+        "command": ladder["reproduce"],
+        "recomputed": True,
+        "caveat": ladder["caveat"],
+    }
+
+
+def _fd_promise_detector() -> dict[str, Any]:
+    f = _finding_promise_detector()
+    live = f["against_the_paraphrasing_model"]
+    return {
+        "id": "literal-detector-blind-to-paraphrase",
+        "headline": (
+            f"A literal-string promise detector caught {live['caught_by_the_literal_detector']['numerator']} of "
+            f"{live['caught_by_the_literal_detector']['denominator']} unbacked confirmations against a paraphrasing "
+            f"model, after {f['against_the_scripted_agent']['fired']['text']} against the scripted agent."
+        ),
+        "figures": {
+            "scripted_agent": f["against_the_scripted_agent"]["fired"],
+            "paraphrasing_model_before_rewrite": {
+                **{k: live["caught_by_the_literal_detector"][k] for k in ("numerator", "denominator", "value", "text")},
+                "status": "historical",
+                "why": live["caught_by_the_literal_detector"]["why_not_recomputed"],
+            },
+            "paraphrasing_model_today": {k: live["caught_by_the_detector_today"][k] for k in ("numerator", "denominator", "value", "text")},
+            "hand_labelled_set": {"recall": f["on_the_hand_labelled_set"]["recall"], "specificity": f["on_the_hand_labelled_set"]["specificity"]},
+        },
+        "command": live["reproduce"],
+        "recomputed": "denominators and today's detector; the 1/7 numerator is historical",
+        "denominator_warning": f["denominator_warning"],
+    }
+
+
+def _fd_delivery_gap() -> dict[str, Any]:
+    cov = _cov_transport()
+    d = cov["figures"]["delivery_gap"]
+    return {
+        "id": "delivery-gap",
+        "headline": cov["headline"],
+        "figures": d,
+        "timing_gate": cov["figures"]["timing_gate"],
+        "command": "make transport-report",
+        "recomputed": True,
+        "caveats": cov["caveats"],
+    }
+
+
+def _fd_flake_band() -> dict[str, Any]:
+    bands = _flake_bands()
+    b12, b8 = bands["budget_12"]["band"], bands["budget_8"]["band"]
+
+    def rows(band: Any) -> list[dict[str, Any]]:
+        return [
+            {"scenario_id": r.scenario_id, "verdict": r.verdict, "passes": _rate(r.passes, r.total_runs), "persona": r.persona}
+            for r in band.rows
+        ]
+
+    return {
+        "id": "flake-band-two-caller-budgets",
+        "headline": (
+            f"The same {b12.scenarios} scenarios at k={b12.k} with only the caller live: "
+            f"{b12.stable_pass}/{b12.scenarios} stable-pass with a {b12.caller_turn_budget}-turn caller budget, "
+            f"{b8.stable_pass}/{b8.scenarios} with an {b8.caller_turn_budget}-turn one."
+        ),
+        "figures": {
+            "budget_12": {"stable_pass": _rate(b12.stable_pass, b12.scenarios), "flaky": _rate(b12.flaky, b12.scenarios), "rows": rows(b12), "agrees_with_committed": bands["budget_12"]["agrees_with_committed"]},
+            "budget_8": {"stable_pass": _rate(b8.stable_pass, b8.scenarios), "flaky": _rate(b8.flaky, b8.scenarios), "rows": rows(b8), "agrees_with_committed": bands["budget_8"]["agrees_with_committed"]},
+            "caller_model": b12.caller_model,
+            "temperature": b12.temperature,
+            "agent": b12.agent,
+        },
+        "command": "python -m lab.simulator.flake_band --check",
+        "reading": "A setting nobody thought of as part of the scenario decided a verdict on its own.",
+        "recomputed": True,
+    }
+
+
+def _fd_selector() -> dict[str, Any]:
+    sel = _selection()
+    s, j = sel["study"], sel["join_check"]
+    return {
+        "id": "selector-measures-its-own-miss-rate",
+        "headline": (
+            f"The selector kept {s['regressions_total'] - s['regressions_missed']}/{s['regressions_total']} regressions "
+            f"the full suite caught, and {s['discriminating_total'] - s['discriminating_missed']}/{s['discriminating_total']} "
+            f"of those where it had actually skipped something; {s['vacuous_confirmations']} catches were vacuous."
+        ),
+        "figures": {
+            "study": {
+                "regressions_kept": _rate(s["regressions_total"] - s["regressions_missed"], s["regressions_total"]),
+                "non_vacuous_regressions_kept": _rate(s["discriminating_total"] - s["discriminating_missed"], s["discriminating_total"]),
+                "vacuous_confirmations": s["vacuous_confirmations"],
+                "cases_usable": _rate(s["cases_usable"], s["cases_total"]),
+                "cases_with_failures": s["cases_with_failures"],
+                "mean_selection": f"{s['selection_mean']}/{s['corpus_size']} ({s['selection_mean_stratum']} stratum)",
+                "status": "committed measurement",
+                "regenerate": sel["study_command"],
+            },
+            "join_check_now": {
+                "evidence_pairs_kept": _rate(j["pairs_preserved"], j["pairs_total"]),
+                "always_run_floor_kept": _rate(j["floor_preserved"], j["floor_total"]),
+                "controls_passed": _rate(j["controls_passed"], j["controls_total"]),
+                "mean_selection": f"{j['mean_selected']:.1f}/{j['corpus_size']}",
+                "probes": j["probes"],
+            },
+        },
+        "command": "evallab select --calibrate  # the join check; python -m lab.selection.calibrate for the study",
+        "recomputed": "the join check now; the study is the committed lab/selection/calibration.json",
+        "caveat": (
+            "The study's failure counts move between runs (three pinned runs in docs/TEST_SELECTION.md §5.2 "
+            "show 264/264, 245/245 and 319/319) while the recall and the selection ratio do not. "
+            "Quote the recall, not the count."
+        ),
+    }
+
+
+def _fd_regime() -> dict[str, Any]:
+    r = _regime()
+    return {
+        "id": "same-transcript-opposite-verdicts",
+        "headline": (
+            f"{r['blocks_that_diverge']}/{r['divergence_blocks']} divergence rows produce opposite computed verdicts "
+            f"on one transcript under two regimes; named-entry agreement "
+            f"{r['named_entry_agreement']}/{r['regime_verdict_pairs']}, whole-register "
+            f"{r['whole_register_agreement']}/{r['regime_verdict_pairs']}."
+        ),
+        "figures": {
+            "rows": r["rows"],
+            "row_agreement_with_hand_verdict": _rate(r["agree"], r["rows"]),
+            "confusion_human_over_computed": r["confusion_human_over_computed"],
+            "divergence_blocks_that_diverge": _rate(r["blocks_that_diverge"], r["divergence_blocks"]),
+            "named_entry_agreement": _rate(r["named_entry_agreement"], r["regime_verdict_pairs"]),
+            "whole_register_agreement": _rate(r["whole_register_agreement"], r["regime_verdict_pairs"]),
+            "divergence_rows": r["divergence_rows"],
+        },
+        "command": "python -m roleplay.regime_eval --divergence --shadow",
+        "recomputed": True,
+        "caveat": "In-sample: the probes were written with these transcripts in view. The CLI says so on its second line.",
+    }
+
+
+def _fd_live_run() -> dict[str, Any]:
+    live = _live_run()["report"]
+    scripted = _scripted_run()["report"]
+    l_split, s_split = _declared_split(live["failures"]), _declared_split(scripted["failures"])
+    return {
+        "id": "live-run-finds-what-the-script-cannot",
+        "headline": (
+            f"With a model in all three seats the same corpus produced {l_split['undeclared']} findings the corpus "
+            f"had not declared, against {s_split['undeclared']} from the scripted run; "
+            f"{live['stability_summary']['flaky']}/{live['stability_summary']['scenarios']} rows were FLAKY."
+        ),
+        "figures": {
+            "live": {"stability_summary": live["stability_summary"], "findings": l_split, "headline": live["headline"]},
+            "scripted": {"stability_summary": scripted["stability_summary"], "findings": s_split, "headline": scripted["headline"]},
+        },
+        "command": "make live-replay && make replay",
+        "recomputed": True,
+        "caveat": "Both agent and caller are live in that run, so a FLAKY verdict has two possible causes it cannot separate.",
+    }
+
+
+def build_findings(result: Any, manifest: dict) -> dict[str, Any]:
+    return {
+        "about": (
+            "Every headline finding in this repository, each with its denominator and "
+            "the command that reproduces it. `recomputed: true` means the figure was "
+            "rebuilt by this script from a committed artefact; anything else says what "
+            "was read and from where."
+        ),
+        "findings": [
+            _fd_discovery(result, manifest),
+            _fd_scorer(),
+            _fd_judge_gate(),
+            _fd_identical_matrix(),
+            _fd_wilson(),
+            _fd_mcnemar(),
+            _fd_noise_ladder(),
+            _fd_promise_detector(),
+            _fd_delivery_gap(),
+            _fd_flake_band(),
+            _fd_selector(),
+            _fd_regime(),
+            _fd_live_run(),
+        ],
+    }
+
+
+# ----------------------------------------------------------------- architecture.json
+
+
+def _first_line(obj: Any) -> str:
+    doc = inspect.getdoc(obj) or ""
+    return doc.splitlines()[0] if doc else ""
+
+
+def build_architecture() -> dict[str, Any]:
+    from lab import checks
+    from lab.trace.schema import PAYLOAD_KEYS, EventKind
+    from roleplay import advisory
+
+    kinds = sorted(EventKind.KNOWN)
+    reserved = sorted(EventKind.V2_RESERVED)
+    contract_names = [
+        "ToolContract", "PromiseContract", "NoReAskContract",
+        "FieldPropagationContract", "NoProgressContract", "PhraseContract",
+    ]
+    contracts = []
+    for name in contract_names:
+        cls = getattr(checks, name)
+        _lines, first = inspect.getsourcelines(cls)
+        contracts.append({"name": name, "owns": _first_line(cls), "file": "lab/checks/contracts.py", "line": first})
+
+    registers = advisory.load_registers()
+    regimes = {}
+    for regime, register in sorted(registers.items()):
+        entries = list(register.entries.values())
+        kinds_count: dict[str, int] = {}
+        evidence: dict[str, int] = {}
+        for e in entries:
+            kinds_count[e.kind] = kinds_count.get(e.kind, 0) + 1
+            evidence[e.evidence] = evidence.get(e.evidence, 0) + 1
+        regimes[regime] = {
+            "name": advisory.REGIMES[regime],
+            "entries": len(entries),
+            "by_kind": dict(sorted(kinds_count.items())),
+            "by_evidence": dict(sorted(evidence.items())),
+            "file": f"scenarios/advisory/registers/{regime}.yaml",
+        }
+
+    corpora = _corpora()
+    counts = _repo_counts()
+    return {
+        "one_idea": (
+            "The trace is the product. Every verdict, latency figure and judge call is "
+            "a function of one JSONL event stream with an injected clock; every check "
+            "is decided on event position, not timestamp."
+        ),
+        "event_kinds": {
+            "count": len(kinds),
+            "kinds": [{"kind": k, "payload_keys": list(PAYLOAD_KEYS[k])} for k in kinds],
+            "reserved_v2": [{"kind": k, "payload_keys": list(PAYLOAD_KEYS[k])} for k in reserved],
+            "actors": ["caller", "agent", "system"],
+            "source": "lab/trace/schema.py::EventKind",
+        },
+        "contracts": {
+            "count": len(contracts),
+            "contracts": contracts,
+            "decided_on": "event position in the stream (lab/checks/contracts.py::_positions), never on ts",
+            "flagship": "PromiseContract — what the agent said, cross-referenced with what it did",
+        },
+        "regimes": {
+            "count": len(regimes),
+            "entries_total": sum(r["entries"] for r in regimes.values()),
+            "regimes": regimes,
+            "kind_vocabulary": sorted(advisory.REGISTER_KINDS),
+            "evidence_vocabulary": ["sourced", "secondary", "assumption"],
+            "source": "roleplay/advisory.py — every entry carries a paragraph-level citation or is labelled an assumption",
+        },
+        "packages": {
+            "lab": "the engine: trace, checks, judges, simulator, voice, selection, report",
+            "roleplay": "advisory sales coaching — the scorer is the system under test",
+            "tablemate": "restaurant booking — the portability proof",
+            "ragcheck": "retrieval and groundedness",
+            "scenarios": "the corpora, as YAML",
+            "error_analysis": "hand-coded failure modes, counted from codes.csv",
+        },
+        "counts": {
+            "scenario_rows": corpora["rows_total"],
+            "scenario_rows_by_corpus": corpora["rows"],
+            "yaml_files_under_scenarios": corpora["yaml_files_under_scenarios"],
+            "tests_collected": counts["tests_collected"],
+            "test_files": counts["test_files"],
+            "commits_outside_docs_and_this_generator": counts["commits_outside_docs_and_this_generator"],
+            "first_commit_date": counts["first_commit_date"],
+            "commands": {
+                "tests": counts["tests_collected_command"],
+                "commits": counts["commits_command"],
+                "scenarios": "make validate && make roleplay-validate",
+            },
+            "note": counts["note"],
+        },
+    }
+
+
+# ----------------------------------------------------------------- adapter.json
+
+
+def _protocol_methods(proto: type, *, include_call: bool = False) -> dict[str, str]:
+    out = {}
+    for name, value in vars(proto).items():
+        if name == "__call__" and include_call:
+            out[name] = str(inspect.signature(value))
+        elif not name.startswith("_") and callable(value):
+            out[name] = str(inspect.signature(value))
+    return out
+
+
+def _implements(module: Any, methods: Sequence[str], *, skip: Sequence[str]) -> list[str]:
+    found = []
+    for name, value in vars(module).items():
+        if not inspect.isclass(value) or value.__module__ != module.__name__ or name in skip:
+            continue
+        if all(callable(getattr(value, m, None)) for m in methods):
+            found.append(f"{module.__name__}.{name}")
+    return sorted(found)
+
+
+def _documented_command(path: Path) -> str | None:
+    """The indented command block in a module's docstring, as one line.
+
+    Read off the example file rather than typed here, so the command the page
+    shows is the one the example's own author wrote and the tests exercise.
+    """
+    if not path.is_file():
+        return None
+    import ast
+
+    doc = ast.get_docstring(ast.parse(path.read_text("utf-8"))) or ""
+    block: list[str] = []
+    for line in doc.splitlines():
+        if line.startswith("    "):
+            block.append(line.strip().rstrip("\\").strip())
+        elif block:
+            break
+    return " ".join(block) if block else None
+
+
+def build_adapter() -> dict[str, Any]:
+    import dataclasses
+
+    from lab.cli import DEFAULT_AGENT_FACTORY
+    from lab.simulator import driver
+    from roleplay import live, runtime, spoken
+
+    trainee_lines, trainee_first = inspect.getsourcelines(runtime.Trainee)
+    aut_lines, aut_first = inspect.getsourcelines(driver.AgentUnderTest)
+
+    runners = {"roleplay/live.py": live, "roleplay/spoken.py": spoken}
+    flag = re.compile(r'add_argument\(\s*["\']--trainee-factory["\']')
+    flag_in = {
+        path: bool(flag.search(inspect.getsource(module))) for path, module in runners.items()
+    }
+    seam_present = all(hasattr(live, n) for n in ("resolve_trainee_factory", "build_trainee", "TraineeContext"))
+    examples_dir = REPO / "examples" / "adapters"
+    example_files = sorted(
+        p.name for p in examples_dir.glob("*.py") if p.name != "__init__.py"
+    ) if examples_dir.is_dir() else []
+    example_command = _documented_command(examples_dir / "echo_trainee.py")
+    adapter_doc = "docs/ADAPTER.md" if (REPO / "docs" / "ADAPTER.md").is_file() else None
+    if all(flag_in.values()):
+        status = "landed"
+    elif seam_present:
+        status = "pending: the seam (env var, resolver, TraineeContext) is in roleplay/live.py; the --trainee-factory flag is not yet on " + ", ".join(p for p, ok in flag_in.items() if not ok)
+    else:
+        status = "pending"
+
+    return {
+        "about": (
+            "How an external agent is plugged in. Two seams, both a dotted path to a "
+            "factory and a protocol with no base class: the harness is an instrument "
+            "pointed at the system, not a framework the system adopts."
+        ),
+        "agent_under_test": {
+            "protocol": "lab.simulator.driver.AgentUnderTest",
+            "file": "lab/simulator/driver.py",
+            "line": aut_first,
+            "methods": _protocol_methods(driver.AgentUnderTest, include_call=True),
+            "source": "".join(aut_lines),
+            "factory_flag": "--agent-factory pkg.mod:factory",
+            "default_factory": DEFAULT_AGENT_FACTORY,
+            "statefulness": "the implementer's; pass^k takes a factory so every repeat starts clean",
+        },
+        "trainee": {
+            "protocol": "roleplay.runtime.Trainee",
+            "file": "roleplay/runtime.py",
+            "line": trainee_first,
+            "methods": _protocol_methods(runtime.Trainee),
+            "source": "".join(trainee_lines),
+            "contract_in_one_sentence": (
+                "open() returns the adviser's first turn or None to decline; "
+                "reply(customer_turn) returns the next turn or None to stop; "
+                "stop_reason, if present, says why."
+            ),
+            "factory_receives": [
+                {"field": f.name, "type": str(f.type)}
+                for f in dataclasses.fields(live.TraineeContext)
+            ] if seam_present else [],
+            "factory_env_var": getattr(live, "TRAINEE_FACTORY_ENV_VAR", None),
+            "resolution_order": (
+                "argument, then the environment variable, then the built-in model trainee"
+                if seam_present else None
+            ),
+            "implementations_in_tree": sorted(
+                set(_implements(runtime, ("open", "reply"), skip=("Trainee",)))
+                | set(_implements(live, ("open", "reply"), skip=()))
+                | set(_implements(spoken, ("open", "reply"), skip=()))
+            ),
+        },
+        "example_files": {
+            "booking_agent_factory": "tablemate/runtime.py::build_agent",
+            "model_trainee_factory": "roleplay/live.py::model_trainee" if seam_present else None,
+            "scripted_trainee": "roleplay/runtime.py::ScriptedTrainee",
+            "runnable_adapters_directory": "examples/adapters/" if examples_dir.is_dir() else None,
+            "runnable_adapters": example_files,
+            "guide": adapter_doc,
+        },
+        "commands": {
+            "booking_agent": "evallab run --agent-factory pkg.mod:factory",
+            "trainee": (
+                "python -m roleplay.live --trainee-factory pkg.mod:factory"
+                if all(flag_in.values())
+                else "LAB_TRAINEE_FACTORY=pkg.mod:factory python -m roleplay.live   # flag pending"
+            ),
+            "trainee_example_offline": example_command,
+            "trainee_example_source": (
+                "examples/adapters/echo_trainee.py — module docstring" if example_command else None
+            ),
+        },
+        "cli_flag": {
+            "name": "--trainee-factory",
+            "status": status,
+            "present_in": flag_in,
+            "seam_present": seam_present,
+        },
+        "source": {
+            "agent_under_test": "lab/simulator/driver.py",
+            "trainee": "roleplay/runtime.py",
+            "trainee_seam": "roleplay/live.py",
+            "importer": "lab/cli.py::_import_object — the same importer for both seams",
+        },
+    }
+
+
+# --------------------------------------------------------------------------- #
 # Driver
 # --------------------------------------------------------------------------- #
 
@@ -1312,14 +2977,19 @@ def build(out: Path) -> dict[str, str]:
     digests["secondary_findings.json"] = _dump(
         out / "secondary_findings.json", build_secondary()
     )
+    digests["coverage.json"] = _dump(out / "coverage.json", build_coverage(result, manifest))
+    digests["findings.json"] = _dump(out / "findings.json", build_findings(result, manifest))
+    digests["architecture.json"] = _dump(out / "architecture.json", build_architecture())
+    digests["adapter.json"] = _dump(out / "adapter.json", build_adapter())
     digests["audio/full_call.wav"] = served["sha256"]
     digests["audio/excerpt.wav"] = excerpt["sha256"]
 
     index = {
         "about": (
-            "Evidence for a single-finding demo page. Every file here is generated "
-            "by scripts/build_site_data.py from artefacts committed to this "
-            "repository. Nothing is hand-typed and nothing needs a key."
+            "Evidence for the demo page: one finding in depth, and the whole harness "
+            "beside it. Every file here is generated by scripts/build_site_data.py "
+            "from artefacts committed to this repository. Nothing is hand-typed and "
+            "nothing needs a key."
         ),
         "regenerate": "python -m scripts.build_site_data",
         "verify_unchanged": "python -m scripts.build_site_data --check",
@@ -1336,6 +3006,13 @@ def build(out: Path) -> dict[str, str]:
             _rel(REPO / "fixtures" / "live_run" / "traces"),
             _rel(REPO / "fixtures" / "replay_run"),
             _rel(REPO / "lab" / "judges" / "hallucinated_confirmation"),
+            _rel(REPO / "fixtures" / "live_full" / "run_report.json"),
+            _rel(REPO / "fixtures" / "live_caller"),
+            _rel(REPO / "fixtures" / "audio" / "transport"),
+            _rel(REPO / "lab" / "selection" / "calibration.json"),
+            _rel(REPO / "scenarios"),
+            _rel(REPO / "ragcheck" / "fixtures"),
+            "Makefile",
         ],
         "house_rules": [
             "Every rate carries its denominator.",

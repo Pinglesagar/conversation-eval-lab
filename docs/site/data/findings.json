@@ -1,0 +1,930 @@
+{
+  "about": "Every headline finding in this repository, each with its denominator and the command that reproduces it. `recomputed: true` means the figure was rebuilt by this script from a committed artefact; anything else says what was read and from where.",
+  "findings": [
+    {
+      "caveat": "n = 1. A mechanism, not a rate.",
+      "command": "make start",
+      "detail": "finding.json",
+      "figures": {
+        "adviser_turns": 8,
+        "discovery_as_heard": 0,
+        "discovery_as_sent": 2,
+        "objection_handling_as_heard": 4,
+        "objection_handling_as_sent": 2,
+        "total_as_heard": 12,
+        "total_as_sent": 12,
+        "turns_ending_in_question_mark_as_heard": {
+          "denominator": 8,
+          "numerator": 0,
+          "text": "0.000 (0/8)",
+          "value": 0.0
+        },
+        "turns_ending_in_question_mark_as_sent": {
+          "denominator": 8,
+          "numerator": 5,
+          "text": "0.625 (5/8)",
+          "value": 0.625
+        },
+        "verdicts_identical": true
+      },
+      "headline": "On a spoken call where 5 of 8 adviser turns ended in a question mark, discovery scored 0/4 — and the total, the verdict and the disclosure ledger were identical either way.",
+      "id": "spoken-call-grader-cannot-hear-a-question",
+      "recomputed": true
+    },
+    {
+      "command": "make roleplay-demo",
+      "figures": {
+        "cohens_kappa": 0.241,
+        "confusion": {
+          "fn": 23,
+          "fp": 2,
+          "n": 70,
+          "tn": 36,
+          "tp": 9
+        },
+        "gate_cleared": false,
+        "precision": {
+          "denominator": 11,
+          "numerator": 9,
+          "text": "0.818 (9/11)",
+          "value": 0.818
+        },
+        "refusal_reasons": [
+          "TPR 0.281 (9/32) is below the required 0.85",
+          "registry refused the judge in CI mode: JudgeBelowThresholdError"
+        ],
+        "true_negative_rate": {
+          "denominator": 38,
+          "numerator": 36,
+          "text": "0.947 (36/38)",
+          "value": 0.947
+        },
+        "true_positive_rate": {
+          "denominator": 32,
+          "numerator": 9,
+          "text": "0.281 (9/32)",
+          "value": 0.281
+        }
+      },
+      "headline": "The advisory scorer agrees with the reviewer on 36 of 38 passes and on 9 of 32 fails.",
+      "id": "grader-reluctant-to-fail",
+      "recomputed": true
+    },
+    {
+      "command": "evallab calibrate --ci",
+      "figures": {
+        "threshold": {
+          "min_items": 10,
+          "min_tnr": 0.85,
+          "min_tpr": 0.85,
+          "scored_on": "point"
+        },
+        "versions": {
+          "v1": {
+            "cleared": false,
+            "cohens_kappa": 0.308,
+            "prompt_digest": "e42ea843fa8fc1092ef50a10bafbd60b383c67d9feaebf27d0ea2a4d4ab6b318",
+            "refusal_reasons": [
+              "TPR 0.250 (2/8) is below the required 0.85"
+            ],
+            "true_negative_rate": {
+              "denominator": 16,
+              "numerator": 16,
+              "text": "1.000 (16/16)",
+              "value": 1.0
+            },
+            "true_positive_rate": {
+              "denominator": 8,
+              "numerator": 2,
+              "text": "0.250 (2/8)",
+              "value": 0.25
+            }
+          },
+          "v2": {
+            "cleared": true,
+            "cohens_kappa": 1.0,
+            "prompt_digest": "38e34c2450a3673e18b1739042060192d5c1232b01794e6eb8a18ab0eb6e14f0",
+            "refusal_reasons": [],
+            "true_negative_rate": {
+              "denominator": 16,
+              "numerator": 16,
+              "text": "1.000 (16/16)",
+              "value": 1.0
+            },
+            "true_positive_rate": {
+              "denominator": 8,
+              "numerator": 8,
+              "text": "1.000 (8/8)",
+              "value": 1.0
+            }
+          }
+        }
+      },
+      "headline": "Judge prompt v1 measured TPR 0.250 (2/8) and was refused by the gate it was written for; v2 measured 1.000 (8/8) and cleared it. Both scored a perfect specificity.",
+      "id": "judge-refused-by-its-own-gate",
+      "recomputed": true
+    },
+    {
+      "command": "evallab calibrate",
+      "figures": {
+        "confusion_per_run": [
+          {
+            "fn": 6,
+            "fp": 0,
+            "run": 1,
+            "tn": 16,
+            "tp": 2
+          },
+          {
+            "fn": 6,
+            "fp": 0,
+            "run": 2,
+            "tn": 16,
+            "tp": 2
+          },
+          {
+            "fn": 6,
+            "fp": 0,
+            "run": 3,
+            "tn": 16,
+            "tp": 2
+          }
+        ],
+        "items_unanimous_v1": {
+          "denominator": 24,
+          "numerator": 22,
+          "text": "0.917 (22/24)",
+          "value": 0.917
+        },
+        "items_unanimous_v2": {
+          "denominator": 24,
+          "numerator": 24,
+          "text": "1.000 (24/24)",
+          "value": 1.0
+        },
+        "matrices_identical": true,
+        "model": "azure/gpt-4.1",
+        "runs": 3,
+        "unstable_items_v1": [
+          {
+            "human": "fail",
+            "item": "all-set-saturday",
+            "verdicts": [
+              "fail",
+              "pass",
+              "fail"
+            ]
+          },
+          {
+            "human": "fail",
+            "item": "claim-buried-in-policy-answer",
+            "verdicts": [
+              "pass",
+              "fail",
+              "pass"
+            ]
+          }
+        ]
+      },
+      "headline": "Prompt v1 returned the same confusion matrix on all 3 runs while 2 of 24 items changed verdict between runs — in opposite directions, so they cancelled.",
+      "id": "identical-confusion-matrix-three-runs",
+      "reading": "Aggregate stability is not instrument stability. Only the per-item view sees the flips.",
+      "recomputed": true
+    },
+    {
+      "command": "python -c \"from lab.stats import wilson_interval; print(wilson_interval(8, 8))\"",
+      "figures": {
+        "gate_scored_on": "point",
+        "gate_threshold": 0.85,
+        "lower_bound_clears_threshold": false,
+        "rate": {
+          "denominator": 8,
+          "numerator": 8,
+          "text": "1.000 (8/8)",
+          "value": 1.0
+        },
+        "wilson_95": {
+          "lower": 0.676,
+          "upper": 1.0
+        }
+      },
+      "headline": "v2's TPR of 1.000 (8/8) has a 95% Wilson interval of [0.676, 1.000] — a lower bound below the 0.85 it just cleared.",
+      "id": "wilson-interval-under-a-perfect-score",
+      "recomputed": true
+    },
+    {
+      "command": "evallab calibrate",
+      "figures": {
+        "both_correct": 18,
+        "both_wrong": 0,
+        "broken_by_v2": 0,
+        "detectability_floor_items": 6,
+        "exact_mcnemar_p": 0.03125,
+        "fixed_by_v2": 6,
+        "items": 24,
+        "p_if_d_items_all_move_one_way": {
+          "1": 1.0,
+          "2": 0.5,
+          "3": 0.25,
+          "4": 0.125,
+          "5": 0.0625,
+          "6": 0.03125,
+          "7": 0.01562
+        }
+      },
+      "headline": "On 24 paired items, 6 must move together before any improvement is publishable at alpha 0.05; v1 -> v2 moved exactly 6 (p = 0.03125).",
+      "id": "mcnemar-floor-on-twenty-four-items",
+      "reading": "A v3 that fixed three items and broke none would be unpublishable at p = 0.25 however real the improvement.",
+      "recomputed": true
+    },
+    {
+      "caveat": "One row, one declared postcode, one seed. The ladder locates a breaking point on this line; it does not estimate a rate.",
+      "command": "make audio-suite-evidence",
+      "figures": {
+        "broke_at_db": -5.0,
+        "captured": {
+          "denominator": 9,
+          "numerator": 6,
+          "text": "0.667 (6/9)",
+          "value": 0.667
+        },
+        "dangerous_rung": {
+          "captured": false,
+          "confidence": 0.90722656,
+          "display_text": "The postcode SW1A1AF.",
+          "returned_nothing": false,
+          "snr_db": -5.0,
+          "transcript": "the postcode s w one a one a f"
+        },
+        "declared_value": {
+          "postcode": "SW1A 1AA"
+        },
+        "held_to_db": 0.0,
+        "silent_rungs_db": [
+          -10.0,
+          -15.0
+        ]
+      },
+      "headline": "At -5.0 dB the recogniser returned a different, plausible, wrong value at confidence 0.907; at -10.0 and -15.0 dB it returned nothing.",
+      "id": "noise-ladder-wrong-before-silent",
+      "recomputed": true
+    },
+    {
+      "command": "python -m pytest tests/test_checks_paraphrase.py -q",
+      "denominator_warning": "1/7 is the fixtures/live_run corpus of 30 conversations. A separate 1/6 exists over the six large-party conversations of fixtures/live_full. Two runs, two denominators; they are not the same measurement.",
+      "figures": {
+        "hand_labelled_set": {
+          "recall": {
+            "denominator": 8,
+            "numerator": 8,
+            "text": "1.000 (8/8)",
+            "value": 1.0
+          },
+          "specificity": {
+            "denominator": 16,
+            "numerator": 16,
+            "text": "1.000 (16/16)",
+            "value": 1.0
+          }
+        },
+        "paraphrasing_model_before_rewrite": {
+          "denominator": 7,
+          "numerator": 1,
+          "status": "historical",
+          "text": "0.143 (1/7)",
+          "value": 0.143,
+          "why": "The literal pattern set this measured was replaced by the rewrite and is not in the tree, so the numerator cannot be recomputed. The denominator can, and is, above."
+        },
+        "paraphrasing_model_today": {
+          "denominator": 7,
+          "numerator": 7,
+          "text": "1.000 (7/7)",
+          "value": 1.0
+        },
+        "scripted_agent": {
+          "denominator": 2,
+          "numerator": 2,
+          "text": "1.000 (2/2)",
+          "value": 1.0
+        }
+      },
+      "headline": "A literal-string promise detector caught 1 of 7 unbacked confirmations against a paraphrasing model, after 1.000 (2/2) against the scripted agent.",
+      "id": "literal-detector-blind-to-paraphrase",
+      "recomputed": "denominators and today's detector; the 1/7 numerator is historical"
+    },
+    {
+      "caveats": [
+        "Both ends of the room were in one process, so the gap is a floor and not a worst case.",
+        "Non-gating in CI by design: a network test that blocks a merge trains people to bypass it."
+      ],
+      "command": "make transport-report",
+      "figures": {
+        "agent_side_figure_ms": 0.0,
+        "mean_ms": 89.0,
+        "n": 12,
+        "net_of_send_queue_mean_ms": 86.0,
+        "other_sessions": [
+          {
+            "mean_ms": 128.3,
+            "n": 12,
+            "reportable": true,
+            "session": "delivery-gap-live-run"
+          },
+          {
+            "mean_ms": 137.6,
+            "n": 12,
+            "reportable": true,
+            "session": "delivery-gap-second-session"
+          }
+        ],
+        "p50": {
+          "label": "p50",
+          "min_n": 2,
+          "n": 12,
+          "reported": true,
+          "value_ms": 89.6
+        },
+        "p90": {
+          "label": "p90",
+          "min_n": 10,
+          "n": 12,
+          "reported": true,
+          "value_ms": 96.9
+        },
+        "p95": {
+          "label": "p95",
+          "min_n": 20,
+          "n": 12,
+          "reported": false,
+          "value_ms": null
+        },
+        "queue_correlation": 0.72
+      },
+      "headline": "Delivery gap mean 89.0 ms over n=12 turns (p50 89.6 ms, p90 96.9 ms, p95 refused at n<20); an agent-side stopwatch reports 0.0 ms for the same turns.",
+      "id": "delivery-gap",
+      "recomputed": true,
+      "timing_gate": {
+        "naive_whole_turn_control": "FAIL",
+        "tolerance": "|relative error| <= 5.0% and stdev <= 15.0 ms",
+        "verdict": "PASS"
+      }
+    },
+    {
+      "command": "python -m lab.simulator.flake_band --check",
+      "figures": {
+        "agent": "scripted backend, FakeClock, fresh restaurant per repeat (deterministic)",
+        "budget_12": {
+          "agrees_with_committed": true,
+          "flaky": {
+            "denominator": 8,
+            "numerator": 1,
+            "text": "0.125 (1/8)",
+            "value": 0.125
+          },
+          "rows": [
+            {
+              "passes": {
+                "denominator": 5,
+                "numerator": 5,
+                "text": "1.000 (5/5)",
+                "value": 1.0
+              },
+              "persona": "brisk_regular",
+              "scenario_id": "happy-two-covers-thursday",
+              "verdict": "STABLE_PASS"
+            },
+            {
+              "passes": {
+                "denominator": 5,
+                "numerator": 5,
+                "text": "1.000 (5/5)",
+                "value": 1.0
+              },
+              "persona": "brisk_regular",
+              "scenario_id": "happy-availability-then-choice",
+              "verdict": "STABLE_PASS"
+            },
+            {
+              "passes": {
+                "denominator": 5,
+                "numerator": 5,
+                "text": "1.000 (5/5)",
+                "value": 1.0
+              },
+              "persona": "brisk_regular",
+              "scenario_id": "happy-dietary-note-single-agent",
+              "verdict": "STABLE_PASS"
+            },
+            {
+              "passes": {
+                "denominator": 5,
+                "numerator": 4,
+                "text": "0.800 (4/5)",
+                "value": 0.8
+              },
+              "persona": "chatty_planner",
+              "scenario_id": "happy-vague-opener-then-details",
+              "verdict": "FLAKY"
+            },
+            {
+              "passes": {
+                "denominator": 5,
+                "numerator": 5,
+                "text": "1.000 (5/5)",
+                "value": 1.0
+              },
+              "persona": "minimal_replier",
+              "scenario_id": "edge-volunteers-nothing",
+              "verdict": "STABLE_PASS"
+            },
+            {
+              "passes": {
+                "denominator": 5,
+                "numerator": 5,
+                "text": "1.000 (5/5)",
+                "value": 1.0
+              },
+              "persona": "distracted_parent",
+              "scenario_id": "edge-reluctant-caller-two-asks",
+              "verdict": "STABLE_PASS"
+            },
+            {
+              "passes": {
+                "denominator": 5,
+                "numerator": 5,
+                "text": "1.000 (5/5)",
+                "value": 1.0
+              },
+              "persona": "brisk_regular",
+              "scenario_id": "edge-large-party-of-six",
+              "verdict": "STABLE_PASS"
+            },
+            {
+              "passes": {
+                "denominator": 5,
+                "numerator": 5,
+                "text": "1.000 (5/5)",
+                "value": 1.0
+              },
+              "persona": "hostile_caller",
+              "scenario_id": "adversarial-abuse-then-real-booking",
+              "verdict": "STABLE_PASS"
+            }
+          ],
+          "stable_pass": {
+            "denominator": 8,
+            "numerator": 7,
+            "text": "0.875 (7/8)",
+            "value": 0.875
+          }
+        },
+        "budget_8": {
+          "agrees_with_committed": true,
+          "flaky": {
+            "denominator": 8,
+            "numerator": 3,
+            "text": "0.375 (3/8)",
+            "value": 0.375
+          },
+          "rows": [
+            {
+              "passes": {
+                "denominator": 5,
+                "numerator": 5,
+                "text": "1.000 (5/5)",
+                "value": 1.0
+              },
+              "persona": "brisk_regular",
+              "scenario_id": "happy-two-covers-thursday",
+              "verdict": "STABLE_PASS"
+            },
+            {
+              "passes": {
+                "denominator": 5,
+                "numerator": 4,
+                "text": "0.800 (4/5)",
+                "value": 0.8
+              },
+              "persona": "brisk_regular",
+              "scenario_id": "happy-availability-then-choice",
+              "verdict": "FLAKY"
+            },
+            {
+              "passes": {
+                "denominator": 5,
+                "numerator": 5,
+                "text": "1.000 (5/5)",
+                "value": 1.0
+              },
+              "persona": "brisk_regular",
+              "scenario_id": "happy-dietary-note-single-agent",
+              "verdict": "STABLE_PASS"
+            },
+            {
+              "passes": {
+                "denominator": 5,
+                "numerator": 4,
+                "text": "0.800 (4/5)",
+                "value": 0.8
+              },
+              "persona": "chatty_planner",
+              "scenario_id": "happy-vague-opener-then-details",
+              "verdict": "FLAKY"
+            },
+            {
+              "passes": {
+                "denominator": 5,
+                "numerator": 5,
+                "text": "1.000 (5/5)",
+                "value": 1.0
+              },
+              "persona": "minimal_replier",
+              "scenario_id": "edge-volunteers-nothing",
+              "verdict": "STABLE_PASS"
+            },
+            {
+              "passes": {
+                "denominator": 5,
+                "numerator": 1,
+                "text": "0.200 (1/5)",
+                "value": 0.2
+              },
+              "persona": "distracted_parent",
+              "scenario_id": "edge-reluctant-caller-two-asks",
+              "verdict": "FLAKY"
+            },
+            {
+              "passes": {
+                "denominator": 5,
+                "numerator": 5,
+                "text": "1.000 (5/5)",
+                "value": 1.0
+              },
+              "persona": "brisk_regular",
+              "scenario_id": "edge-large-party-of-six",
+              "verdict": "STABLE_PASS"
+            },
+            {
+              "passes": {
+                "denominator": 5,
+                "numerator": 5,
+                "text": "1.000 (5/5)",
+                "value": 1.0
+              },
+              "persona": "hostile_caller",
+              "scenario_id": "adversarial-abuse-then-real-booking",
+              "verdict": "STABLE_PASS"
+            }
+          ],
+          "stable_pass": {
+            "denominator": 8,
+            "numerator": 5,
+            "text": "0.625 (5/8)",
+            "value": 0.625
+          }
+        },
+        "caller_model": "azure-openai/gpt-4.1",
+        "temperature": 0.7
+      },
+      "headline": "The same 8 scenarios at k=5 with only the caller live: 7/8 stable-pass with a 12-turn caller budget, 5/8 with an 8-turn one.",
+      "id": "flake-band-two-caller-budgets",
+      "reading": "A setting nobody thought of as part of the scenario decided a verdict on its own.",
+      "recomputed": true
+    },
+    {
+      "caveat": "The study's failure counts move between runs (three pinned runs in docs/TEST_SELECTION.md §5.2 show 264/264, 245/245 and 319/319) while the recall and the selection ratio do not. Quote the recall, not the count.",
+      "command": "evallab select --calibrate  # the join check; python -m lab.selection.calibrate for the study",
+      "figures": {
+        "join_check_now": {
+          "always_run_floor_kept": {
+            "denominator": 324,
+            "numerator": 324,
+            "text": "1.000 (324/324)",
+            "value": 1.0
+          },
+          "controls_passed": {
+            "denominator": 4,
+            "numerator": 4,
+            "text": "1.000 (4/4)",
+            "value": 1.0
+          },
+          "evidence_pairs_kept": {
+            "denominator": 444,
+            "numerator": 444,
+            "text": "1.000 (444/444)",
+            "value": 1.0
+          },
+          "mean_selection": "42.7/73",
+          "probes": 18
+        },
+        "study": {
+          "cases_usable": {
+            "denominator": 324,
+            "numerator": 300,
+            "text": "0.926 (300/324)",
+            "value": 0.926
+          },
+          "cases_with_failures": 39,
+          "mean_selection": "66.467/73 (proportional stratum)",
+          "non_vacuous_regressions_kept": {
+            "denominator": 125,
+            "numerator": 125,
+            "text": "1.000 (125/125)",
+            "value": 1.0
+          },
+          "regenerate": "python -m lab.selection.calibrate --sample 150 --enrich 120 --quiet --write",
+          "regressions_kept": {
+            "denominator": 319,
+            "numerator": 319,
+            "text": "1.000 (319/319)",
+            "value": 1.0
+          },
+          "status": "committed measurement",
+          "vacuous_confirmations": 194
+        }
+      },
+      "headline": "The selector kept 319/319 regressions the full suite caught, and 125/125 of those where it had actually skipped something; 194 catches were vacuous.",
+      "id": "selector-measures-its-own-miss-rate",
+      "recomputed": "the join check now; the study is the committed lab/selection/calibration.json"
+    },
+    {
+      "caveat": "In-sample: the probes were written with these transcripts in view. The CLI says so on its second line.",
+      "command": "python -m roleplay.regime_eval --divergence --shadow",
+      "figures": {
+        "confusion_human_over_computed": {
+          "fail/fail": 9,
+          "fail/pass": 1,
+          "fail/undecidable": 1,
+          "pass/fail": 0,
+          "pass/pass": 7,
+          "pass/undecidable": 0
+        },
+        "divergence_blocks_that_diverge": {
+          "denominator": 6,
+          "numerator": 6,
+          "text": "1.000 (6/6)",
+          "value": 1.0
+        },
+        "divergence_rows": [
+          {
+            "axis": "D1",
+            "computed_verdicts": [
+              "fail",
+              "pass"
+            ],
+            "diverges": true,
+            "regimes": [
+              {
+                "computed": "fail",
+                "hand": "fail",
+                "named_entry": "fca-adviser-charging-only",
+                "named_entry_status": "missed",
+                "regime": "fca"
+              },
+              {
+                "computed": "fail",
+                "hand": "pass",
+                "named_entry": "mas-commission-amount",
+                "named_entry_status": "satisfied",
+                "regime": "mas"
+              },
+              {
+                "computed": "pass",
+                "hand": "pass",
+                "named_entry": "reg-bi-fees-standardised-ranges-acceptable",
+                "named_entry_status": "satisfied",
+                "regime": "reg-bi"
+              },
+              {
+                "computed": "fail",
+                "hand": "pass",
+                "named_entry": "sfc-ia-monetary-benefit-percentage-ceiling",
+                "named_entry_status": "satisfied",
+                "regime": "sfc-ia"
+              }
+            ],
+            "scenario_id": "divergence-commission-volunteered-four-verdicts"
+          },
+          {
+            "axis": "D7",
+            "computed_verdicts": [
+              "fail",
+              "pass"
+            ],
+            "diverges": true,
+            "regimes": [
+              {
+                "computed": "fail",
+                "hand": "fail",
+                "named_entry": "fca-cancellation-30-days-life",
+                "named_entry_status": "missed",
+                "regime": "fca"
+              },
+              {
+                "computed": "pass",
+                "hand": "pass",
+                "named_entry": "mas-free-look-14-days",
+                "named_entry_status": "satisfied",
+                "regime": "mas"
+              },
+              {
+                "computed": "fail",
+                "hand": "fail",
+                "named_entry": "sfc-ia-cooling-off-21-days",
+                "named_entry_status": "missed",
+                "regime": "sfc-ia"
+              }
+            ],
+            "scenario_id": "divergence-cooling-off-duration-and-trigger"
+          },
+          {
+            "axis": "D8",
+            "computed_verdicts": [
+              "fail",
+              "pass"
+            ],
+            "diverges": true,
+            "regimes": [
+              {
+                "computed": "pass",
+                "hand": "pass",
+                "named_entry": "mas-life-policy-distribution-cost",
+                "named_entry_status": "not-applicable",
+                "regime": "mas"
+              },
+              {
+                "computed": "fail",
+                "hand": "fail",
+                "named_entry": "sfc-ia-monetary-benefit-percentage-ceiling",
+                "named_entry_status": "missed",
+                "regime": "sfc-ia"
+              }
+            ],
+            "scenario_id": "divergence-two-products-one-meeting-mas-carveout"
+          },
+          {
+            "axis": "D10",
+            "computed_verdicts": [
+              "fail",
+              "pass"
+            ],
+            "diverges": true,
+            "regimes": [
+              {
+                "computed": "pass",
+                "hand": "pass",
+                "named_entry": "fca-must-not-recommend-on-insufficient-information",
+                "named_entry_status": "not-applicable",
+                "regime": "fca"
+              },
+              {
+                "computed": "fail",
+                "hand": "fail",
+                "named_entry": "mas-insufficient-information-forces-negative-cka",
+                "named_entry_status": "missed",
+                "regime": "mas"
+              },
+              {
+                "computed": "pass",
+                "hand": "pass",
+                "named_entry": "reg-bi-care-obligation-binds-the-recommendation",
+                "named_entry_status": "not-applicable",
+                "regime": "reg-bi"
+              },
+              {
+                "computed": "fail",
+                "hand": "fail",
+                "named_entry": "sfc-ia-unsolicited-derivative-duty-to-advise",
+                "named_entry_status": "missed",
+                "regime": "sfc-ia"
+              }
+            ],
+            "scenario_id": "divergence-unsolicited-note-failing-to-advise"
+          },
+          {
+            "axis": "D2",
+            "computed_verdicts": [
+              "fail",
+              "pass"
+            ],
+            "diverges": true,
+            "regimes": [
+              {
+                "computed": "fail",
+                "hand": "fail",
+                "named_entry": "fca-suitability-report-before-conclusion",
+                "named_entry_status": "missed",
+                "regime": "fca"
+              },
+              {
+                "computed": "fail",
+                "hand": "fail",
+                "named_entry": "mas-recommendation-document-before-signing",
+                "named_entry_status": "missed",
+                "regime": "mas"
+              },
+              {
+                "computed": "pass",
+                "hand": "pass",
+                "named_entry": "reg-bi-no-suitability-report",
+                "named_entry_status": "not-applicable",
+                "regime": "reg-bi"
+              }
+            ],
+            "scenario_id": "divergence-verbal-close-nothing-in-writing"
+          },
+          {
+            "axis": "D6",
+            "computed_verdicts": [
+              "fail",
+              "pass"
+            ],
+            "diverges": true,
+            "regimes": [
+              {
+                "computed": "fail",
+                "hand": "fail",
+                "named_entry": "mas-selected-client-gate",
+                "named_entry_status": "missed",
+                "regime": "mas"
+              },
+              {
+                "computed": "pass",
+                "hand": "pass",
+                "named_entry": "reg-bi-no-vulnerability-construct",
+                "named_entry_status": "not-applicable",
+                "regime": "reg-bi"
+              }
+            ],
+            "scenario_id": "conflict-vulnerable-customer-keen-to-sign"
+          }
+        ],
+        "named_entry_agreement": {
+          "denominator": 18,
+          "numerator": 18,
+          "text": "1.000 (18/18)",
+          "value": 1.0
+        },
+        "row_agreement_with_hand_verdict": {
+          "denominator": 18,
+          "numerator": 16,
+          "text": "0.889 (16/18)",
+          "value": 0.889
+        },
+        "rows": 18,
+        "whole_register_agreement": {
+          "denominator": 18,
+          "numerator": 16,
+          "text": "0.889 (16/18)",
+          "value": 0.889
+        }
+      },
+      "headline": "6/6 divergence rows produce opposite computed verdicts on one transcript under two regimes; named-entry agreement 18/18, whole-register 16/18.",
+      "id": "same-transcript-opposite-verdicts",
+      "recomputed": true
+    },
+    {
+      "caveat": "Both agent and caller are live in that run, so a FLAKY verdict has two possible causes it cannot separate.",
+      "command": "make live-replay && make replay",
+      "figures": {
+        "live": {
+          "findings": {
+            "declared": 5,
+            "total": 23,
+            "undeclared": 18
+          },
+          "headline": "FAIL — 34/47 (72.3%) scenarios stable-pass — 6/47 (12.8%) FLAKY (not a pass) — 50/361 (13.9%) contract evaluations failed",
+          "stability_summary": {
+            "flaky": 6,
+            "min_runs_per_scenario": 3,
+            "scenarios": 47,
+            "stable_fail": 7,
+            "stable_pass": 34,
+            "stable_pass_rate": "34/47 (72.3%)",
+            "total_runs": 141
+          }
+        },
+        "scripted": {
+          "findings": {
+            "declared": 9,
+            "total": 12,
+            "undeclared": 3
+          },
+          "headline": "FAIL — 44/47 (93.6%) scenarios stable-pass — 36/369 (9.8%) contract evaluations failed",
+          "stability_summary": {
+            "flaky": 0,
+            "min_runs_per_scenario": 3,
+            "scenarios": 47,
+            "stable_fail": 3,
+            "stable_pass": 44,
+            "stable_pass_rate": "44/47 (93.6%)",
+            "total_runs": 141
+          }
+        }
+      },
+      "headline": "With a model in all three seats the same corpus produced 18 findings the corpus had not declared, against 3 from the scripted run; 6/47 rows were FLAKY.",
+      "id": "live-run-finds-what-the-script-cannot",
+      "recomputed": true
+    }
+  ]
+}
