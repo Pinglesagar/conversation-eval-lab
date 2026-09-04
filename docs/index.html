@@ -6,7 +6,7 @@
 <title>conversation-eval-lab — an evaluation harness for conversational AI, voice and text</title>
 <meta name="description" content="An evaluation harness for conversational AI agents, voice and text, on one auditable trace: contracts decided on event position, judges calibrated and gated, a simulator that measures its own flake band. Opened with one finding — a spoken call scored 0 of 4 on discovery after 5 of 8 turns ended in a question mark — and reproducible offline with no API key.">
 <meta name="color-scheme" content="dark">
-<link rel="stylesheet" href="site/css/main.css">
+<link rel="stylesheet" href="site/css/main.css?v=ef034576f5">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2015%2015%22%20shape-rendering%3D%22crispEdges%22%3E%3Crect%20width%3D%2215%22%20height%3D%2215%22%20fill%3D%22%230A0C10%22%2F%3E%3Cg%20fill%3D%22%235FCBBB%22%3E%3Crect%20x%3D%221%22%20y%3D%225%22%20width%3D%222%22%20height%3D%225%22%2F%3E%3Crect%20x%3D%224%22%20y%3D%223%22%20width%3D%222%22%20height%3D%229%22%2F%3E%3Crect%20x%3D%227%22%20y%3D%220%22%20width%3D%222%22%20height%3D%2215%22%2F%3E%3Crect%20x%3D%2210%22%20y%3D%222%22%20width%3D%222%22%20height%3D%2211%22%2F%3E%3Crect%20x%3D%2213%22%20y%3D%226%22%20width%3D%222%22%20height%3D%223%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E">
 <script>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');</script>
 </head>
@@ -21,7 +21,7 @@
       <span class="nav__name">conversation&#8209;eval&#8209;lab</span>
     </a>
     <ul class="nav__list">
-      <li><a href="#call"><span class="nav__num" aria-hidden="true">00</span> The call</a></li>
+      <li><a href="#call"><span class="nav__num" aria-hidden="true">00</span> The calls</a></li>
       <li><a href="#how"><span class="nav__num" aria-hidden="true">01</span> How it works</a></li>
       <li><a href="#break"><span class="nav__num" aria-hidden="true">02</span> Where it breaks</a></li>
       <li><a href="#hid"><span class="nav__num" aria-hidden="true">03</span> Why it hid</a></li>
@@ -86,31 +86,79 @@
   <div class="sec__head">
     <span class="sec__num" aria-hidden="true">00</span>
     <div>
-      <p class="eyebrow">The call</p>
-      <h2 class="h2">Hear the call. Then the turn that scored zero.</h2>
+      <p class="eyebrow">The calls</p>
+      <h2 class="h2">Two calls, graded twice.</h2>
       <p class="sec__lede">
-        Three recordings, none fetched until you press play: the whole 16-turn call, a second call that the trainee model&rsquo;s content filter stopped at turn 3, and beside them the adviser&rsquo;s
-        opening line on its own. That line is a question. Discovery — the criterion it exists to satisfy — was scored <b class="num">0/4</b>.
+        Both recordings, fetched only when you press play. The rubric that shipped gave each call <b class="num">4/4</b> on
+        disclosure. Read against the product&rsquo;s own ledger, one call is missing a required disclosure and the other is
+        missing two. Below them: the single turn that scored zero on discovery.
       </p>
     </div>
   </div>
 
-  <div class="listen">
+  <div class="calls">
+    <article class="callcard">
+      <header class="callcard__head">
+        <span class="callcard__n" aria-hidden="true">01</span>
+        <div class="callcard__who">
+          <p class="label">Call 1 <span class="label__sep" aria-hidden="true">/</span> aggressive challenger</p>
+          <p class="callcard__title">The challenger who asked about fees before anything else.</p>
+        </div>
+        <p class="callcard__meta">16 turns<br>181.3 s</p>
+      </header>
+      <audio controls preload="none" src="site/data/audio/full_call.wav">
+        Your browser cannot play audio. The file is <a href="site/data/audio/full_call.wav">site/data/audio/full_call.wav</a>.
+      </audio>
+      <p class="listen__meta"><code>fixtures/audio/spoken_call/full_call.wav</code> <span aria-hidden="true">/</span> 16 kHz mono 16-bit <span aria-hidden="true">/</span> 5,801,760 bytes, byte-identical</p>
+      <div>
+        <p class="label">Required disclosures <span class="label__sep" aria-hidden="true">/</span> eu-retail <span class="label__sep" aria-hidden="true">/</span> from the ledger</p>
+        <ul class="dchips">
+          <li class="dchip dchip--given"><span class="dchip__code"><i aria-hidden="true"></i>capital_at_risk</span><span class="dchip__s">given</span></li>
+          <li class="dchip dchip--missing"><span class="dchip__code"><i aria-hidden="true"></i>past_performance</span><span class="dchip__s">missing</span></li>
+          <li class="dchip dchip--given"><span class="dchip__code"><i aria-hidden="true"></i>fees_and_charges</span><span class="dchip__s">given</span></li>
+        </ul>
+      </div>
+      <ul class="twin twin--verdict">
+        <li><span class="label">rubric_v1 <span class="label__sep" aria-hidden="true">/</span> disclosure</span><span class="twin__n">4/4</span><span class="verdict__s">six keywords counted <span aria-hidden="true">&middot;</span> 12/20 total <span aria-hidden="true">&middot;</span> fails on points alone</span></li>
+        <li><span class="label">cited gate CG-1 <span class="label__sep" aria-hidden="true">/</span> ledger</span><span class="twin__n twin__n--bad">FAIL</span><span class="verdict__s">2 of 3 codes recorded <span aria-hidden="true">&middot;</span> past_performance never said</span></li>
+      </ul>
+      <p class="callcard__end"><b>Ended by</b> the character cap at adviser turn 8 of 9, before the product was presented. The miss is entangled with that setting; the gate grades the session as recorded.</p>
+    </article>
+
+    <article class="callcard">
+      <header class="callcard__head">
+        <span class="callcard__n" aria-hidden="true">02</span>
+        <div class="callcard__who">
+          <p class="label">Call 2 <span class="label__sep" aria-hidden="true">/</span> cautious saver</p>
+          <p class="callcard__title">The saver the model stopped answering.</p>
+        </div>
+        <p class="callcard__meta">4 turns<br>54.5 s</p>
+      </header>
+      <audio controls preload="none" src="site/data/audio/full_call_pass.wav">
+        Your browser cannot play audio. The file is <a href="site/data/audio/full_call_pass.wav">site/data/audio/full_call_pass.wav</a>.
+      </audio>
+      <p class="listen__meta"><code>fixtures/audio/spoken_call_pass/full_call.wav</code> <span aria-hidden="true">/</span> 16 kHz mono 16-bit <span aria-hidden="true">/</span> 1,744,118 bytes, byte-identical</p>
+      <div>
+        <p class="label">Required disclosures <span class="label__sep" aria-hidden="true">/</span> eu-retail <span class="label__sep" aria-hidden="true">/</span> from the ledger</p>
+        <ul class="dchips">
+          <li class="dchip dchip--missing"><span class="dchip__code"><i aria-hidden="true"></i>capital_at_risk</span><span class="dchip__s">missing</span></li>
+          <li class="dchip dchip--given"><span class="dchip__code"><i aria-hidden="true"></i>past_performance</span><span class="dchip__s">given</span></li>
+          <li class="dchip dchip--missing"><span class="dchip__code"><i aria-hidden="true"></i>fees_and_charges</span><span class="dchip__s">missing</span></li>
+        </ul>
+      </div>
+      <ul class="twin twin--verdict">
+        <li><span class="label">rubric_v1 <span class="label__sep" aria-hidden="true">/</span> disclosure</span><span class="twin__n">4/4</span><span class="verdict__s">six keywords counted <span aria-hidden="true">&middot;</span> 10/20 total</span></li>
+        <li><span class="label">cited gate CG-1 <span class="label__sep" aria-hidden="true">/</span> ledger</span><span class="twin__n twin__n--bad">FAIL</span><span class="verdict__s">1 of 3 codes recorded <span aria-hidden="true">&middot;</span> two never said</span></li>
+      </ul>
+      <p class="callcard__end"><b>Ended by</b> the trainee model&rsquo;s content filter at adviser turn 3. The customer&rsquo;s <em>unpunctuated</em> transcript was refused 5 of 6 times; the same sentence punctuated, 0 of 5.</p>
+    </article>
+  </div>
+  <p class="calls__cost">Replaying both calls: <b class="num">0</b> charged <span aria-hidden="true">/</span> 0 network calls <span aria-hidden="true">/</span> 0 keys <span aria-hidden="true">/</span> 7,545,878 bytes of audio, none fetched until you press play</p>
+
+  <div class="listen listen--zero">
     <div class="listen__player">
       <div class="play">
-        <p class="label">The whole call <span class="label__sep" aria-hidden="true">/</span> 16 turns <span class="label__sep" aria-hidden="true">/</span> 181.303625 s</p>
-        <audio controls preload="none" src="site/data/audio/full_call.wav">
-          Your browser cannot play audio. The file is
-          <a href="site/data/audio/full_call.wav">site/data/audio/full_call.wav</a> — 16&nbsp;kHz mono WAV, 5,801,760 bytes.
-        </audio>
-        <p class="listen__meta">
-          A byte-identical copy of <code>fixtures/audio/spoken_call/full_call.wav</code> <span aria-hidden="true">/</span>
-          16 kHz mono 16-bit <span aria-hidden="true">/</span> 5,801,760 bytes, fetched only when you press play
-        </p>
-      </div>
-
-      <div class="play play--second">
-        <p class="label">Just the turn that scored zero <span class="label__sep" aria-hidden="true">/</span> adviser turn 1 <span class="label__sep" aria-hidden="true">/</span> 15.21075 s</p>
+        <p class="label">The turn that scored zero <span class="label__sep" aria-hidden="true">/</span> call 1, adviser turn 1 <span class="label__sep" aria-hidden="true">/</span> 15.21075 s</p>
         <audio controls preload="none" src="site/data/audio/excerpt.wav">
           Your browser cannot play audio. The file is
           <a href="site/data/audio/excerpt.wav">site/data/audio/excerpt.wav</a> — 16&nbsp;kHz mono WAV, 486,788 bytes.
@@ -120,20 +168,7 @@
           0.0&#8202;&#8594;&#8202;15.21075 s <span aria-hidden="true">/</span> 16 kHz mono 16-bit
         </p>
       </div>
-      <div class="play play--second">
-        <p class="label">The second call <span class="label__sep" aria-hidden="true">/</span> 4 turns <span class="label__sep" aria-hidden="true">/</span> 54.502313 s</p>
-        <audio controls preload="none" src="site/data/audio/full_call_pass.wav">
-          Your browser cannot play audio. The file is
-          <a href="site/data/audio/full_call_pass.wav">site/data/audio/full_call_pass.wav</a> &mdash; 16&nbsp;kHz mono WAV, 1,744,118 bytes.
-        </audio>
-        <p class="listen__meta">
-          A byte-identical copy of <code>fixtures/audio/spoken_call_pass/full_call.wav</code> <span aria-hidden="true">/</span>
-          a cautious saver, the same adviser brief plus a written addendum <span aria-hidden="true">/</span>
-          stopped at adviser turn 3 by the trainee model&rsquo;s content filter
-        </p>
-      </div>
     </div>
-
     <div class="listen__text">
       <p class="label">What the voice says <span class="label__sep" aria-hidden="true">/</span> spoken form</p>
       <blockquote class="quote">
@@ -141,30 +176,57 @@
         understand your goals, your timeframe, and how you feel about risk. Could you tell me a bit about what you're
         hoping to achieve with your investments<span class="mark">?</span></p>
       </blockquote>
-      <p class="listen__why">Chosen because it is the adviser's opening discovery question, and discovery is the criterion that scored zero.</p>
+      <p class="listen__why">The adviser&rsquo;s opening discovery question. Discovery was scored <b class="num">0/4</b>, because the graded transcript carries no question marks.</p>
     </div>
   </div>
 
-  <div class="cardgrid cardgrid--3">
-    <div class="minicard">
-      <p class="label">Session</p>
-      <p class="minicard__big">16 turns</p>
-      <p class="minicard__sub">8 adviser + 8 customer, 8 exchanges</p>
-    </div>
-    <div class="minicard">
-      <p class="label">Duration</p>
-      <p class="minicard__big">181.303625 s</p>
-      <p class="minicard__sub">176.053625 s speech + 5.25 s of gaps (15 &times; 0.35)</p>
-    </div>
-    <div class="minicard">
-      <p class="label">Cost to replay</p>
-      <p class="minicard__big">0 <span class="minicard__unit">charged</span></p>
-      <p class="minicard__sub">0 network calls, 0 keys required</p>
-    </div>
+  <div class="findings">
+    <p class="label">Four things this surfaced <span class="label__sep" aria-hidden="true">/</span> open any one</p>
+    <details class="disc disc--finding">
+      <summary><span class="disc__t">The rubric that shipped read vocabulary. The cited gate reads the ledger.</span></summary>
+      <div class="disc__body">
+        <p><code>rubric_v1</code> scores <code>mandatory_disclosure</code> by counting six English keywords in the adviser&rsquo;s speech.
+          The cited scorecard&rsquo;s gate <b>CG-1</b> reads the product&rsquo;s own <code>record_disclosure</code> ledger against the codes the
+          jurisdiction requires. Same two traces, same view, a different basis &mdash; and a gate is counted, never averaged.</p>
+        <p>Both calls were cut short &mdash; a character cap, then a content filter &mdash; so neither miss says what the adviser would have said
+          later. The gate grades the session as recorded, which is what a compliance gate must do.</p>
+        <p>The standard is named. The evaluator prints which regime it grades <code>eu-retail</code> under &mdash; the FCA register, assumption
+          <b>A-V2-1</b> &mdash; and runs that register&rsquo;s cited probes beside the ledger check. The three-code list itself still comes from
+          <code>register.py</code>, which cites nothing; that is now a printed limitation rather than a hidden one.</p>
+      </div>
+    </details>
+    <details class="disc disc--finding">
+      <summary><span class="disc__t">The register accepted a paraphrase the FCA rule does not.</span></summary>
+      <div class="disc__body">
+        <p>At turn 2 of call 2 the adviser said <em>&ldquo;past performance is not a guide to future performance.&rdquo;</em> The demo register
+          matched it and recorded <code>past_performance</code>. The FCA probe for COBS 4.5A.10R wants <em>&ldquo;past performance is not a
+          reliable indicator of future results&rdquo;</em> &mdash; the words, not the meaning &mdash; and marks it missed.</p>
+        <p>Two instruments read one sentence, and only one of them is reading the rule.</p>
+      </div>
+    </details>
+    <details class="disc disc--finding">
+      <summary><span class="disc__t">Call 2 is four turns long because the model refused an unpunctuated sentence.</span></summary>
+      <div class="disc__body">
+        <p>At adviser turn 3 the trainee model refused the customer&rsquo;s question about how long the money would be tied up. Thirteen probes,
+          recorded on the day and committed as evidence: the <em>unpunctuated</em> transcript &mdash; what the recogniser returns and what the model
+          was given &mdash; was refused <b class="num">5 of 6</b> times; the same sentence with its punctuation completed <b class="num">5 of 5</b>.</p>
+        <p>The channel defect that zeroed discovery in call 1 ended call 2. Those probe results are labelled as recorded live, not recomputable offline.</p>
+      </div>
+    </details>
+    <details class="disc disc--finding">
+      <summary><span class="disc__t">23 of 28 KPIs say <em>not applicable</em>, and each says why.</span></summary>
+      <div class="disc__body">
+        <p>An uncalibrated judge. A phrase set the registry names but does not commit. A gate whose trigger never occurred. Each not-applicable
+          KPI carries its reason, and the denominator shrinks visibly instead of silently.</p>
+        <p><b class="num">4/6</b> points and <b class="num">2/3</b> gates, on each call, is the whole of what the repo can decide today &mdash; and it says so.</p>
+      </div>
+    </details>
+    <p class="listen__meta">Reproduce, no keys:
+      <code>python -m roleplay.scorecard_eval fixtures/audio/spoken_call/trace.jsonl fixtures/audio/spoken_call_pass/trace.jsonl</code></p>
   </div>
 
   <details class="disc">
-    <summary><span class="disc__t">The engines, and what this actually billed</span></summary>
+    <summary><span class="disc__t">The engines behind call 1, and what this actually billed</span></summary>
     <div class="disc__body">
       <dl class="kv">
         <div><dt>Synthesis, adviser</dt><dd><code>tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb</code></dd></div>
@@ -193,47 +255,7 @@
 # expects 2f81115c1382988a0d0224eb7ffd88d38b7d9a7a4b99e36c334dc02d35111880</code></pre>
     </div>
   </details>
-<div class="note">
-    <p class="note__tag">Both calls, graded twice</p>
-    <h3 class="card__h">The rubric that shipped gave both calls 4/4 on disclosure. The cited gate fails both.</h3>
-    <p>
-      <code>rubric_v1</code> scores <code>mandatory_disclosure</code> by counting six English keywords in the adviser&rsquo;s speech.
-      The cited scorecard&rsquo;s gate <b>CG-1</b> reads the product&rsquo;s own <code>record_disclosure</code> ledger against the codes
-      the jurisdiction requires. Same two traces, same view, a different basis &mdash; and a gate is counted, never averaged.
-      Both calls were cut short &mdash; the first by a character cap before the product was presented, the second by the content
-      filter &mdash; so neither miss says what the adviser would have said later. The gate grades the session as recorded, which is
-      what a compliance gate must do.
-    </p>
-    <div class="cardgrid cardgrid--2">
-      <div class="minicard">
-        <p class="label">Call 1 <span class="label__sep" aria-hidden="true">/</span> aggressive challenger <span class="label__sep" aria-hidden="true">/</span> 16 turns</p>
-        <p class="minicard__big"><span class="tag tag--bad">CG-1 fail</span></p>
-        <p class="minicard__sub">Ledger <b class="num">2 of 3</b> required codes; <code>past_performance</code> never recorded.
-          <code>rubric_v1</code>: <b class="num">4/4</b> on disclosure, <b class="num">12/20</b>, fails on points alone.</p>
-      </div>
-      <div class="minicard">
-        <p class="label">Call 2 <span class="label__sep" aria-hidden="true">/</span> cautious saver <span class="label__sep" aria-hidden="true">/</span> 4 turns</p>
-        <p class="minicard__big"><span class="tag tag--bad">CG-1 fail</span></p>
-        <p class="minicard__sub">Ledger <b class="num">1 of 3</b>; <code>capital_at_risk</code> and <code>fees_and_charges</code> never recorded.
-          <code>rubric_v1</code>: <b class="num">4/4</b> on disclosure, <b class="num">10/20</b>.</p>
-      </div>
-    </div>
-    <ul class="bullets bullets--tight">
-      <li><b>The standard is named.</b> The evaluator prints which regime it grades <code>eu-retail</code> under &mdash; the FCA register, assumption
-        <b>A-V2-1</b> &mdash; and runs that register&rsquo;s cited probes beside the ledger check. The three-code list itself still comes from
-        <code>register.py</code>, which cites nothing; that is now a printed limitation rather than a hidden one.</li>
-      <li><b>The register accepted a paraphrase the rule does not.</b> Call 2&rsquo;s ledger holds <code>past_performance</code>; the FCA probe for
-        COBS 4.5A.10R, a <em>verbatim</em> requirement, marks it missed. Two instruments read one sentence, and only one of them is reading the rule.</li>
-      <li><b>Why call 2 is four turns long.</b> At adviser turn 3 the trainee model refused the customer&rsquo;s question about how long the money
-        would be tied up. Thirteen probes, recorded on the day: the <em>unpunctuated</em> transcript was refused <b class="num">5 of 6</b> times;
-        the same sentence with its punctuation completed <b class="num">5 of 5</b>. The channel defect that zeroed discovery in call 1 ended call 2.</li>
-      <li><b>The denominator is printed.</b> <b class="num">23 of 28</b> KPIs report <em>not applicable</em>, each with its reason &mdash; an uncalibrated
-        judge, a phrase set the registry names but does not commit, a gate whose trigger never occurred. <b class="num">4/6</b> points and
-        <b class="num">2/3</b> gates is the whole of what the repo can decide today, and it says so.</li>
-    </ul>
-    <p class="listen__meta">Reproduce, no keys:
-      <code>python -m roleplay.scorecard_eval fixtures/audio/spoken_call/trace.jsonl fixtures/audio/spoken_call_pass/trace.jsonl</code></p>
-  </div>
+
 <details class="disc"><summary><span class="disc__t">All 16 turns of call 1, as sent and as heard</span></summary><div class="disc__body"><p class="disc__intro">Every turn of the call. The first line of each is <code>text_sent</code>, what the synthesiser was given; the second is <code>text_heard</code>, what the recogniser returned and what was graded. Over 16 turns there are <b class="num">10</b> word-level edits after normalisation: <b class="num">9</b> orthographic, <b class="num">1</b> content — the dropped <em>I</em> on the customer&rsquo;s turn 6. Source: <code>fixtures/audio/spoken_call/manifest.json</code>.</p><ol class="tturns"><li class="tturn tturn--adviser"><p class="label">Order 0 <span aria-hidden="true">/</span> turn 1 <span aria-hidden="true">/</span> adviser</p><p class="tturn__sent">Good morning, Mr Novak. Thank you for coming in today. Before we discuss any investment options, I’d like to understand your goals, your timeframe, and how you feel about risk. Could you tell me a bit about what you’re hoping to achieve with your investments?</p><p class="tturn__heard">good morning mister novak thank you for coming in today before we discuss any investment options i&#x27;d like to understand your goals your time frame and how you feel about risk could you tell me a bit about what you&#x27;re hoping to achieve with your investments</p><p class="turn__cls"><span class="tag">orthographic only</span></p></li><li class="tturn tturn--customer"><p class="label">Order 1 <span aria-hidden="true">/</span> turn 1 <span aria-hidden="true">/</span> customer</p><p class="tturn__sent">Look, before we go any further, I want to know exactly what your fees are, because my brother-in-law says all these products are just a racket and the charges eat up everything you make.</p><p class="tturn__heard">look before we go any further i want to know exactly what your fees are because my brother-in-law says all these products are just a racket and the charges eat up everything you make</p><p class="turn__cls"><span class="tag tag--ok">identical after normalisation</span></p></li><li class="tturn tturn--adviser"><p class="label">Order 2 <span aria-hidden="true">/</span> turn 2 <span aria-hidden="true">/</span> adviser</p><p class="tturn__sent">Thank you for raising that concern—fees are an important consideration. The product I can offer has an annual management charge of 0.68 per cent, and there are no exit penalties. I’m happy to explain exactly how this works and what it means for your investment. Would you like to discuss fees in more detail now, or shall we first talk about your objectives?</p><p class="tturn__heard">thank you for raising that concern fees are an important consideration the product i can offer has an annual management charge of zero point six eight percent and there are no exit penalties i&#x27;m happy to explain exactly how this works and what it means for your investment would you like to discuss fees in more detail now or shall we first talk about your objectives</p><p class="turn__cls"><span class="tag">orthographic only</span></p></li><li class="tturn tturn--customer"><p class="label">Order 3 <span aria-hidden="true">/</span> turn 2 <span aria-hidden="true">/</span> customer</p><p class="tturn__sent">And why should I trust anything you say when you’re paid to sell me this stuff? Whose side are you really on?</p><p class="tturn__heard">and why should i trust anything you say when you&#x27;re paid to sell me this stuff whose side are you really on</p><p class="turn__cls"><span class="tag tag--ok">identical after normalisation</span></p></li><li class="tturn tturn--adviser"><p class="label">Order 4 <span aria-hidden="true">/</span> turn 3 <span aria-hidden="true">/</span> adviser</p><p class="tturn__sent">That’s a fair question, Mr Novak, and I appreciate your honesty. My role is to help you make informed decisions by setting out your options, the risks, and the costs, so you can decide what’s right for you. I don’t earn commission for recommending any particular product. My priority is to understand your needs and make sure any advice is suitable for your circumstances.</p><p class="tturn__heard">that&#x27;s a fair question mister novak and i appreciate your honesty my role is to help you make informed decisions by setting out your options the risks and the costs so you can decide what&#x27;s right for you i don&#x27;t earn commission for recommending any particular product my priority is to understand your needs and make sure any advice is suitable for your circumstances</p><p class="turn__cls"><span class="tag">orthographic only</span></p></li><li class="tturn tturn--customer"><p class="label">Order 5 <span aria-hidden="true">/</span> turn 3 <span aria-hidden="true">/</span> customer</p><p class="tturn__sent">Alright, I hear you.</p><p class="tturn__heard">alright i hear you</p><p class="turn__cls"><span class="tag tag--ok">identical after normalisation</span></p></li><li class="tturn tturn--adviser"><p class="label">Order 6 <span aria-hidden="true">/</span> turn 4 <span aria-hidden="true">/</span> adviser</p><p class="tturn__sent">Thank you, Mr Novak. To make sure I can give you the most relevant information, could you tell me what you’re hoping to achieve with your money and whether you have a specific timeframe in mind? This will help us focus on options that fit your goals.</p><p class="tturn__heard">thank you mister novak to make sure i can give you the most relevant information could you tell me what you&#x27;re hoping to achieve with your money and whether you have a specific time frame in mind this will help us focus on options that fit your goals</p><p class="turn__cls"><span class="tag">orthographic only</span></p></li><li class="tturn tturn--customer"><p class="label">Order 7 <span aria-hidden="true">/</span> turn 4 <span aria-hidden="true">/</span> customer</p><p class="tturn__sent">Okay, I get that.</p><p class="tturn__heard">okay i get that</p><p class="turn__cls"><span class="tag tag--ok">identical after normalisation</span></p></li><li class="tturn tturn--adviser"><p class="label">Order 8 <span aria-hidden="true">/</span> turn 5 <span aria-hidden="true">/</span> adviser</p><p class="tturn__sent">Great, thank you. Can you tell me if there’s a particular amount you’re thinking of investing, and whether you might need access to any of that money in the short term? This helps us consider how much you can comfortably tie up and for how long.</p><p class="tturn__heard">great thank you can you tell me if there&#x27;s a particular amount you&#x27;re thinking of investing and whether you might need access to any of that money in the short term this helps us consider how much you can comfortably tie up and for how long</p><p class="turn__cls"><span class="tag tag--ok">identical after normalisation</span></p></li><li class="tturn tturn--customer"><p class="label">Order 9 <span aria-hidden="true">/</span> turn 5 <span aria-hidden="true">/</span> customer</p><p class="tturn__sent">Alright, understood.</p><p class="tturn__heard">alright understood</p><p class="turn__cls"><span class="tag tag--ok">identical after normalisation</span></p></li><li class="tturn tturn--adviser"><p class="label">Order 10 <span aria-hidden="true">/</span> turn 6 <span aria-hidden="true">/</span> adviser</p><p class="tturn__sent">Thank you. One more important area to cover is how you feel about risk—investments can go up and down in value, and there’s always a chance you could get back less than you put in. How comfortable are you with the possibility of losing some of your investment, even temporarily?</p><p class="tturn__heard">thank you one more important area to cover is how you feel about risk investments can go up and down in value and there&#x27;s always a chance you could get back less than you put in how comfortable are you with the possibility of losing some of your investment even temporarily</p><p class="turn__cls"><span class="tag tag--ok">identical after normalisation</span></p></li><li class="tturn tturn--customer"><p class="label">Order 11 <span aria-hidden="true">/</span> turn 6 <span aria-hidden="true">/</span> customer</p><p class="tturn__sent">I understand what you&#x27;re saying.</p><p class="tturn__heard">understand what you&#x27;re saying</p><p class="turn__cls"><span class="tag tag--bad">content difference</span></p></li><li class="tturn tturn--adviser"><p class="label">Order 12 <span aria-hidden="true">/</span> turn 7 <span aria-hidden="true">/</span> adviser</p><p class="tturn__sent">Thank you for considering that. To summarise, we’ve discussed your goals, your timeframe, how much you might invest, and your feelings about risk. Based on what you’ve shared, I can outline some options and explain the trade-offs, but I won’t make any recommendations until I have a full picture of your circumstances. Would you like to continue with a full suitability assessment, or do you have any other questions or concerns before we proceed?</p><p class="tturn__heard">thank you for considering that to summarize we&#x27;ve discussed your goals your time frame how much you might invest and your feelings about risk based on what you&#x27;ve shared i can outline some options and explain the trade offs but i won&#x27;t make any recommendations until i have a full picture of your circumstances would you like to continue with a full suitability assessment or do you have any other questions or concerns before we proceed</p><p class="turn__cls"><span class="tag">orthographic only</span></p></li><li class="tturn tturn--customer"><p class="label">Order 13 <span aria-hidden="true">/</span> turn 7 <span aria-hidden="true">/</span> customer</p><p class="tturn__sent">That makes sense, go on.</p><p class="tturn__heard">that makes sense go on</p><p class="turn__cls"><span class="tag tag--ok">identical after normalisation</span></p></li><li class="tturn tturn--adviser"><p class="label">Order 14 <span aria-hidden="true">/</span> turn 8 <span aria-hidden="true">/</span> adviser</p><p class="tturn__sent">Thank you, Mr Novak. I’ll ask you some more detailed questions about your financial situation, commitments, and any other investments or savings you have. This will help ensure any options we discuss are suitable for you. Once we’ve completed that, I’ll summarise the options and the trade-offs, and you can decide how you’d like to proceed. Does that sound good as our next step?</p><p class="tturn__heard">thank you mister novak i&#x27;ll ask you some more detailed questions about your financial situation commitments and any other investments or savings you have this will help ensure any options we discuss are suitable for you once we&#x27;ve completed that i&#x27;ll summarize the options and the trade offs and you can decide how you&#x27;d like to proceed does that sound good as our next step</p><p class="turn__cls"><span class="tag">orthographic only</span></p></li><li class="tturn tturn--customer"><p class="label">Order 15 <span aria-hidden="true">/</span> turn 8 <span aria-hidden="true">/</span> customer</p><p class="tturn__sent">Yes, that&#x27;s fine.</p><p class="tturn__heard">yes that&#x27;s fine</p><p class="turn__cls"><span class="tag tag--ok">identical after normalisation</span></p></li></ol></div></details>
 </section>
 
@@ -980,6 +1002,6 @@ class AgentUnderTest(Protocol):
   </p>
 </footer>
 
-<script src="site/js/main.js"></script>
+<script src="site/js/main.js?v=00e9476dd1"></script>
 </body>
 </html>
