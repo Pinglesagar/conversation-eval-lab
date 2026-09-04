@@ -22,10 +22,15 @@
     </a>
     <ul class="nav__list">
       <li><a href="#call"><span class="nav__num" aria-hidden="true">00</span> The call</a></li>
-      <li><a href="#break"><span class="nav__num" aria-hidden="true">01</span> Where it breaks</a></li>
-      <li><a href="#hid"><span class="nav__num" aria-hidden="true">02</span> Why it nearly hid</a></li>
-      <li><a href="#else"><span class="nav__num" aria-hidden="true">03</span> What else</a></li>
+      <li><a href="#how"><span class="nav__num" aria-hidden="true">01</span> How it works</a></li>
+      <li><a href="#break"><span class="nav__num" aria-hidden="true">02</span> Where it breaks</a></li>
+      <li><a href="#hid"><span class="nav__num" aria-hidden="true">03</span> Why it hid</a></li>
+      <li><a href="#else"><span class="nav__num" aria-hidden="true">04</span> What else</a></li>
+      <li><a href="#covers"><span class="nav__num" aria-hidden="true">05</span> Coverage</a></li>
+      <li><a href="#adapt"><span class="nav__num" aria-hidden="true">06</span> Your agent</a></li>
+      <li><a href="#numbers"><span class="nav__num" aria-hidden="true">07</span> Numbers</a></li>
       <li><a href="#run">Run it</a></li>
+      <li><a href="#limits">Limits</a></li>
     </ul>
     <p class="chip chip--status" role="status">
       <span class="chip__dot" aria-hidden="true"></span>Replay <span class="chip__sep" aria-hidden="true">/</span> 0 keys
@@ -34,10 +39,9 @@
 </header>
 
 <main id="main">
-
 <!-- ======================= HERO ======================= -->
 <section class="hero" id="top">
-  <p class="eyebrow">Evaluation harness <span aria-hidden="true">/</span> One finding <span aria-hidden="true">/</span> n&nbsp;=&nbsp;1</p>
+  <p class="eyebrow">Evaluation harness <span aria-hidden="true">/</span> Voice and text <span aria-hidden="true">/</span> One auditable trace</p>
 
 
   <h1 class="display">
@@ -65,13 +69,15 @@
 
   <p class="hero__links">
     <a class="btn" href="https://github.com/Pinglesagar/conversation-eval-lab">The repository <span aria-hidden="true">&#8599;</span></a>
-    <a class="btn btn--ghost" href="#run">Run it yourself</a>
+    <a class="btn btn--ghost" href="#how">How it works</a>
+    <a class="btn btn--ghost" href="#adapt">Point it at your agent</a>
   </p>
 
   <p class="note note--top">
     <span class="note__tag">Honest note</span>
     <b>n&nbsp;=&nbsp;1.</b> This is a mechanism, not a rate. One call, examined end to end, to show what the pipeline
-    surfaces — it is not a measured frequency and nothing here should be read as one.
+    surfaces — it is not a measured frequency and nothing here should be read as one. The rest of the harness, and
+    every other number it produced, is below it.
   </p>
 </section>
 
@@ -81,10 +87,10 @@
     <span class="sec__num" aria-hidden="true">00</span>
     <div>
       <p class="eyebrow">The call</p>
-      <h2 class="h2">Hear the turn that scored zero.</h2>
+      <h2 class="h2">Hear the call. Then the turn that scored zero.</h2>
       <p class="sec__lede">
-        This is the adviser's opening line, in full, from the committed audio. It is a question. Discovery — the criterion
-        it exists to satisfy — was scored <b class="num">0/4</b>.
+        Two recordings, neither fetched until you press play: the whole 16-turn call, and beside it the adviser&rsquo;s
+        opening line on its own. That line is a question. Discovery — the criterion it exists to satisfy — was scored <b class="num">0/4</b>.
       </p>
     </div>
   </div>
@@ -175,12 +181,81 @@
 # expects 2f81115c1382988a0d0224eb7ffd88d38b7d9a7a4b99e36c334dc02d35111880</code></pre>
     </div>
   </details>
+<details class="disc"><summary><span class="disc__t">All 16 turns, as sent and as heard</span></summary><div class="disc__body"><p class="disc__intro">Every turn of the call. The first line of each is <code>text_sent</code>, what the synthesiser was given; the second is <code>text_heard</code>, what the recogniser returned and what was graded. Over 16 turns there are <b class="num">10</b> word-level edits after normalisation: <b class="num">9</b> orthographic, <b class="num">1</b> content — the dropped <em>I</em> on the customer&rsquo;s turn 6. Source: <code>fixtures/audio/spoken_call/manifest.json</code>.</p><ol class="tturns"><li class="tturn tturn--adviser"><p class="label">Order 0 <span aria-hidden="true">/</span> turn 1 <span aria-hidden="true">/</span> adviser</p><p class="tturn__sent">Good morning, Mr Novak. Thank you for coming in today. Before we discuss any investment options, I’d like to understand your goals, your timeframe, and how you feel about risk. Could you tell me a bit about what you’re hoping to achieve with your investments?</p><p class="tturn__heard">good morning mister novak thank you for coming in today before we discuss any investment options i&#x27;d like to understand your goals your time frame and how you feel about risk could you tell me a bit about what you&#x27;re hoping to achieve with your investments</p><p class="turn__cls"><span class="tag">orthographic only</span></p></li><li class="tturn tturn--customer"><p class="label">Order 1 <span aria-hidden="true">/</span> turn 1 <span aria-hidden="true">/</span> customer</p><p class="tturn__sent">Look, before we go any further, I want to know exactly what your fees are, because my brother-in-law says all these products are just a racket and the charges eat up everything you make.</p><p class="tturn__heard">look before we go any further i want to know exactly what your fees are because my brother-in-law says all these products are just a racket and the charges eat up everything you make</p><p class="turn__cls"><span class="tag tag--ok">identical after normalisation</span></p></li><li class="tturn tturn--adviser"><p class="label">Order 2 <span aria-hidden="true">/</span> turn 2 <span aria-hidden="true">/</span> adviser</p><p class="tturn__sent">Thank you for raising that concern—fees are an important consideration. The product I can offer has an annual management charge of 0.68 per cent, and there are no exit penalties. I’m happy to explain exactly how this works and what it means for your investment. Would you like to discuss fees in more detail now, or shall we first talk about your objectives?</p><p class="tturn__heard">thank you for raising that concern fees are an important consideration the product i can offer has an annual management charge of zero point six eight percent and there are no exit penalties i&#x27;m happy to explain exactly how this works and what it means for your investment would you like to discuss fees in more detail now or shall we first talk about your objectives</p><p class="turn__cls"><span class="tag">orthographic only</span></p></li><li class="tturn tturn--customer"><p class="label">Order 3 <span aria-hidden="true">/</span> turn 2 <span aria-hidden="true">/</span> customer</p><p class="tturn__sent">And why should I trust anything you say when you’re paid to sell me this stuff? Whose side are you really on?</p><p class="tturn__heard">and why should i trust anything you say when you&#x27;re paid to sell me this stuff whose side are you really on</p><p class="turn__cls"><span class="tag tag--ok">identical after normalisation</span></p></li><li class="tturn tturn--adviser"><p class="label">Order 4 <span aria-hidden="true">/</span> turn 3 <span aria-hidden="true">/</span> adviser</p><p class="tturn__sent">That’s a fair question, Mr Novak, and I appreciate your honesty. My role is to help you make informed decisions by setting out your options, the risks, and the costs, so you can decide what’s right for you. I don’t earn commission for recommending any particular product. My priority is to understand your needs and make sure any advice is suitable for your circumstances.</p><p class="tturn__heard">that&#x27;s a fair question mister novak and i appreciate your honesty my role is to help you make informed decisions by setting out your options the risks and the costs so you can decide what&#x27;s right for you i don&#x27;t earn commission for recommending any particular product my priority is to understand your needs and make sure any advice is suitable for your circumstances</p><p class="turn__cls"><span class="tag">orthographic only</span></p></li><li class="tturn tturn--customer"><p class="label">Order 5 <span aria-hidden="true">/</span> turn 3 <span aria-hidden="true">/</span> customer</p><p class="tturn__sent">Alright, I hear you.</p><p class="tturn__heard">alright i hear you</p><p class="turn__cls"><span class="tag tag--ok">identical after normalisation</span></p></li><li class="tturn tturn--adviser"><p class="label">Order 6 <span aria-hidden="true">/</span> turn 4 <span aria-hidden="true">/</span> adviser</p><p class="tturn__sent">Thank you, Mr Novak. To make sure I can give you the most relevant information, could you tell me what you’re hoping to achieve with your money and whether you have a specific timeframe in mind? This will help us focus on options that fit your goals.</p><p class="tturn__heard">thank you mister novak to make sure i can give you the most relevant information could you tell me what you&#x27;re hoping to achieve with your money and whether you have a specific time frame in mind this will help us focus on options that fit your goals</p><p class="turn__cls"><span class="tag">orthographic only</span></p></li><li class="tturn tturn--customer"><p class="label">Order 7 <span aria-hidden="true">/</span> turn 4 <span aria-hidden="true">/</span> customer</p><p class="tturn__sent">Okay, I get that.</p><p class="tturn__heard">okay i get that</p><p class="turn__cls"><span class="tag tag--ok">identical after normalisation</span></p></li><li class="tturn tturn--adviser"><p class="label">Order 8 <span aria-hidden="true">/</span> turn 5 <span aria-hidden="true">/</span> adviser</p><p class="tturn__sent">Great, thank you. Can you tell me if there’s a particular amount you’re thinking of investing, and whether you might need access to any of that money in the short term? This helps us consider how much you can comfortably tie up and for how long.</p><p class="tturn__heard">great thank you can you tell me if there&#x27;s a particular amount you&#x27;re thinking of investing and whether you might need access to any of that money in the short term this helps us consider how much you can comfortably tie up and for how long</p><p class="turn__cls"><span class="tag tag--ok">identical after normalisation</span></p></li><li class="tturn tturn--customer"><p class="label">Order 9 <span aria-hidden="true">/</span> turn 5 <span aria-hidden="true">/</span> customer</p><p class="tturn__sent">Alright, understood.</p><p class="tturn__heard">alright understood</p><p class="turn__cls"><span class="tag tag--ok">identical after normalisation</span></p></li><li class="tturn tturn--adviser"><p class="label">Order 10 <span aria-hidden="true">/</span> turn 6 <span aria-hidden="true">/</span> adviser</p><p class="tturn__sent">Thank you. One more important area to cover is how you feel about risk—investments can go up and down in value, and there’s always a chance you could get back less than you put in. How comfortable are you with the possibility of losing some of your investment, even temporarily?</p><p class="tturn__heard">thank you one more important area to cover is how you feel about risk investments can go up and down in value and there&#x27;s always a chance you could get back less than you put in how comfortable are you with the possibility of losing some of your investment even temporarily</p><p class="turn__cls"><span class="tag tag--ok">identical after normalisation</span></p></li><li class="tturn tturn--customer"><p class="label">Order 11 <span aria-hidden="true">/</span> turn 6 <span aria-hidden="true">/</span> customer</p><p class="tturn__sent">I understand what you&#x27;re saying.</p><p class="tturn__heard">understand what you&#x27;re saying</p><p class="turn__cls"><span class="tag tag--bad">content difference</span></p></li><li class="tturn tturn--adviser"><p class="label">Order 12 <span aria-hidden="true">/</span> turn 7 <span aria-hidden="true">/</span> adviser</p><p class="tturn__sent">Thank you for considering that. To summarise, we’ve discussed your goals, your timeframe, how much you might invest, and your feelings about risk. Based on what you’ve shared, I can outline some options and explain the trade-offs, but I won’t make any recommendations until I have a full picture of your circumstances. Would you like to continue with a full suitability assessment, or do you have any other questions or concerns before we proceed?</p><p class="tturn__heard">thank you for considering that to summarize we&#x27;ve discussed your goals your time frame how much you might invest and your feelings about risk based on what you&#x27;ve shared i can outline some options and explain the trade offs but i won&#x27;t make any recommendations until i have a full picture of your circumstances would you like to continue with a full suitability assessment or do you have any other questions or concerns before we proceed</p><p class="turn__cls"><span class="tag">orthographic only</span></p></li><li class="tturn tturn--customer"><p class="label">Order 13 <span aria-hidden="true">/</span> turn 7 <span aria-hidden="true">/</span> customer</p><p class="tturn__sent">That makes sense, go on.</p><p class="tturn__heard">that makes sense go on</p><p class="turn__cls"><span class="tag tag--ok">identical after normalisation</span></p></li><li class="tturn tturn--adviser"><p class="label">Order 14 <span aria-hidden="true">/</span> turn 8 <span aria-hidden="true">/</span> adviser</p><p class="tturn__sent">Thank you, Mr Novak. I’ll ask you some more detailed questions about your financial situation, commitments, and any other investments or savings you have. This will help ensure any options we discuss are suitable for you. Once we’ve completed that, I’ll summarise the options and the trade-offs, and you can decide how you’d like to proceed. Does that sound good as our next step?</p><p class="tturn__heard">thank you mister novak i&#x27;ll ask you some more detailed questions about your financial situation commitments and any other investments or savings you have this will help ensure any options we discuss are suitable for you once we&#x27;ve completed that i&#x27;ll summarize the options and the trade offs and you can decide how you&#x27;d like to proceed does that sound good as our next step</p><p class="turn__cls"><span class="tag">orthographic only</span></p></li><li class="tturn tturn--customer"><p class="label">Order 15 <span aria-hidden="true">/</span> turn 8 <span aria-hidden="true">/</span> customer</p><p class="tturn__sent">Yes, that&#x27;s fine.</p><p class="tturn__heard">yes that&#x27;s fine</p><p class="turn__cls"><span class="tag tag--ok">identical after normalisation</span></p></li></ol></div></details>
 </section>
 
-<!-- ======================= 01 WHERE IT BREAKS ======================= -->
-<section class="sec" id="break">
+
+<!-- ======================= 01 HOW IT WORKS ======================= -->
+<section class="sec" id="how">
   <div class="sec__head">
     <span class="sec__num" aria-hidden="true">01</span>
+    <div>
+      <p class="eyebrow">How it works</p>
+      <h2 class="h2">Everything reads <span class="accent">the trace</span>. Nothing reads the agent.</h2>
+      <p class="sec__lede">
+        The trace is the product. Every verdict, latency figure and judge call is a function of one JSONL event stream with an injected clock; every check is decided on event position, not timestamp.
+      </p>
+    </div>
+  </div>
+
+  <div class="flow" role="group" aria-label="Architecture: conversation, trace, three graders, gate, report">
+    <div class="flow__box flow__box--in">
+      <p class="flow__k">Conversation</p>
+      <p class="flow__t">A caller talks to the agent under test</p>
+      <p class="flow__p">Scripted or model-driven personas; text, or spoken through real synthesis and recognition and graded on what was <em>heard</em>. Repeated k times, because one pass is not evidence.</p>
+    </div>
+    <p class="flow__arrow" aria-hidden="true">&#8594;</p>
+    <div class="flow__box flow__box--hub">
+      <p class="flow__k">The trace</p>
+      <p class="flow__t">One ordered event stream</p>
+      <p class="flow__p"><b class="num">15</b> event kinds from <b class="num">3</b> actors, with an injected clock. Every check below is decided on the <em>position</em> of an event in this stream, never on its timestamp. Swap the agent, or swap text for speech, and nothing downstream changes.</p>
+    </div>
+    <p class="flow__arrow" aria-hidden="true">&#8594;</p>
+    <div class="flow__col">
+      <div class="flow__box flow__box--grader">
+        <p class="flow__k">Grader 1 <span aria-hidden="true">/</span> contracts</p>
+        <p class="flow__t"><b class="num">6</b> contracts, plain code</p>
+        <p class="flow__p">Did the agent actually call the tool it promised? Free, instant, the same answer every time. Literal, so it misses paraphrase — which is its own finding, below.</p>
+      </div>
+      <div class="flow__box flow__box--grader">
+        <p class="flow__k">Grader 2 <span aria-hidden="true">/</span> judges</p>
+        <p class="flow__t">A model marks meaning</p>
+        <p class="flow__p">Calibrated against hand labels first: <code>calibrate()</code> returns TPR, TNR and kappa, and the registry <em>raises</em> below <b class="num">0.85</b> on either rate. An unmeasured judge cannot run.</p>
+      </div>
+      <div class="flow__box flow__box--grader">
+        <p class="flow__k">Grader 3 <span aria-hidden="true">/</span> registers</p>
+        <p class="flow__t"><b class="num">4</b> regimes, <b class="num">36</b> entries</p>
+        <p class="flow__p">The actual rulebooks, not a keyword list. Every entry carries a paragraph-level citation or is labelled an assumption, and a <code>not-required</code> kind stops one market&rsquo;s rule being invented in another.</p>
+      </div>
+    </div>
+    <p class="flow__arrow" aria-hidden="true">&#8594;</p>
+    <div class="flow__box flow__box--gate">
+      <p class="flow__k">Gate</p>
+      <p class="flow__t">It can say no</p>
+      <p class="flow__p">Two gates. The calibration gate refuses a judge below threshold. The CI gate runs <b class="num">8</b> stages and <b class="num">17</b> commands offline, cheapest first, and <b class="num">2</b> of the stages must regenerate committed artefacts byte for byte.</p>
+    </div>
+    <p class="flow__arrow" aria-hidden="true">&#8594;</p>
+    <div class="flow__box flow__box--out">
+      <p class="flow__k">Report</p>
+      <p class="flow__t">Every rate with its denominator</p>
+      <p class="flow__p"><code>STABLE_PASS</code>, <code>STABLE_FAIL</code> or <code>FLAKY</code>, and FLAKY is never a pass. The committed case-study report says <b>FAIL</b> — <b class="num">44/47</b> stable-pass — and the build is green because it reproduced that report exactly.</p>
+    </div>
+  </div>
+
+  <p class="flow__caption">Read left to right: a conversation happens, it is written down, the writing is graded three ways, a gate decides whether the graders themselves are trustworthy, and a report states every figure with the count it came from. The trace in the middle is the whole design; the rest is what you can build once you have it.</p>
+
+  <details class="disc"><summary><span class="disc__t">The 15 event kinds, and the 2 reserved ones</span></summary><div class="disc__body"><p class="disc__intro">From <code>lab/trace/schema.py::EventKind</code>. Actors: <code>caller, agent, system</code>. The two reserved kinds exist in the schema so that a duplex adapter can emit them; today they are constructed from timings a scenario hands over, and no committed trace contains either.</p><div class="scroller"><table class="grid"><caption class="sr-only">Event kinds and their payload keys</caption><thead><tr><th scope="col">Kind</th><th scope="col">Payload keys</th></tr></thead><tbody><tr><th scope="row">agent_audio_complete</th><td>turn, num_bytes</td></tr><tr><th scope="row">agent_audio_first_byte</th><td>turn</td></tr><tr><th scope="row">agent_handoff</th><td>from, to, reason</td></tr><tr><th scope="row">agent_utterance</th><td>text, agent</td></tr><tr><th scope="row">audio_delivered</th><td>turn, participant</td></tr><tr><th scope="row">audio_emitted</th><td>num_bytes, duration_s</td></tr><tr><th scope="row">caller_utterance</th><td>text</td></tr><tr><th scope="row">session_end</th><td>reason, turns</td></tr><tr><th scope="row">session_start</th><td>session_id, scenario_id, adapter</td></tr><tr><th scope="row">tool_call</th><td>name, args, call_id</td></tr><tr><th scope="row">tool_result</th><td>name, call_id, ok, result</td></tr><tr><th scope="row">transcript_in</th><td>text, confidence</td></tr><tr><th scope="row">transcript_out</th><td>text</td></tr><tr><th scope="row">transport_connected</th><td>participant, attempt</td></tr><tr><th scope="row">transport_disconnected</th><td>participant, reason</td></tr><tr class="grid__reserved"><th scope="row">interruption_acknowledged</th><td>turn, overlap_s, yielded <span class="tag tag--hist">reserved</span></td></tr><tr class="grid__reserved"><th scope="row">interruption_started</th><td>turn, agent_started_s, agent_would_end_s <span class="tag tag--hist">reserved</span></td></tr></tbody></table></div></div></details>
+
+  <details class="disc"><summary><span class="disc__t">The 6 contracts</span></summary><div class="disc__body"><p class="disc__intro">event position in the stream (lab/checks/contracts.py::_positions), never on ts. Flagship: PromiseContract — what the agent said, cross-referenced with what it did.</p><div class="scroller"><table class="grid grid--wrap"><caption class="sr-only">The six contracts, what each owns, and where it lives</caption><thead><tr><th scope="col">Contract</th><th scope="col">Owns</th><th scope="col">Source</th></tr></thead><tbody><tr><th scope="row">ToolContract</th><td class="wrap">What the agent must and must not call, how often, in what order, with what arguments.</td><td>lab/checks/contracts.py:575</td></tr><tr><th scope="row">PromiseContract</th><td class="wrap">Every spoken commitment must be backed by the tool call that realises it.</td><td>lab/checks/contracts.py:954</td></tr><tr><th scope="row">NoReAskContract</th><td class="wrap">Information the caller already gave must not be requested again.</td><td>lab/checks/contracts.py:1110</td></tr><tr><th scope="row">FieldPropagationContract</th><td class="wrap">A value given in one turn must survive a handoff and reach a tool argument.</td><td>lab/checks/contracts.py:1252</td></tr><tr><th scope="row">NoProgressContract</th><td class="wrap">A question repeated with nothing accomplished in between is a stuck agent.</td><td>lab/checks/contracts.py:1397</td></tr><tr><th scope="row">PhraseContract</th><td class="wrap">Language that must appear, and language that must not.</td><td>lab/checks/contracts.py:1601</td></tr></tbody></table></div></div></details>
+
+  <details class="disc"><summary><span class="disc__t">The 4 regimes and their 36 entries</span></summary><div class="disc__body"><p class="disc__intro">roleplay/advisory.py — every entry carries a paragraph-level citation or is labelled an assumption. Kind vocabulary: <code>gate, not-required, prescribed-unit, prohibition, substance, verbatim</code>. Evidence vocabulary: <code>sourced, secondary, assumption</code>.</p><div class="scroller"><table class="grid grid--wrap"><caption class="sr-only">Regimes, entries, and entry kinds</caption><thead><tr><th scope="col">Regime</th><th scope="col">Regulator</th><th scope="col">Entries</th><th scope="col">By kind</th><th scope="col">By evidence</th></tr></thead><tbody><tr><th scope="row">fca</th><td class="wrap">Financial Conduct Authority (COBS / PRIN), United Kingdom</td><td>10</td><td>gate 1, prescribed-unit 2, prohibition 1, substance 4, verbatim 2</td><td>sourced 10</td></tr><tr><th scope="row">mas</th><td class="wrap">Monetary Authority of Singapore</td><td>9</td><td>gate 2, not-required 1, prescribed-unit 2, substance 4</td><td>sourced 9</td></tr><tr><th scope="row">reg-bi</th><td class="wrap">SEC Regulation Best Interest, United States</td><td>8</td><td>not-required 4, prohibition 1, substance 3</td><td>secondary 1, sourced 7</td></tr><tr><th scope="row">sfc-ia</th><td class="wrap">Securities and Futures Commission and Insurance Authority, Hong Kong</td><td>9</td><td>gate 1, prescribed-unit 2, substance 5, verbatim 1</td><td>secondary 1, sourced 8</td></tr></tbody></table></div></div></details>
+
+  <details class="disc"><summary><span class="disc__t">The CI gate, stage by stage</span></summary><div class="disc__body"><p class="disc__intro">Parsed from the Makefile&rsquo;s <code>gate</code> target: 8 stages, 17 commands, stops at the first red. Stages 4 and 5 rewrite committed artefacts and then <code>git diff --exit-code</code> them. Replay is blind to a prompt change: a green gate is necessary and not sufficient when a prompt, persona or rubric moved (docs/GATES.md, stage 9).</p><ol class="stages"><li><span class="stage__n">01</span><span class="stage__t">lint: syntax errors and undefined names</span><span class="stage__c"><i>ruff, syntax errors and undefined names</i></span><span class="stage__b"></span></li><li><span class="stage__n">02</span><span class="stage__t">the two corpora, against their schemas</span><span class="stage__c">python -m lab.cli validate --coverage<br>python -m roleplay.corpus --coverage --list</span><span class="stage__b"></span></li><li><span class="stage__n">03</span><span class="stage__t">the committed traces, re-checked with no agent and no runner</span><span class="stage__c">python -m lab.cli replay --failures-only</span><span class="stage__b"></span></li><li><span class="stage__n">04</span><span class="stage__t">the case study, against its baseline, then byte for byte</span><span class="stage__c">python -m lab.cli run --replay --ci --out fixtures/replay_run<br>git diff --exit-code -- fixtures/replay_run</span><span class="stage__b">byte for byte</span></li><li><span class="stage__n">05</span><span class="stage__t">the calibration gates, then the artefacts they wrote</span><span class="stage__c">python -m lab.cli calibrate --ci<br>git diff --exit-code -- fixtures lab/judges</span><span class="stage__b">byte for byte</span></li><li><span class="stage__n">06</span><span class="stage__t">the error analysis still agrees with the artefacts</span><span class="stage__c">python -m error_analysis.pareto --check --no-chart</span><span class="stage__b"></span></li><li><span class="stage__n">07</span><span class="stage__t">the other packs and the recorded tiers, all offline</span><span class="stage__c">python -m roleplay.demo<br>python -m roleplay.regime_eval --divergence --shadow<br>python -m ragcheck<br>python -m roleplay.spoken<br>python -m lab.voice.transport.report --out reports/transport_report.md<br>python -m lab.cli run -k 3 --live-agent --live-caller --live-judge --out reports/live --no-traces --baseline fixtures/live_full/run_report.json --ci<br>python -m tablemate --score fixtures/live_full<br>python -m scripts.make_audio_fixtures --check</span><span class="stage__b"></span></li><li><span class="stage__n">08</span><span class="stage__t">the offline suite</span><span class="stage__c">python -m pytest -q</span><span class="stage__b"></span></li></ol><p class="disc__foot">The scripted case study, re-run for this page: exit status 0, headline <code>FAIL — 44/47 (93.6%) scenarios stable-pass — 36/369 (9.8%) contract evaluations failed</code>, agrees with the committed report: true.</p></div></details>
+</section>
+<!-- ======================= 02 WHERE IT BREAKS ======================= -->
+<section class="sec" id="break">
+  <div class="sec__head">
+    <span class="sec__num" aria-hidden="true">02</span>
     <div>
       <p class="eyebrow">Where it breaks</p>
       <h2 class="h2">The detector wants a <span class="accent">?</span>. The scored transcript has none.</h2>
@@ -353,10 +428,10 @@
   </details>
 </section>
 
-<!-- ======================= 02 WHY IT NEARLY HID ======================= -->
+<!-- ======================= 03 WHY IT NEARLY HID ======================= -->
 <section class="sec" id="hid">
   <div class="sec__head">
-    <span class="sec__num" aria-hidden="true">02</span>
+    <span class="sec__num" aria-hidden="true">03</span>
     <div>
       <p class="eyebrow">Why it nearly hid</p>
       <h2 class="h2">Two criteria moved in opposite directions to the <span class="accent">same total</span>.</h2>
@@ -499,25 +574,24 @@
   </details>
 </section>
 
-<!-- ======================= 03 WHAT ELSE ======================= -->
+
+<!-- ======================= 04 WHAT ELSE IT FOUND ======================= -->
 <section class="sec" id="else">
   <div class="sec__head">
-    <span class="sec__num" aria-hidden="true">03</span>
+    <span class="sec__num" aria-hidden="true">04</span>
     <div>
       <p class="eyebrow">What else it found</p>
-      <h2 class="h2">Four more instruments that were wrong.</h2>
+      <h2 class="h2">13 findings. Every one with its denominator.</h2>
       <p class="sec__lede">
-        The finding above is a detector that could not see a question. These four are the same shape &mdash; the thing
-        doing the measuring was the thing at fault. Three of them are this harness&rsquo;s own; the fourth is a vendor&rsquo;s
-        recogniser. Every rate below is recomputed from a committed artefact by the command beside it, unless it is
-        explicitly labelled <span class="tag tag--hist">historical</span>.
+        The finding above is a detector that could not see a question. Most of these are the same shape: the thing doing the
+        measuring was the thing at fault. Every rate is recomputed from a committed artefact by the command beside it, unless it
+        is explicitly labelled <span class="tag tag--hist">historical</span>; each card opens for the full table.
       </p>
     </div>
   </div>
 
   <div class="cardgrid cardgrid--2">
-
-    <!-- card 1 -->
+<article class="card card--lead"><p class="card__eyebrow">Finding <span aria-hidden="true">/</span> the headline, told above</p><h3 class="card__h">The grader could not hear a question.</h3><p class="card__p">On a spoken call where 5 of 8 adviser turns ended in a question mark, discovery scored 0/4 — and the total, the verdict and the disclosure ledger were identical either way.</p><ul class="twin"><li><span class="twin__l">Adviser turns ending in ? as sent</span><span class="twin__n">0.625 <span class="twin__d">(5/8)</span></span></li><li><span class="twin__l">Adviser turns ending in ? as heard</span><span class="twin__n twin__n--bad">0.000 <span class="twin__d">(0/8)</span></span></li></ul><p class="card__read">Discovery 2 &#8594; <b class="num">0</b>; objection handling 2 &#8594; 4; total 12 = 12 either way. Sections <a href="#break">02</a> and <a href="#hid">03</a> take it apart.</p><p class="card__caveat"><span class="card__cavtag">Caveat</span> n = 1. A mechanism, not a rate.</p><details class="disc disc--in"><summary><span class="disc__t">Where the figures come from</span></summary><div class="disc__body"><ul class="bullets"><li>Recomputed: true, by <code>roleplay.spoken.replay_spoken_call</code> from <code>fixtures/audio/spoken_call/manifest.json</code>.</li><li>Detail file: <a href="site/data/finding.json">finding.json</a>.</li><li>Verdicts identical across channels: true.</li></ul></div></details><p class="card__cmd"><code>make start</code></p></article><!-- card 1 -->
     <article class="card">
       <p class="card__eyebrow">Finding <span aria-hidden="true">/</span> the grader itself</p>
       <h3 class="card__h">It will not fail anybody.</h3>
@@ -543,9 +617,7 @@
         </div>
       </details>
       <p class="card__cmd"><code>make roleplay-demo</code></p>
-    </article>
-
-    <!-- card 2 -->
+    </article><!-- card 2 -->
     <article class="card">
       <p class="card__eyebrow">Finding <span aria-hidden="true">/</span> the judge</p>
       <h3 class="card__h">A judge whose own gate refused it.</h3>
@@ -568,9 +640,7 @@
         </div>
       </details>
       <p class="card__cmd"><code>evallab calibrate --ci</code></p>
-    </article>
-
-    <!-- card 3 -->
+    </article><!-- card 3 -->
     <article class="card">
       <p class="card__eyebrow">Finding <span aria-hidden="true">/</span> the recogniser under noise</p>
       <h3 class="card__h">Wrong before it goes silent.</h3>
@@ -608,9 +678,7 @@
         </div>
       </details>
       <p class="card__cmd"><code>make audio-suite-evidence</code></p>
-    </article>
-
-    <!-- card 4 -->
+    </article><!-- card 4 -->
     <article class="card">
       <p class="card__eyebrow">Finding <span aria-hidden="true">/</span> the promise detector</p>
       <h3 class="card__h">A literal is a check that works once.</h3>
@@ -633,18 +701,125 @@
         </div>
       </details>
       <p class="card__cmd"><code>python -m tablemate --score fixtures/replay_run</code><br><code>python -m pytest tests/test_checks_paraphrase.py -q</code></p>
-    </article>
-
+    </article><article class="card"><p class="card__eyebrow">Finding <span aria-hidden="true">/</span> run-to-run stability</p><h3 class="card__h">Stable in aggregate. Unstable per item.</h3><p class="card__p">Prompt v1 returned the same confusion matrix on all 3 runs while 2 of 24 items changed verdict between runs — in opposite directions, so they cancelled.</p><ul class="twin"><li><span class="twin__l">Items unanimous over 3 runs, v1</span><span class="twin__n twin__n--bad">0.917 <span class="twin__d">(22/24)</span></span></li><li><span class="twin__l">Items unanimous over 3 runs, v2</span><span class="twin__n">1.000 <span class="twin__d">(24/24)</span></span></li></ul><p class="card__read">Aggregate stability is not instrument stability. Only the per-item view sees the flips.</p><details class="disc disc--in"><summary><span class="disc__t">The three matrices, and the two items that flipped</span></summary><div class="disc__body"><div class="scroller"><table class="grid"><caption class="sr-only">Confusion matrix per run for prompt v1</caption><thead><tr><th scope="col">Run</th><th scope="col">TP</th><th scope="col">FP</th><th scope="col">FN</th><th scope="col">TN</th></tr></thead><tbody><tr><th scope="row">1</th><td>2</td><td>0</td><td>6</td><td>16</td></tr><tr><th scope="row">2</th><td>2</td><td>0</td><td>6</td><td>16</td></tr><tr><th scope="row">3</th><td>2</td><td>0</td><td>6</td><td>16</td></tr></tbody></table></div><p class="disc__h">Unstable items, v1</p><ul class="bullets"><li><code>all-set-saturday</code> — human <b>fail</b>, verdicts fail / pass / fail</li><li><code>claim-buried-in-policy-answer</code> — human <b>fail</b>, verdicts pass / fail / pass</li></ul><p class="disc__foot">Matrices identical: true. Model <code>azure/gpt-4.1</code>, 3 runs.</p></div></details><p class="card__cmd"><code>evallab calibrate</code></p></article><article class="card"><p class="card__eyebrow">Finding <span aria-hidden="true">/</span> the interval under a perfect score</p><h3 class="card__h">Eight of eight has a lower bound of 0.676.</h3><p class="card__p">v2&#x27;s TPR of 1.000 (8/8) has a 95% Wilson interval of [0.676, 1.000] — a lower bound below the 0.85 it just cleared.</p><ul class="twin"><li><span class="twin__l">v2 recall, point estimate</span><span class="twin__n">1.000 <span class="twin__d">(8/8)</span></span></li><li><span class="twin__l">95% Wilson interval</span><span class="twin__n twin__n--bad">[0.676, 1.000]</span></li></ul><p class="card__read">The gate scores on the point estimate and the threshold is 0.85. Lower bound clears the threshold: <b>false</b>. That is what n = 8 buys, and the page says so rather than rounding it away.</p><details class="disc disc--in"><summary><span class="disc__t">How the interval is computed</span></summary><div class="disc__body"><ul class="bullets"><li><code>lab.stats.wilson_interval(8, 8)</code> — the Wilson score interval, not the normal approximation, which collapses to zero width at a perfect score.</li><li>Gate scored on: <code>point</code>, threshold 0.85.</li></ul></div></details><p class="card__cmd"><code>python -c &quot;from lab.stats import wilson_interval; print(wilson_interval(8, 8))&quot;</code></p></article><article class="card"><p class="card__eyebrow">Finding <span aria-hidden="true">/</span> the detectability floor</p><h3 class="card__h">Six items must move before anything is publishable.</h3><p class="card__p">On 24 paired items, 6 must move together before any improvement is publishable at alpha 0.05; v1 -&gt; v2 moved exactly 6 (p = 0.03125).</p><ul class="twin"><li><span class="twin__l">Fixed by v2, of 24 paired items</span><span class="twin__n">6 <span class="twin__d">(6/24)</span></span></li><li><span class="twin__l">Exact McNemar p</span><span class="twin__n twin__n--bad">0.03125</span></li></ul><p class="card__read">A v3 that fixed three items and broke none would be unpublishable at p = 0.25 however real the improvement.</p><details class="disc disc--in"><summary><span class="disc__t">p by number of items moving one way</span></summary><div class="disc__body"><div class="scroller"><table class="grid"><caption class="sr-only">Exact McNemar p if d items all move one way, on 24 items</caption><thead><tr><th scope="col">d</th><th scope="col">p</th><th scope="col">at &alpha; 0.05</th></tr></thead><tbody><tr><th scope="row">1</th><td>1.0</td><td></td></tr><tr><th scope="row">2</th><td>0.5</td><td></td></tr><tr><th scope="row">3</th><td>0.25</td><td></td></tr><tr><th scope="row">4</th><td>0.125</td><td></td></tr><tr><th scope="row">5</th><td>0.0625</td><td></td></tr><tr><th scope="row">6</th><td>0.03125</td><td>publishable</td></tr><tr><th scope="row">7</th><td>0.01562</td><td>publishable</td></tr></tbody></table></div><p class="disc__foot">Both correct 18, both wrong 0, fixed by v2 6, broken by v2 0; floor 6 items.</p></div></details><p class="card__cmd"><code>evallab calibrate</code></p></article><article class="card"><p class="card__eyebrow">Finding <span aria-hidden="true">/</span> transport latency</p><h3 class="card__h">A stopwatch reading 0.0 ms is at the wrong end of the room.</h3><p class="card__p">Delivery gap mean 89.0 ms over n=12 turns (p50 89.6 ms, p90 96.9 ms, p95 refused at n&lt;20); an agent-side stopwatch reports 0.0 ms for the same turns.</p><ul class="twin"><li><span class="twin__l">Delivery gap, mean, n = 12</span><span class="twin__n">89.0 <span class="twin__d">ms</span></span></li><li><span class="twin__l">Agent-side stopwatch, same turns</span><span class="twin__n twin__n--bad">0.0 <span class="twin__d">ms</span></span></li></ul><p class="card__read">p50 89.6 ms, p90 96.9 ms. p95 is <b>refused</b>: it needs n &#8805; 20 and there are 12. A quantile that prints anyway is the kind of number this page does not carry.</p><details class="disc disc--in"><summary><span class="disc__t">The room, the queue and the timing gate</span></summary><div class="disc__body"><ul class="bullets"><li>Net of the send queue: mean 86.0 ms; queue correlation 0.72.</li><li>Timing gate: <b>PASS</b> at tolerance |relative error| &lt;= 5.0% and stdev &lt;= 15.0 ms; the naive whole-turn control: <b>FAIL</b>.</li><li>Other recorded sessions:<ul><li><code>delivery-gap-live-run</code>: mean 128.3 ms, n = 12</li><li><code>delivery-gap-second-session</code>: mean 137.6 ms, n = 12</li></ul></li></ul><p class="disc__h">Caveats</p><ul class="bullets"><li>Both ends of the room were in one process, so the gap is a floor and not a worst case.</li><li>Non-gating in CI by design: a network test that blocks a merge trains people to bypass it.</li></ul></div></details><p class="card__cmd"><code>make transport-report</code></p></article><article class="card"><p class="card__eyebrow">Finding <span aria-hidden="true">/</span> the flake band</p><h3 class="card__h">A turn budget decided a verdict on its own.</h3><p class="card__p">The same 8 scenarios at k=5 with only the caller live: 7/8 stable-pass with a 12-turn caller budget, 5/8 with an 8-turn one.</p><ul class="twin"><li><span class="twin__l">Stable-pass, 12-turn caller budget</span><span class="twin__n">0.875 <span class="twin__d">(7/8)</span></span></li><li><span class="twin__l">Stable-pass, 8-turn caller budget</span><span class="twin__n twin__n--bad">0.625 <span class="twin__d">(5/8)</span></span></li></ul><p class="card__read">A setting nobody thought of as part of the scenario decided a verdict on its own. FLAKY 0.125 (1/8) against 0.375 (3/8), on the same eight scenarios at k = 5.</p><details class="disc disc--in"><summary><span class="disc__t">All eight scenarios under both budgets</span></summary><div class="disc__body"><div class="scroller"><table class="grid"><caption class="sr-only">Passes out of five per scenario, under a 12-turn and an 8-turn caller budget</caption><thead><tr><th scope="col">Scenario</th><th scope="col">Persona</th><th scope="col">Budget 12</th><th scope="col">Budget 8</th></tr></thead><tbody><tr><th scope="row">happy-two-covers-thursday</th><td>brisk_regular</td><td class="">1.000 (5/5)</td><td class="">1.000 (5/5)</td></tr><tr><th scope="row">happy-availability-then-choice</th><td>brisk_regular</td><td class="">1.000 (5/5)</td><td class="grid__hot">0.800 (4/5)</td></tr><tr><th scope="row">happy-dietary-note-single-agent</th><td>brisk_regular</td><td class="">1.000 (5/5)</td><td class="">1.000 (5/5)</td></tr><tr><th scope="row">happy-vague-opener-then-details</th><td>chatty_planner</td><td class="grid__hot">0.800 (4/5)</td><td class="grid__hot">0.800 (4/5)</td></tr><tr><th scope="row">edge-volunteers-nothing</th><td>minimal_replier</td><td class="">1.000 (5/5)</td><td class="">1.000 (5/5)</td></tr><tr><th scope="row">edge-reluctant-caller-two-asks</th><td>distracted_parent</td><td class="">1.000 (5/5)</td><td class="grid__hot">0.200 (1/5)</td></tr><tr><th scope="row">edge-large-party-of-six</th><td>brisk_regular</td><td class="">1.000 (5/5)</td><td class="">1.000 (5/5)</td></tr><tr><th scope="row">adversarial-abuse-then-real-booking</th><td>hostile_caller</td><td class="">1.000 (5/5)</td><td class="">1.000 (5/5)</td></tr></tbody></table></div><p class="disc__foot">Agent: scripted backend, FakeClock, fresh restaurant per repeat (deterministic). Caller model <code>azure-openai/gpt-4.1</code> at temperature 0.7. Agrees with the committed summary: true and true.</p></div></details><p class="card__cmd"><code>python -m lab.simulator.flake_band --check</code></p></article><article class="card"><p class="card__eyebrow">Finding <span aria-hidden="true">/</span> test selection</p><h3 class="card__h">A selector that measures its own miss rate.</h3><p class="card__p">The selector kept 319/319 regressions the full suite caught, and 125/125 of those where it had actually skipped something; 194 catches were vacuous.</p><ul class="twin"><li><span class="twin__l">Regressions kept, committed study</span><span class="twin__n">1.000 <span class="twin__d">(319/319)</span></span></li><li><span class="twin__l">Kept where it had actually skipped something</span><span class="twin__n">1.000 <span class="twin__d">(125/125)</span></span></li></ul><p class="card__read">194 of the catches were vacuous — the selector had skipped nothing, so it could not have missed. Usable cases 0.926 (300/324), 39 with failures; mean selection 66.467/73 (proportional stratum).</p><details class="disc disc--in"><summary><span class="disc__t">The join check today, and the study’s variance</span></summary><div class="disc__body"><ul class="bullets"><li>Evidence pairs kept 1.000 (444/444); always-run floor kept 1.000 (324/324); controls 1.000 (4/4); 18 probes; mean selection 42.7/73.</li><li>Study status: committed measurement. Regenerate with <code>python -m lab.selection.calibrate --sample 150 --enrich 120 --quiet --write</code>.</li></ul><p class="disc__h">Caveat</p><p class="disc__intro">The study&#x27;s failure counts move between runs (three pinned runs in docs/TEST_SELECTION.md §5.2 show 264/264, 245/245 and 319/319) while the recall and the selection ratio do not. Quote the recall, not the count.</p><p class="disc__foot">Recomputed: the join check now; the study is the committed lab/selection/calibration.json.</p></div></details><p class="card__cmd"><code>evallab select --calibrate</code></p></article><article class="card"><p class="card__eyebrow">Finding <span aria-hidden="true">/</span> one transcript, four rulebooks</p><h3 class="card__h">Opposite verdicts on the same words — correctly.</h3><p class="card__p">6/6 divergence rows produce opposite computed verdicts on one transcript under two regimes; named-entry agreement 18/18, whole-register 16/18.</p><ul class="twin"><li><span class="twin__l">Divergence blocks that diverge</span><span class="twin__n">1.000 <span class="twin__d">(6/6)</span></span></li><li><span class="twin__l">Whole-register agreement with the hand verdict</span><span class="twin__n twin__n--bad">0.889 <span class="twin__d">(16/18)</span></span></li></ul><p class="card__read">Named-entry agreement 1.000 (18/18): every cited paragraph the probes were written against reproduces. The two whole-register disagreements were not tuned away.</p><p class="card__caveat"><span class="card__cavtag">Caveat</span> In-sample: the probes were written with these transcripts in view. The CLI says so on its second line.</p><details class="disc disc--in"><summary><span class="disc__t">The six divergence rows, regime by regime</span></summary><div class="disc__body"><div class="scroller"><table class="grid grid--wrap"><caption class="sr-only">Divergence rows: scenario, axis, and per-regime computed against hand verdicts</caption><thead><tr><th scope="col">Scenario</th><th scope="col">Axis</th><th scope="col">Regimes</th></tr></thead><tbody><tr><th scope="row">divergence-commission-volunteered-four-verdicts</th><td>D1</td><td class="wrap">fca computed <b>fail</b>, hand fail (missed); mas computed <b>fail</b>, hand pass (satisfied); reg-bi computed <b>pass</b>, hand pass (satisfied); sfc-ia computed <b>fail</b>, hand pass (satisfied)</td></tr><tr><th scope="row">divergence-cooling-off-duration-and-trigger</th><td>D7</td><td class="wrap">fca computed <b>fail</b>, hand fail (missed); mas computed <b>pass</b>, hand pass (satisfied); sfc-ia computed <b>fail</b>, hand fail (missed)</td></tr><tr><th scope="row">divergence-two-products-one-meeting-mas-carveout</th><td>D8</td><td class="wrap">mas computed <b>pass</b>, hand pass (not-applicable); sfc-ia computed <b>fail</b>, hand fail (missed)</td></tr><tr><th scope="row">divergence-unsolicited-note-failing-to-advise</th><td>D10</td><td class="wrap">fca computed <b>pass</b>, hand pass (not-applicable); mas computed <b>fail</b>, hand fail (missed); reg-bi computed <b>pass</b>, hand pass (not-applicable); sfc-ia computed <b>fail</b>, hand fail (missed)</td></tr><tr><th scope="row">divergence-verbal-close-nothing-in-writing</th><td>D2</td><td class="wrap">fca computed <b>fail</b>, hand fail (missed); mas computed <b>fail</b>, hand fail (missed); reg-bi computed <b>pass</b>, hand pass (not-applicable)</td></tr><tr><th scope="row">conflict-vulnerable-customer-keen-to-sign</th><td>D6</td><td class="wrap">mas computed <b>fail</b>, hand fail (missed); reg-bi computed <b>pass</b>, hand pass (not-applicable)</td></tr></tbody></table></div><p class="disc__foot">Human over computed, 18 rows: fail/fail 9, fail/pass 1, fail/undecidable 1, pass/fail 0, pass/pass 7, pass/undecidable 0.</p></div></details><p class="card__cmd"><code>python -m roleplay.regime_eval --divergence --shadow</code></p></article><article class="card"><p class="card__eyebrow">Finding <span aria-hidden="true">/</span> a model in all three seats</p><h3 class="card__h">The live run found what the script could not.</h3><p class="card__p">With a model in all three seats the same corpus produced 18 findings the corpus had not declared, against 3 from the scripted run; 6/47 rows were FLAKY.</p><ul class="twin"><li><span class="twin__l">Undeclared findings, live run</span><span class="twin__n twin__n--bad">18 <span class="twin__d">(18/23)</span></span></li><li><span class="twin__l">Undeclared findings, scripted run</span><span class="twin__n">3 <span class="twin__d">(3/12)</span></span></li></ul><p class="card__read">Live: 34/47 (72.3%) stable-pass, 6/47 FLAKY, 7/47 stable-fail over 141 runs. Scripted on the same corpus: 44/47 (93.6%), 0 FLAKY.</p><p class="card__caveat"><span class="card__cavtag">Caveat</span> Both agent and caller are live in that run, so a FLAKY verdict has two possible causes it cannot separate.</p><details class="disc disc--in"><summary><span class="disc__t">Both headlines, verbatim</span></summary><div class="disc__body"><ul class="bullets"><li>Live: <code>FAIL — 34/47 (72.3%) scenarios stable-pass — 6/47 (12.8%) FLAKY (not a pass) — 50/361 (13.9%) contract evaluations failed</code></li><li>Scripted: <code>FAIL — 44/47 (93.6%) scenarios stable-pass — 36/369 (9.8%) contract evaluations failed</code></li><li>Minimum runs per scenario: 3 in both.</li></ul></div></details><p class="card__cmd"><code>make live-replay &amp;&amp; make replay</code></p></article>
   </div>
 </section>
 
+<!-- ======================= 05 WHAT THIS COVERS ======================= -->
+<section class="sec" id="covers">
+  <div class="sec__head">
+    <span class="sec__num" aria-hidden="true">05</span>
+    <div>
+      <p class="eyebrow">What this covers</p>
+      <h2 class="h2">What a QA-for-AI role asks for, and what here answers it.</h2>
+      <p class="sec__lede">
+        11 requirements, each in the words a job description would use, mapped to the files that demonstrate it and the one
+        command that proves it. Then, plainly, what this repository does not cover.
+      </p>
+    </div>
+  </div>
+
+  <ol class="reqs">
+<li class="req"><div class="req__ask"><p class="req__k">The requirement</p><h3 class="req__h">LLM-as-judge, calibrated against human labels and gated before it can decide anything</h3><p class="req__fig">The advisory scorer catches 9 of 32 sessions a reviewer would fail and the gate refuses it; judge prompt v1 scored TPR 0.250 (2/8) and was refused, v2 scored 1.000 (8/8) and cleared.</p></div><div class="req__how"><p class="req__k">What demonstrates it</p><ul class="req__list"><li>lab/judges/calibration.py — TPR, TNR, kappa, Wilson intervals, McNemar, run-to-run stability</li><li>lab/judges/registry.py — require_calibrated() raises JudgeBelowThresholdError in CI mode</li><li>lab/judges/hallucinated_confirmation/ — a worked v1 -&gt; v2 iteration with six committed recordings</li><li>roleplay/calibration.py — the product&#x27;s own rubric scorer measured as a judge</li></ul><p class="req__k">The one command</p><div class="cmds__row"><code class="cmds__code">make roleplay-demo &amp;&amp; make calibrate</code><button type="button" class="copy" data-copy="make roleplay-demo &amp;&amp; make calibrate">Copy<span class="sr-only"> the command: make roleplay-demo &amp;&amp; make calibrate</span></button></div><p class="req__src">Recomputed for this page: every figure</p></div></li><li class="req"><div class="req__ask"><p class="req__k">The requirement</p><h3 class="req__h">Non-deterministic output: pass^k with FLAKY as its own verdict, and a measured flake band</h3><p class="req__fig">34/47 scenarios stable-pass, 6/47 FLAKY at k=3; the same 8 scenarios at k=5 came back 7/8 stable with a 12-turn caller and 5/8 with an 8-turn one.</p></div><div class="req__how"><p class="req__k">What demonstrates it</p><ul class="req__list"><li>lab/simulator/passk.py — STABLE_PASS / STABLE_FAIL / FLAKY; FLAKY is never a pass</li><li>lab/simulator/flake_band.py — one live variable (the caller), k=5, two turn budgets</li><li>fixtures/live_full/ — 47 rows, k=3, a model in all three seats, replayed offline</li><li>fixtures/live_caller/ — 80 recorded caller conversations behind the two bands</li></ul><p class="req__k">Caveats</p><ul class="bullets bullets--tight"><li>k=3 bounds a pass rate loosely: 3/3 has a 95% Wilson lower bound of 0.44.</li><li>The flake band is a property of the caller-agent pair at one temperature on one day.</li></ul><p class="req__k">The one command</p><div class="cmds__row"><code class="cmds__code">make live-replay &amp;&amp; python -m lab.simulator.flake_band --check</code><button type="button" class="copy" data-copy="make live-replay &amp;&amp; python -m lab.simulator.flake_band --check">Copy<span class="sr-only"> the command: make live-replay &amp;&amp; python -m lab.simulator.flake_band --check</span></button></div><p class="req__src">Recomputed for this page: every figure</p></div></li><li class="req"><div class="req__ask"><p class="req__k">The requirement</p><h3 class="req__h">Golden datasets: a validated corpus with closed vocabularies, so a typo is a load error and not a green row</h3><p class="req__fig">182 scenario rows across six corpora (55 restaurant booking, 70 advisory coaching, 18 advisory regimes, 18 audio tier, 3 transport tier, 18 retrieval questions), all loaded through validating loaders; 195 YAML files under scenarios/.</p></div><div class="req__how"><p class="req__k">What demonstrates it</p><ul class="req__list"><li>scenarios/loader.py — schema validation, tag and tool vocabularies, expected_failure must name a declared contract</li><li>roleplay/corpus.py + roleplay/advisory.py — KPI groups, regimes and register entries are closed sets</li><li>lab/judges/hallucinated_confirmation/labels.jsonl — 24 hand labels with reasons</li><li>ragcheck/fixtures/ — 16 chunks, 18 questions, 18 claim labels</li></ul><p class="req__k">The one command</p><div class="cmds__row"><code class="cmds__code">make validate &amp;&amp; make roleplay-validate</code><button type="button" class="copy" data-copy="make validate &amp;&amp; make roleplay-validate">Copy<span class="sr-only"> the command: make validate &amp;&amp; make roleplay-validate</span></button></div><p class="req__src">Recomputed for this page: every figure</p></div></li><li class="req"><div class="req__ask"><p class="req__k">The requirement</p><h3 class="req__h">Prompt regression detection: a prompt change is measured on the same labelled items, paired, and recordings refuse a stale prompt</h3><p class="req__fig">v1 -&gt; v2 fixed 6 of 24 items and broke 0; exact McNemar p = 0.03125; prompts are pinned by sha256.</p></div><div class="req__how"><p class="req__k">What demonstrates it</p><ul class="req__list"><li>lab/judges/judge.py — every recording is keyed by prompt digest; ReplayJudge refuses a mismatch</li><li>lab/judges/calibration.py — compare_reports(): paired McNemar, detectability floor, instability floor</li><li>lab/judges/hallucinated_confirmation/iteration.md — the v1 -&gt; v2 study, regenerated by `evallab calibrate`</li><li>roleplay/scorer_study/ — the same discipline on the advisory rubric, v1 and v2</li></ul><p class="req__k">The one command</p><div class="cmds__row"><code class="cmds__code">evallab calibrate --ci &amp;&amp; git diff --exit-code -- fixtures lab/judges</code><button type="button" class="copy" data-copy="evallab calibrate --ci &amp;&amp; git diff --exit-code -- fixtures lab/judges">Copy<span class="sr-only"> the command: evallab calibrate --ci &amp;&amp; git diff --exit-code -- fixtures lab/judges</span></button></div><p class="req__src">Recomputed for this page: every figure</p></div></li><li class="req"><div class="req__ask"><p class="req__k">The requirement</p><h3 class="req__h">RAG: retrieval scored separately from groundedness, never averaged, with the grader&#x27;s own agreement printed beside the metric</h3><p class="req__fig">groundedness 0.857 (12/14) on claims, context recall 0.500 (1/2), answer relevance 0.875 (7/8); the support judge scores TPR 0.800 (4/5) and the gate refuses it.</p></div><div class="req__how"><p class="req__k">What demonstrates it</p><ul class="req__list"><li>ragcheck/report.py — recall of gold, context precision, groundedness per claim, answer relevance</li><li>ragcheck/calibration.py — the claim-support judge measured against 18 hand labels and gated</li><li>ragcheck/offline.py — the lexical stand-in that runs with no key, labelled as not a model</li></ul><p class="req__k">Caveats</p><ul class="bullets bullets--tight"><li>The judged metrics come from the offline lexical stand-in, which is not a model; its measured error rate is the point of the section, not a limitation of it.</li></ul><p class="req__k">The one command</p><div class="cmds__row"><code class="cmds__code">make ragcheck</code><button type="button" class="copy" data-copy="make ragcheck">Copy<span class="sr-only"> the command: make ragcheck</span></button></div><p class="req__src">Recomputed for this page: every figure</p></div></li><li class="req"><div class="req__ask"><p class="req__k">The requirement</p><h3 class="req__h">Voice: real synthesis and recognition, and the grade is computed on the transcript the recogniser produced</h3><p class="req__fig">A 16-turn, 181 s spoken call: discovery 2 as sent -&gt; 0 as heard while both totals stayed 12/20; the noise ladder held to 0.0 dB and broke at -5.0 dB.</p></div><div class="req__how"><p class="req__k">What demonstrates it</p><ul class="req__list"><li>roleplay/spoken.py — a whole advisory call through TTS -&gt; STT, graded as heard; channel_effect() diffs the two gradings</li><li>lab/voice/suite.py + scenarios/audio/ — 18 declared rows: captured fields, noise ladders, silence, yield</li><li>lab/voice/wer.py — normalised word error rate; the display transcript is refused as a WER reference</li><li>lab/voice/engines/ — Deepgram and ElevenLabs behind recorded cassettes</li></ul><p class="req__k">The one command</p><div class="cmds__row"><code class="cmds__code">make spoken-replay &amp;&amp; make audio-suite</code><button type="button" class="copy" data-copy="make spoken-replay &amp;&amp; make audio-suite">Copy<span class="sr-only"> the command: make spoken-replay &amp;&amp; make audio-suite</span></button></div><p class="req__src">Recomputed for this page: every figure</p></div></li><li class="req"><div class="req__ask"><p class="req__k">The requirement</p><h3 class="req__h">Real-time transport: latency measured at the far participant over a real WebRTC room, behind a calibrated stopwatch</h3><p class="req__fig">Delivery gap mean 89.0 ms over n=12 turns (p50 89.6 ms, p90 96.9 ms, p95 refused at n&lt;20); an agent-side stopwatch reports 0.0 ms for the same turns.</p></div><div class="req__how"><p class="req__k">What demonstrates it</p><ul class="req__list"><li>lab/voice/transport/ — three rows that only exist in transport: delivery gap, degradation, lifecycle</li><li>lab/voice/calibration.py — the timing gate; delivery_gap() refuses without a PASS</li><li>lab/voice/metrics.py — quantiles that refuse below their minimum sample count</li><li>fixtures/audio/transport/ — the recorded rooms every figure is recomputed from</li></ul><p class="req__k">Caveats</p><ul class="bullets bullets--tight"><li>Both ends of the room were in one process, so the gap is a floor and not a worst case.</li><li>Non-gating in CI by design: a network test that blocks a merge trains people to bypass it.</li></ul><p class="req__k">The one command</p><div class="cmds__row"><code class="cmds__code">make transport-report</code><button type="button" class="copy" data-copy="make transport-report">Copy<span class="sr-only"> the command: make transport-report</span></button></div><p class="req__src">Recomputed for this page: every figure</p></div></li><li class="req"><div class="req__ask"><p class="req__k">The requirement</p><h3 class="req__h">CI/CD gating built from nothing: an ordered offline gate, cheapest first, with artefacts that must regenerate byte for byte</h3><p class="req__fig">8 stages, 17 commands, 2 of them followed by `git diff --exit-code`; the scripted case study reproduces 44/47 (93.6%) stable-pass.</p></div><div class="req__how"><p class="req__k">What demonstrates it</p><ul class="req__list"><li>Makefile — `gate`: eight stages, stops at the first red</li><li>docs/GATES.md — what each stage proves and what it cannot catch</li><li>fixtures/replay_run/ + lab/judges/ — the two artefact surfaces that are rewritten and then diffed</li></ul><p class="req__k">Caveats</p><ul class="bullets bullets--tight"><li>Replay is blind to a prompt change: a green gate is necessary and not sufficient when a prompt, persona or rubric moved (docs/GATES.md, stage 9).</li></ul><p class="req__k">The one command</p><div class="cmds__row"><code class="cmds__code">make gate</code><button type="button" class="copy" data-copy="make gate">Copy<span class="sr-only"> the command: make gate</span></button></div><p class="req__src">Recomputed for this page: every figure</p></div></li><li class="req"><div class="req__ask"><p class="req__k">The requirement</p><h3 class="req__h">Release quality and go/no-go: a gate that can say no, and a test selector that measures its own miss rate</h3><p class="req__fig">Three judges in this tree are refused by their own gate today; the selector kept 319/319 regressions and 125/125 of the ones it could actually have missed.</p></div><div class="req__how"><p class="req__k">What demonstrates it</p><ul class="req__list"><li>lab/judges/registry.py — the only way past a refusal is written at the call site and logs a warning</li><li>lab/selection/ — which scenarios a change can reach, fail-safe: unsure means run everything</li><li>lab/selection/calibration.json — the selector&#x27;s recall with its denominators, from a mutation and history study</li></ul><p class="req__k">Caveats</p><ul class="bullets bullets--tight"><li>The selector study&#x27;s failure counts are not run-to-run stable (the recall is); docs/TEST_SELECTION.md §5.2 prints three runs. Quote the recall and the selection ratio.</li><li>Regenerate the study with `python -m lab.selection.calibrate --sample 150 --enrich 120 --quiet --write`; it runs the suite hundreds of times.</li></ul><p class="req__k">The one command</p><div class="cmds__row"><code class="cmds__code">evallab calibrate --ci &amp;&amp; evallab select --calibrate</code><button type="button" class="copy" data-copy="evallab calibrate --ci &amp;&amp; evallab select --calibrate">Copy<span class="sr-only"> the command: evallab calibrate --ci &amp;&amp; evallab select --calibrate</span></button></div><p class="req__src">Recomputed for this page: join_check and the refusals now; the selector study is the committed measurement</p></div></li><li class="req"><div class="req__ask"><p class="req__k">The requirement</p><h3 class="req__h">Observability and interop: the trace exports to the tools a team already watches, and the export round-trips</h3><p class="req__fig">One committed trace of 22 events becomes 23 langfuse entries and reconstructs exactly (yes); the promptfoo projection yields 1 test case carrying 1 assertion.</p></div><div class="req__how"><p class="req__k">What demonstrates it</p><ul class="req__list"><li>lab/report/interop.py — to_langfuse_batch / from_langfuse_batch (lossless), to_promptfoo_tests (one-way projection)</li><li>lab/trace/schema.py — the schema the exports are a view of</li><li>tests/test_report_interop.py — the round-trip equality is a test</li></ul><p class="req__k">Caveats</p><ul class="bullets bullets--tight"><li>This is an evaluation harness that can export to an observability tool, not an observability tool: no collector, no backend, no retention, no alerting (lab/report/interop.py says so first).</li></ul><p class="req__k">The one command</p><div class="cmds__row"><code class="cmds__code">python -m pytest tests/test_report_interop.py -q</code><button type="button" class="copy" data-copy="python -m pytest tests/test_report_interop.py -q">Copy<span class="sr-only"> the command: python -m pytest tests/test_report_interop.py -q</span></button></div><p class="req__src">Recomputed for this page: every figure</p></div></li><li class="req"><div class="req__ask"><p class="req__k">The requirement</p><h3 class="req__h">Pointing the harness at somebody else&#x27;s agent: a dotted-path factory and a protocol of one or two methods, no base class</h3><p class="req__fig">AgentUnderTest is 1 method; Trainee is 2; the trainee CLI flag is landed.</p></div><div class="req__how"><p class="req__k">What demonstrates it</p><ul class="req__list"><li>lab/simulator/driver.py — AgentUnderTest: one call, an utterance in, a turn out</li><li>lab/cli.py — `--agent-factory pkg.mod:factory`; `lab` never imports the case study</li><li>roleplay/runtime.py — Trainee: open() and reply(customer_turn)</li><li>roleplay/live.py — resolve_trainee_factory(): argument, then LAB_TRAINEE_FACTORY, then the built-in model trainee</li></ul><p class="req__k">The one command</p><div class="cmds__row"><code class="cmds__code">evallab run --agent-factory pkg.mod:factory</code><button type="button" class="copy" data-copy="evallab run --agent-factory pkg.mod:factory">Copy<span class="sr-only"> the command: evallab run --agent-factory pkg.mod:factory</span></button></div><p class="req__src">Recomputed for this page: every figure</p></div></li>
+  </ol>
+
+  <div class="notcovered">
+    <p class="label">What this does not cover</p>
+    <ul class="nc__list"><li class="nc"><span class="nc__area">UI and end-to-end browser automation</span><span class="tag">not covered</span><span class="nc__why">There is no browser, no DOM and no screen anywhere in the system under test; the unit is the conversation trace.</span></li><li class="nc"><span class="nc__area">Load and performance testing</span><span class="tag">not covered</span><span class="nc__why">Latency is measured per turn behind a calibrated stopwatch (n=12 on the transport row); nothing here drives concurrency or throughput.</span></li><li class="nc"><span class="nc__area">Desktop and mobile clients</span><span class="tag">not covered</span><span class="nc__why">No client application exists in this repository to test.</span></li><li class="nc"><span class="nc__area">Observability backend</span><span class="tag tag--hist">export only</span><span class="nc__why">Traces export to langfuse and promptfoo shapes; there is no collector, storage, sampling or alerting.</span></li><li class="nc"><span class="nc__area">Interruption and barge-in on a live channel</span><span class="tag tag--hist">reserved</span><span class="nc__why">The two interruption event kinds are emitted from constructed timings only; no adapter discovers one.</span></li><li class="nc"><span class="nc__area">Label quality beyond one labeller</span><span class="tag tag--hist">stated, not measured</span><span class="nc__why">Every hand label set here has one labeller with reasons recorded; inter-rater agreement is not measured.</span></li></ul>
+    <p class="nc__foot">Stated here because the credibility of everything above depends on it. None of these is claimed anywhere on this page or in the repository.</p>
+  </div>
+</section>
+
+<!-- ======================= 06 POINT IT AT YOUR AGENT ======================= -->
+<section class="sec" id="adapt">
+  <div class="sec__head">
+    <span class="sec__num" aria-hidden="true">06</span>
+    <div>
+      <p class="eyebrow">Point it at your agent</p>
+      <h2 class="h2">You write the wrapper. <span class="accent">Everything downstream runs unchanged.</span></h2>
+      <p class="sec__lede">
+        How an external agent is plugged in. Two seams, both a dotted path to a factory and a protocol with no base class: the harness is an instrument pointed at the system, not a framework the system adopts.
+      </p>
+    </div>
+  </div>
+
+  <div class="adapt">
+    <div class="adapt__code">
+      <p class="label">The contract <span aria-hidden="true">/</span> <code>roleplay.runtime.Trainee</code> <span aria-hidden="true">/</span> roleplay/runtime.py:168</p>
+      <pre class="code code--block"><code>@runtime_checkable
+class Trainee(Protocol):
+    &quot;&quot;&quot;The adviser under test: whatever can produce the next thing they say.
+
+    Two methods, because the first turn of a sales meeting is not a reply to
+    anything and a caller-shaped `reply(...)` interface would have to invent a
+    customer utterance to prompt it with. `None` from either means &quot;I am done&quot;,
+    and the reason should be readable afterwards from `stop_reason` — a session
+    that ended because the adviser closed the sale and one that ended because the
+    turn budget ran out are different results.
+    &quot;&quot;&quot;
+
+    def open(self) -&gt; str | None:
+        &quot;&quot;&quot;The adviser&#x27;s first turn, or None to decline the session.&quot;&quot;&quot;
+        ...
+
+    def reply(self, customer_turn: str) -&gt; str | None:
+        &quot;&quot;&quot;The next turn given what the customer just said, or None to stop.&quot;&quot;&quot;
+        ...
+</code></pre>
+      <p class="adapt__one">open() returns the adviser&#x27;s first turn or None to decline; reply(customer_turn) returns the next turn or None to stop; stop_reason, if present, says why.</p>
+    </div>
+    <div class="adapt__side">
+      <p class="label">Three runnable examples <span aria-hidden="true">/</span> examples/adapters/</p>
+      <ul class="adapt__files"><li><code>examples/adapters/callable_trainee.py</code></li><li><code>examples/adapters/echo_trainee.py</code></li><li><code>examples/adapters/http_trainee.py</code></li></ul>
+      <p class="adapt__note">Each is an ordinary module exposing a factory; the harness imports it by dotted path. Resolution order: argument, then the environment variable, then the built-in model trainee. Guide: <code>docs/ADAPTER.md</code>.</p>
+      <p class="label">The one command</p>
+      <div class="cmds__row"><code class="cmds__code">python -m roleplay.live --trainee-factory pkg.mod:factory</code><button type="button" class="copy" data-copy="python -m roleplay.live --trainee-factory pkg.mod:factory">Copy<span class="sr-only"> the command: python -m roleplay.live --trainee-factory pkg.mod:factory</span></button></div>
+      <p class="adapt__note">Or the environment variable <code>LAB_TRAINEE_FACTORY</code>; the flag beats the variable. The flag is <span class="tag tag--ok">landed</span> in <code>roleplay/live.py, roleplay/spoken.py</code> — derived from both runners&rsquo; argument parsers at build time, not typed.</p>
+    </div>
+  </div>
+
+  <details class="disc"><summary><span class="disc__t">The booking-side seam: one method, not two</span></summary><div class="disc__body"><p class="disc__intro">The other case study exposes the same idea with an even narrower contract. <code>lab.simulator.driver.AgentUnderTest</code> at <code>lab/simulator/driver.py:300</code>; statefulness is the implementer&#x27;s; pass^k takes a factory so every repeat starts clean. Default factory <code>tablemate.runtime:build_agent</code>; point it elsewhere with <code>--agent-factory pkg.mod:factory</code>.</p><pre class="code code--block"><code>@runtime_checkable
+class AgentUnderTest(Protocol):
+    &quot;&quot;&quot;Anything that answers an utterance. The entire contract on the SUT.
+
+    Deliberately narrow. A system under test should not have to know it is being
+    evaluated, and anything wider (session objects, lifecycle hooks, a base
+    class) would make `lab` a framework the SUT has to adopt instead of an
+    instrument pointed at it.
+
+    Statefulness is the implementer&#x27;s business: a multi-turn agent keeps its own
+    conversation state across calls. `lab.simulator.passk` therefore takes a
+    *factory*, so each repeat of a scenario starts from a clean agent.
+    &quot;&quot;&quot;
+
+    def __call__(self, utterance: str) -&gt; AgentReply: ...
+</code></pre><div class="cmds__row"><code class="cmds__code">evallab run --agent-factory pkg.mod:factory</code><button type="button" class="copy" data-copy="evallab run --agent-factory pkg.mod:factory">Copy<span class="sr-only"> the command: evallab run --agent-factory pkg.mod:factory</span></button></div></div></details>
+
+  <details class="disc"><summary><span class="disc__t">What the factory receives, and the implementations already in the tree</span></summary><div class="disc__body"><p class="disc__intro">A factory is a callable taking one <code>TraineeContext</code> and returning a <code>Trainee</code>. The examples show the context can be ignored entirely.</p><div class="scroller"><table class="grid"><caption class="sr-only">Fields of the TraineeContext a factory receives</caption><thead><tr><th scope="col">Field</th><th scope="col">Type</th></tr></thead><tbody><tr><th scope="row">scenario_id</th><td>str</td></tr><tr><th scope="row">profile</th><td>CustomerProfile</td></tr><tr><th scope="row">competence</th><td>str</td></tr><tr><th scope="row">jurisdiction</th><td>str</td></tr><tr><th scope="row">language</th><td>str</td></tr><tr><th scope="row">max_turns</th><td>int</td></tr><tr><th scope="row">model_label</th><td>str</td></tr><tr><th scope="row">temperature</th><td>float</td></tr><tr><th scope="row">cassette</th><td>SessionCassette | None</td></tr><tr><th scope="row">trainee_model</th><td>str | None</td></tr><tr><th scope="row">completion</th><td>Callable[..., str] | None</td></tr></tbody></table></div><p class="disc__h">Implementations in the tree</p><ul class="bullets"><li><code>roleplay.live.LiveTrainee</code></li><li><code>roleplay.runtime.ScriptedTrainee</code></li><li><code>roleplay.spoken.FixtureSpokenTrainee</code></li><li><code>roleplay.spoken.SpokenTrainee</code></li></ul><p class="disc__h">Run an example offline, no key</p><div class="cmds__row"><code class="cmds__code">LAB_TRAINEE_FACTORY=examples.adapters.echo_trainee:build_trainee python -m roleplay.live --scripted-customer --only eu --root /tmp/echo_run</code><button type="button" class="copy" data-copy="LAB_TRAINEE_FACTORY=examples.adapters.echo_trainee:build_trainee python -m roleplay.live --scripted-customer --only eu --root /tmp/echo_run">Copy<span class="sr-only"> the command: LAB_TRAINEE_FACTORY=examples.adapters.echo_trainee:build_trainee python -m roleplay.live --scripted-customer --only eu --root /tmp/echo_run</span></button></div><p class="disc__foot">Source of that command: <code>examples/adapters/echo_trainee.py — module docstring</code>. The importer is shared by both seams: <code>lab/cli.py::_import_object — the same importer for both seams</code>.</p></div></details>
+</section>
+
+<!-- ======================= 07 THE NUMBERS ======================= -->
+<section class="sec" id="numbers">
+  <div class="sec__head">
+    <span class="sec__num" aria-hidden="true">07</span>
+    <div>
+      <p class="eyebrow">The numbers</p>
+      <h2 class="h2">Counted, not estimated.</h2>
+      <p class="sec__lede">Each count comes with the command that produces it, in the disclosure below. Scenario <em>rows</em> are quoted rather than files: the 195 YAML files include personas, profiles and registers that rows refer to.</p>
+    </div>
+  </div>
+
+  <ul class="statgrid"><li><span class="stat__n">15</span><span class="stat__l">event kinds</span><span class="stat__s">+2 reserved</span></li><li><span class="stat__n">6</span><span class="stat__l">contracts</span><span class="stat__s">decided on position</span></li><li><span class="stat__n">4</span><span class="stat__l">regimes</span><span class="stat__s">36 register entries</span></li><li><span class="stat__n">182</span><span class="stat__l">scenario rows</span><span class="stat__s">195 YAML files</span></li><li><span class="stat__n">2,342</span><span class="stat__l">tests collected</span><span class="stat__s">60 test files</span></li><li><span class="stat__n">64</span><span class="stat__l">commits</span><span class="stat__s">outside docs, since 2026-08-22</span></li><li><span class="stat__n">28</span><span class="stat__l">KPIs</span><span class="stat__s">7 groups, 8 gates</span></li><li><span class="stat__n">3</span><span class="stat__l">actors</span><span class="stat__s">caller / agent / system</span></li><li><span class="stat__n">6</span><span class="stat__l">entry kinds</span><span class="stat__s">gate / not-required / prescribed-unit / prohibition / substance / verbatim</span></li><li><span class="stat__n">34</span><span class="stat__l">restaurant tags</span><span class="stat__s">closed vocabulary</span></li><li><span class="stat__n">6</span><span class="stat__l">packages</span><span class="stat__s">error_analysis / lab / ragcheck / roleplay / scenarios / tablemate</span></li><li><span class="stat__n">11</span><span class="stat__l">evidence files</span><span class="stat__s">sha256 in index.json</span></li></ul>
+
+  <details class="disc"><summary><span class="disc__t">How each count was produced</span></summary><div class="disc__body"><dl class="kv"><div><dt>commits</dt><dd><code>git rev-list --count HEAD -- . &#x27;:(exclude)docs&#x27; &#x27;:(exclude)scripts/build_site_data.py&#x27;</code></dd></div><div><dt>scenarios</dt><dd><code>make validate &amp;&amp; make roleplay-validate</code></dd></div><div><dt>tests</dt><dd><code>python -m pytest --collect-only -q</code></dd></div></dl><p class="disc__h">Scenario rows by corpus</p><div class="scroller"><table class="grid"><caption class="sr-only">Scenario rows by corpus</caption><thead><tr><th scope="col">Corpus</th><th scope="col">Rows</th></tr></thead><tbody><tr><th scope="row">advisory_coaching</th><td>70</td></tr><tr><th scope="row">advisory_regimes</th><td>18</td></tr><tr><th scope="row">audio_tier</th><td>18</td></tr><tr><th scope="row">restaurant_booking</th><td>55</td></tr><tr><th scope="row">retrieval_questions</th><td>18</td></tr><tr><th scope="row">transport_tier</th><td>3</td></tr></tbody><tfoot><tr><th scope="row">Total</th><td>182</td></tr></tfoot></table></div><p class="disc__h">Packages</p><dl class="kv"><div><dt>error_analysis</dt><dd>hand-coded failure modes, counted from codes.csv</dd></div><div><dt>lab</dt><dd>the engine: trace, checks, judges, simulator, voice, selection, report</dd></div><div><dt>ragcheck</dt><dd>retrieval and groundedness</dd></div><div><dt>roleplay</dt><dd>advisory sales coaching — the scorer is the system under test</dd></div><div><dt>scenarios</dt><dd>the corpora, as YAML</dd></div><div><dt>tablemate</dt><dd>restaurant booking — the portability proof</dd></div></dl><p class="disc__foot">tests_collected is the collection count; the suite&#x27;s pass/skip split is not recomputed here (it needs a 70 s run) — `pytest` prints it. The commit count excludes docs/ and this generator so that committing this pack does not stale it; every other commit does, and should.</p></div></details>
+</section>
 <!-- ======================= RUN IT ======================= -->
 <section class="sec sec--run" id="run">
   <div class="sec__head">
     <span class="sec__num" aria-hidden="true">&#8594;</span>
     <div>
       <p class="eyebrow">Run it</p>
-      <h2 class="h2">Three commands. <span class="accent">No API key.</span></h2>
+      <h2 class="h2">Four commands. <span class="accent">No API key.</span></h2>
       <p class="sec__lede">
         Every number on this page recomputes offline from a clean checkout. Nothing here needs a credential, and the
         replay makes zero network calls.
@@ -674,6 +849,13 @@
         <button type="button" class="copy" data-copy="python -m pytest tests/test_roleplay_spoken.py -q">Copy<span class="sr-only"> the command: python -m pytest tests/test_roleplay_spoken.py -q</span></button>
       </div>
     </li>
+    <li>
+      <p class="cmds__what">Verify every figure on this page is still what the artefacts say</p>
+      <div class="cmds__row">
+        <code class="cmds__code">python -m scripts.build_site_data --check</code>
+        <button type="button" class="copy" data-copy="python -m scripts.build_site_data --check">Copy<span class="sr-only"> the command: python -m scripts.build_site_data --check</span></button>
+      </div>
+    </li>
   </ol>
 
   <ul class="rules">
@@ -683,40 +865,65 @@
   </ul>
 </section>
 
+
+<!-- ======================= LIMITATIONS ======================= -->
+<section class="sec sec--limits" id="limits">
+  <div class="sec__head">
+    <span class="sec__num" aria-hidden="true">!</span>
+    <div>
+      <p class="eyebrow">Limitations</p>
+      <h2 class="h2">Say these before they are asked.</h2>
+      <p class="sec__lede">None of these is hidden in a footnote elsewhere; they are the boundary of every claim above.</p>
+    </div>
+  </div>
+
+  <ol class="limits">
+    <li><b>The spoken call is n&nbsp;=&nbsp;1.</b> n = 1. This is a mechanism, not a rate. One call, examined end to end.</li>
+    <li><b>The 16/18 is in-sample.</b> In-sample: the probes were written with these transcripts in view. The CLI says so on its second line. A held-out paraphrase set is the honest next step.</li>
+    <li><b>The phrase lists are short.</b> A correct disclosure worded as <span class="q">&ldquo;three per cent of the sum you invest&rdquo;</span> returns <em>missed</em>. Recall against unseen wording is unmeasured. <span class="limits__src">docs/WALKTHROUGH.md &sect;11, docs/ADVISORY_TEST_STRATEGY.md</span></li>
+    <li><b>Barge-in is constructed, not discovered.</b> The two interruption event kinds are emitted from constructed timings only; no adapter discovers one. Status in the coverage file: <span class="tag tag--hist">reserved</span>.</li>
+    <li><b>One market&rsquo;s language is untestable.</b> No synthesis vendor in this stack produces Cantonese, so that market has no audio path and its row is declared <code>untestable</code> rather than counted as covered. <span class="limits__src">docs/AUDIO_SUITE.md</span></li>
+    <li><b>One labeller.</b> Every hand label set here has one labeller with reasons recorded; inter-rater agreement is not measured.</li>
+    <li><b>Replay is blind to a prompt change.</b> Replay is blind to a prompt change: a green gate is necessary and not sufficient when a prompt, persona or rubric moved (docs/GATES.md, stage 9).</li>
+  </ol>
+</section>
+
 </main>
 
 <footer class="foot">
-  <div class="foot__cols">
+  <div class="foot__cols foot__cols--4">
     <div>
       <p class="label">Repository</p>
       <ul class="foot__list">
         <li><a href="https://github.com/Pinglesagar/conversation-eval-lab">github.com/Pinglesagar/conversation-eval-lab</a></li>
         <li><a href="https://github.com/Pinglesagar/conversation-eval-lab#readme">README &mdash; sixty seconds</a></li>
+        <li><a href="https://github.com/Pinglesagar/conversation-eval-lab/blob/main/docs/ADAPTER.md">Plug in your own agent</a></li>
       </ul>
     </div>
     <div>
       <p class="label">Documentation</p>
       <ul class="foot__list">
-        <li><a href="https://github.com/Pinglesagar/conversation-eval-lab/blob/main/docs/README.md">The docs index, by question</a></li>
         <li><a href="https://github.com/Pinglesagar/conversation-eval-lab/blob/main/docs/WIKI.md">The wiki</a></li>
+        <li><a href="https://github.com/Pinglesagar/conversation-eval-lab/blob/main/docs/WALKTHROUGH.md">The ten-minute walkthrough</a></li>
+        <li><a href="https://github.com/Pinglesagar/conversation-eval-lab/blob/main/docs/ARCHITECTURE_ONE_PAGE.md">The architecture, in nine pictures</a></li>
+        <li><a href="https://github.com/Pinglesagar/conversation-eval-lab/blob/main/docs/README.md">The docs index, by question</a></li>
         <li><a href="https://github.com/Pinglesagar/conversation-eval-lab/blob/main/docs/SPOKEN_CALL.md">This finding, in full</a></li>
       </ul>
     </div>
     <div>
       <p class="label">The evidence behind this page</p>
-      <ul class="foot__list">
-        <li><a href="site/data/finding.json">finding.json</a></li>
-        <li><a href="site/data/call.json">call.json</a></li>
-        <li><a href="site/data/question_turns.json">question_turns.json</a></li>
-        <li><a href="site/data/recognition.json">recognition.json</a></li>
-        <li><a href="site/data/secondary_findings.json">secondary_findings.json</a></li>
-      </ul>
+      <ul class="foot__list foot__list--2"><li><a href="site/data/adapter.json">adapter.json</a></li><li><a href="site/data/architecture.json">architecture.json</a></li><li><a href="site/data/audio/excerpt.wav">audio/excerpt.wav</a></li><li><a href="site/data/audio/full_call.wav">audio/full_call.wav</a></li><li><a href="site/data/call.json">call.json</a></li><li><a href="site/data/coverage.json">coverage.json</a></li><li><a href="site/data/finding.json">finding.json</a></li><li><a href="site/data/findings.json">findings.json</a></li><li><a href="site/data/question_turns.json">question_turns.json</a></li><li><a href="site/data/recognition.json">recognition.json</a></li><li><a href="site/data/secondary_findings.json">secondary_findings.json</a></li></ul>
+    </div>
+    <div>
+      <p class="label">House rules</p>
+      <ul class="foot__list foot__rules"><li>Every rate carries its denominator.</li><li>Every number is reproducible by a named command.</li><li>Sourced or labelled historical. There is no third category.</li></ul>
     </div>
   </div>
   <p class="foot__note">
     Every figure and quotation on this page is generated by <code>python -m scripts.build_site_data</code> from artefacts
-    committed to the repository, and verified unchanged by <code>python -m scripts.build_site_data --check</code>.
-    <b>n&nbsp;=&nbsp;1</b> &mdash; a mechanism, not a rate.
+    committed to the repository, and verified unchanged by <code>python -m scripts.build_site_data --check</code>. The page itself makes no network
+    request: no font, no script, no analytics, and the two recordings are fetched only when played.
+    <b>n&nbsp;=&nbsp;1</b> on the call &mdash; a mechanism, not a rate.
   </p>
 </footer>
 
