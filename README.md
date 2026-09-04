@@ -788,7 +788,7 @@ Read this section as part of every number above.
 - **The voice suite has not been driven end to end here.** Eight rows are
   declared, validated and counted, and the committed run reports them as not
   driven rather than running them as text and calling the verdict an audio result.
-- **The spoken call is one call.** `roleplay/spoken.py` drives a whole advisory
+- **The spoken calls are two calls.** `roleplay/spoken.py` drives a whole advisory
   conversation turn by turn through real ElevenLabs synthesis and real Deepgram
   recognition and grades what was *heard*; the 181-second recording, the per-turn
   manifest carrying `text_sent` beside `text_heard`, the trace and both score
