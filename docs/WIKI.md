@@ -5092,7 +5092,7 @@ flowchart TD
 **What to notice:** the *code under test* is identical on both branches. Only the object
 handed to it changes. That is the entire trick.
 
-**Interview-grade sentence:** *"Time is a dependency, so it is injected. That buys
+**The one-sentence version:** *"Time is a dependency, so it is injected. That buys
 determinism, it buys the ability to test the timing gate itself, and it removes every
 `sleep` from the suite — and the cost is one Protocol and two four-line classes."*
 
