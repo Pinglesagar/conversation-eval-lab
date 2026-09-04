@@ -178,7 +178,10 @@ this call that agreement is a coincidence of opposite errors.
   counts exceed the normalised ones roughly fivefold, and that gap is punctuation
   and casing — reporting the raw figure as a recognition error rate is precisely
   the trap `WER_NORMALISATION.md` exists to prevent.
-- **n=1.** One call, one persona, one model, one voice pair, one day. Nothing here
+- **n=1 in this document; n=2 in the repo.** This document follows the first call: one
+  persona, one model, one voice pair, one day. The second recorded call
+  (`fixtures/audio/spoken_call_pass/`, four turns, stopped at adviser turn 3 by the
+  trainee model's content filter) is graded beside it in `SCORECARD.md` §0.4. Nothing here
   supports a rate, and no percentage in this document appears without its
   denominator.
 

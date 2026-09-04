@@ -2897,8 +2897,10 @@ the channel while the other was written `endswith("?")` and did not. The registe
 normalises punctuation away before matching, so its ledger is byte-identical graded
 either way. That contrast is the design lesson.
 
-**And nothing about rates.** This is **n = 1**. One call, one persona, one competence
-level, one jurisdiction, one model, one voice pair, one day. It demonstrates the
+**And nothing about rates.** This report is **n = 1**: one call, one persona, one competence
+level, one jurisdiction, one model, one voice pair, one day. A second recorded call exists
+(`fixtures/audio/spoken_call_pass/`, four turns, stopped by the trainee model's content
+filter) and is graded beside this one under §8.4.6; two is not a sample either. It demonstrates the
 pipeline is real. It supports no percentage, and there is no percentage in the report
 that is not attached to this single call's own denominators.
 
@@ -14414,6 +14416,7 @@ Supports [§2](#2-architecture-with-the-diagrams).
 | 15 event kinds, 2 reserved | `python -c "from lab.trace.schema import EventKind; …"` | `len(KNOWN)==15`; `V2_RESERVED == {interruption_started, interruption_acknowledged}`, disjoint from `KNOWN` |
 | barge-in: emitter, reader, tests, no committed trace | `grep -rn "emit_barge_in" lab tests`; `grep -rl interruption_started fixtures reports` | the emitter is called from `tests/test_voice_interaction.py` and nowhere else; the two fixture hits are the *blocked* row's note, not trace events |
 | spoken trace shape | `python -c` over `fixtures/audio/spoken_call/trace.jsonl` | 80 events, 8 turns, kinds as listed in §2 |
+| spoken trace shape | `python -c` over `fixtures/audio/spoken_call_pass/trace.jsonl` | The second recorded call: a cautious-saver persona against the same exemplary adviser brief plus a written addendum; four turns, stopped at adviser turn 3 by the trainee model's content filter (`content_filter_probe.json` records 13 live probes: unpunctuated 5/6 refused, punctuated 0/5). Graded beside the first by `scorecard_eval.py`. |
 | `text` vs `text_sent` | same file, first `transcript_in` | heard string is lowercase, unpunctuated, `Mr`→`mister`, `timeframe`→`time frame` |
 | delivery gap | `python -m lab.voice.transport.report` | `89.0 ms mean over 12 turns`, `86.0 ms` net of the send queue, against `0 ms` agent-side; 3 rows, tier PASS |
 | 36 register entries, 36 probes | `python -c "from roleplay.advisory import load_registers; from roleplay.regime_eval import PROBES"` | fca 10, mas 9, reg-bi 8, sfc-ia 9 = 36; `len(PROBES) == 36` |
