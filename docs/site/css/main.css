@@ -345,6 +345,8 @@ main { display: block; }
   color: var(--accent);
 }
 
+.hero__what { margin: 1.6rem 0 0; max-width: 66ch; font-size: clamp(1rem, 1.6vw, 1.12rem); color: var(--fg-dim); }
+.hero__what strong { color: var(--fg); font-weight: 600; }
 .hero__links { margin: 2rem 0 0; display: flex; flex-wrap: wrap; gap: 0.6rem; }
 .btn {
   display: inline-flex; align-items: center; gap: 0.5em;
