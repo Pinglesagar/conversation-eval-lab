@@ -151,7 +151,7 @@ em { font-style: italic; color: var(--fg-dim); }
   position: sticky;
   top: 0;
   z-index: 50;
-  padding: 0.7rem var(--gut);
+  padding: 0.6rem var(--gut) 0.45rem;
   /* Solid, not blurred: a hard band is the point, and the scanlines below it
      have nothing to say through a sticky bar. */
   background: var(--bg);
@@ -222,11 +222,14 @@ em { font-style: italic; color: var(--fg-dim); }
 }
 @media (prefers-reduced-motion: reduce) { .chip__dot { animation: none; } }
 
-@media (max-width: 900px) {
-  .nav__list { order: 3; flex-basis: 100%; }
-  .nav { flex-wrap: wrap; }
-  .chip { margin-left: auto; }
-}
+/* Two rows at every width: the brand and the status chip, then the ten section
+   links on a line of their own. Ten links do not fit beside a brand and a chip
+   inside the 74rem measure at any breakpoint, and a bar that clips a link
+   mid-word at 1280px is worse than a bar 28px taller. The list is pulled out
+   by its own link padding so the first label sits flush with the brand. */
+.nav { flex-wrap: wrap; row-gap: 0.35rem; }
+.nav__list { order: 3; margin: 0 -0.55rem; flex-basis: calc(100% + 1.1rem); }
+.chip { margin-left: auto; }
 @media (max-width: 560px) {
   .nav__name { display: none; }
 }
@@ -245,7 +248,7 @@ main { display: block; }
 .sec {
   padding-top: clamp(4rem, 10vw, 8rem);
   padding-bottom: clamp(1rem, 3vw, 2rem);
-  scroll-margin-top: 5.5rem;
+  scroll-margin-top: 6.5rem;
 }
 
 .sec__head {
@@ -283,7 +286,7 @@ main { display: block; }
 .hero {
   padding-top: clamp(3.5rem, 11vw, 8rem);
   padding-bottom: clamp(2rem, 5vw, 4rem);
-  scroll-margin-top: 5.5rem;
+  scroll-margin-top: 6.5rem;
 }
 
 .display {
@@ -1073,7 +1076,10 @@ main { display: block; }
   color: var(--accent);
   font-size: 0.85rem;
   overflow-x: auto;
-  white-space: nowrap;
+  /* A command wraps rather than clips: the button beside it carries the exact
+     text, so what the eye reads only has to be complete. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .copy {
   flex: none;
@@ -1309,7 +1315,7 @@ main { display: block; }
 /* ---------- 06 adapter ---------- */
 
 .adapt {
-  display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
   gap: clamp(1.2rem, 3vw, 2.5rem);
   padding: clamp(1.2rem, 3vw, 2rem);
   border: var(--edge) solid var(--line);
@@ -1318,7 +1324,9 @@ main { display: block; }
 }
 @media (max-width: 900px) { .adapt { grid-template-columns: minmax(0, 1fr); } }
 .code--block { margin: 0; font-size: 0.76rem; line-height: 1.65; }
-.code--block code { color: var(--fg-dim); }
+/* The protocol's docstring lines run to 80 columns; they wrap here rather than
+   scroll, indentation kept, so the whole contract is readable at a glance. */
+.code--block code { color: var(--fg-dim); white-space: pre-wrap; overflow-wrap: anywhere; }
 .adapt__one { margin: 1rem 0 0; font-size: 0.95rem; color: var(--fg); }
 .adapt__files { list-style: none; margin: 0 0 0.9rem; padding: 0; display: grid; gap: 0.35rem; }
 .adapt__files li { font-family: var(--mono); font-size: 0.8rem; }
