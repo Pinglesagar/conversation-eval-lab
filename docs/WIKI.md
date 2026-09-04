@@ -29,6 +29,7 @@ rounded.
 ## Table of contents
 
 - [1. Start here](#1-start-here)
+  - [1.1 What changed on 4 September 2026](#11-what-changed-on-4-september-2026)
 - [2. Architecture, with the diagrams](#2-architecture-with-the-diagrams)
   - [2.1 The one picture](#21-the-one-picture)
   - [2.2 What an adapter has to promise](#22-what-an-adapter-has-to-promise)
@@ -54,7 +55,7 @@ rounded.
   - [6.6 The finding](#66-the-finding)
   - [6.7 The part of the finding nobody wrote down](#67-the-part-of-the-finding-nobody-wrote-down)
   - [6.8 What comes out, and what a reader can check](#68-what-comes-out-and-what-a-reader-can-check)
-  - [6.9 Six questions an interviewer will ask about this call](#69-six-questions-an-interviewer-will-ask-about-this-call)
+  - [6.9 Six questions a reviewer will ask about this call](#69-six-questions-a-reviewer-will-ask-about-this-call)
   - [6.10 What this call does not support](#610-what-this-call-does-not-support)
 - [7. The scoring model](#7-the-scoring-model)
   - [7.1 What "scoring" means here](#71-what-scoring-means-here)
@@ -95,6 +96,7 @@ rounded.
   - [A.6 The one call](#a6-the-one-call)
   - [A.7 The scoring model](#a7-the-scoring-model)
   - [A.8 The domains](#a8-the-domains)
+  - [A.9 The cited grade, the second call, and the page](#a9-the-cited-grade-the-second-call-and-the-page)
 - [Appendix B — Findings recorded, not fixed](#appendix-b--findings-recorded-not-fixed)
   - [B.1 From the core of the engine](#b1-from-the-core-of-the-engine)
   - [B.2 From the judges, the simulator and the report layer](#b2-from-the-judges-the-simulator-and-the-report-layer)
@@ -134,7 +136,7 @@ It is applied to unrelated domains to prove it is not domain-specific:
 | Restaurant booking | `tablemate/` (5,091 LOC) | a multi-agent booking assistant with seeded defects | [§8.4](#84-the-two-systems-under-test--roleplay-and-tablemate) |
 | Knowledge retrieval | `ragcheck/` (3,108 LOC) | retrieval quality separated from answer groundedness | [§8.5](#85-the-supporting-packages-and-the-corpus) |
 
-**194 scenario files**, **1,976 tests**, and a clean clone runs green with **zero API
+**194 scenario files**, **2,351 tests**, and a clean clone runs green with **zero API
 keys**.
 
 ### Two minutes from a clean clone
@@ -166,6 +168,28 @@ Everything below is in service of five sentences. If you only remember five thin
    test ([§9](#9-what-it-found)).
 
 ---
+
+### 1.1 What changed on 4 September 2026
+
+**In plain terms.** Four things were added and nothing was removed. A second recorded
+call. A program that grades a call against the cited scorecard instead of the score sheet
+the product shipped with. The public page rewritten as a case study for a general reader,
+with a share card. And the counts in this document brought up to date. Each row links to
+where the detail now lives.
+
+| What | Where in the repository | Where in this document |
+| --- | --- | --- |
+| A second recorded spoken call: a cautious saver, the same adviser brief plus a written addendum, four turns, stopped by the trainee model's content filter | `fixtures/audio/spoken_call_pass/`, `fixtures/roleplay_live/spoken-eu-cautious-exemplary/`, `python -m roleplay.spoken --call second` | [§6.2](#62-where-a-call-comes-from), [§6.10](#610-what-this-call-does-not-support), [§8.4.8](#848-livepy-versus-spokenpy) |
+| The cited-scorecard evaluator: a trace in, one outcome per KPI out, 23 of 28 KPIs reported not applicable with the reason printed | `roleplay/scorecard_eval.py`, `tests/test_roleplay_scorecard_eval.py`, `make cited-calls` | [§8.4.6](#846-scorerpy-and-the-three-seeded-defects), [§9.1](#91-in-the-systems-under-test), [§10.2](#102-the-scoring-model), [A.9](#a9-the-cited-grade-the-second-call-and-the-page) |
+| The case-study page and its data: two call cards, the cited grade beside `rubric_v1`, plain-language copy, a share card, hash-versioned assets, a semantic colour system | `docs/index.html`, `docs/site/`, `scripts/build_site_data.py`, `tests/test_site_asset_versions.py` | [§8.5.11](#8511-docsindexhtml-and-docssite--the-case-study-page-and-its-data), [§9.2](#92-in-its-own-instruments--the-more-valuable-half) |
+| Counts refreshed to commit `78b610a`: 2,351 tests across 62 modules, package sizes, the make table | — | [§1](#1-start-here), [§2.8](#28-the-repository-map), [§5.3](#53-every-command-and-what-it-costs), [§8.0](#80-index-every-file-and-where-it-is-explained), [§8.5.9](#859-scripts--the-fixture-recorders), [§8.5.10](#8510-tests--what-it-actually-protects), [A.7](#a7-the-scoring-model) |
+
+**Removed:** nothing. Two earlier statements were corrected rather than removed: this
+document no longer describes the repository as holding one spoken call, and the twenty-odd
+sentences and three headings that addressed an interviewer now address a reviewer (the one
+research citation that uses the word, on recognition of structured interviews, is untouched).
+Per-file line counts inside §8 are
+from the original documentation pass and are not refreshed here; the package totals are.
 
 ## 2. Architecture, with the diagrams
 
@@ -320,7 +344,7 @@ straight first makes everything else easier.
 | **LiveKit** | carries the audio over a real network | the **phone line** |
 | **the model provider** | plays a person, or grades one | the **brain** |
 
-The counter-intuitive part, and it is worth saying out loud in an interview:
+The counter-intuitive part, and it is worth saying out loud to a reviewer:
 **ElevenLabs and Deepgram are on the harness's side of the table, not the product's.**
 The harness is playing the customer. It needs a mouth to speak with and ears to hear
 itself being heard. The thing being *tested* sits in the middle and is text-in,
@@ -808,17 +832,17 @@ were extracted to its own repository this is the line that would have to move. W
 knowing before claiming the separation is total; nothing was changed, this is a
 documentation task.
 
-**Sizes, from `wc -l` on `*.py` in this checkout:**
+**Sizes, from `wc -l` on `*.py` in this checkout (refreshed 4 September 2026, commit `78b610a`):**
 
 | Package | LOC | What it is |
 | --- | --- | --- |
-| `lab/` | 31,541 | the reusable engine |
-| `tests/` | 28,307 | 1,976 tests across 54 `test_*.py` modules (57 `.py` files; the other three are shared fixtures) |
-| `roleplay/` | 15,817 | the advisory domain |
+| `lab/` | 39,540 | the reusable engine |
+| `tests/` | 33,610 | 2,351 tests across 62 `test_*.py` modules (65 `.py` files; the other three are shared fixtures) |
+| `roleplay/` | 16,926 | the advisory domain |
 | `tablemate/` | 5,091 | the restaurant domain |
-| `ragcheck/` | 3,108 | retrieval + groundedness |
-| `scripts/` | 2,539 | the five fixture recorders — every path that spends money |
-| `scenarios/` | 2,404 | the loader, plus 194 YAML rows |
+| `ragcheck/` | 3,141 | retrieval + groundedness |
+| `scripts/` | 6,129 | the five fixture recorders — every path that spends money — plus the site-data generator, which spends nothing |
+| `scenarios/` | 2,434 | the loader, plus the YAML rows |
 | `error_analysis/` | 288 | the hand-coded failure taxonomy |
 
 **The 194 scenario rows, by directory:**
@@ -1119,7 +1143,7 @@ ties are ordinary rather than exotic:
 0.85 and TNR ≥ 0.85. The gate has refused in anger: a judge prompt measured at **TPR 0.250
 (2/8)** was blocked from CI. `DESIGN.md` §8. See
 [§7.10](#710-how-calibration-gates-the-whole-thing) and
-[§8.2.4](#824-labjudgesregistrypy--the-gate-that-refuses).
+[§8.2.4](#824-labjudgesregistrypy--the-gates-that-refuse).
 
 ### Rule 8 — No latency figure unless the timing gate passed
 
@@ -1347,7 +1371,7 @@ clone can run every row below.
 | --- | --- |
 | `make install` | the package plus dev extras, editable |
 | `make gate` | every row below it that gates, in cost order, stopping at the first failure ([docs/GATES.md](GATES.md)) |
-| `make test` | the full offline suite — 1,992 pass, 4 skip at commit `006dbd4` |
+| `make test` | the full offline suite — 2,351 pass, 4 skip at commit `78b610a` |
 | `make coverage` | line and branch coverage: whole tree, then the offline-executable subset ([§10.4](#104-the-harness-itself)) |
 | `make calibrate` | the timing and judge gates; **non-zero if either fails** |
 | `make validate` | the corpus against its schema, with coverage |
@@ -1356,6 +1380,7 @@ clone can run every row below.
 | `make roleplay-demo` | the advisory pack: contracts, score consistency, scorer calibration |
 | `make advisory-verdicts` | the 18 advisory rows' regime verdicts, computed from the registers |
 | `make spoken-replay` | replay the committed spoken call and re-grade it |
+| `make cited-calls` | both recorded calls graded against the cited scorecard; prints which KPIs could not be decided, and why |
 | `make ragcheck` | retrieval + groundedness: recall@k, MRR, nDCG, per-claim faithfulness |
 | `make audio-suite` | the 18-row in-process audio tier, offline |
 | `make audio-check` | replay the committed audio fixtures and fail if they no longer match |
@@ -1427,6 +1452,14 @@ The call is the committed spoken one in
 customer, both played by a language model, both speaking through a real synthesiser and
 heard through a real recogniser. Every quotation below is copied out of a committed
 artefact.
+
+A second recorded call sits beside it in
+[`fixtures/audio/spoken_call_pass/`](../fixtures/audio/spoken_call_pass/): a cautious
+saver against the same exemplary adviser brief plus a written addendum, four turns,
+54.5 seconds, stopped at adviser turn 3 when the trainee model's content filter refused
+the customer's unpunctuated transcript. This chapter follows the first call; the second
+is described where it differs — [§6.10](#610-what-this-call-does-not-support) and
+[§8.4.8](#848-livepy-versus-spokenpy) — and both are graded side by side under [§8.4.6](#846-scorerpy-and-the-three-seeded-defects).
 
 Two numbers about the same call will both appear and they are not in conflict: the
 assembled audio is **181.303625 s** (176.053625 s of speech plus 15 gaps of 0.35 s) while
@@ -2627,7 +2660,7 @@ topics, is vacuous here because the trace carries no scorer feedback (§6.5.1). 
 loss cost this call nothing measurable. On a row where the scorer's feedback claims
 "you uncovered what was worrying them", it would have cost a contract its evidence.
 
-#### Why this is worth an interview minute
+#### Why this is worth a reviewer's minute
 
 It is the same lesson as Rule 13, one level up. Rule 13 says aggregate agreement is
 not agreement — check the parts. This is: **the instrument that checks the parts also
@@ -2722,7 +2755,7 @@ Each link is a command you can run:
 
 ---
 
-### 6.9 Six questions an interviewer will ask about this call
+### 6.9 Six questions a reviewer will ask about this call
 
 #### Q1. "Walk me through what happens when you run one call."
 
@@ -3135,7 +3168,7 @@ and is worse than useless in a product that certifies people, because its errors
 all point at letting a breach through.
 
 The `max_parse_error_rate` default of zero has a subtler argument behind it, and
-it is worth being able to reproduce in an interview: under lenient parsing an
+it is worth being able to reproduce on request: under lenient parsing an
 unreadable answer is recorded as FAIL, which **inflates TPR**. A judge whose
 provider is returning junk therefore *looks like a better detector than it is*.
 The gate refuses it outright rather than scoring it.
@@ -3178,7 +3211,7 @@ per code; `DisclosureRegister.observe(utterance, turn=...)` records a
 casefolds, strips accents and punctuation, and collapses whitespace.
 
 The accent-stripping has a one-line justification worth quoting because it is the
-kind of thing an interviewer probes: *"a register that recorded a disclosure only
+kind of thing a careful reviewer probes: *"a register that recorded a disclosure only
 when the accents were right would be measuring a keyboard."*
 
 Beside it, deliberately, sits the control arm: `KEYWORD_SHADOW_TERMS`, "the words
@@ -4928,7 +4961,7 @@ company. Nothing in it imports any domain package
 | `cli.py` | 2,334 | `evallab` — one entry point, five subcommands | [§8.1.4](#814-labclipy--the-evallab-entry-point) |
 | `judges/judge.py` | 1,339 | `Judge`, `ReplayJudge`, retry, strict parsing | [§8.2.2](#822-labjudgesjudgepy--the-judge-itself-deliberately-dull) |
 | `judges/calibration.py` | 1,088 | TPR/TNR/precision/F1/kappa/confusion, self-consistency | [§8.2.3](#823-labjudgescalibrationpy--measuring-the-measuring-instrument) |
-| `judges/registry.py` | 387 | `require_calibrated()` — the gate that raises | [§8.2.4](#824-labjudgesregistrypy--the-gate-that-refuses) |
+| `judges/registry.py` | 387 | `require_calibrated()` — the gate that raises | [§8.2.4](#824-labjudgesregistrypy--the-gates-that-refuse) |
 | `judges/hallucinated_confirmation/` | 1,319 | the worked v1→v2 calibration study | [§8.2.6](#826-labjudgeshallucinated_confirmation--the-worked-v1--v2-study) |
 | `simulator/persona.py` | 593 | `Persona`, `Goal`, gated facts | [§8.2.7](#827-labsimulatorpersonapy--personas-goals-and-gated-facts) |
 | `simulator/driver.py` | 1,312 | `ScriptedCaller`, `LLMCaller`, the measurement window | [§8.2.8](#828-labsimulatordriverpy--the-loop-that-produces-the-trace) |
@@ -4956,13 +4989,15 @@ company. Nothing in it imports any domain package
 | `roleplay/scorer.py` | 505 | the rubric as arithmetic — **holds 3 seeded defects** | [§8.4.6](#846-scorerpy-and-the-three-seeded-defects) |
 | `roleplay/scorecard.py` | 1,724 | the 28-KPI behavioural scorecard | [§7.4](#74-the-28-kpi-scorecard) |
 | `roleplay/regime_eval.py` | 2,732 | registers → per-regime verdicts | [§8.4.5](#845-regime_evalpy--turning-a-citation-into-a-decision-procedure) |
-| `roleplay/spoken.py` | 1,764 | the same call through real speech | [§8.4.8](#848-livepy-versus-spokenpy) |
+| `roleplay/spoken.py` | 2,100 | the same call through real speech; `--call second` for the second recording | [§8.4.8](#848-livepy-versus-spokenpy) |
+| `roleplay/scorecard_eval.py` | 470 | a trace graded against the cited registry; not-applicable KPIs carry their reasons | [§8.4.6](#846-scorerpy-and-the-three-seeded-defects) |
 | `tablemate/` | 5,091 | the restaurant domain, three seeded bugs | [§8.4.10](#8410-tablemate--the-portability-proof) |
 | `ragcheck/` | 3,108 | retrieval separated from groundedness | [§8.5.5](#855-ragcheck-file-by-file) |
 | `scenarios/` | 2,404 + 194 YAML | the corpus and its loader | [§8.5.7](#857-scenarios--the-corpus-and-the-loader) |
 | `error_analysis/` | 288 | traces read by hand, coded, counted | [§8.5.8](#858-error_analysis--traces-read-by-hand) |
-| `scripts/` | 2,539 | the five fixture recorders — every path that spends money | [§8.5.9](#859-scripts--the-fixture-recorders) |
-| `tests/` | 28,307 | 1,976 tests across 54 `test_*.py` modules (57 `.py` files; the other three are shared fixtures) | [§8.5.10](#8510-tests--what-it-actually-protects) |
+| `scripts/` | 6,129 | the five fixture recorders — every path that spends money — and the site-data generator | [§8.5.9](#859-scripts--the-fixture-recorders) |
+| `tests/` | 33,610 | 2,351 tests across 62 `test_*.py` modules (65 `.py` files; the other three are shared fixtures) | [§8.5.10](#8510-tests--what-it-actually-protects) |
+| `docs/index.html`, `docs/site/` | — | the case-study page, its stylesheet and script, and the fourteen recomputed data files | [§8.5.11](#8511-docsindexhtml-and-docssite--the-case-study-page-and-its-data) |
 
 > **Two notes on the numbering.** Headings here carry their full path — §8.1.3.4 is *the
 > fourth topic of the third group of §8.1* — and in-text cross-references use the same
@@ -5891,7 +5926,7 @@ VACUOUS  promise-kept: 0/0 spoken commitments checked: the agent never claimed
          an action was complete, so there is nothing to hold it to
 ```
 
-**THE BLIND SPOT — know this one, because an interviewer will look for it.**
+**THE BLIND SPOT — know this one, because a careful reviewer will look for it.**
 
 Satisfaction is **existential, not one-to-one**. Every commitment in a session is scored
 against the same pool of qualifying calls. So a session with three "that is all booked in"
@@ -6427,7 +6462,7 @@ the expensive kind — they contradict the tool ledger, the one thing in the tra
 be argued with.
 
 `_judge_stage`'s docstring is the most self-incriminating comment in the repository, and it
-is worth quoting because it is the kind of thing an interviewer remembers:
+is worth quoting because it is the kind of thing a reviewer remembers:
 
 > `--live-judge` used to change the *labels* on this section and nothing else. It set
 > `abstained=0`, `replayed_from_fixture=False` and left `flagged=0` — so a report produced
@@ -6524,7 +6559,7 @@ is not evidence.*
 - [8.2.9 `lab/simulator/passk.py` — pass^k, and why FLAKY is not a pass](#829-labsimulatorpasskpy--passk-and-why-flaky-is-not-a-pass)
 - [8.2.10 `lab/simulator/flake_band.py` — the first time the machinery met real variance](#8210-labsimulatorflake_bandpy--the-first-time-the-machinery-met-real-variance)
 - [8.2.11 `lab/report/` — denominator-safe reporting](#8211-labreport--denominator-safe-reporting)
-- [8.2.12 Interview drill: the questions this subsection answers](#8212-interview-drill-the-questions-this-subsection-answers)
+- [8.2.12 Review drill: the questions this subsection answers](#8212-review-drill-the-questions-this-subsection-answers)
 
 #### 8.2.1 What an LLM judge is, and why it cannot be trusted unmeasured
 
@@ -6649,7 +6684,7 @@ An errored item's `label` is `"fail"` — it can never be mistaken for a clean p
 ##### 8.2.2.3 Why it exists / the tricky part
 
 Five design decisions carry this file. Each is a mistake the repo declines to
-make, and each is the answer to an obvious interview question.
+make, and each is the answer to an obvious reviewer's question.
 
 **(a) Binary, not a 1–5 scale.** A scale feels more informative and measures
 less. Two graders who both think an answer is mediocre split 2 vs 3 and register
@@ -7430,7 +7465,7 @@ parse errors                     : 0
 gate                             : FAIL — TPR 0.250 (2/8) is below the required 0.85
 ```
 
-**Now the part that is actually worth an interview answer.** An earlier revision
+**Now the part that is actually worth a considered answer.** An earlier revision
 of this directory scored the same two prompts against hand-written stand-in
 verdicts rather than a real model. Those stand-ins encoded a confident guess about
 *how* v1 would fail — that it would **over-fire**, flagging "I'll get that booked
@@ -8036,7 +8071,7 @@ cannot drift between the two places that print rates.
 
 ##### 8.2.9.4 pass^k vs the pass@k in the literature
 
-Worth having ready, because it is a natural interview probe.
+Worth having ready, because it is a natural question from a reviewer.
 
 Code-generation benchmarks report **pass@k**: the probability that *at least one*
 of k samples is correct. That is useful when a human filters the candidates.
@@ -8589,7 +8624,7 @@ the file refuses to blur them.*
 
 ---
 
-#### 8.2.12 Interview drill: the questions this subsection answers
+#### 8.2.12 Review drill: the questions this subsection answers
 
 Short answers, each pointing at the evidence.
 
@@ -10845,7 +10880,7 @@ python -m roleplay.scorecard_eval fixtures/audio/spoken_call/trace.jsonl fixture
 
 #### 8.4.8 `live.py` versus `spoken.py`
 
-Two files, 1,661 and 1,764 lines. They are often confused and they answer different
+Two files, 1,860 and 2,100 lines. They are often confused and they answer different
 questions.
 
 ##### In plain terms
@@ -11051,6 +11086,28 @@ And the honest limit: **the spoken call is n = 1.** It demonstrates the pipeline
 real. It supports no rate.
 
 ---
+
+##### The second call: `--call second`
+
+**In plain terms.** The same machinery recorded a second call on 4 September 2026, so the
+public page could show two calls graded side by side. A cooperative persona this time, the
+same exemplary adviser, and one deliberate difference: the adviser's brief carries a
+written addendum telling it to say every approved disclosure sentence word for word and to
+close with a summary and an ask. It did neither, because the call never got that far.
+
+**Technically.** `SECOND_CALL_DIR` points at `fixtures/audio/spoken_call_pass/`.
+`SECOND_CALL_BRIEF_ADDENDUM` holds the addendum verbatim and is written into the manifest
+too, so a reader can check the prompt digest against the prompt builder.
+`_briefed_trainee_factory` builds the live trainee with that brief, because the committed
+cassette's factory would be wrong for a call whose brief differs. `python -m
+roleplay.spoken --call second` replays it with no keys. At adviser turn 3 the trainee
+model returned a content-policy refusal on the customer's *unpunctuated* transcript;
+`content_filter_probe.json` records thirteen live probes taken on the day — unpunctuated
+**5 of 6** refused, the same sentence punctuated **0 of 5** — and is labelled as recorded
+evidence, not something replay can recompute. The call therefore has four turns, one of
+three required disclosures in its ledger, and fails both the shipped rubric (10/20) and the
+cited gate CG-1 ([§8.4.6](#846-scorerpy-and-the-three-seeded-defects)). Its live-recording fixture is
+`fixtures/roleplay_live/spoken-eu-cautious-exemplary/`.
 
 #### 8.4.9 The rest of `roleplay/`, file by file
 
@@ -11951,7 +12008,7 @@ instrument as carefully as the product.
 | a defect becomes probabilistic under a live model | live scorer study: v2's matrix varies across 3 identical runs | 6/6, 2/5, 0/4 across 141 conversations |
 | the same class of instrument bug appears in both | the fee-objection claim grounded in prose before the ledger | `PromiseContract` at 1/6 against a paraphrasing model |
 
-The last row is the one to bring to an interview. **The same defect — a semantic question
+The last row is the one to lead with. **The same defect — a semantic question
 implemented as a substring — was found independently in both domains.** That is not a
 coincidence; it is the most common way an eval check goes quietly blind, and finding it
 twice in unrelated code is the evidence that the pattern is general.
@@ -12520,7 +12577,7 @@ reasoning in `corpus.py` is the stronger form of the same point:
 
 **Do not build one.** Adding a vector retriever would grow the dependency
 surface, break Rule 1 (a clean clone runs with zero keys), and add nothing to the
-argument the package makes. The honest framing for an interview is: *"the
+argument the package makes. The honest framing is: *"the
 retriever is a lexical stand-in and it is bad on purpose; what I built is the
 measurement layer, and it is indifferent to what sits underneath it."*
 
@@ -13182,7 +13239,7 @@ for corpora with no labels yet, and on this fixture it is visibly the weaker of 
 two — measured at **0.979 (n=8)** against the gold form's **1.000 (n=8)**, because
 it calls the group-menu passage useful for a deposit question.
 
-##### The honest limits, which are stated in the repo and should be stated in an interview
+##### The honest limits, which are stated in the repo and should be stated up front
 
 `docs/RAG_NOTES.md` §7 is unhedged and worth quoting rather than paraphrasing:
 
@@ -13685,14 +13742,15 @@ reading is a dashboard rather than an evaluation."*
 
 ##### In plain terms
 
-Five programs, and their shared job is to be **the only things in the repository
-that can spend money.**
+Five recorders, whose shared job is to be **the only things in the repository that
+can spend money** — and one generator, `build_site_data.py`, which spends nothing and
+recomputes every number on the public page.
 
 Everything else — the tests, the CI run, a clean clone on a laptop with no
 accounts — reads what these five wrote down. That split is what makes Rule 1 (a
 clean clone works with no keys) possible without making the audio pipeline fake.
 
-##### In detail — 2,539 LOC across five files
+##### In detail — 6,129 LOC across eight files
 
 | File | LOC | Records | Spends |
 | --- | --- | --- | --- |
@@ -13701,6 +13759,8 @@ clean clone works with no keys) possible without making the audio pipeline fake.
 | `make_audio_suite_fixtures.py` | 412 | the 18-row audio tier's clips, cassette, evidence and ledger | **371 characters, 188 credits** |
 | `make_transport_fixtures.py` | 209 | three live WebRTC sessions | **zero** synthesis characters |
 | `run_audio_live.py` | 650 | a second live pass, ignoring the cassette, for reproducibility | zero TTS by construction |
+| `build_site_data.py` | 3,411 | `docs/site/data/*.json` — every figure the case-study page shows, recomputed from committed artefacts, including both calls' cited grades; `--check` fails if a rebuild differs by a byte | nothing — offline, no keys |
+| `start.py` | 179 | `make start` — the on-ramp. One finding, recomputed, offline, in a second. | nothing |
 | `__init__.py` | 8 | — | — |
 
 **Why a recorder is a script and not a test.** `make_cloud_fixtures.py` states it
@@ -13785,7 +13845,7 @@ is the transferable idea:
 
 ##### In plain terms
 
-1,976 tests. The count is not the interesting part; **what they are pointed at
+2,351 tests. The count is not the interesting part; **what they are pointed at
 is.**
 
 Most test suites prove that the code does the right thing when everything is fine.
@@ -13798,10 +13858,10 @@ packages, on the same day.
 
 ```
 python -m pytest -q
-→ 1976 passed, 4 skipped in 26.78s   (1980 collected)
+→ 2351 passed, 4 skipped   (2355 collected; 4 September 2026, commit 78b610a)
 ```
 
-57 `.py` files, 28,307 LOC. The four skips are
+65 `.py` files, 33,610 LOC. The four skips are
 `tests/test_voice_transport_live.py`, reason `live transport is not enabled;
 missing LAB_LIVE_TRANSPORT`. Nothing else in the tree skips, which is Rule 1 stated
 as an observation rather than an aspiration.
@@ -13918,6 +13978,8 @@ habit worth stealing.
 | `test_ragcheck_generation.py` | 328 | the counting and the denominators, with the judge's answers dictated by the test |
 | `test_ragcheck_corpus.py` | 253 | the unglamorous half — label errors, tie-breaking, splitter stability |
 | `test_ragcheck_report.py` | 173 | the assembled run, with every headline number pinned |
+| `test_roleplay_scorecard_eval.py` | 127 | the cited-scorecard evaluator: one recorded disclosure out of three fails gate CG-1 even when every compliance keyword is spoken; every KPI reported exactly once; every not-applicable carries a reason; both committed calls fail for the codes their ledgers lack |
+| `test_site_asset_versions.py` | 41 | the page's stylesheet and script links carry the content hash of the file they load — GitHub Pages caches assets for ten minutes, and without this a returning visitor gets new HTML with old CSS |
 
 Four points worth extracting.
 
@@ -13973,6 +14035,48 @@ row it is about can never drift apart".
 Package marker. One line and we move on.
 
 ---
+
+#### 8.5.11 `docs/index.html` and `docs/site/` — the case-study page and its data
+
+##### In plain terms
+
+The public page at `pinglesagar.github.io/conversation-eval-lab` is a **case study**, not
+a demo: one story told for a general reader — a trainee adviser practised a call, software
+graded it, it marked her down for not asking questions, she asked five — with the
+technical detail one click down. Nothing on it can be typed into; everything on it can be
+checked. Every number is recomputed from committed artefacts by one script, and the same
+script refuses the build if a rebuild would differ by a byte.
+
+##### In detail
+
+| Path | What it is |
+| --- | --- |
+| `docs/index.html` | the page, hand-written. Ten numbered chapters plus limits and run-it. Chapter 00 holds two call cards side by side: the disclosures each call's ledger recorded as tiles, and `rubric_v1`'s 4/4 beside the cited gate's FAIL. Four findings are one-line headlines that open on click |
+| `docs/site/css/main.css`, `docs/site/js/main.js` | the stylesheet and the optional script — the page is complete with JavaScript off. Both are linked as `?v=<first ten hex digits of the file's SHA-256>`; see below |
+| `docs/site/data/*.json` | fourteen files written by `scripts/build_site_data.py`. `calls.json` carries both calls with their `rubric_v1`, live-judge and cited grades; `index.json` and `architecture.json` carry the census the page quotes |
+| `docs/site/data/audio/` | byte-identical copies of the two recordings, fetched only when played |
+| `docs/site/og.png` | the 1200×630 share card that LinkedIn and others show, generated in the page's dot-matrix style |
+
+**Why the asset links carry a hash.** GitHub Pages serves assets with a ten-minute cache.
+The first render of the redesigned chapter 00 showed none of its new styling, in a local
+preview, because the browser was holding the old stylesheet; a returning visitor after a
+deploy would have seen the same. `tests/test_site_asset_versions.py` fails if either file
+changes without its link moving.
+
+**The colour system, because it is semantic.** Teal is the primary. Coral means fail or
+missing: the FAIL verdicts, the missing-disclosure tiles, the numbers that are the finding.
+Amber means caution: the honest note, caveat tags, the wrongly awarded 4/4, the limits
+chapter. Violet is structure: chapter numbers, eyebrow markers, the "as sent" channel. The
+rules are appended at the end of `main.css` under one comment so they can be read in one
+place.
+
+**What the page does not do, on purpose.** No sandbox, no live lane, no key entry. The
+page its presentation borrows from does those things; this page's subject is a recorded
+finding, and the honest form of that is a report a reader can check rather than a demo a
+reader can drive.
+
+Reproduce: `python -m scripts.build_site_data` writes the data and `--check` fails if it
+would differ; `python -m pytest tests/test_site_asset_versions.py -q` checks the links.
 
 ## 9. What it found
 
@@ -14031,6 +14135,21 @@ documentation.
   single manual test declares fixed.
   → [§8.4.10](#8410-tablemate--the-portability-proof)
 
+- **The shipped rubric gave full marks for disclosure on two calls whose ledgers hold
+  2 of 3 and 1 of 3 required codes.** `rubric_v1` counts six English keywords; the cited
+  gate CG-1 reads the product's own `record_disclosure` ledger and fails both. DEFECT-3,
+  seen on real audio rather than a scripted transcript. → [§8.4.6](#846-scorerpy-and-the-three-seeded-defects)
+- **The demo register accepted a paraphrase the FCA rule does not.** The second call's
+  adviser said "past performance is not a guide to future performance"; the register
+  recorded `past_performance`; the probe for COBS 4.5A.10R — a verbatim requirement —
+  marked it missed. Two instruments read one sentence and only one read the rule.
+  → [§8.4.6](#846-scorerpy-and-the-three-seeded-defects)
+- **A content filter ended a call at the hesitation the recogniser had stripped.** At
+  adviser turn 3 of the second call the trainee model refused the customer's unpunctuated
+  transcript; thirteen live probes: unpunctuated **5 of 6** refused, punctuated **0 of 5**.
+  The channel defect that zeroed discovery in the first call ended the second.
+  → [§8.4.8](#848-livepy-versus-spokenpy)
+
 ### 9.2 In its own instruments — the more valuable half
 
 - **A compliance check that could pass anything**, including "this is risk-free and you
@@ -14083,6 +14202,10 @@ documentation.
 - **A file-based loss ladder that is not the same condition as real loss** — 1.45× on
   `fill='zero'`, 0.29× on `fill='hold'`, and no jitter axis at all. Stated rather than
   quietly treated as equivalent. → [§8.3.12](#8312-transport--the-webrtc-tier)
+
+- **The public page's own cache.** GitHub Pages holds assets for ten minutes; a redesign
+  shipped new HTML against a cached stylesheet and rendered unstyled. Fixed by hashing the
+  asset links, guarded by a test. → [§8.5.11](#8511-docsindexhtml-and-docssite--the-case-study-page-and-its-data)
 
 ### 9.3 Findings recorded during this documentation pass and deliberately not fixed
 
@@ -14138,6 +14261,15 @@ none of them has to be taken on trust.
   facts about a trace; the last one — that this behaviour leads that business metric — is a
   claim about the world, labelled as one. [§7.4.3](#743-the-ladder-from-observable-behaviour-to-a-business-metric-worked)
 
+- **The cited evaluator decides 5 of 28 KPIs.** `scorecard_eval.py` reports the other 23
+  as not applicable with the reason — an uncalibrated judge, a phrase set the registry
+  names but does not commit, a gate whose trigger never fired — so 4/6 points and 2/3
+  gates is the whole of what it can say about either recorded call. [§8.4.6](#846-scorerpy-and-the-three-seeded-defects)
+- **The three-code disclosure list still cites nothing.** The evaluator names the regime it
+  grades `eu-retail` under (the FCA register, assumption A-V2-1) and runs that register's
+  cited probes beside the ledger check, but `required_codes()` in `roleplay/register.py`
+  is unchanged and uncited. A printed limitation rather than a hidden one.
+
 ### 10.3 Speech, and the audio tier
 
 - **The spoken call is n = 1.** It demonstrates the pipeline is real end to end. It
@@ -14166,6 +14298,12 @@ none of them has to be taken on trust.
 - **The transport delivery gap is a floor, not a worst case** — both ends are in one
   process on a loopback-to-cloud path — and the tier is n = 3 sessions on one row and n = 1
   on the other two. [§8.3.12](#8312-transport--the-webrtc-tier)
+
+- **Both recorded calls were cut short.** The first by a 3,400-character cap at adviser
+  turn 8 of 9, before the product was presented; the second by the trainee model's content
+  filter at adviser turn 3. Each disclosure miss is entangled with that setting: the gate
+  grades the session as recorded and says nothing about what the adviser would have said
+  later. n = 2 supports a mechanism, not a rate.
 
 ### 10.4 The harness itself
 
@@ -14593,8 +14731,8 @@ THE INSTRUMENT — agreement of the support judge with hand labels
   calibration gate: REFUSED
 ```
 
-**Two reconciliations worth doing yourself,** because they are the kind of thing an
-interviewer probes:
+**Two reconciliations worth doing yourself,** because they are the kind of thing a
+reviewer probes:
 
 - **`hit@3` = 14/18 against 5 rows listed as missing a gold chunk.** Not a
   contradiction: `c18` has two gold chunks, missed one and hit the other, so it
@@ -14686,7 +14824,7 @@ offline from a clean clone with no credentials.
 | SCORECARD.md section numbering behind F4 | `grep -n '^## \|^### ' docs/SCORECARD.md` |
 | tests: scorecard 46, regime-eval 29, roleplay SUT 46, paraphrase 14, judges-calibration 25 | `pytest tests/<file>.py -q` per file |
 
-Suite-wide: `pytest -q` is **1,976 passed, 4 skipped** (the four skips are the
+Suite-wide: `pytest -q` is **2,351 passed, 4 skipped** on 4 September 2026 at commit `78b610a` (the four skips are the
 live-transport tier behind `LAB_LIVE_TRANSPORT`). Nothing in this document changed
 any `.py`, YAML, fixture or the Makefile.
 
@@ -14706,6 +14844,24 @@ Test counts come from `pytest --collect-only -q`.
 
 ---
 
+### A.9 The cited grade, the second call, and the page
+
+Supports [§1.1](#11-what-changed-on-4-september-2026), [§8.4.6](#846-scorerpy-and-the-three-seeded-defects), [§8.4.8](#848-livepy-versus-spokenpy) and [§8.5.11](#8511-docsindexhtml-and-docssite--the-case-study-page-and-its-data). All offline, no keys.
+
+| Figure | Command |
+| --- | --- |
+| both calls: cited verdict FAIL, 4/6 points, 2/3 gates, CG-1 failed, 23 of 28 KPIs not applicable | `python -m roleplay.scorecard_eval fixtures/audio/spoken_call/trace.jsonl fixtures/audio/spoken_call_pass/trace.jsonl` (or `make cited-calls`) |
+| call 1 missing `past_performance`; call 2 missing `capital_at_risk` and `fees_and_charges` | the same command, its `CG-1:` line; pinned by `tests/test_roleplay_scorecard_eval.py` |
+| `rubric_v1` 4/4 on `mandatory_disclosure` for both calls | the same command, its `rubric_v1 criterion` table |
+| call 2: 4 turns, 54.502313 s, 1,744,118 bytes; refusal at adviser turn 3; probes 5/6 and 0/5 | `fixtures/audio/spoken_call_pass/manifest.json` and `content_filter_probe.json` (recorded evidence, not recomputable) |
+| call 1 stop reason `character_budget`, cap 3,400, turn budget 9 | `fixtures/audio/spoken_call/manifest.json`, the `session` block |
+| the page's data is current, 14 files byte-identical | `python -m scripts.build_site_data --check` |
+| the asset links carry the files' hashes | `python -m pytest tests/test_site_asset_versions.py -q` |
+| the share card is 1200×630 | `python -c "from PIL import Image; print(Image.open('docs/site/og.png').size)"` |
+| 2,351 passed, 4 skipped; 62 test modules | `python -m pytest -q`; `ls tests/test_*.py \| wc -l` |
+
+---
+
 ## Appendix B — Findings recorded, not fixed
 
 Writing this document was a read-only pass: across the two commits that produced it, no
@@ -14720,7 +14876,7 @@ anyway. They are recorded rather than fixed, with enough evidence to act on late
 is a real change to build tooling made under a `docs:` heading, and it is the only non-`.md`
 edit anywhere in the chain. It is called out here rather than buried in a commit message.
 
-Two of them are worth knowing before an interview, because they are exactly what a careful
+Two of them are worth knowing in advance, because they are exactly what a careful
 reader finds: a docstring that contradicts the repository's own headline number, and a
 scoring branch that rewards suppressing an objection.
 
@@ -14890,7 +15046,7 @@ stand-in verdicts encoded the guess that v1 would over-fire (which would indeed
 have hurt TNR). The live model did the opposite and the docstring was not updated.
 It is a one-word fix (`true-negative` → `true-positive`) and it matters because
 this is the exact number the repository quotes as its headline gate refusal —
-having the source contradict it in a docstring is the kind of thing an interviewer
+having the source contradict it in a docstring is the kind of thing a reviewer
 finds.
 
 **2. Cosmetic: the report headline prints the verdict twice.**
