@@ -16,8 +16,12 @@
      on-accent text on an accent fill 9.8
    The dot-matrix mask punches ground-coloured holes over 22% of a glyph's
    area. After the mask the hero headline measures 13.4 (off-white line) and
-   8.0 (accent line). Every text-bearing element clears AA; everything but
-   fg-mute clears AAA.
+   8.0 (accent line), mixing in linear luminance. Measured in a browser over
+   every text-bearing element on the rendered page, the lowest ratio on any
+   visible text is 5.1 (fg-mute on the accent-tinted "graded" panel); the
+   decorative section numerals and the "/" separators sit below that and are
+   aria-hidden. Every text-bearing element clears AA; everything but fg-mute
+   clears AAA.
 
    TEXTURE. Dot-matrix on the hero headline and the decorative section
    numerals; scanlines behind the content; hard edges everywhere. The rule
@@ -1315,7 +1319,7 @@ main { display: block; }
 /* ---------- 06 adapter ---------- */
 
 .adapt {
-  display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
   gap: clamp(1.2rem, 3vw, 2.5rem);
   padding: clamp(1.2rem, 3vw, 2rem);
   border: var(--edge) solid var(--line);
@@ -1323,10 +1327,14 @@ main { display: block; }
   align-items: start;
 }
 @media (max-width: 900px) { .adapt { grid-template-columns: minmax(0, 1fr); } }
-.code--block { margin: 0; font-size: 0.76rem; line-height: 1.65; }
-/* The protocol's docstring lines run to 80 columns; they wrap here rather than
-   scroll, indentation kept, so the whole contract is readable at a glance. */
-.code--block code { color: var(--fg-dim); white-space: pre-wrap; overflow-wrap: anywhere; }
+.code--block { margin: 0; font-size: 0.72rem; line-height: 1.65; }
+/* The protocol's docstring lines run to 80 columns. They used to wrap here,
+   which at 1280 left "to", "invent a" and "session" orphaned on lines of their
+   own with the indentation gone — it read as broken prose, not as code. Code
+   keeps its lines; the block scrolls sideways inside its own box, which is the
+   one place on this page horizontal scrolling is allowed. */
+.code--block { overflow-x: auto; }
+.code--block code { color: var(--fg-dim); white-space: pre; display: block; }
 .adapt__one { margin: 1rem 0 0; font-size: 0.95rem; color: var(--fg); }
 .adapt__files { list-style: none; margin: 0 0 0.9rem; padding: 0; display: grid; gap: 0.35rem; }
 .adapt__files li { font-family: var(--mono); font-size: 0.8rem; }
