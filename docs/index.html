@@ -3,10 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>conversation-eval-lab — an evaluation harness for conversational AI, voice and text</title>
-<meta name="description" content="An evaluation harness for conversational AI agents, voice and text, on one auditable trace: contracts decided on event position, judges calibrated and gated, a simulator that measures its own flake band. Opened with one finding — a spoken call scored 0 of 4 on discovery after 5 of 8 turns ended in a question mark — and reproducible offline with no API key.">
+<title>conversation-eval-lab — the grader marked it down for not asking questions</title>
+<meta name="description" content="An AI sales coach graded a practice call and marked the adviser down for not asking questions. She asked five. A case study in testing AI conversations: two recorded calls, graded twice, every number recomputable with no API key.">
 <meta name="color-scheme" content="dark">
-<link rel="stylesheet" href="site/css/main.css?v=ef034576f5">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="conversation-eval-lab">
+<meta property="og:url" content="https://pinglesagar.github.io/conversation-eval-lab/">
+<meta property="og:title" content="The grader marked it down for not asking questions. It asked five.">
+<meta property="og:description" content="An AI sales coach graded a practice call and marked the adviser down for not asking questions. She asked five. A case study in testing AI conversations: two recorded calls, graded twice, every number recomputable with no API key.">
+<meta property="og:image" content="https://pinglesagar.github.io/conversation-eval-lab/site/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Dot-matrix headline: The grader marked it down for not asking questions. It asked five.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The grader marked it down for not asking questions. It asked five.">
+<meta name="twitter:description" content="An AI sales coach graded a practice call and marked the adviser down for not asking questions. She asked five. A case study in testing AI conversations: two recorded calls, graded twice, every number recomputable with no API key.">
+<meta name="twitter:image" content="https://pinglesagar.github.io/conversation-eval-lab/site/og.png">
+<link rel="stylesheet" href="site/css/main.css?v=f30fb4fc04">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2015%2015%22%20shape-rendering%3D%22crispEdges%22%3E%3Crect%20width%3D%2215%22%20height%3D%2215%22%20fill%3D%22%230A0C10%22%2F%3E%3Cg%20fill%3D%22%235FCBBB%22%3E%3Crect%20x%3D%221%22%20y%3D%225%22%20width%3D%222%22%20height%3D%225%22%2F%3E%3Crect%20x%3D%224%22%20y%3D%223%22%20width%3D%222%22%20height%3D%229%22%2F%3E%3Crect%20x%3D%227%22%20y%3D%220%22%20width%3D%222%22%20height%3D%2215%22%2F%3E%3Crect%20x%3D%2210%22%20y%3D%222%22%20width%3D%222%22%20height%3D%2211%22%2F%3E%3Crect%20x%3D%2213%22%20y%3D%226%22%20width%3D%222%22%20height%3D%223%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E">
 <script>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');</script>
 </head>
@@ -41,7 +54,7 @@
 <main id="main">
 <!-- ======================= HERO ======================= -->
 <section class="hero" id="top">
-  <p class="eyebrow">Evaluation harness <span aria-hidden="true">/</span> Voice and text <span aria-hidden="true">/</span> One auditable trace</p>
+  <p class="eyebrow">A case study <span aria-hidden="true">/</span> Two recorded sales calls, graded by software <span aria-hidden="true">/</span> September 2026</p>
 
 
   <h1 class="display">
@@ -53,31 +66,36 @@
 
   <div class="hero__body">
     <ul class="lede">
-      <li>A trainee adviser's call was <strong>spoken</strong> — every line synthesised to audio, the audio transcribed back, and the transcript graded by the same rubric that grades text.</li>
-      <li>The question detector is <code>body.endswith("?")</code>. The transcript that actually gets graded is the unformatted one, and across the adviser&rsquo;s eight turns the only punctuation character in it is an apostrophe.</li>
-      <li>So <em>discovery</em> scored <b class="num">0/4</b> on a call where <b class="num">5/8</b> adviser turns ended in a question mark and <b class="num">7/8</b> contained one.</li>
+      <li>A trainee financial adviser practised a sales call with an AI customer, out loud. One piece of software turned the speech
+        into text. Another graded the transcript, the way a coach would.</li>
+      <li>The grader decides that a sentence is a question by looking for a question mark. The transcript it was handed had no
+        punctuation at all, so no sentence in it could ever end in one.</li>
+      <li>It gave <b class="num">0/4</b> for asking questions, on a call where <b class="num">5 of 8</b> of the adviser&rsquo;s turns were
+        questions. A second mistake moved the other way, and the total hid both.</li>
     </ul>
+    <p class="hero__what"><strong>What this page is.</strong> An open-source test bench for AI conversations, voice and text, shown through two
+      real recorded calls. Every number on it is recomputed from files in the repository. Nothing needs an account or an API key.</p>
   </div>
 
   <ul class="pills" aria-label="Call facts">
-    <li class="pill">16 turns</li>
-    <li class="pill">181.303625 s</li>
-    <li class="pill">Two vendors</li>
-    <li class="pill">0 API keys</li>
-    <li class="pill pill--hot">Discovery 0/4</li>
+    <li class="pill">Two recorded calls</li>
+    <li class="pill">181 s and 54 s</li>
+    <li class="pill">Two speech vendors</li>
+    <li class="pill">No API key</li>
+    <li class="pill pill--hot">Asking questions: 0/4</li>
   </ul>
 
   <p class="hero__links">
     <a class="btn" href="https://github.com/Pinglesagar/conversation-eval-lab">The repository <span aria-hidden="true">&#8599;</span></a>
     <a class="btn btn--ghost" href="#how">How it works</a>
-    <a class="btn btn--ghost" href="#adapt">Point it at your agent</a>
+    <a class="btn btn--ghost" href="#adapt">Use it on your own agent</a>
   </p>
 
   <p class="note note--top">
     <span class="note__tag">Honest note</span>
-    <b>n&nbsp;=&nbsp;2.</b> This is a mechanism, not a rate. Two calls, examined end to end, to show what the pipeline
-        surfaces — it is not a measured frequency and nothing here should be read as one. The rest of the harness, and
-    every other number it produced, is below it.
+    <b>n&nbsp;=&nbsp;2.</b> Two calls, followed end to end, to show what the test bench can see. That is a mechanism, not a
+    rate: nothing here says how often this happens. Everything else the bench measured is below, each number with the count
+    behind it.
   </p>
 </section>
 
@@ -89,9 +107,9 @@
       <p class="eyebrow">The calls</p>
       <h2 class="h2">Two calls, graded twice.</h2>
       <p class="sec__lede">
-        Both recordings, fetched only when you press play. The rubric that shipped gave each call <b class="num">4/4</b> on
-        disclosure. Read against the product&rsquo;s own ledger, one call is missing a required disclosure and the other is
-        missing two. Below them: the single turn that scored zero on discovery.
+        Press play on either. The score sheet the product shipped with gave both calls <b class="num">4/4</b> for making the
+        required risk disclosures. The product&rsquo;s own record shows one call skipped one disclosure and the other skipped two.
+        Below them, the single turn that scored zero for asking questions.
       </p>
     </div>
   </div>
@@ -111,7 +129,7 @@
       </audio>
       <p class="listen__meta"><code>fixtures/audio/spoken_call/full_call.wav</code> <span aria-hidden="true">/</span> 16 kHz mono 16-bit <span aria-hidden="true">/</span> 5,801,760 bytes, byte-identical</p>
       <div>
-        <p class="label">Required disclosures <span class="label__sep" aria-hidden="true">/</span> eu-retail <span class="label__sep" aria-hidden="true">/</span> from the ledger</p>
+        <p class="label">Required disclosures <span class="label__sep" aria-hidden="true">/</span> eu-retail <span class="label__sep" aria-hidden="true">/</span> from the product&rsquo;s record</p>
         <ul class="dchips">
           <li class="dchip dchip--given"><span class="dchip__code"><i aria-hidden="true"></i>capital_at_risk</span><span class="dchip__s">given</span></li>
           <li class="dchip dchip--missing"><span class="dchip__code"><i aria-hidden="true"></i>past_performance</span><span class="dchip__s">missing</span></li>
@@ -119,8 +137,8 @@
         </ul>
       </div>
       <ul class="twin twin--verdict">
-        <li><span class="label">rubric_v1 <span class="label__sep" aria-hidden="true">/</span> disclosure</span><span class="twin__n">4/4</span><span class="verdict__s">six keywords counted <span aria-hidden="true">&middot;</span> 12/20 total <span aria-hidden="true">&middot;</span> fails on points alone</span></li>
-        <li><span class="label">cited gate CG-1 <span class="label__sep" aria-hidden="true">/</span> ledger</span><span class="twin__n twin__n--bad">FAIL</span><span class="verdict__s">2 of 3 codes recorded <span aria-hidden="true">&middot;</span> past_performance never said</span></li>
+        <li><span class="label">The score sheet that shipped <span class="label__sep" aria-hidden="true">/</span> disclosure</span><span class="twin__n">4/4</span><span class="verdict__s">six keywords counted <span aria-hidden="true">&middot;</span> 12/20 total <span aria-hidden="true">&middot;</span> fails on points alone</span></li>
+        <li><span class="label">The cited compliance gate <span class="label__sep" aria-hidden="true">/</span> from the record</span><span class="twin__n twin__n--bad">FAIL</span><span class="verdict__s">2 of 3 codes recorded <span aria-hidden="true">&middot;</span> past_performance never said</span></li>
       </ul>
       <p class="callcard__end"><b>Ended by</b> the character cap at adviser turn 8 of 9, before the product was presented. The miss is entangled with that setting; the gate grades the session as recorded.</p>
     </article>
@@ -139,7 +157,7 @@
       </audio>
       <p class="listen__meta"><code>fixtures/audio/spoken_call_pass/full_call.wav</code> <span aria-hidden="true">/</span> 16 kHz mono 16-bit <span aria-hidden="true">/</span> 1,744,118 bytes, byte-identical</p>
       <div>
-        <p class="label">Required disclosures <span class="label__sep" aria-hidden="true">/</span> eu-retail <span class="label__sep" aria-hidden="true">/</span> from the ledger</p>
+        <p class="label">Required disclosures <span class="label__sep" aria-hidden="true">/</span> eu-retail <span class="label__sep" aria-hidden="true">/</span> from the product&rsquo;s record</p>
         <ul class="dchips">
           <li class="dchip dchip--missing"><span class="dchip__code"><i aria-hidden="true"></i>capital_at_risk</span><span class="dchip__s">missing</span></li>
           <li class="dchip dchip--given"><span class="dchip__code"><i aria-hidden="true"></i>past_performance</span><span class="dchip__s">given</span></li>
@@ -147,8 +165,8 @@
         </ul>
       </div>
       <ul class="twin twin--verdict">
-        <li><span class="label">rubric_v1 <span class="label__sep" aria-hidden="true">/</span> disclosure</span><span class="twin__n">4/4</span><span class="verdict__s">six keywords counted <span aria-hidden="true">&middot;</span> 10/20 total</span></li>
-        <li><span class="label">cited gate CG-1 <span class="label__sep" aria-hidden="true">/</span> ledger</span><span class="twin__n twin__n--bad">FAIL</span><span class="verdict__s">1 of 3 codes recorded <span aria-hidden="true">&middot;</span> two never said</span></li>
+        <li><span class="label">The score sheet that shipped <span class="label__sep" aria-hidden="true">/</span> disclosure</span><span class="twin__n">4/4</span><span class="verdict__s">six keywords counted <span aria-hidden="true">&middot;</span> 10/20 total</span></li>
+        <li><span class="label">The cited compliance gate <span class="label__sep" aria-hidden="true">/</span> from the record</span><span class="twin__n twin__n--bad">FAIL</span><span class="verdict__s">1 of 3 codes recorded <span aria-hidden="true">&middot;</span> two never said</span></li>
       </ul>
       <p class="callcard__end"><b>Ended by</b> the trainee model&rsquo;s content filter at adviser turn 3. The customer&rsquo;s <em>unpunctuated</em> transcript was refused 5 of 6 times; the same sentence punctuated, 0 of 5.</p>
     </article>
@@ -183,7 +201,7 @@
   <div class="findings">
     <p class="label">Four things this surfaced <span class="label__sep" aria-hidden="true">/</span> open any one</p>
     <details class="disc disc--finding">
-      <summary><span class="disc__t">The rubric that shipped read vocabulary. The cited gate reads the ledger.</span></summary>
+      <summary><span class="disc__t">The score sheet that shipped counted words. The compliance gate reads the record.</span></summary>
       <div class="disc__body">
         <p><code>rubric_v1</code> scores <code>mandatory_disclosure</code> by counting six English keywords in the adviser&rsquo;s speech.
           The cited scorecard&rsquo;s gate <b>CG-1</b> reads the product&rsquo;s own <code>record_disclosure</code> ledger against the codes the
@@ -266,9 +284,11 @@
     <span class="sec__num" aria-hidden="true">01</span>
     <div>
       <p class="eyebrow">How it works</p>
-      <h2 class="h2">Everything reads <span class="accent">the trace</span>. Nothing reads the agent.</h2>
+      <h2 class="h2">Everything is judged from <span class="accent">the record</span>. Nothing from the agent&rsquo;s own account.</h2>
       <p class="sec__lede">
-        The trace is the product. Every verdict, latency figure and judge call is a function of one JSONL event stream with an injected clock; every check is decided on event position, not timestamp.
+        Every conversation is written down as one ordered record of what happened: who spoke, which tools were called, what came
+        back. Every score is computed from that record and nothing else, so a disputed grade can be reopened months later without
+        re-running anything.
       </p>
     </div>
   </div>
@@ -335,8 +355,8 @@
       <p class="eyebrow">Where it breaks</p>
       <h2 class="h2">The detector wants a <span class="accent">?</span>. The scored transcript has none.</h2>
       <p class="sec__lede">
-        Three versions of the same sentence exist in this pipeline. Only one of them is graded, and it is the one with the
-        punctuation stripped out.
+        Three versions of the same sentence exist: what the adviser was meant to say, what the speech engine recognised with its
+        punctuation, and the plain version it recognised without. Only the last one is graded.
       </p>
     </div>
   </div>
@@ -511,8 +531,8 @@
       <p class="eyebrow">Why it nearly hid</p>
       <h2 class="h2">Two criteria moved in opposite directions to the <span class="accent">same total</span>.</h2>
       <p class="sec__lede">
-        Switch the channel. Discovery falls <span class="mono">2&#8202;&#8594;&#8202;0</span>. Objection handling rises
-        <span class="mono">2&#8202;&#8594;&#8202;4</span>. The total does not move at all.
+        Switch which transcript is graded. Asking questions falls 2 &rarr; 0. Handling objections rises 2 &rarr; 4. The total does
+        not move, so anyone checking totals would have seen nothing.
       </p>
     </div>
   </div>
@@ -656,11 +676,10 @@
     <span class="sec__num" aria-hidden="true">04</span>
     <div>
       <p class="eyebrow">What else it found</p>
-      <h2 class="h2">13 findings. Every one with its denominator.</h2>
+      <h2 class="h2">13 findings. Every number with the count behind it.</h2>
       <p class="sec__lede">
-        The finding above is a detector that could not see a question. Most of these are the same shape: the thing doing the
-        measuring was the thing at fault. Every rate is recomputed from a committed artefact by the command beside it, unless it
-        is explicitly labelled <span class="tag tag--hist">historical</span>; each card opens for the full table.
+        The finding above is a detector that could not see a question. Most of the others have the same shape: the thing doing
+        the measuring was the thing at fault. Each card opens for the full table and the command that recomputes it.
       </p>
     </div>
   </div>
@@ -785,11 +804,11 @@
   <div class="sec__head">
     <span class="sec__num" aria-hidden="true">05</span>
     <div>
-      <p class="eyebrow">What this covers</p>
-      <h2 class="h2">What a QA-for-AI role asks for, and what here answers it.</h2>
+      <p class="eyebrow">What it covers</p>
+      <h2 class="h2">What a team testing an AI agent needs, and what here answers it.</h2>
       <p class="sec__lede">
-        11 requirements, each in the words a job description would use, mapped to the files that demonstrate it and the one
-        command that proves it. Then, plainly, what this repository does not cover.
+        Eleven things a team asks of a test bench for conversational AI, each mapped to the files that do it and the one command
+        that proves it. Then, plainly, what this repository does not cover.
       </p>
     </div>
   </div>
@@ -810,10 +829,11 @@
   <div class="sec__head">
     <span class="sec__num" aria-hidden="true">06</span>
     <div>
-      <p class="eyebrow">Point it at your agent</p>
-      <h2 class="h2">You write the wrapper. <span class="accent">Everything downstream runs unchanged.</span></h2>
+      <p class="eyebrow">Use it on your own agent</p>
+      <h2 class="h2">Write one small adapter. Everything else runs unchanged.</h2>
       <p class="sec__lede">
-        How an external agent is plugged in. Two seams, both a dotted path to a factory and a protocol with no base class: the harness is an instrument pointed at the system, not a framework the system adopts.
+        The bench is an instrument you point at a system, not a framework the system has to adopt. Two places to plug in, each a
+        short piece of code, and the recordings, checks and reports then work exactly as they do here.
       </p>
     </div>
   </div>
@@ -880,7 +900,10 @@ class AgentUnderTest(Protocol):
     <div>
       <p class="eyebrow">The numbers</p>
       <h2 class="h2">Counted, not estimated.</h2>
-      <p class="sec__lede">Each count comes with the command that produces it, in the disclosure below. Scenario <em>rows</em> are quoted rather than files: the 195 YAML files include personas, profiles and registers that rows refer to.</p>
+      <p class="sec__lede">
+        Each count comes with the command that produces it, in the disclosure below. Scenario figures are quoted as rows because
+        the files also hold the personas, profiles and regulatory registers the rows point at.
+      </p>
     </div>
   </div>
 
@@ -894,10 +917,10 @@ class AgentUnderTest(Protocol):
     <span class="sec__num" aria-hidden="true">&#8594;</span>
     <div>
       <p class="eyebrow">Run it</p>
-      <h2 class="h2">Four commands. <span class="accent">No API key.</span></h2>
+      <h2 class="h2">Four commands. No account needed.</h2>
       <p class="sec__lede">
-        Every number on this page recomputes offline from a clean checkout. Nothing here needs a credential, and the
-        replay makes zero network calls.
+        Every number on this page recomputes offline from a fresh download of the repository. Nothing needs a credential, and the
+        replay makes no network calls.
       </p>
     </div>
   </div>
@@ -946,9 +969,9 @@ class AgentUnderTest(Protocol):
   <div class="sec__head">
     <span class="sec__num" aria-hidden="true">//</span>
     <div>
-      <p class="eyebrow">Limitations</p>
-      <h2 class="h2">Say these before they are asked.</h2>
-      <p class="sec__lede">None of these is hidden in a footnote elsewhere; they are the boundary of every claim above.</p>
+      <p class="eyebrow">Read before quoting</p>
+      <h2 class="h2">What these results do not prove.</h2>
+      <p class="sec__lede">The boundary of every claim above, stated here rather than in a footnote.</p>
     </div>
   </div>
 
