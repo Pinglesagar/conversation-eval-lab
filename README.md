@@ -82,7 +82,9 @@ one sentence. That is the property a single global compliance checker cannot hav
 **cited** scorecard in `roleplay/scorecard.py` — twenty-eight KPIs, eight of them
 gates. Both committed calls fail gate **CG-1** for the disclosure codes their own
 ledgers lack (two of three recorded, then one of three), while `rubric_v1` awards
-each **4/4** on the same criterion by counting keywords. Twenty-three of the
+each **4/4** on the same criterion by counting keywords. Both calls were cut short —
+a character cap, then a content filter — so each miss is entangled with that setting;
+the gate grades the session as recorded, which is what a gate must do. Twenty-three of the
 twenty-eight KPIs report *not applicable*, each with its reason printed — the
 denominator is the point, and it is never silent.
 
@@ -790,12 +792,12 @@ Read this section as part of every number above.
   driven rather than running them as text and calling the verdict an audio result.
 - **The spoken calls are two calls.** `roleplay/spoken.py` drives a whole advisory
   conversation turn by turn through real ElevenLabs synthesis and real Deepgram
-  recognition and grades what was *heard*; the 181-second recording, the per-turn
-  manifest carrying `text_sent` beside `text_heard`, the trace and both score
-  cards are committed and replay with no keys. It is n=1 — one persona, one model,
-  one voice pair, one day — and the ElevenLabs free allowance is the reason it is
-  n=1 (3,014 characters for this call). **Nothing in it supports a rate.** What it
-  supports is an existence proof, and one finding that a text-only tier could not
+  recognition and grades what was *heard*; the 181-second and 54-second recordings,
+  the per-turn manifests carrying `text_sent` beside `text_heard`, the traces and score
+  cards are committed and replay with no keys. They are n=2 — two personas, one
+  model, one voice pair — and the ElevenLabs free allowance is the reason there are
+  two and not twenty (3,014 characters for the first call). **Nothing in them supports
+  a rate.** What they support is an existence proof, and one finding that a text-only tier could not
   have produced: the scored transcript is `smart_format=false` (as
   [WER_NORMALISATION.md](lab/voice/engines/WER_NORMALISATION.md) requires) and
   therefore carries no punctuation, while `classify_trainee_turn` detects a

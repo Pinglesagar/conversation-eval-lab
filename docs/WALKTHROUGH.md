@@ -231,7 +231,8 @@ Discovery fell to 0 on a call where the adviser asked five questions.
 the register would each have reported that the audio channel changed nothing. **Only a
 per-criterion comparison surfaced it.**
 
-That is n = 1. It demonstrates the pipeline is real; it supports no rate. Say so.
+That is n = 1 for this finding — the repo holds two recorded calls, and two is not a
+sample either. It demonstrates the pipeline is real; it supports no rate. Say so.
 
 **Also worth thirty seconds:** the noise ladder breaks at −5 dB by returning a *plausible
 wrong postcode* at 0.907 confidence, while −10 dB returns nothing. **The milder line is
@@ -305,7 +306,7 @@ its own miss rate and refuses to gate below threshold.**
 - **The 16/18 is in-sample.** A held-out paraphrase set is the honest next step.
 - **The phrase lists are short.** *"three per cent of the sum you invest"* returns
   *missed* on a correct disclosure. Recall against unseen wording is unmeasured.
-- **The spoken call is n = 1.**
+- **The spoken calls are n = 2.**
 - **Barge-in is constructed, not discovered** — the events are written by a scenario, not
   observed by an adapter. Discovering a real overlap needs a duplex path this version
   does not have.

@@ -118,7 +118,9 @@ python -m roleplay.scorecard_eval fixtures/audio/spoken_call/trace.jsonl fixture
 ```
 
 Both committed calls fail **CG-1** for the codes their ledgers lack (2 of 3, then
-1 of 3) while `rubric_v1` gives each **4/4** on the same criterion. **23 of 28** KPIs
+1 of 3) while `rubric_v1` gives each **4/4** on the same criterion. Both calls were cut
+short — a character cap, then a content filter — so each miss is entangled with that
+setting; the gate grades the session as recorded. **23 of 28** KPIs
 are not applicable today, and the report says which and why; the decidable
 remainder is 4/6 points and 2/3 gates on each call. `eu-retail` is graded against
 the FCA register under a printed assumption (**A-V2-1**) — the three-code list itself

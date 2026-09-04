@@ -352,7 +352,7 @@ run emits it, so interruption handling is measured nowhere here. The latency
 figures come from a simulated latency model on an injected clock and say nothing
 about how fast any real system is — what the calibration gate proves is that the
 *stopwatch* recovers a delay it was not told about, before any p95 is published.
-There is one committed end-to-end spoken call, which is n=1.
+There are two committed end-to-end spoken calls, which is n=2.
 
 ---
 
