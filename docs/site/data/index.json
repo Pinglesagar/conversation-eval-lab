@@ -7,7 +7,7 @@
     },
     {
       "path": "architecture.json",
-      "sha256": "95930bcb0202bc7631300b98f768e77f3df6a2036a18da442d59c1ff324127b9"
+      "sha256": "cd9f24413ee14d5eb59ab62360dcd8652589e9232235c2044b89ed5022874a29"
     },
     {
       "path": "audio/excerpt.wav",
@@ -27,7 +27,7 @@
     },
     {
       "path": "calls.json",
-      "sha256": "b00cd1eed6e28fd08626aeb3d603361f8cc395b3025637bd10e2b9297b985c61"
+      "sha256": "36a41f941ca088941c57caaf693a90541a00cc4ac0c44f30a36ecbf479112dde"
     },
     {
       "path": "coverage.json",

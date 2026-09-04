@@ -2988,6 +2988,30 @@ def _card(card: Any) -> dict[str, Any]:
     }
 
 
+def _cited(directory: Path) -> dict[str, Any]:
+    """The same trace graded against the cited scorecard (roleplay/scorecard_eval.py).
+
+    Recomputed from `trace.jsonl` on every build, like everything else here; the
+    engaged regime entries are listed so the page can name the rule, not just the
+    verdict. Not-applicable KPIs keep their reasons: the denominator is the point.
+    """
+    from lab.trace.io import read_jsonl as _read_jsonl
+    from roleplay.scorecard_eval import evaluate as cited_evaluate
+
+    report = cited_evaluate(_read_jsonl(directory / "trace.jsonl"))
+    d = report.as_dict()
+    d["regime_verdict"] = {
+        "summary": report.regime_verdict.summary(),
+        "engaged": [
+            {"entry_id": e.entry_id, "status": e.status, "citation": e.citation, "kind": e.kind, "reason": e.reason}
+            for e in report.regime_verdict.entries
+            if e.status != "not-applicable"
+        ],
+    }
+    d["reproduce"] = f"python -m roleplay.scorecard_eval {_rel(directory / 'trace.jsonl')}"
+    return d
+
+
 def _call_entry(
     *,
     call_id: str,
@@ -3118,6 +3142,7 @@ def _call_entry(
             "verdicts_agree": result.scorers_agree,
             "pass_total": 14,
         },
+        "cited": _cited(directory),
         "register": {
             "jurisdiction": session["jurisdiction"],
             "required": required,

@@ -284,6 +284,9 @@ roleplay-validate: python-ok  ## evidence: Validate the roleplay corpus, with co
 advisory-verdicts: python-ok  ## evidence: The 18 advisory rows, decided from the registers.
 	$(PYTHON) -m roleplay.regime_eval --divergence --shadow
 
+cited-calls: python-ok  ## evidence: Both recorded calls graded against the cited scorecard.
+	$(PYTHON) -m roleplay.scorecard_eval fixtures/audio/spoken_call/trace.jsonl fixtures/audio/spoken_call_pass/trace.jsonl
+
 # The spoken call: the one place the audio tier and the conversation tier meet.
 # Every other audio entry point above scores single utterances; this one runs a
 # whole advisory conversation turn by turn through real synthesis and real

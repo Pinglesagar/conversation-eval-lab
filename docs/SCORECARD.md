@@ -106,6 +106,25 @@ kind computes, which limbs are refutation-only, and the two rows where the compu
 verdict and the hand label disagree. Nothing in §2 below should be read as claiming
 more than that.
 
+### 0.4 Grading a recorded call against the registry
+
+[`roleplay/scorecard_eval.py`](../roleplay/scorecard_eval.py) is the step between a
+trace and `score_session`: it decides every KPI whose detector exists in the repo —
+a ledger read, the turn classifier, or a cited regime probe — and reports every
+other KPI *not applicable with the reason printed*. One command, no keys:
+
+```
+python -m roleplay.scorecard_eval fixtures/audio/spoken_call/trace.jsonl fixtures/audio/spoken_call_pass/trace.jsonl
+```
+
+Both committed calls fail **CG-1** for the codes their ledgers lack (2 of 3, then
+1 of 3) while `rubric_v1` gives each **4/4** on the same criterion. **23 of 28** KPIs
+are not applicable today, and the report says which and why; the decidable
+remainder is 4/6 points and 2/3 gates on each call. `eu-retail` is graded against
+the FCA register under a printed assumption (**A-V2-1**) — the three-code list itself
+still comes from `roleplay/register.py`, which cites nothing, and the report says
+that too.
+
 ---
 
 ## 1. The seven groups
