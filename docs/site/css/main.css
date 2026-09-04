@@ -1617,3 +1617,96 @@ img, canvas, video { image-rendering: pixelated; }
   .callcard__head { grid-template-columns: auto minmax(0, 1fr); }
   .callcard__meta { grid-column: 2; text-align: left; }
 }
+
+/* ---------- colour pass ---------- */
+/* Teal stays the primary. Coral means fail or missing, amber means caution or a
+   stated limit, violet is structure — numbers, markers, the 'as sent' channel.
+   Appended so the semantics can be read in one place; the original rules above
+   still describe the layout. */
+:root {
+  --coral: #FF7A5C; --coral-b: rgba(255, 122, 92, 0.48); --coral-w: rgba(255, 122, 92, 0.11);
+  --amber: #F2B84B; --amber-b: rgba(242, 184, 75, 0.48); --amber-w: rgba(242, 184, 75, 0.10);
+  --violet: #9D8DFF; --violet-b: rgba(157, 141, 255, 0.45); --violet-w: rgba(157, 141, 255, 0.10);
+  --mint: #7FDCCE;
+  --fg-dim: #BDB9B0;
+  --fg-mute: #9E9B93;
+}
+.tag--bad {color: var(--coral); border-color: var(--coral-b); background: var(--coral-w); }
+.twin__n--bad {color: var(--coral); }
+.stack__verdict--bad {color: var(--coral); }
+.grid .bad {color: var(--coral); }
+.dchip--missing {color: var(--coral); border-color: var(--coral-b); background: var(--coral-w); }
+.dchip--missing i {border-color: var(--coral); background: transparent; }
+.dchip--missing .dchip__s {color: var(--coral); }
+.pill--hot {border-color: var(--coral-b);
+  background: var(--coral-w);
+  color: var(--coral); }
+.limits {list-style: none; margin: 0; padding: 0; counter-reset: lim;
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--edge);
+  background: var(--line); border: var(--edge) solid var(--amber-b); }
+.limits li::before {content: counter(lim);
+  position: absolute; left: clamp(1rem, 2.5vw, 1.5rem); top: 1.05rem;
+  font-family: var(--mono); font-size: 0.7rem; font-weight: 600; color: var(--amber);
+  border: var(--edge) solid var(--amber-b); width: 1.4rem; height: 1.4rem;
+  display: grid; place-items: center; }
+.req__ask .req__k::before {content: counter(req, decimal-leading-zero) "  "; color: var(--violet); white-space: pre; }
+.stage__n {font-family: var(--mono); font-size: 0.7rem; color: var(--violet); }
+.lesson__tag {display: block;
+  font-family: var(--mono); font-size: 0.64rem;
+  text-transform: uppercase; letter-spacing: 0.18em;
+  color: var(--violet); margin-bottom: 0.5rem; }
+
+/* explicit semantics */
+.score__d--down { color: var(--coral); }
+.score__d--up { color: var(--mint); }
+.checks__miss .checks__mark { color: var(--coral); }
+.nav__num { color: var(--violet); opacity: 0.75; }
+.nav__list a[aria-current="true"] .nav__num { color: var(--accent); opacity: 1; }
+.sec__num { color: rgba(157, 141, 255, 0.5); }
+.sec--limits .sec__num { color: rgba(242, 184, 75, 0.55); }
+.eyebrow::before { content: ""; display: inline-block; width: 0.5em; height: 0.5em; background: var(--violet); margin-right: 0.8em; vertical-align: 0.05em; }
+.note--top { border-left-color: var(--amber); }
+.note--top .note__tag { color: var(--amber); }
+.card__caveat, .card__cavtag { color: var(--amber); }
+.switch__btn[data-channel="sent"].is-on { background: var(--violet); border-color: var(--violet); color: #0E0B1F; }
+.dchip--given { color: var(--accent); border-color: var(--accent-b); background: var(--accent-w); }
+.dchip--given i { background: var(--accent); border-color: var(--accent); }
+.dchip--given .dchip__s { color: var(--accent); opacity: 0.8; }
+.twin--verdict li:first-child .twin__n { color: var(--amber); }
+.disc--finding > summary::before { color: var(--violet); }
+a:hover { color: var(--mint); }
+.btn:hover { box-shadow: 0 0 0 3px var(--accent-w); }
+.btn--ghost:hover { border-color: var(--violet-b); color: var(--fg); }
+.sec__lede { color: #D9D5CC; }
+.lede, .hero__what { color: #CFCBC2; }
+
+/* the headline: teal into mint into violet, under the same dot overlay */
+.display__b {
+  color: transparent;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--mint) 55%, var(--violet) 100%);
+  -webkit-background-clip: text; background-clip: text;
+}
+
+/* a soft glow behind the hero, and a gradient rule along the top of the page */
+.hero { position: relative; }
+.hero::before {
+  content: ""; position: absolute; z-index: -1; pointer-events: none;
+  inset: -12vh -20vw auto -20vw; height: 80vh;
+  background:
+    radial-gradient(ellipse 40% 55% at 18% 30%, rgba(95, 203, 187, 0.16), transparent 70%),
+    radial-gradient(ellipse 36% 50% at 82% 20%, rgba(157, 141, 255, 0.14), transparent 70%),
+    radial-gradient(ellipse 30% 40% at 60% 90%, rgba(255, 122, 92, 0.07), transparent 70%);
+}
+.topbar::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--violet) 55%, var(--coral) 100%);
+}
+.callcard, .card { position: relative; }
+.callcard::before, .card::before {
+  content: ""; position: absolute; top: -1px; left: -1px; right: -1px; height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--violet));
+}
+.callcard:nth-child(2)::before { background: linear-gradient(90deg, var(--violet), var(--coral)); }
+.sec--limits .card::before { background: linear-gradient(90deg, var(--amber), var(--coral)); }
+@media (prefers-reduced-motion: reduce) { .btn:hover { box-shadow: none; } }
+
