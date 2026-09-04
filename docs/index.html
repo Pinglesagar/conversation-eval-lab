@@ -869,7 +869,7 @@ class AgentUnderTest(Protocol):
 <!-- ======================= LIMITATIONS ======================= -->
 <section class="sec sec--limits" id="limits">
   <div class="sec__head">
-    <span class="sec__num" aria-hidden="true">!</span>
+    <span class="sec__num" aria-hidden="true">//</span>
     <div>
       <p class="eyebrow">Limitations</p>
       <h2 class="h2">Say these before they are asked.</h2>
@@ -878,13 +878,13 @@ class AgentUnderTest(Protocol):
   </div>
 
   <ol class="limits">
-    <li><b>The spoken call is n&nbsp;=&nbsp;1.</b> n = 1. This is a mechanism, not a rate. One call, examined end to end.</li>
+    <li><b>The spoken call is n&nbsp;=&nbsp;1.</b> A mechanism, not a rate: one call, examined end to end. Nothing on this page reads it as a frequency, and nothing should.</li>
     <li><b>The 16/18 is in-sample.</b> In-sample: the probes were written with these transcripts in view. The CLI says so on its second line. A held-out paraphrase set is the honest next step.</li>
     <li><b>The phrase lists are short.</b> A correct disclosure worded as <span class="q">&ldquo;three per cent of the sum you invest&rdquo;</span> returns <em>missed</em>. Recall against unseen wording is unmeasured. <span class="limits__src">docs/WALKTHROUGH.md &sect;11, docs/ADVISORY_TEST_STRATEGY.md</span></li>
     <li><b>Barge-in is constructed, not discovered.</b> The two interruption event kinds are emitted from constructed timings only; no adapter discovers one. Status in the coverage file: <span class="tag tag--hist">reserved</span>.</li>
     <li><b>One market&rsquo;s language is untestable.</b> No synthesis vendor in this stack produces Cantonese, so that market has no audio path and its row is declared <code>untestable</code> rather than counted as covered. <span class="limits__src">docs/AUDIO_SUITE.md</span></li>
     <li><b>One labeller.</b> Every hand label set here has one labeller with reasons recorded; inter-rater agreement is not measured.</li>
-    <li><b>Replay is blind to a prompt change.</b> Replay is blind to a prompt change: a green gate is necessary and not sufficient when a prompt, persona or rubric moved (docs/GATES.md, stage 9).</li>
+    <li><b>Replay is blind to a prompt change.</b> A green gate is necessary and not sufficient when a prompt, persona or rubric has moved; the recorded tiers cannot see it. <span class="limits__src">docs/GATES.md, stage 9</span></li>
   </ol>
 </section>
 
@@ -895,7 +895,7 @@ class AgentUnderTest(Protocol):
     <div>
       <p class="label">Repository</p>
       <ul class="foot__list">
-        <li><a href="https://github.com/Pinglesagar/conversation-eval-lab">github.com/Pinglesagar/conversation-eval-lab</a></li>
+        <li><a href="https://github.com/Pinglesagar/conversation-eval-lab">github.com/Pinglesagar/<wbr>conversation-eval-lab</a></li>
         <li><a href="https://github.com/Pinglesagar/conversation-eval-lab#readme">README &mdash; sixty seconds</a></li>
         <li><a href="https://github.com/Pinglesagar/conversation-eval-lab/blob/main/docs/ADAPTER.md">Plug in your own agent</a></li>
       </ul>
