@@ -78,7 +78,15 @@ The rows that matter are the divergences: **the same transcript, opposite verdic
 under two regimes**, because the registers differ. One row carries four verdicts on
 one sentence. That is the property a single global compliance checker cannot have.
 
-### A full spoken call, graded end to end
+`python -m roleplay.scorecard_eval <trace.jsonl>` grades a recorded call against the
+**cited** scorecard in `roleplay/scorecard.py` — twenty-eight KPIs, eight of them
+gates. Both committed calls fail gate **CG-1** for the disclosure codes their own
+ledgers lack (two of three recorded, then one of three), while `rubric_v1` awards
+each **4/4** on the same criterion by counting keywords. Twenty-three of the
+twenty-eight KPIs report *not applicable*, each with its reason printed — the
+denominator is the point, and it is never silent.
+
+### Two full spoken calls, graded end to end
 
 [`fixtures/audio/spoken_call/`](fixtures/audio/spoken_call/) — 16 turns, 181
 seconds, two voices. Every turn synthesised by ElevenLabs, heard back by Deepgram,
@@ -97,7 +105,15 @@ the total, the verdict, or the register would each have reported that the audio
 channel changed nothing. Only a **per-criterion** comparison surfaced it — and that
 is the transferable lesson rather than the number.
 
-This is **n = 1**. It demonstrates that the pipeline is real; it supports no rate.
+The second call, [`fixtures/audio/spoken_call_pass/`](fixtures/audio/spoken_call_pass/),
+is 4 turns and 54 seconds: a cooperative persona, the same adviser brief plus a
+written addendum, and a stop at adviser turn 3 when the trainee model's content
+filter refused the customer's *unpunctuated* transcript. Thirteen live probes,
+recorded on the day: unpunctuated **5 of 6 refused**; the same sentence with its
+punctuation, **0 of 5**. The channel defect that zeroed discovery in call 1 ended
+call 2.
+
+These are **n = 2**. They demonstrate that the pipeline is real; they support no rate.
 
 ### Voice, across languages
 

@@ -24,6 +24,362 @@
         "recognition_deltas": 7,
         "sent_total": 12
       },
+      "cited": {
+        "assumptions": {
+          "A-V2-1": "eu-retail graded against the FCA register (no MiFID II register in the repo); amer-retail → reg-bi; apac-retail → mas.",
+          "A-V2-2": "CL-4 urgency/incentive phrases are this evaluator's own short English list, uncalibrated.",
+          "A-V2-3": "CE-1 decided by the single PRIN 2A.5.9R probe, not the per-turn rate the KPI describes."
+        },
+        "jurisdiction": "eu-retail",
+        "language": "en",
+        "missing_disclosures": [
+          "past_performance"
+        ],
+        "outcomes": [
+          {
+            "applicable": false,
+            "evidence": "PhraseContract named in the registry but its phrase set is not committed; not decidable here",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CS-1",
+            "max_points": 2,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "PhraseContract named in the registry but its phrase set is not committed; not decidable here",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CS-2",
+            "max_points": 3,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "judge 'resistance_response' is uncalibrated; scored KPI, no fallback applies",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CS-3",
+            "max_points": 3,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "PhraseContract named in the registry but its phrase set is not committed; not decidable here",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CS-4",
+            "max_points": 1,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "elicitation ledger records 0 concern(s) revealed; the jurisdiction's fact-find field register (COBS 9A.2.6R–9A.2.8R set) is not present in roleplay.register, so the rate has no denominator",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "DI-1",
+            "max_points": 4,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "FieldPropagationContract named but no elicited-field set is committed to propagate",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "DI-2",
+            "max_points": 4,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "term-introduction tracking not parameterised in this evaluator",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "DI-3",
+            "max_points": 2,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "no recommendation reached; gate not applicable (registry: removed from both numerator and denominator)",
+            "gate_passed": null,
+            "kind": "GATE",
+            "kpi_id": "DI-4",
+            "max_points": 0,
+            "points": null
+          },
+          {
+            "applicable": true,
+            "evidence": "0/2 distinct objection keys raised twice",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "OH-1",
+            "max_points": 4,
+            "points": 4
+          },
+          {
+            "applicable": false,
+            "evidence": "judge 'objection_engagement' is uncalibrated; scored KPI, fallback proxy not wired",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "OH-2",
+            "max_points": 4,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "no deferral-event detector in this evaluator",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "OH-3",
+            "max_points": 2,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "FCA-12 PRIN 2A.5.3R, 2A.5.8R, 2A.5.9R: probe returned not-applicable: no recommendation is made and no transaction is concluded",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CE-1",
+            "max_points": 3,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "judge 'clause_explanation' is uncalibrated; scored KPI",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CE-2",
+            "max_points": 3,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "guaranteed-versus-projected emphasis counter not wired",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CE-3",
+            "max_points": 3,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "no affordability/stop-paying trigger detector in this evaluator",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CE-4",
+            "max_points": 2,
+            "points": null
+          },
+          {
+            "applicable": true,
+            "evidence": "2/3 required codes recorded in 'en'; missing: past_performance",
+            "gate_passed": false,
+            "kind": "GATE",
+            "kpi_id": "CG-1",
+            "max_points": 0,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "no recommendation reached; ordering requirements had no trigger",
+            "gate_passed": null,
+            "kind": "GATE",
+            "kpi_id": "CG-2",
+            "max_points": 0,
+            "points": null
+          },
+          {
+            "applicable": true,
+            "evidence": "no in-session compliance flag; outcome one (advice given) not engaged",
+            "gate_passed": true,
+            "kind": "GATE",
+            "kpi_id": "CG-3",
+            "max_points": 0,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "no recommendation reached; gate not applicable",
+            "gate_passed": null,
+            "kind": "GATE",
+            "kpi_id": "CG-4",
+            "max_points": 0,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "no vulnerability-signal detector in this evaluator; the gate's trigger cannot be observed",
+            "gate_passed": null,
+            "kind": "GATE",
+            "kpi_id": "CG-5",
+            "max_points": 0,
+            "points": null
+          },
+          {
+            "applicable": true,
+            "evidence": "no turn classified as a close attempt in 8 adviser turns",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CL-1",
+            "max_points": 2,
+            "points": 0
+          },
+          {
+            "applicable": false,
+            "evidence": "no close attempt; nothing for a summary to precede",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CL-2",
+            "max_points": 3,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "no close attempt",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CL-3",
+            "max_points": 3,
+            "points": null
+          },
+          {
+            "applicable": true,
+            "evidence": "no urgency or incentive phrase in 8 adviser turns (A-V2-2 list)",
+            "gate_passed": true,
+            "kind": "GATE",
+            "kpi_id": "CL-4",
+            "max_points": 0,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "no committed per-market refusal-taxonomy calibration report",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "LL-1",
+            "max_points": 3,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "language 'en': formality-register detector not wired",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "LL-2",
+            "max_points": 2,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "FCA-14 COBS 15.2.1R, 15.2.2G, 15.2.3R: no prescribed number quoted (not-applicable)",
+            "gate_passed": null,
+            "kind": "GATE",
+            "kpi_id": "LL-3",
+            "max_points": 0,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "no audio-path readings supplied in context",
+            "gate_passed": null,
+            "kind": "DIAGNOSTIC",
+            "kpi_id": "LL-4",
+            "max_points": 0,
+            "points": null
+          }
+        ],
+        "regime": "fca",
+        "regime_verdict": {
+          "engaged": [
+            {
+              "citation": "FCA-8 COBS 4.2.1R(1), 4.2.1R(3)",
+              "entry_id": "fca-fair-clear-not-misleading",
+              "kind": "substance",
+              "reason": "no breach of this requirement is detectable in the transcript",
+              "status": "satisfied"
+            }
+          ],
+          "summary": "fca: PASS — 1 satisfied, 0 missed, 0 undecidable of 1 engaged (10 entries in the register)"
+        },
+        "reproduce": "python -m roleplay.scorecard_eval fixtures/audio/spoken_call/trace.jsonl",
+        "rubric_v1": {
+          "criteria": {
+            "closing": 0,
+            "discovery": 0,
+            "mandatory_disclosure": 4,
+            "no_unlicensed_advice": 4,
+            "objection_handling": 4
+          },
+          "max_total": 20,
+          "successors": {
+            "closing": [
+              "CL-1",
+              "CL-2",
+              "CL-3",
+              "CL-4"
+            ],
+            "discovery": [
+              "DI-1",
+              "DI-2",
+              "DI-3",
+              "DI-4"
+            ],
+            "mandatory_disclosure": [
+              "CG-1",
+              "CG-2",
+              "LL-3"
+            ],
+            "no_unlicensed_advice": [
+              "CG-3"
+            ],
+            "objection_handling": [
+              "OH-1",
+              "OH-2",
+              "OH-3"
+            ]
+          },
+          "total": 12,
+          "verdict": "fail"
+        },
+        "score": {
+          "gates_applicable": 3,
+          "gates_failed": [
+            "CG-1"
+          ],
+          "gates_passed": 2,
+          "not_applicable": [
+            "CS-1",
+            "CS-2",
+            "CS-3",
+            "CS-4",
+            "DI-1",
+            "DI-2",
+            "DI-3",
+            "DI-4",
+            "OH-2",
+            "OH-3",
+            "CE-1",
+            "CE-2",
+            "CE-3",
+            "CE-4",
+            "CG-2",
+            "CG-4",
+            "CG-5",
+            "CL-2",
+            "CL-3",
+            "LL-1",
+            "LL-2",
+            "LL-3",
+            "LL-4"
+          ],
+          "pass_points": 5,
+          "points": 4,
+          "points_available": 6,
+          "summary": "FAIL 4/6 points (66.7%, threshold 5/6) | 2/3 gates. gates FAILED: CG-1 n/a: 23",
+          "verdict": "fail"
+        }
+      },
       "closing": {
         "adviser_turn_kinds": [
           "pitch",
@@ -156,6 +512,370 @@
         "of_turns": 4,
         "recognition_deltas": 2,
         "sent_total": 13
+      },
+      "cited": {
+        "assumptions": {
+          "A-V2-1": "eu-retail graded against the FCA register (no MiFID II register in the repo); amer-retail → reg-bi; apac-retail → mas.",
+          "A-V2-2": "CL-4 urgency/incentive phrases are this evaluator's own short English list, uncalibrated.",
+          "A-V2-3": "CE-1 decided by the single PRIN 2A.5.9R probe, not the per-turn rate the KPI describes."
+        },
+        "jurisdiction": "eu-retail",
+        "language": "en",
+        "missing_disclosures": [
+          "capital_at_risk",
+          "fees_and_charges"
+        ],
+        "outcomes": [
+          {
+            "applicable": false,
+            "evidence": "PhraseContract named in the registry but its phrase set is not committed; not decidable here",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CS-1",
+            "max_points": 2,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "PhraseContract named in the registry but its phrase set is not committed; not decidable here",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CS-2",
+            "max_points": 3,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "judge 'resistance_response' is uncalibrated; scored KPI, no fallback applies",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CS-3",
+            "max_points": 3,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "PhraseContract named in the registry but its phrase set is not committed; not decidable here",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CS-4",
+            "max_points": 1,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "elicitation ledger records 0 concern(s) revealed; the jurisdiction's fact-find field register (COBS 9A.2.6R–9A.2.8R set) is not present in roleplay.register, so the rate has no denominator",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "DI-1",
+            "max_points": 4,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "FieldPropagationContract named but no elicited-field set is committed to propagate",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "DI-2",
+            "max_points": 4,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "term-introduction tracking not parameterised in this evaluator",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "DI-3",
+            "max_points": 2,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "no recommendation reached; gate not applicable (registry: removed from both numerator and denominator)",
+            "gate_passed": null,
+            "kind": "GATE",
+            "kpi_id": "DI-4",
+            "max_points": 0,
+            "points": null
+          },
+          {
+            "applicable": true,
+            "evidence": "0/2 distinct objection keys raised twice",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "OH-1",
+            "max_points": 4,
+            "points": 4
+          },
+          {
+            "applicable": false,
+            "evidence": "judge 'objection_engagement' is uncalibrated; scored KPI, fallback proxy not wired",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "OH-2",
+            "max_points": 4,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "no deferral-event detector in this evaluator",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "OH-3",
+            "max_points": 2,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "FCA-12 PRIN 2A.5.3R, 2A.5.8R, 2A.5.9R: probe returned not-applicable: no recommendation is made and no transaction is concluded",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CE-1",
+            "max_points": 3,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "judge 'clause_explanation' is uncalibrated; scored KPI",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CE-2",
+            "max_points": 3,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "guaranteed-versus-projected emphasis counter not wired",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CE-3",
+            "max_points": 3,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "no affordability/stop-paying trigger detector in this evaluator",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CE-4",
+            "max_points": 2,
+            "points": null
+          },
+          {
+            "applicable": true,
+            "evidence": "1/3 required codes recorded in 'en'; missing: capital_at_risk, fees_and_charges",
+            "gate_passed": false,
+            "kind": "GATE",
+            "kpi_id": "CG-1",
+            "max_points": 0,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "no recommendation reached; ordering requirements had no trigger",
+            "gate_passed": null,
+            "kind": "GATE",
+            "kpi_id": "CG-2",
+            "max_points": 0,
+            "points": null
+          },
+          {
+            "applicable": true,
+            "evidence": "no in-session compliance flag; outcome one (advice given) not engaged",
+            "gate_passed": true,
+            "kind": "GATE",
+            "kpi_id": "CG-3",
+            "max_points": 0,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "no recommendation reached; gate not applicable",
+            "gate_passed": null,
+            "kind": "GATE",
+            "kpi_id": "CG-4",
+            "max_points": 0,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "no vulnerability-signal detector in this evaluator; the gate's trigger cannot be observed",
+            "gate_passed": null,
+            "kind": "GATE",
+            "kpi_id": "CG-5",
+            "max_points": 0,
+            "points": null
+          },
+          {
+            "applicable": true,
+            "evidence": "no turn classified as a close attempt in 2 adviser turns",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CL-1",
+            "max_points": 2,
+            "points": 0
+          },
+          {
+            "applicable": false,
+            "evidence": "no close attempt; nothing for a summary to precede",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CL-2",
+            "max_points": 3,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "no close attempt",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "CL-3",
+            "max_points": 3,
+            "points": null
+          },
+          {
+            "applicable": true,
+            "evidence": "no urgency or incentive phrase in 2 adviser turns (A-V2-2 list)",
+            "gate_passed": true,
+            "kind": "GATE",
+            "kpi_id": "CL-4",
+            "max_points": 0,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "no committed per-market refusal-taxonomy calibration report",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "LL-1",
+            "max_points": 3,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "language 'en': formality-register detector not wired",
+            "gate_passed": null,
+            "kind": "SCORE",
+            "kpi_id": "LL-2",
+            "max_points": 2,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "FCA-14 COBS 15.2.1R, 15.2.2G, 15.2.3R: no prescribed number quoted (not-applicable)",
+            "gate_passed": null,
+            "kind": "GATE",
+            "kpi_id": "LL-3",
+            "max_points": 0,
+            "points": null
+          },
+          {
+            "applicable": false,
+            "evidence": "no audio-path readings supplied in context",
+            "gate_passed": null,
+            "kind": "DIAGNOSTIC",
+            "kpi_id": "LL-4",
+            "max_points": 0,
+            "points": null
+          }
+        ],
+        "regime": "fca",
+        "regime_verdict": {
+          "engaged": [
+            {
+              "citation": "FCA-10 COBS 4.5A.10R",
+              "entry_id": "fca-past-performance-verbatim",
+              "kind": "verbatim",
+              "reason": "nothing in the adviser's turns satisfies it (looked for: past performance is not a reliable indicator of future results)",
+              "status": "missed"
+            },
+            {
+              "citation": "FCA-8 COBS 4.2.1R(1), 4.2.1R(3)",
+              "entry_id": "fca-fair-clear-not-misleading",
+              "kind": "substance",
+              "reason": "no breach of this requirement is detectable in the transcript",
+              "status": "satisfied"
+            }
+          ],
+          "summary": "fca: FAIL — 1 satisfied, 1 missed, 0 undecidable of 2 engaged (10 entries in the register)"
+        },
+        "reproduce": "python -m roleplay.scorecard_eval fixtures/audio/spoken_call_pass/trace.jsonl",
+        "rubric_v1": {
+          "criteria": {
+            "closing": 0,
+            "discovery": 0,
+            "mandatory_disclosure": 4,
+            "no_unlicensed_advice": 4,
+            "objection_handling": 2
+          },
+          "max_total": 20,
+          "successors": {
+            "closing": [
+              "CL-1",
+              "CL-2",
+              "CL-3",
+              "CL-4"
+            ],
+            "discovery": [
+              "DI-1",
+              "DI-2",
+              "DI-3",
+              "DI-4"
+            ],
+            "mandatory_disclosure": [
+              "CG-1",
+              "CG-2",
+              "LL-3"
+            ],
+            "no_unlicensed_advice": [
+              "CG-3"
+            ],
+            "objection_handling": [
+              "OH-1",
+              "OH-2",
+              "OH-3"
+            ]
+          },
+          "total": 10,
+          "verdict": "fail"
+        },
+        "score": {
+          "gates_applicable": 3,
+          "gates_failed": [
+            "CG-1"
+          ],
+          "gates_passed": 2,
+          "not_applicable": [
+            "CS-1",
+            "CS-2",
+            "CS-3",
+            "CS-4",
+            "DI-1",
+            "DI-2",
+            "DI-3",
+            "DI-4",
+            "OH-2",
+            "OH-3",
+            "CE-1",
+            "CE-2",
+            "CE-3",
+            "CE-4",
+            "CG-2",
+            "CG-4",
+            "CG-5",
+            "CL-2",
+            "CL-3",
+            "LL-1",
+            "LL-2",
+            "LL-3",
+            "LL-4"
+          ],
+          "pass_points": 5,
+          "points": 4,
+          "points_available": 6,
+          "summary": "FAIL 4/6 points (66.7%, threshold 5/6) | 2/3 gates. gates FAILED: CG-1 n/a: 23",
+          "verdict": "fail"
+        }
       },
       "closing": {
         "adviser_turn_kinds": [

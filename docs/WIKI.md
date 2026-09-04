@@ -10817,6 +10817,30 @@ green and blind.
 > distinction it exists to enforce ([§7.5](#75-gate-score-diagnostic)) and every
 > exclusion it declares ([§7.6](#76-the-exclusions)).
 
+##### Where the cited grade comes from: `scorer.py`'s neighbour, `scorecard_eval.py`
+
+**In plain terms.** `scorecard.py` is the list of things an adviser is judged on, with a
+source beside each one. Until `scorecard_eval.py` existed, nothing turned a recorded
+call into a mark against that list — so the two recorded calls had only ever been graded
+by `rubric_v1`, whose disclosure criterion counts keywords. Now one command does it, and
+where the repo cannot decide a KPI it says *not applicable* and gives the reason,
+instead of guessing.
+
+**Technically.** `evaluate(trace)` builds the `SessionView`, maps the jurisdiction to a
+cited regime (`eu-retail → fca`, printed as assumption A-V2-1), runs
+`RegimeEvaluator` for that register, and emits one `KPIOutcome` per KPI: CG-1 reads the
+`record_disclosure` ledger against `required_codes()`; CG-3 reads the compliance-flag
+ledger; OH-1 is the objection re-raise rate; CL-1 uses `classify_trainee_turn`; CL-4 is a
+short, labelled urgency phrase list (A-V2-2); CE-1, CG-4 and LL-3 defer to the regime's
+cited entries. Everything else is `applicable=False` with a reason. `score_session`
+then does what it always did — gates counted, never averaged. Both committed calls:
+`rubric_v1` 4/4 on disclosure, CG-1 **fail**, 23 of 28 KPIs not applicable.
+
+```
+python -m roleplay.scorecard_eval fixtures/audio/spoken_call/trace.jsonl fixtures/audio/spoken_call_pass/trace.jsonl
+```
+
+
 #### 8.4.8 `live.py` versus `spoken.py`
 
 Two files, 1,661 and 1,764 lines. They are often confused and they answer different

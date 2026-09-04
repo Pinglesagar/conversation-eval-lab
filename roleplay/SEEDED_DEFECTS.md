@@ -223,6 +223,12 @@ which.
 `view.compliance_flags`. Both are already in the view. Deleting the keyword list is
 the entire change.
 
+**Where that fix now lives** `roleplay/scorecard_eval.py` grades the same view
+against the cited registry, and its gate CG-1 is exactly that read. Both committed
+spoken calls show the contrast on real audio: `rubric_v1` awards each 4/4 on
+`mandatory_disclosure`; the ledger holds 2 of 3 and 1 of 3 required codes; CG-1
+fails both. `scorer.py` is left as it is — the defect is the specimen.
+
 ---
 
 ## What this pack should *not* find
