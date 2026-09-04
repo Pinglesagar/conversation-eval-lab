@@ -1,0 +1,120 @@
+{
+  "about": "Live probes of the provider content filter that ended the second spoken call at adviser turn 3. Each probe re-sends the trainee's exact request (system prompt + the recorded history through customer turn 2) with the final customer line varied. LLM calls only; no synthesis credits. Not reproducible offline: it needs the provider and reflects the filter on the day.",
+  "counts": {
+    "completed": 7,
+    "refused": 6,
+    "total": 13
+  },
+  "customer_phrasings_generated": [
+    "And how long would my money be tied up if I went with something like this? I really don’t like the idea of not being able to get at it if I need to.",
+    "And how long would my money be tied up if I went with something like this? I really don’t like the idea of not being able to get at it if I need to.",
+    "And how long would my money be tied up if I went with something like this? I really don’t like the idea of not being able to get at it if I need to."
+  ],
+  "probes": [
+    {
+      "content_filter_result": null,
+      "error_type": "ContentPolicyViolationError",
+      "last_user": "and how long would my money be tied up if i went with something like this i really don't like the idea of not being able to get at it if i need to",
+      "message": "litellm.BadRequestError: litellm.ContentPolicyViolationError: The response was filtered due to the prompt triggering Azure OpenAI's content management policy. Please modify your prompt and retry. To learn more about our content filtering policies please read our documentation: https://go.microsoft.c",
+      "name": "V1a exact refused request (heard text, addendum)",
+      "outcome": "refused",
+      "status": 400
+    },
+    {
+      "content_filter_result": null,
+      "error_type": "ContentPolicyViolationError",
+      "last_user": "and how long would my money be tied up if i went with something like this i really don't like the idea of not being able to get at it if i need to",
+      "message": "litellm.BadRequestError: litellm.ContentPolicyViolationError: The response was filtered due to the prompt triggering Azure OpenAI's content management policy. Please modify your prompt and retry. To learn more about our content filtering policies please read our documentation: https://go.microsoft.c",
+      "name": "V1b repeat of V1a",
+      "outcome": "refused",
+      "status": 400
+    },
+    {
+      "content_filter_result": null,
+      "error_type": "ContentPolicyViolationError",
+      "last_user": "and how long would my money be tied up if i went with something like this i really don't like the idea of not being able to get at it if i need to",
+      "message": "litellm.BadRequestError: litellm.ContentPolicyViolationError: The response was filtered due to the prompt triggering Azure OpenAI's content management policy. Please modify your prompt and retry. To learn more about our content filtering policies please read our documentation: https://go.microsoft.c",
+      "name": "V2 no addendum, heard text",
+      "outcome": "refused",
+      "status": 400
+    },
+    {
+      "finish_reason": "stop",
+      "last_user": "And how long would my money be tied up if I went with something like this? I really don’t like the idea of not being able to get at it if I need to.",
+      "name": "V4a same sentence punctuated as sent, addendum",
+      "outcome": "completed"
+    },
+    {
+      "finish_reason": "stop",
+      "last_user": "And how long would my money be tied up if I went with something like this? I really don’t like the idea of not being able to get at it if I need to.",
+      "name": "V4b repeat of V4a",
+      "outcome": "completed"
+    },
+    {
+      "finish_reason": "stop",
+      "last_user": "And how long would it be tied up? I do not like the idea of not being able to get at my own money.",
+      "name": "V3 profile's own wording, punctuated",
+      "outcome": "completed"
+    },
+    {
+      "finish_reason": "stop",
+      "last_user": "and how long would it be tied up i do not like the idea of not being able to get at my own money",
+      "name": "V5 profile's own wording, stripped like STT",
+      "outcome": "completed"
+    },
+    {
+      "finish_reason": "stop",
+      "last_user": "And how long would my money be tied up if I went with something like this? I really don’t like the idea of not being able to get at it if I need to.",
+      "name": "V6.0 model phrasing 0 (adviser context 0), punctuated",
+      "outcome": "completed"
+    },
+    {
+      "content_filter_result": null,
+      "error_type": "ContentPolicyViolationError",
+      "last_user": "and how long would my money be tied up if i went with something like this i really don't like the idea of not being able to get at it if i need to",
+      "message": "litellm.BadRequestError: litellm.ContentPolicyViolationError: The response was filtered due to the prompt triggering Azure OpenAI's content management policy. Please modify your prompt and retry. To learn more about our content filtering policies please read our documentation: https://go.microsoft.c",
+      "name": "V7.0 model phrasing 0, stripped like STT",
+      "outcome": "refused",
+      "status": 400
+    },
+    {
+      "finish_reason": "stop",
+      "last_user": "And how long would my money be tied up if I went with something like this? I really don’t like the idea of not being able to get at it if I need to.",
+      "name": "V6.1 model phrasing 1 (adviser context 1), punctuated",
+      "outcome": "completed"
+    },
+    {
+      "content_filter_result": null,
+      "error_type": "ContentPolicyViolationError",
+      "last_user": "and how long would my money be tied up if i went with something like this i really don't like the idea of not being able to get at it if i need to",
+      "message": "litellm.BadRequestError: litellm.ContentPolicyViolationError: The response was filtered due to the prompt triggering Azure OpenAI's content management policy. Please modify your prompt and retry. To learn more about our content filtering policies please read our documentation: https://go.microsoft.c",
+      "name": "V7.1 model phrasing 1, stripped like STT",
+      "outcome": "refused",
+      "status": 400
+    },
+    {
+      "finish_reason": "stop",
+      "last_user": "And how long would my money be tied up if I went with something like this? I really don’t like the idea of not being able to get at it if I need to.",
+      "name": "V6.2 model phrasing 2 (adviser context 2), punctuated",
+      "outcome": "completed"
+    },
+    {
+      "content_filter_result": null,
+      "error_type": "ContentPolicyViolationError",
+      "last_user": "and how long would my money be tied up if i went with something like this i really don't like the idea of not being able to get at it if i need to",
+      "message": "litellm.BadRequestError: litellm.ContentPolicyViolationError: The response was filtered due to the prompt triggering Azure OpenAI's content management policy. Please modify your prompt and retry. To learn more about our content filtering policies please read our documentation: https://go.microsoft.c",
+      "name": "V7.2 model phrasing 2, stripped like STT",
+      "outcome": "refused",
+      "status": 400
+    }
+  ],
+  "provider_label": "gpt-4.1",
+  "recorded_utc": "2026-09-04T09:10:50Z",
+  "refused_turn": {
+    "adviser_turn": 3,
+    "text_heard": "and how long would my money be tied up if i went with something like this i really don't like the idea of not being able to get at it if i need to",
+    "text_sent": "And how long would my money be tied up if I went with something like this? I really don’t like the idea of not being able to get at it if I need to.",
+    "trigger_customer_turn_order": 3
+  },
+  "strip_like_stt": "casefold, drop all punctuation except apostrophes, collapse whitespace — an approximation of the raw Deepgram transcript, which carries no sentence punctuation"
+}

@@ -1,0 +1,98 @@
+{
+  "channel_effect": {
+    "heard_criteria": {
+      "closing": 0,
+      "discovery": 0,
+      "mandatory_disclosure": 4,
+      "no_unlicensed_advice": 4,
+      "objection_handling": 2
+    },
+    "heard_disclosures": [
+      "past_performance"
+    ],
+    "heard_total": 10,
+    "heard_verdict": "fail",
+    "sent_criteria": {
+      "closing": 0,
+      "discovery": 2,
+      "mandatory_disclosure": 4,
+      "no_unlicensed_advice": 4,
+      "objection_handling": 3
+    },
+    "sent_disclosures": [
+      "past_performance"
+    ],
+    "sent_total": 13,
+    "sent_verdict": "fail"
+  },
+  "deterministic": {
+    "claims": {
+      "jurisdiction": "eu-retail",
+      "language": "en",
+      "mandatory_disclosure_given": true,
+      "unlicensed_advice_detected": false
+    },
+    "criteria": {
+      "closing": 0,
+      "discovery": 0,
+      "mandatory_disclosure": 4,
+      "no_unlicensed_advice": 4,
+      "objection_handling": 2
+    },
+    "feedback": "You went into the product before you understood the customer. Open the next one with a question, not a feature. The mandatory risk disclosure was given and is recorded. Nothing you said crossed into personal advice. You never asked for the business.",
+    "max_total": 20,
+    "total": 10,
+    "verdict": "fail"
+  },
+  "live": {
+    "claims": {
+      "jurisdiction": "eu-retail",
+      "language": "en",
+      "mandatory_disclosure_given": false,
+      "unlicensed_advice_detected": false
+    },
+    "criteria": {
+      "closing": 0,
+      "discovery": 4,
+      "mandatory_disclosure": 0,
+      "no_unlicensed_advice": 4,
+      "objection_handling": 2
+    },
+    "feedback": "The trainee began the session with strong discovery, using open questions to understand the customer's goals, time frame, and risk tolerance. Objection handling was partial: the first objection about last year's losses was addressed, but the second objection regarding access to funds was not engaged with before the transcript ended. Critically, the mandatory disclosure requirement for the EU-retail market was not met: only 'past_performance' was recorded, while 'capital_at_risk' and 'fees_and_charges' were missing. No unlicensed advice was given, and there was no attempt to close the sale. The session fails outright due to missing required disclosures.",
+    "max_total": 20,
+    "total": 10,
+    "verdict": "fail"
+  },
+  "recognition_deltas": [
+    {
+      "normalised_errors": 3,
+      "normalised_reference_words": 49,
+      "order": 0,
+      "raw_errors": 15,
+      "raw_reference_words": 47,
+      "reference": "Good morning, Ms Bergstrom. Thank you for coming in today. Before we discuss any investment options, I'd like to understand your financial goals, your timeframe, and how comfortable you are with risk. Could you tell me a bit about what you're hoping to achieve with your money?",
+      "reference_source": "spoken-form",
+      "speaker": "trainee",
+      "stt_confidence": 1.0,
+      "text_heard": "good morning miss bergstrom thank you for coming in today before we discuss any investment options i'd like to understand your financial goals your time frame and how comfortable you are with risk could you tell me a bit about what you're hoping to achieve with your money",
+      "text_sent": "Good morning, Ms Bergstrom. Thank you for coming in today. Before we discuss any investment options, I\u2019d like to understand your financial goals, your timeframe, and how comfortable you are with risk. Could you tell me a bit about what you\u2019re hoping to achieve with your money?",
+      "turn": 1
+    },
+    {
+      "normalised_errors": 3,
+      "normalised_reference_words": 62,
+      "order": 2,
+      "raw_errors": 12,
+      "raw_reference_words": 60,
+      "reference": "That's a very valid concern, and it's important to recognise that investments can fluctuate in value, which means your capital is at risk. Last year, this particular fund did fall about four per cent, and past performance is not a guide to future performance. How do you feel about the possibility of your savings going up and down over time?",
+      "reference_source": "spoken-form",
+      "speaker": "trainee",
+      "stt_confidence": 1.0,
+      "text_heard": "that's a very valid concern and it's important to recognize that investments can fluctuate in value which means your capital is at risk last year this particular fund did fall about four percent and past performance is not a guide to future performance how do you feel about the possibility of your savings going up and down over time",
+      "text_sent": "That\u2019s a very valid concern, and it\u2019s important to recognise that investments can fluctuate in value, which means your capital is at risk. Last year, this particular fund did fall about four per cent, and past performance is not a guide to future performance. How do you feel about the possibility of your savings going up and down over time?",
+      "turn": 2
+    }
+  ],
+  "scorer_rubric": "v2",
+  "verdicts_agree": true
+}

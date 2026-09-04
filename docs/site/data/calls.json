@@ -1,0 +1,319 @@
+{
+  "about": "Both committed spoken calls, side by side. Same adviser competence, regime, voices, engines, turn budget and character cap; the persona differs, and the second call's adviser brief carries a documented addendum. Every figure is recomputed by roleplay.spoken.replay_spoken_call from the committed manifests — nothing is read back from a summary.",
+  "calls": [
+    {
+      "audio": {
+        "bytes": 5801760,
+        "file_sha256": "3a6e20a3d2bf206899f37baab08155a58579ad413c3b55dda8157a9cde5e703c",
+        "fixture_path": "fixtures/audio/spoken_call/full_call.wav",
+        "pcm_sha256": "b93882d47a68625c99e26256942820caa7202af81b6952c68d6bdd22d44293f2",
+        "sample_rate_hz": 16000,
+        "served_at": "docs/site/data/audio/full_call.wav"
+      },
+      "brief": {
+        "addendum": "",
+        "addendum_words": 0,
+        "manifest_agrees": null,
+        "note": "The shared exemplary brief plus this call's addendum, if any. The addendum is verbatim from roleplay/spoken.py and the manifest; the digest is recomputed here from the prompt builder.",
+        "trainee_prompt_sha256": "cb05cf8649a53c5030be5147bec463ce4f0a792b33416c177048d4bb94ccea38"
+      },
+      "channel_effect": {
+        "changed_outcome": true,
+        "heard_total": 12,
+        "of_turns": 16,
+        "recognition_deltas": 7,
+        "sent_total": 12
+      },
+      "closing": {
+        "adviser_turn_kinds": [
+          "pitch",
+          "pitch",
+          "pitch",
+          "pitch",
+          "pitch",
+          "pitch",
+          "pitch",
+          "pitch"
+        ],
+        "close_attempted": false,
+        "deterministic_closing_score": 0
+      },
+      "content_filter": null,
+      "defect3_note": "True when the deterministic scorer awarded mandatory_disclosure 4/4 while the register recorded fewer than the required codes — the seeded keyword-count defect (roleplay/SEEDED_DEFECTS.md, DEFECT-3).",
+      "defect3_visible": true,
+      "duration_s": 181.303625,
+      "fixture_dir": "fixtures/audio/spoken_call",
+      "id": "first",
+      "label": "aggressive_challenger vs exemplary adviser, eu-retail",
+      "register": {
+        "gate": "fail",
+        "gate_note": "The rubric fails a session outright on a missing required disclosure, whatever it totals. `met` means all required codes were recorded by the disclosure register on heard text.",
+        "jurisdiction": "eu-retail",
+        "missing": [
+          "past_performance"
+        ],
+        "recorded": "2 of 3",
+        "required": [
+          "capital_at_risk",
+          "past_performance",
+          "fees_and_charges"
+        ],
+        "satisfied": [
+          "capital_at_risk",
+          "fees_and_charges"
+        ]
+      },
+      "reproduce": "python -m roleplay.spoken",
+      "scorecards": {
+        "deterministic": {
+          "criteria": {
+            "closing": 0,
+            "discovery": 0,
+            "mandatory_disclosure": 4,
+            "no_unlicensed_advice": 4,
+            "objection_handling": 4
+          },
+          "feedback": "You went into the product before you understood the customer. Open the next one with a question, not a feature. You took the objection head on rather than deflecting it. The mandatory risk disclosure was given and is recorded. Nothing you said crossed into personal advice. You never asked for the business.",
+          "max_total": 20,
+          "total": 12,
+          "verdict": "fail"
+        },
+        "graded_on": "text_heard",
+        "live": {
+          "criteria": {
+            "closing": 4,
+            "discovery": 4,
+            "mandatory_disclosure": 0,
+            "no_unlicensed_advice": 4,
+            "objection_handling": 4
+          },
+          "feedback": "The session demonstrates strong discovery, thorough objection handling, and proper closing, with no evidence of unlicensed advice. However, it fails outright because the mandatory disclosure for 'past_performance' required in the 'eu-retail' jurisdiction is missing from the tool ledger. All other required disclosures are present, but the absence of this one means the session cannot pass certification.",
+          "max_total": 20,
+          "total": 16,
+          "verdict": "fail"
+        },
+        "pass_total": 14,
+        "verdicts_agree": true
+      },
+      "session": {
+        "character_cap": 3400,
+        "competence": "exemplary",
+        "jurisdiction": "eu-retail",
+        "language": "en",
+        "model_label": "gpt-4.1",
+        "persona": "aggressive_challenger",
+        "scenario_id": "spoken-eu-challenger-exemplary",
+        "scorer_rubric": "v2",
+        "session_id": "spoken-call-001",
+        "temperature": 0.0,
+        "trainee_stop": "character_budget",
+        "turn_budget": 9
+      },
+      "spend": {
+        "note": "`credits_to_make` is the per-line ceiling at the model multiplier over every text_sent — the cost of synthesising this call from cold. `charged_this_recording` is what the recording run billed, which is lower whenever lines came from the digest cache.",
+        "recognition_audio_seconds": 176.054,
+        "recognition_requests": 32,
+        "recognition_submitted_seconds": 352.107,
+        "synthesis_characters_submitted": 3014,
+        "synthesis_credits_charged_this_recording": 0,
+        "synthesis_credits_to_make": 1510,
+        "synthesis_lines_cached_this_recording": 16
+      },
+      "stop_reason": "character_budget",
+      "turns": {
+        "adviser": 8,
+        "customer": 8,
+        "exchanges": 8,
+        "total": 16
+      },
+      "verdict": {
+        "deterministic": "fail",
+        "honest": "fail",
+        "honest_note": "`pass` only when the register gate is met AND both scorers pass; any one of the three failing makes it `fail`.",
+        "live": "fail",
+        "register_gate": "fail"
+      }
+    },
+    {
+      "audio": {
+        "bytes": 1744118,
+        "file_sha256": "007c3cf1e1cceab5e1cc181e6ee7e07ddc179ba959dd3da084f69d30c2c49752",
+        "fixture_path": "fixtures/audio/spoken_call_pass/full_call.wav",
+        "pcm_sha256": "df920900ea61333db4e2bc38a5add870cb0008135890884a7688a54388fe7945",
+        "sample_rate_hz": 16000,
+        "served_at": "docs/site/data/audio/full_call_pass.wav"
+      },
+      "brief": {
+        "addendum": "Two things the audit checks on every meeting. First, the disclosures: before the meeting ends, every one of the approved disclosure sentences above must have been said, word for word, whether or not the customer raises the subject — if any is still unsaid when you come to summarise, say it then. Second, the close: this is a short appointment. Once you understand the customer and have answered their concerns, summarise what you have heard and what you have told them, then ask for the business plainly, and agree the next step. Do not let the meeting end without that summary and that ask.",
+        "addendum_words": 104,
+        "manifest_agrees": true,
+        "note": "The shared exemplary brief plus this call's addendum, if any. The addendum is verbatim from roleplay/spoken.py and the manifest; the digest is recomputed here from the prompt builder.",
+        "trainee_prompt_sha256": "a99c6c4578d84382ddaf6db4d92e1fc454b60adb54ff19e5873fbf3a0574aa3b"
+      },
+      "channel_effect": {
+        "changed_outcome": true,
+        "heard_total": 10,
+        "of_turns": 4,
+        "recognition_deltas": 2,
+        "sent_total": 13
+      },
+      "closing": {
+        "adviser_turn_kinds": [
+          "pitch",
+          "pitch"
+        ],
+        "close_attempted": false,
+        "deterministic_closing_score": 0
+      },
+      "content_filter": {
+        "identical_customer_phrasings_at_t0": "1 distinct of 3 generated",
+        "kind": "recorded live on the day, not recomputable offline",
+        "probes_total": 13,
+        "punctuated_refused": "0 of 5",
+        "recorded_utc": "2026-09-04T09:10:50Z",
+        "refused_at_adviser_turn": 3,
+        "refused_total": 6,
+        "source": "fixtures/audio/spoken_call_pass/content_filter_probe.json",
+        "trigger_text_heard": "and how long would my money be tied up if i went with something like this i really don't like the idea of not being able to get at it if i need to",
+        "trigger_text_sent": "And how long would my money be tied up if I went with something like this? I really don’t like the idea of not being able to get at it if I need to.",
+        "unpunctuated_refused": "5 of 6"
+      },
+      "defect3_note": "True when the deterministic scorer awarded mandatory_disclosure 4/4 while the register recorded fewer than the required codes — the seeded keyword-count defect (roleplay/SEEDED_DEFECTS.md, DEFECT-3).",
+      "defect3_visible": true,
+      "duration_s": 54.502313,
+      "fixture_dir": "fixtures/audio/spoken_call_pass",
+      "id": "second",
+      "label": "cautious_saver vs exemplary adviser, eu-retail",
+      "register": {
+        "gate": "fail",
+        "gate_note": "The rubric fails a session outright on a missing required disclosure, whatever it totals. `met` means all required codes were recorded by the disclosure register on heard text.",
+        "jurisdiction": "eu-retail",
+        "missing": [
+          "capital_at_risk",
+          "fees_and_charges"
+        ],
+        "recorded": "1 of 3",
+        "required": [
+          "capital_at_risk",
+          "past_performance",
+          "fees_and_charges"
+        ],
+        "satisfied": [
+          "past_performance"
+        ]
+      },
+      "reproduce": "python -m roleplay.spoken --call second",
+      "scorecards": {
+        "deterministic": {
+          "criteria": {
+            "closing": 0,
+            "discovery": 0,
+            "mandatory_disclosure": 4,
+            "no_unlicensed_advice": 4,
+            "objection_handling": 2
+          },
+          "feedback": "You went into the product before you understood the customer. Open the next one with a question, not a feature. The mandatory risk disclosure was given and is recorded. Nothing you said crossed into personal advice. You never asked for the business.",
+          "max_total": 20,
+          "total": 10,
+          "verdict": "fail"
+        },
+        "graded_on": "text_heard",
+        "live": {
+          "criteria": {
+            "closing": 0,
+            "discovery": 4,
+            "mandatory_disclosure": 0,
+            "no_unlicensed_advice": 4,
+            "objection_handling": 2
+          },
+          "feedback": "The trainee began the session with strong discovery, using open questions to understand the customer's goals, time frame, and risk tolerance. Objection handling was partial: the first objection about last year's losses was addressed, but the second objection regarding access to funds was not engaged with before the transcript ended. Critically, the mandatory disclosure requirement for the EU-retail market was not met: only 'past_performance' was recorded, while 'capital_at_risk' and 'fees_and_charges' were missing. No unlicensed advice was given, and there was no attempt to close the sale. The session fails outright due to missing required disclosures.",
+          "max_total": 20,
+          "total": 10,
+          "verdict": "fail"
+        },
+        "pass_total": 14,
+        "verdicts_agree": true
+      },
+      "session": {
+        "character_cap": 3400,
+        "competence": "exemplary",
+        "jurisdiction": "eu-retail",
+        "language": "en",
+        "model_label": "gpt-4.1",
+        "persona": "cautious_saver",
+        "scenario_id": "spoken-eu-cautious-exemplary",
+        "scorer_rubric": "v2",
+        "session_id": "spoken-call-002",
+        "temperature": 0.0,
+        "trainee_stop": "content_filter",
+        "turn_budget": 9
+      },
+      "spend": {
+        "note": "`credits_to_make` is the per-line ceiling at the model multiplier over every text_sent — the cost of synthesising this call from cold. `charged_this_recording` is what the recording run billed, which is lower whenever lines came from the digest cache.",
+        "recognition_audio_seconds": 53.452,
+        "recognition_requests": 8,
+        "recognition_submitted_seconds": 106.905,
+        "synthesis_characters_submitted": 924,
+        "synthesis_credits_charged_this_recording": 463,
+        "synthesis_credits_to_make": 463,
+        "synthesis_lines_cached_this_recording": 0
+      },
+      "stop_reason": "content_filter",
+      "turns": {
+        "adviser": 2,
+        "customer": 2,
+        "exchanges": 2,
+        "total": 4
+      },
+      "verdict": {
+        "deterministic": "fail",
+        "honest": "fail",
+        "honest_note": "`pass` only when the register gate is met AND both scorers pass; any one of the three failing makes it `fail`.",
+        "live": "fail",
+        "register_gate": "fail"
+      }
+    }
+  ],
+  "comparison": {
+    "close_attempted": [
+      false,
+      false
+    ],
+    "defect3_visible": [
+      true,
+      true
+    ],
+    "deterministic_total": [
+      12,
+      10
+    ],
+    "duration_s": [
+      181.303625,
+      54.502313
+    ],
+    "honest_verdict": [
+      "fail",
+      "fail"
+    ],
+    "live_total": [
+      16,
+      10
+    ],
+    "persona": [
+      "aggressive_challenger",
+      "cautious_saver"
+    ],
+    "register_gate": [
+      "fail",
+      "fail"
+    ],
+    "register_recorded": [
+      "2 of 3",
+      "1 of 3"
+    ]
+  },
+  "reproduce": [
+    "python -m roleplay.spoken",
+    "python -m roleplay.spoken --call second"
+  ]
+}

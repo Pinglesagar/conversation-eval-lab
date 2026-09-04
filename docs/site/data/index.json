@@ -18,8 +18,16 @@
       "sha256": "3a6e20a3d2bf206899f37baab08155a58579ad413c3b55dda8157a9cde5e703c"
     },
     {
+      "path": "audio/full_call_pass.wav",
+      "sha256": "007c3cf1e1cceab5e1cc181e6ee7e07ddc179ba959dd3da084f69d30c2c49752"
+    },
+    {
       "path": "call.json",
       "sha256": "6599ae52aaefe1163337afe17794dfe4d5dd75fbd3ff83e05c5d8a05ebab5ddc"
+    },
+    {
+      "path": "calls.json",
+      "sha256": "b00cd1eed6e28fd08626aeb3d603361f8cc395b3025637bd10e2b9297b985c61"
     },
     {
       "path": "coverage.json",
@@ -57,6 +65,12 @@
     "fixtures/audio/spoken_call/scorecards.json",
     "fixtures/audio/spoken_call/scorer_recording.jsonl",
     "fixtures/audio/spoken_call/full_call.wav",
+    "fixtures/audio/spoken_call_pass/manifest.json",
+    "fixtures/audio/spoken_call_pass/trace.jsonl",
+    "fixtures/audio/spoken_call_pass/scorecards.json",
+    "fixtures/audio/spoken_call_pass/scorer_recording.jsonl",
+    "fixtures/audio/spoken_call_pass/content_filter_probe.json",
+    "fixtures/audio/spoken_call_pass/full_call.wav",
     "fixtures/audio/cloud/audio_suite_transcripts.json",
     "fixtures/live_run/traces",
     "fixtures/replay_run",
