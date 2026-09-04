@@ -36,6 +36,13 @@ WHAT IT WRITES  (all of it under docs/site/data/)
     index.json            every file above with its sha256, and the commands
     audio/full_call.wav   the whole call, 181.30s, served so the page can play it
     audio/excerpt.wav     15.21s cut around the adviser's opening question
+    calls.json            both committed spoken calls side by side — the first
+                          (hostile customer, failed the register gate) and the
+                          second (cooperative customer, a pass attempted) — each
+                          with both score cards, the register's own verdict, the
+                          gate, whether a close was attempted, persona, duration,
+                          spend, and the digests of its audio
+    audio/full_call_pass.wav  the second call, served byte for byte
 
 DETERMINISM
 -----------
@@ -69,6 +76,13 @@ if str(REPO) not in sys.path:  # pragma: no cover - script convenience
 OUT = REPO / "docs" / "site" / "data"
 SPOKEN = REPO / "fixtures" / "audio" / "spoken_call"
 FULL_CALL = SPOKEN / "full_call.wav"
+
+#: The second committed spoken call — same engines, voices, budgets and adviser
+#: competence as the first, a cooperative persona instead of a hostile one, and
+#: a documented addendum to the adviser's brief. See `roleplay.spoken.CALLS`.
+SPOKEN_PASS = REPO / "fixtures" / "audio" / "spoken_call_pass"
+FULL_CALL_PASS = SPOKEN_PASS / "full_call.wav"
+FULL_CALL_PASS_SITE_PATH = "docs/site/data/audio/full_call_pass.wav"
 
 #: Where the excerpt lives, relative to the repository root. A constant rather
 #: than a derived path because `--check` writes to a scratch directory and the
@@ -700,7 +714,13 @@ def _turn_offsets(manifest: dict) -> list[dict[str, Any]]:
     return offsets
 
 
-def serve_full_call(manifest: dict, destination: Path) -> dict[str, Any]:
+def serve_full_call(
+    manifest: dict,
+    destination: Path,
+    *,
+    source: Path = FULL_CALL,
+    site_path: str = FULL_CALL_SITE_PATH,
+) -> dict[str, Any]:
     """Put the whole call where the page can play it, byte for byte.
 
     A straight copy of `fixtures/audio/spoken_call/full_call.wav` — no re-encode,
@@ -708,9 +728,12 @@ def serve_full_call(manifest: dict, destination: Path) -> dict[str, Any]:
     digest and the page is playing the artefact the harness pins, not a
     rendition of it. It is 5.5 MB, and the page carries `preload="none"` so
     those bytes are only fetched when a reader presses play.
+
+    `source` and `site_path` default to the first call; the second call passes
+    its own, and the returned dict names whichever was served.
     """
     destination.parent.mkdir(parents=True, exist_ok=True)
-    destination.write_bytes(FULL_CALL.read_bytes())
+    destination.write_bytes(source.read_bytes())
 
     with wave.open(str(destination), "rb") as served:
         channels = served.getnchannels()
@@ -721,8 +744,8 @@ def serve_full_call(manifest: dict, destination: Path) -> dict[str, Any]:
     assembly = manifest["assembly"]
     return {
         # The canonical location, not `destination`: see EXCERPT_PATH.
-        "path": FULL_CALL_SITE_PATH,
-        "source_file": _rel(FULL_CALL),
+        "path": site_path,
+        "source_file": _rel(source),
         "contains": (
             f"the whole call, all {len(manifest['turns'])} turns, exactly as the "
             "harness assembled it"
@@ -737,13 +760,13 @@ def serve_full_call(manifest: dict, destination: Path) -> dict[str, Any]:
         # Same digest as the fixture, by construction. The assertion is the
         # point: if these two ever differ, the page is playing something else.
         "sha256": _sha256(destination),
-        "source_file_sha256": _sha256(FULL_CALL),
+        "source_file_sha256": _sha256(source),
         "verify": (
             "python -c \"import hashlib,pathlib;"
-            + f"print(hashlib.sha256(pathlib.Path('{FULL_CALL_SITE_PATH}')"
+            + f"print(hashlib.sha256(pathlib.Path('{site_path}')"
             + ".read_bytes()).hexdigest())\""
         ),
-        "verify_expects": _sha256(FULL_CALL),
+        "verify_expects": _sha256(source),
     }
 
 
@@ -2951,6 +2974,260 @@ def build_adapter() -> dict[str, Any]:
 
 
 # --------------------------------------------------------------------------- #
+# Both spoken calls, side by side
+# --------------------------------------------------------------------------- #
+
+
+def _card(card: Any) -> dict[str, Any]:
+    return {
+        "criteria": dict(card.criteria),
+        "total": card.total,
+        "max_total": card.max_total,
+        "verdict": card.verdict,
+        "feedback": card.feedback,
+    }
+
+
+def _call_entry(
+    *,
+    call_id: str,
+    label: str,
+    directory: Path,
+    result: Any,
+    manifest: dict,
+    served: dict[str, Any],
+    reproduce: str,
+) -> dict[str, Any]:
+    """One committed spoken call, everything the comparison needs, recomputed.
+
+    The score cards and the register come from `replay_spoken_call`, which
+    re-runs the production loop over the committed notes — nothing here is read
+    out of `scorecards.json`. The register's verdict is the gate the rubric
+    fails a session on outright, so it is reported separately from both scorers,
+    and the deterministic scorer's `mandatory_disclosure` is compared with it:
+    a 4/4 beside an incomplete register is SEEDED DEFECT-3 showing.
+    """
+    from lab.voice.engines.elevenlabs_tts import DEFAULT_ELEVENLABS_MODEL, credits_for
+    from roleplay.live import load_customer_profiles, trainee_prompt
+    from roleplay.register import required_codes
+    from roleplay.scorer import session_view
+
+    session, spend, assembly = manifest["session"], manifest["spend"], manifest["assembly"]
+    turns = manifest["turns"]
+    adviser = [t for t in turns if t["speaker"] == "trainee"]
+    customer = [t for t in turns if t["speaker"] == "customer"]
+    view = session_view(result.trace)
+    kinds = list(view.turn_kinds())
+    required = list(required_codes(session["jurisdiction"]))
+    satisfied = list(result.disclosures_satisfied)
+    missing = list(result.disclosures_missing)
+    det, live = result.deterministic_card, result.live_card
+    defect3 = bool(missing) and det.criteria.get("mandatory_disclosure") == 4
+
+    # The brief the adviser read: the shared exemplary prompt, plus this call's
+    # addendum when it had one. Recomputed so the digest is a check, not a claim.
+    profile = load_customer_profiles()[session["persona"]]
+    base_prompt = trainee_prompt(
+        competence=session["competence"],
+        profile=profile,
+        jurisdiction=session["jurisdiction"],
+        language=session["language"],
+    )
+    addendum = session.get("brief_addendum", "")
+    prompt = base_prompt + ("\n\n" + addendum if addendum else "")
+    prompt_sha256 = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
+    recorded_sha = session.get("trainee_prompt_sha256")
+
+    # What the call cost to make, in the vendor's unit, per line rounded up the
+    # way the engine bills — not what this replay billed, which is zero.
+    credits_to_make = sum(credits_for(t["text_sent"], DEFAULT_ELEVENLABS_MODEL) for t in turns)
+
+    gate = "fail" if missing else "met"
+
+    # A committed record of live content-filter probes, when the call has one.
+    # It is evidence recorded on the day, not something this script can recompute
+    # offline, and it is labelled as such.
+    probe_path = directory / "content_filter_probe.json"
+    content_filter: dict[str, Any] | None = None
+    if probe_path.is_file():
+        probe = json.loads(probe_path.read_text("utf-8"))
+        stripped = [x for x in probe["probes"] if "stripped" in x["name"] or "heard text" in x["name"]]
+        punctuated = [x for x in probe["probes"] if "punctuated" in x["name"]]
+        content_filter = {
+            "source": _rel(probe_path),
+            "kind": "recorded live on the day, not recomputable offline",
+            "recorded_utc": probe["recorded_utc"],
+            "refused_at_adviser_turn": probe["refused_turn"]["adviser_turn"],
+            "trigger_text_heard": probe["refused_turn"]["text_heard"],
+            "trigger_text_sent": probe["refused_turn"]["text_sent"],
+            "probes_total": probe["counts"]["total"],
+            "refused_total": probe["counts"]["refused"],
+            "unpunctuated_refused": (
+                f"{sum(x['outcome'] == 'refused' for x in stripped)} of {len(stripped)}"
+            ),
+            "punctuated_refused": (
+                f"{sum(x['outcome'] == 'refused' for x in punctuated)} of {len(punctuated)}"
+            ),
+            "identical_customer_phrasings_at_t0": (
+                f"{len(set(probe['customer_phrasings_generated']))} distinct of "
+                f"{len(probe['customer_phrasings_generated'])} generated"
+            ),
+        }
+    return {
+        "id": call_id,
+        "content_filter": content_filter,
+        "label": label,
+        "fixture_dir": _rel(directory),
+        "reproduce": reproduce,
+        "session": {
+            "scenario_id": session["scenario_id"],
+            "session_id": session["session_id"],
+            "persona": session["persona"],
+            "competence": session["competence"],
+            "jurisdiction": session["jurisdiction"],
+            "language": session["language"],
+            "model_label": session["model_label"],
+            "temperature": session["temperature"],
+            "turn_budget": session["turn_budget"],
+            "character_cap": session["character_cap"],
+            "trainee_stop": session["trainee_stop"],
+            "scorer_rubric": session["scorer_rubric"],
+        },
+        "brief": {
+            "addendum": addendum,
+            "addendum_words": len(addendum.split()),
+            "trainee_prompt_sha256": prompt_sha256,
+            "manifest_agrees": None if recorded_sha is None else recorded_sha == prompt_sha256,
+            "note": (
+                "The shared exemplary brief plus this call's addendum, if any. The "
+                "addendum is verbatim from roleplay/spoken.py and the manifest; the "
+                "digest is recomputed here from the prompt builder."
+            ),
+        },
+        "turns": {
+            "total": len(turns),
+            "adviser": len(adviser),
+            "customer": len(customer),
+            "exchanges": max(t["turn"] for t in turns),
+        },
+        "duration_s": assembly["duration_s"],
+        "scorecards": {
+            "graded_on": "text_heard",
+            "deterministic": _card(det),
+            "live": None if live is None else _card(live),
+            "verdicts_agree": result.scorers_agree,
+            "pass_total": 14,
+        },
+        "register": {
+            "jurisdiction": session["jurisdiction"],
+            "required": required,
+            "satisfied": satisfied,
+            "missing": missing,
+            "recorded": f"{len(satisfied)} of {len(required)}",
+            "gate": gate,
+            "gate_note": (
+                "The rubric fails a session outright on a missing required "
+                "disclosure, whatever it totals. `met` means all required codes "
+                "were recorded by the disclosure register on heard text."
+            ),
+        },
+        "closing": {
+            "close_attempted": "close_attempt" in kinds,
+            "adviser_turn_kinds": kinds,
+            "deterministic_closing_score": det.criteria.get("closing"),
+        },
+        "defect3_visible": defect3,
+        "defect3_note": (
+            "True when the deterministic scorer awarded mandatory_disclosure 4/4 "
+            "while the register recorded fewer than the required codes — the "
+            "seeded keyword-count defect (roleplay/SEEDED_DEFECTS.md, DEFECT-3)."
+        ),
+        "verdict": {
+            "deterministic": det.verdict,
+            "live": None if live is None else live.verdict,
+            "register_gate": gate,
+            "honest": (
+                "pass" if (not missing and det.verdict == "pass" and live is not None and live.verdict == "pass")
+                else "fail"
+            ),
+            "honest_note": (
+                "`pass` only when the register gate is met AND both scorers pass; "
+                "any one of the three failing makes it `fail`."
+            ),
+        },
+        "channel_effect": {
+            "changed_outcome": result.effect.changed_outcome,
+            "heard_total": result.effect.heard_total,
+            "sent_total": result.effect.sent_total,
+            "recognition_deltas": len(result.deltas),
+            "of_turns": len(turns),
+        },
+        "spend": {
+            "synthesis_characters_submitted": spend["elevenlabs_characters_submitted"],
+            "synthesis_credits_to_make": credits_to_make,
+            "synthesis_credits_charged_this_recording": spend["elevenlabs_credits_charged"],
+            "synthesis_lines_cached_this_recording": spend["elevenlabs_cached_lines"],
+            "recognition_audio_seconds": spend["deepgram_audio_seconds"],
+            "recognition_submitted_seconds": spend["deepgram_submitted_seconds"],
+            "recognition_requests": spend["deepgram_requests"],
+            "note": (
+                "`credits_to_make` is the per-line ceiling at the model multiplier "
+                "over every text_sent — the cost of synthesising this call from "
+                "cold. `charged_this_recording` is what the recording run billed, "
+                "which is lower whenever lines came from the digest cache."
+            ),
+        },
+        "audio": {
+            "fixture_path": _rel(directory / "full_call.wav"),
+            "served_at": served["path"],
+            "file_sha256": served["sha256"],
+            "pcm_sha256": assembly["audio_sha256"],
+            "bytes": served["bytes"],
+            "sample_rate_hz": served["sample_rate_hz"],
+        },
+        "stop_reason": session["trainee_stop"],
+    }
+
+
+def build_calls(entries: Sequence[dict[str, Any]]) -> dict[str, Any]:
+    first, second = entries[0], entries[1]
+    return {
+        "about": (
+            "Both committed spoken calls, side by side. Same adviser competence, "
+            "regime, voices, engines, turn budget and character cap; the persona "
+            "differs, and the second call's adviser brief carries a documented "
+            "addendum. Every figure is recomputed by roleplay.spoken.replay_spoken_call "
+            "from the committed manifests — nothing is read back from a summary."
+        ),
+        "calls": list(entries),
+        "comparison": {
+            "persona": [first["session"]["persona"], second["session"]["persona"]],
+            "register_recorded": [first["register"]["recorded"], second["register"]["recorded"]],
+            "register_gate": [first["register"]["gate"], second["register"]["gate"]],
+            "deterministic_total": [
+                first["scorecards"]["deterministic"]["total"],
+                second["scorecards"]["deterministic"]["total"],
+            ],
+            "live_total": [
+                None if first["scorecards"]["live"] is None else first["scorecards"]["live"]["total"],
+                None if second["scorecards"]["live"] is None else second["scorecards"]["live"]["total"],
+            ],
+            "close_attempted": [
+                first["closing"]["close_attempted"],
+                second["closing"]["close_attempted"],
+            ],
+            "honest_verdict": [first["verdict"]["honest"], second["verdict"]["honest"]],
+            "defect3_visible": [first["defect3_visible"], second["defect3_visible"]],
+            "duration_s": [first["duration_s"], second["duration_s"]],
+        },
+        "reproduce": [
+            "python -m roleplay.spoken",
+            "python -m roleplay.spoken --call second",
+        ],
+    }
+
+
+# --------------------------------------------------------------------------- #
 # Driver
 # --------------------------------------------------------------------------- #
 
@@ -2964,6 +3241,40 @@ def build(out: Path) -> dict[str, str]:
     served = serve_full_call(manifest, out / "audio" / "full_call.wav")
     excerpt = cut_excerpt(manifest, out / "audio" / "excerpt.wav")
     digests: dict[str, str] = {}
+
+    # The second call: replayed the same way, served the same way.
+    manifest_pass = json.loads((SPOKEN_PASS / "manifest.json").read_text("utf-8"))
+    result_pass = replay_spoken_call(directory=SPOKEN_PASS)
+    served_pass = serve_full_call(
+        manifest_pass,
+        out / "audio" / "full_call_pass.wav",
+        source=FULL_CALL_PASS,
+        site_path=FULL_CALL_PASS_SITE_PATH,
+    )
+    calls = build_calls(
+        [
+            _call_entry(
+                call_id="first",
+                label="aggressive_challenger vs exemplary adviser, eu-retail",
+                directory=SPOKEN,
+                result=result,
+                manifest=manifest,
+                served=served,
+                reproduce="python -m roleplay.spoken",
+            ),
+            _call_entry(
+                call_id="second",
+                label="cautious_saver vs exemplary adviser, eu-retail",
+                directory=SPOKEN_PASS,
+                result=result_pass,
+                manifest=manifest_pass,
+                served=served_pass,
+                reproduce="python -m roleplay.spoken --call second",
+            ),
+        ]
+    )
+    digests["calls.json"] = _dump(out / "calls.json", calls)
+    digests["audio/full_call_pass.wav"] = served_pass["sha256"]
     digests["finding.json"] = _dump(out / "finding.json", build_finding(manifest, result))
     digests["question_turns.json"] = _dump(
         out / "question_turns.json", build_question_turns(manifest)
@@ -3002,6 +3313,12 @@ def build(out: Path) -> dict[str, str]:
             _rel(SPOKEN / "scorecards.json"),
             _rel(SPOKEN / "scorer_recording.jsonl"),
             _rel(FULL_CALL),
+            _rel(SPOKEN_PASS / "manifest.json"),
+            _rel(SPOKEN_PASS / "trace.jsonl"),
+            _rel(SPOKEN_PASS / "scorecards.json"),
+            _rel(SPOKEN_PASS / "scorer_recording.jsonl"),
+            _rel(SPOKEN_PASS / "content_filter_probe.json"),
+            _rel(FULL_CALL_PASS),
             _rel(REPO / "fixtures" / "audio" / "cloud" / "audio_suite_transcripts.json"),
             _rel(REPO / "fixtures" / "live_run" / "traces"),
             _rel(REPO / "fixtures" / "replay_run"),

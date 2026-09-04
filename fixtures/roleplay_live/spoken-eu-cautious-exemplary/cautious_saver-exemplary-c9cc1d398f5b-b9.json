@@ -1,0 +1,54 @@
+{
+  "identity": {
+    "competence": "exemplary",
+    "customer_model": "gpt-4.1",
+    "jurisdiction": "eu-retail",
+    "language": "en",
+    "persona": "cautious_saver",
+    "prompt_sha256": "c9cc1d398f5b6d71a6b5d4fa15f3ec3ac4ef304d02d7bf6cfeb680157db182fb",
+    "scenario_id": "spoken-eu-cautious-exemplary",
+    "temperature": 0.0,
+    "trainee_model": "gpt-4.1",
+    "turn_budget": 9
+  },
+  "recorded_with": {
+    "live_customer": true,
+    "max_turns": 9,
+    "note": "Spoken-call turns. Each side's words crossed a real TTS -> STT round trip before the other side received them; the audio journey is in fixtures/audio/spoken_call/manifest.json.",
+    "temperature": 0.0
+  },
+  "turns": [
+    {
+      "context_sha256": "aa9e1074a5534cb22c46f476139d498361a30961f43b5d0e67e2af173b23ee06",
+      "index": 0,
+      "role": "trainee",
+      "utterance": "Good morning, Ms Bergstrom. Thank you for coming in today. Before we discuss any investment options, I\u2019d like to understand your financial goals, your timeframe, and how comfortable you are with risk. Could you tell me a bit about what you\u2019re hoping to achieve with your money?"
+    },
+    {
+      "context_sha256": "2fb4fc2f7b00ca2bf96d3ef3a35504c8b15bc2ee97b8e8cb673843f9196e951d",
+      "direction": "Raise this objection now, in your own words: I read that funds like this one lost money last year. Why would I put good savings into that?",
+      "index": 0,
+      "role": "customer",
+      "utterance": "Well, I did read that funds like this one actually lost money last year, so I\u2019m wondering why I\u2019d put my savings into something that could go down like that?"
+    },
+    {
+      "context_sha256": "1d8e3aed68d6166c4a57c6c7616674717cd074cf59fa475124e24e9c64786033",
+      "index": 1,
+      "role": "trainee",
+      "utterance": "That\u2019s a very valid concern, and it\u2019s important to recognise that investments can fluctuate in value, which means your capital is at risk. Last year, this particular fund did fall about four per cent, and past performance is not a guide to future performance. How do you feel about the possibility of your savings going up and down over time?"
+    },
+    {
+      "context_sha256": "9ebbec32606535b81c8c51ccd27ade5f87d19fb71de7724f356351a9c9279fe5",
+      "direction": "Raise this objection now, in your own words: And how long would it be tied up? I do not like the idea of not being able to get at my own money.",
+      "index": 1,
+      "role": "customer",
+      "utterance": "And how long would my money be tied up if I went with something like this? I really don\u2019t like the idea of not being able to get at it if I need to."
+    },
+    {
+      "context_sha256": "56e95a83308303d8eff31698550f9ba6bb14b06c0835c51b8431f0770022ca95",
+      "index": 2,
+      "role": "trainee",
+      "utterance": "[CONTENT FILTERED BY PROVIDER]"
+    }
+  ]
+}

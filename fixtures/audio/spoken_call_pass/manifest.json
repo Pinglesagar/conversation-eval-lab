@@ -1,0 +1,152 @@
+{
+  "assembly": {
+    "audio_sha256": "df920900ea61333db4e2bc38a5add870cb0008135890884a7688a54388fe7945",
+    "duration_s": 54.502313,
+    "gap_s": 0.35,
+    "sample_rate": 16000
+  },
+  "engines": {
+    "adviser_voice": "JBFqnCBsd6RMkjVDRZzb",
+    "customer_voice": "Xb7hH8MSUJpSbSDYk0k2",
+    "stt": "stt:deepgram/nova-3/en/raw",
+    "tts_adviser": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+    "tts_customer": "tts:elevenlabs/eleven_flash_v2_5/Xb7hH8MSUJpSbSDYk0k2"
+  },
+  "register": {
+    "complete": false,
+    "jurisdiction": "eu-retail",
+    "missing": [
+      "capital_at_risk",
+      "fees_and_charges"
+    ],
+    "required": [
+      "capital_at_risk",
+      "past_performance",
+      "fees_and_charges"
+    ],
+    "satisfied": [
+      "past_performance"
+    ]
+  },
+  "session": {
+    "adapter": "roleplay:spoken",
+    "brief_addendum": "Two things the audit checks on every meeting. First, the disclosures: before the meeting ends, every one of the approved disclosure sentences above must have been said, word for word, whether or not the customer raises the subject \u2014 if any is still unsaid when you come to summarise, say it then. Second, the close: this is a short appointment. Once you understand the customer and have answered their concerns, summarise what you have heard and what you have told them, then ask for the business plainly, and agree the next step. Do not let the meeting end without that summary and that ask.",
+    "character_cap": 3400,
+    "competence": "exemplary",
+    "customer_leaks": 0,
+    "jurisdiction": "eu-retail",
+    "language": "en",
+    "model_label": "gpt-4.1",
+    "persona": "cautious_saver",
+    "scenario_id": "spoken-eu-cautious-exemplary",
+    "scorer_rubric": "v2",
+    "scorer_separate_endpoint": true,
+    "session_id": "spoken-call-002",
+    "temperature": 0.0,
+    "trainee_prompt_sha256": "a99c6c4578d84382ddaf6db4d92e1fc454b60adb54ff19e5873fbf3a0574aa3b",
+    "trainee_repr": "SpokenTrainee(tts='tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb', stt='stt:deepgram/nova-3/en/raw', voice='JBFqnCBsd6RMkjVDRZzb')",
+    "trainee_stop": "content_filter",
+    "turn_budget": 9,
+    "voice_fallbacks": 0,
+    "voice_repr": "SpokenCustomerVoice(tts='tts:elevenlabs/eleven_flash_v2_5/Xb7hH8MSUJpSbSDYk0k2', stt='stt:deepgram/nova-3/en/raw', voice='Xb7hH8MSUJpSbSDYk0k2')"
+  },
+  "spend": {
+    "deepgram_audio_seconds": 53.452,
+    "deepgram_requests": 8,
+    "deepgram_submitted_seconds": 106.905,
+    "elevenlabs_cached_lines": 0,
+    "elevenlabs_characters_charged": 924,
+    "elevenlabs_characters_submitted": 924,
+    "elevenlabs_credits_charged": 463
+  },
+  "turns": [
+    {
+      "audio_sha256": "deb2af016be9889cdaf3bf694167c8243156921d11b0e4d1cd7d1a8124a10c39",
+      "characters": 277,
+      "characters_charged": 277,
+      "clip_key": "1eb7b15eb9c790b5ca39fe51b50510e0",
+      "display_text": "Good morning, miss Bergstrom. Thank you for coming in today. Before we discuss any investment options, I'd like to understand your financial goals, your time frame, and how comfortable you are with risk. Could you tell me a bit about what you're hoping to achieve with your money?",
+      "duration_s": 15.928875,
+      "model_turn_s": 12.834321208065376,
+      "num_bytes": 509724,
+      "order": 0,
+      "speaker": "trainee",
+      "spoken_form": "Good morning, Ms Bergstrom. Thank you for coming in today. Before we discuss any investment options, I'd like to understand your financial goals, your timeframe, and how comfortable you are with risk. Could you tell me a bit about what you're hoping to achieve with your money?",
+      "stt_confidence": 1.0,
+      "stt_engine": "stt:deepgram/nova-3/en/raw",
+      "synthesis_s": 4.466737291775644,
+      "text_heard": "good morning miss bergstrom thank you for coming in today before we discuss any investment options i'd like to understand your financial goals your time frame and how comfortable you are with risk could you tell me a bit about what you're hoping to achieve with your money",
+      "text_sent": "Good morning, Ms Bergstrom. Thank you for coming in today. Before we discuss any investment options, I\u2019d like to understand your financial goals, your timeframe, and how comfortable you are with risk. Could you tell me a bit about what you\u2019re hoping to achieve with your money?",
+      "transcribe_s": 2.1878589580301195,
+      "tts_engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+      "tts_replayed": false,
+      "turn": 1
+    },
+    {
+      "audio_sha256": "f2a7b2d83c3b52f75530507ca16824e5e60190bedc9458d8b4de8761911a6af5",
+      "characters": 157,
+      "characters_charged": 157,
+      "clip_key": "9f6ae3d59358deec640a44488a8cde9f",
+      "display_text": "Well, I did read that funds like this one actually lost money last year, so I'm wondering why I'd put my savings into something that could go down like that.",
+      "duration_s": 8.87,
+      "model_turn_s": 1.4337358749471605,
+      "num_bytes": 283840,
+      "order": 1,
+      "speaker": "customer",
+      "spoken_form": "Well, I did read that funds like this one actually lost money last year, so I'm wondering why I'd put my savings into something that could go down like that?",
+      "stt_confidence": 1.0,
+      "stt_engine": "stt:deepgram/nova-3/en/raw",
+      "synthesis_s": 0.9381779578980058,
+      "text_heard": "well i did read that funds like this one actually lost money last year so i'm wondering why i'd put my savings into something that could go down like that",
+      "text_sent": "Well, I did read that funds like this one actually lost money last year, so I\u2019m wondering why I\u2019d put my savings into something that could go down like that?",
+      "transcribe_s": 2.384564667008817,
+      "tts_engine": "tts:elevenlabs/eleven_flash_v2_5/Xb7hH8MSUJpSbSDYk0k2",
+      "tts_replayed": false,
+      "turn": 1
+    },
+    {
+      "audio_sha256": "82f5c44d966e7c21e068c81aa28d06accf1fc1e91032bfd515b8ffcf178f7766",
+      "characters": 342,
+      "characters_charged": 342,
+      "clip_key": "16f0833c3e75d9ac0dea4f389917b108",
+      "display_text": "That's a very valid concern, and it's important to recognize that investments can fluctuate in value, which means your capital is at risk. Last year, this particular fund did fall about 4%, and past performance is not a guide to future performance. How do you feel about the possibility of your savings going up and down over time?",
+      "duration_s": 20.0620625,
+      "model_turn_s": 2.329694875050336,
+      "num_bytes": 641986,
+      "order": 2,
+      "speaker": "trainee",
+      "spoken_form": "That's a very valid concern, and it's important to recognise that investments can fluctuate in value, which means your capital is at risk. Last year, this particular fund did fall about four per cent, and past performance is not a guide to future performance. How do you feel about the possibility of your savings going up and down over time?",
+      "stt_confidence": 1.0,
+      "stt_engine": "stt:deepgram/nova-3/en/raw",
+      "synthesis_s": 1.1420411670114845,
+      "text_heard": "that's a very valid concern and it's important to recognize that investments can fluctuate in value which means your capital is at risk last year this particular fund did fall about four percent and past performance is not a guide to future performance how do you feel about the possibility of your savings going up and down over time",
+      "text_sent": "That\u2019s a very valid concern, and it\u2019s important to recognise that investments can fluctuate in value, which means your capital is at risk. Last year, this particular fund did fall about four per cent, and past performance is not a guide to future performance. How do you feel about the possibility of your savings going up and down over time?",
+      "transcribe_s": 2.2161569171585143,
+      "tts_engine": "tts:elevenlabs/eleven_flash_v2_5/JBFqnCBsd6RMkjVDRZzb",
+      "tts_replayed": false,
+      "turn": 2
+    },
+    {
+      "audio_sha256": "2a9eaae49fcf10f4b9e18bc6b1e2018e2d6273b6f2113c0363c0e7a07fddfb87",
+      "characters": 148,
+      "characters_charged": 148,
+      "clip_key": "4255e910800d481ae95f813af91c53ac",
+      "display_text": "And how long would my money be tied up if I went with something like this? I really don't like the idea of not being able to get at it if I need to.",
+      "duration_s": 8.591375,
+      "model_turn_s": 1.7434050419833511,
+      "num_bytes": 274924,
+      "order": 3,
+      "speaker": "customer",
+      "spoken_form": "And how long would my money be tied up if I went with something like this? I really don't like the idea of not being able to get at it if I need to.",
+      "stt_confidence": 1.0,
+      "stt_engine": "stt:deepgram/nova-3/en/raw",
+      "synthesis_s": 0.6341652090195566,
+      "text_heard": "and how long would my money be tied up if i went with something like this i really don't like the idea of not being able to get at it if i need to",
+      "text_sent": "And how long would my money be tied up if I went with something like this? I really don\u2019t like the idea of not being able to get at it if I need to.",
+      "transcribe_s": 2.14335412485525,
+      "tts_engine": "tts:elevenlabs/eleven_flash_v2_5/Xb7hH8MSUJpSbSDYk0k2",
+      "tts_replayed": false,
+      "turn": 2
+    }
+  ]
+}

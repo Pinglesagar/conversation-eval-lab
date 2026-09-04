@@ -1,7 +1,7 @@
 {
   "_provenance": {
     "command": "python -m lab.selection.trace_map --write",
-    "commit": "4aaad2328159ab98379c26b96fa0be8906f03ef9",
+    "commit": "e85d19f9dfab5912016b518d79372bf489f5c087",
     "fixture_root": "fixtures",
     "format_version": 1,
     "note": "GENERATED FILE - do not hand-edit. Derived from the committed traces under fixtures/ by lab/selection/trace_map.py. A trace records what one recorded run DID, never what a scenario COULD do, so this map is a lower bound on each scenario's dependencies: it proves 'touched X', never 'cannot touch Y'. Scenarios with mapped=false are UNMAPPED and must always run. If degraded=true the whole map is untrusted and the whole corpus must run."
@@ -2794,6 +2794,7 @@
   "session_count": 226,
   "skipped_files": [
     "fixtures/audio/spoken_call/scorer_recording.jsonl: no trace events (not an event stream)",
+    "fixtures/audio/spoken_call_pass/scorer_recording.jsonl: no trace events (not an event stream)",
     "fixtures/live_full/judge_verdicts.jsonl: no trace events (not an event stream)"
   ],
   "symbols": [
@@ -2870,13 +2871,14 @@
       "resolved": true
     }
   ],
-  "trace_file_count": 237,
+  "trace_file_count": 239,
   "unmapped_count": 18,
   "unmatched_trace_scenario_ids": [
     "audio-transport-degradation",
     "audio-transport-delivery-gap",
     "audio-transport-lifecycle",
     "calibration/delay_500ms",
+    "spoken-eu-cautious-exemplary",
     "spoken-eu-challenger-exemplary"
   ]
 }
