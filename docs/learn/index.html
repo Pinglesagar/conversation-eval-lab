@@ -429,6 +429,32 @@ tools:
 
   <div class="cmd"><span>Check them all</span><code>evallab validate</code></div>
 
+  <h2>Writing them in Excel instead</h2>
+
+  <p>YAML is readable, but it is still a programmer's file: one wrong indent and it will not load. The people who
+    actually know what a suitability report must contain have a spreadsheet open all day. So the corpus converts
+    both ways.</p>
+
+  <div class="where"><span class="where__h">The loop</span>
+    <table>
+      <tr><td>make scenarios-excel</td><td>Writes every committed scenario into one workbook: a <b>Scenarios</b> sheet, a <b>Turns</b> sheet, an <b>Assertions</b> sheet, and a <b>Reference</b> sheet listing every legal value.</td></tr>
+      <tr><td>&mdash;</td><td>The domain expert edits it. Sort, filter, copy a row to make a variant, hand it round for sign-off.</td></tr>
+      <tr><td>&hellip; check &lt;file&gt;</td><td>Validates the workbook and writes nothing.</td></tr>
+      <tr><td>&hellip; import &lt;file&gt; --to-yaml</td><td>Writes the YAML back. Only scenarios whose <em>meaning</em> changed are rewritten, so the diff a reviewer reads is exactly what the expert edited.</td></tr>
+    </table>
+  </div>
+
+  <p>The rule that keeps it safe: an Excel row gets <strong>no validation of its own</strong>. It is converted into
+    exactly the same dictionary the YAML parser produces, then handed to the same model. One rulebook, in one place.
+    A test exports all 70 scenarios, reads them back, and compares every field &mdash; so a field the converter forgot
+    to carry fails loudly rather than going missing.</p>
+
+  <div class="note"><b>Why YAML is still the committed format</b>
+    A spreadsheet is a zip of compressed XML. It does not diff in a pull request, two people editing it cannot merge,
+    and <code>git blame</code> on a scenario stops working. Excel also changes financial data quietly: a code typed as
+    <code>007</code> is stored as <code>7</code>, and a long account number becomes <code>1.2E+15</code>. So the
+    spreadsheet is where scenarios are <em>written</em>, and YAML is what gets <em>committed and reviewed</em>.</div>
+
   <p>That command loads every row against a schema and fails on a typo, an unknown tag or a persona that does not exist — before any test runs. A test that silently matched nothing is the failure mode it exists to prevent.</p>
 
   <div class="recap"><b>What to take from lesson 04</b>

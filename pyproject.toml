@@ -67,6 +67,7 @@ dependencies = [
 dev = [
   "pytest>=8.0",
   "pytest-cov>=5.0",
+  "openpyxl>=3.1",
   "numpy>=1.26",
   "jiwer>=3.0",
   "soundfile>=0.12",
@@ -76,6 +77,17 @@ audio = [
   "jiwer>=3.0",
   "numpy>=1.26",
   "soundfile>=0.12",
+]
+# openpyxl is here rather than in the core dependencies because the corpus does not
+# need it: YAML remains the committed, diffable source of truth and every test that
+# loads a scenario loads it from YAML. The Excel path is an *authoring* surface for
+# the people who write the scenarios — compliance and sales-training staff, who
+# have a spreadsheet open all day and do not have a YAML editor — and it converts
+# through exactly the same pydantic models, so there is no second rulebook to drift.
+# Install it with `pip install -e ".[excel]"`. Without it, roleplay.excel_corpus
+# raises a message saying that, and nothing else in the repository notices.
+excel = [
+  "openpyxl>=3.1",
 ]
 charts = [
   "matplotlib>=3.8",
