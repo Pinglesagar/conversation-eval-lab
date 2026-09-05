@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The guided tour — conversation-eval-lab</title>
+<meta name="description" content="A step-by-step tour of conversation-eval-lab: what a trace is, what an adapter is, how a scenario is written, and which folder holds what — every term explained in everyday language first.">
+<meta name="color-scheme" content="dark">
+<link rel="stylesheet" href="learn.css?v=6af7970073">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 15'%3E%3Crect width='15' height='15' fill='%230A0C10'/%3E%3Crect x='1' y='5' width='2' height='5' fill='%235FCBBB'/%3E%3Crect x='4' y='3' width='2' height='9' fill='%235FCBBB'/%3E%3Crect x='7' y='0' width='2' height='15' fill='%235FCBBB'/%3E%3Crect x='10' y='2' width='2' height='11' fill='%235FCBBB'/%3E%3Crect x='13' y='6' width='2' height='3' fill='%235FCBBB'/%3E%3C/svg%3E">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the lesson</a>
+
+<div class="shell">
+
+<nav class="rail" aria-label="Lessons">
+  <a class="rail__brand" href="../index.html">
+    <span class="rail__mark" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 15 15"><rect x="1" y="5" width="2" height="5" fill="#5FCBBB"/><rect x="4" y="3" width="2" height="9" fill="#5FCBBB"/><rect x="7" y="0" width="2" height="15" fill="#5FCBBB"/><rect x="10" y="2" width="2" height="11" fill="#5FCBBB"/><rect x="13" y="6" width="2" height="3" fill="#5FCBBB"/></svg></span>
+    <span class="rail__name">conversation-eval-lab</span>
+  </a>
+  <p class="rail__sub">The guided tour</p>
+
+  <div class="rail__progress">
+    <div class="rail__bar"><i></i></div>
+    <p class="rail__count">0 of 16 read</p>
+  </div>
+
+  <button class="railtoggle" type="button">Lessons</button>
+
+  <ul class="rail__list">
+    <li class="rail__group">The idea</li>
+    <li><button class="rail__link" data-go="start"><span class="rail__n">00</span><span>What this project is</span></button></li>
+    <li><button class="rail__link" data-go="bigpicture"><span class="rail__n">01</span><span>The four stages</span></button></li>
+    <li><button class="rail__link" data-go="trace"><span class="rail__n">02</span><span>The trace, the one big idea</span></button></li>
+    <li><button class="rail__link" data-go="events"><span class="rail__n">03</span><span>Events: the seventeen kinds</span></button></li>
+
+    <li class="rail__group">Setting up a test</li>
+    <li><button class="rail__link" data-go="scenario"><span class="rail__n">04</span><span>A scenario, line by line</span></button></li>
+    <li><button class="rail__link" data-go="persona"><span class="rail__n">05</span><span>The customer on the other side</span></button></li>
+    <li><button class="rail__link" data-go="adapter"><span class="rail__n">06</span><span>The adapter: your own agent</span></button></li>
+
+    <li class="rail__group">Judging</li>
+    <li><button class="rail__link" data-go="checks"><span class="rail__n">07</span><span>Contracts: the six inspectors</span></button></li>
+    <li><button class="rail__link" data-go="judges"><span class="rail__n">08</span><span>Judges, and testing the judge</span></button></li>
+    <li><button class="rail__link" data-go="scoring"><span class="rail__n">09</span><span>Scoring: points and gates</span></button></li>
+    <li><button class="rail__link" data-go="stability"><span class="rail__n">10</span><span>Running it more than once</span></button></li>
+
+    <li class="rail__group">Voice, and the rest</li>
+    <li><button class="rail__link" data-go="voice"><span class="rail__n">11</span><span>Voice: the telephone game</span></button></li>
+    <li><button class="rail__link" data-go="rag"><span class="rail__n">12</span><span>Looking things up (RAG)</span></button></li>
+
+    <li class="rail__group">The repository</li>
+    <li><button class="rail__link" data-go="map"><span class="rail__n">13</span><span>Every folder, and what it holds</span></button></li>
+    <li><button class="rail__link" data-go="run"><span class="rail__n">14</span><span>Running it yourself</span></button></li>
+    <li><button class="rail__link" data-go="glossary"><span class="rail__n">15</span><span>Glossary: every term</span></button></li>
+  </ul>
+</nav>
+
+<main class="pane" id="main">
+
+<!-- ══════════════════════════════ 00 ══════════════════════════════ -->
+<article class="lesson" id="start">
+  <p class="eyebrow">Lesson 00 &middot; The idea</p>
+  <h1>What this project actually is</h1>
+
+  <div class="oneline"><b>In one sentence</b>
+    It is a driving test centre for AI conversations: it puts an AI through a set route, records everything it did, and marks it against a scheme you can argue with.</div>
+
+  <p>Everything in this tour hangs off that one comparison, so it is worth setting out properly before any code appears.</p>
+
+  <div class="analogy">
+    <div>
+      <span class="analogy__tag">The everyday version</span>
+      <p>A learner driver takes a test. An examiner sits beside them with a clipboard. A dashcam records the whole drive.</p>
+      <p>Afterwards there is a mark sheet. If the learner disputes a mark, you do not ask the examiner what they remember. You <strong>play back the recording</strong>.</p>
+      <p>And before you let that examiner mark anyone, somebody checks the examiner: give them drives whose right answer is already known, and see how many they get right.</p>
+    </div>
+    <div>
+      <span class="analogy__tag">This project</span>
+      <p>The learner driver is the <button class="t" data-t="sut">AI agent under test</button>. The set route is a <button class="t" data-t="scenario">scenario</button>. The dashcam is the <button class="t" data-t="trace">trace</button>.</p>
+      <p>The examiner is a mixture of <button class="t" data-t="contract">contracts</button> (mechanical checks) and <button class="t" data-t="judge">judges</button> (an AI marking another AI).</p>
+      <p>Checking the examiner is <button class="t" data-t="calibration">calibration</button>, and here it is enforced: a judge that fails it cannot be used at all.</p>
+    </div>
+  </div>
+
+  <p>Click any word in <button class="t" data-t="trace">this colour</button> and you get its definition, in plain language first. Every one of them is also listed in <button data-go="glossary" class="t" data-t="harness">the glossary</button> at the end.</p>
+
+  <h2>Why build a test centre and not just test the AI</h2>
+
+  <p>Ordinary software gives the same answer every time, so you can write <code>assert answer == 4</code> and be done. An AI gives a slightly different answer every time, in a different order, in different words. That breaks the usual approach in three ways at once:</p>
+
+  <ul>
+    <li><strong>You cannot compare strings.</strong> "Your capital is at risk" and "you could get back less than you put in" mean the same thing and share no words.</li>
+    <li><strong>One run proves nothing.</strong> It might have passed by luck. See <button data-go="stability" class="t" data-t="passk">lesson 10</button>.</li>
+    <li><strong>The grader is software too, so the grader can be wrong.</strong> This turns out to be where most of the interesting bugs are.</li>
+  </ul>
+
+  <div class="note"><b>The finding this whole repository opens with</b>
+    A grader marked a sales call <strong>0 out of 4</strong> for not asking questions. The adviser had asked five. The grader decided "is this a question?" by checking whether the sentence ended in a question mark — and the transcript it was handed had no punctuation at all. The agent was fine. The measuring instrument was broken.</div>
+
+  <h2>The two things it is pointed at</h2>
+
+  <div class="where"><span class="where__h">The two systems under test that ship with it</span>
+    <table>
+      <tr><td>roleplay/</td><td>A coaching product for financial advisers: an AI plays a customer, a trainee practises a sales call, and software grades the result. Carries three deliberate, documented defects.</td></tr>
+      <tr><td>tablemate/</td><td>A restaurant booking assistant with several agents handing work to each other. Also deliberately imperfect.</td></tr>
+    </table>
+  </div>
+
+  <p>Both are broken <em>on purpose</em>. A test harness demonstrated against perfect software proves nothing: green results are equally consistent with a good agent and a blind test suite. The defects are real code paths, documented in exactly one place each, and nothing in the harness knows they exist.</p>
+
+  <div class="recap"><b>What to take from lesson 00</b>
+    <ul>
+      <li>The project is a test rig, not a product. The rig is <code>lab/</code>; the things being tested are <code>roleplay/</code> and <code>tablemate/</code>.</li>
+      <li>Recording first, judging second. That order is the whole design.</li>
+      <li>The grader is software, so the grader is also under test.</li>
+    </ul>
+  </div>
+
+  <div class="pager"><button data-prev></button><button data-next></button></div>
+</article>
+
+<!-- ══════════════════════════════ 01 ══════════════════════════════ -->
+<article class="lesson" id="bigpicture">
+  <p class="eyebrow">Lesson 01 &middot; The idea</p>
+  <h1>The four stages, start to finish</h1>
+
+  <div class="oneline"><b>In one sentence</b>
+    A conversation is <em>described</em>, then it <em>happens</em>, then what happened is <em>written down</em>, and only then is it <em>graded</em>.</div>
+
+  <p>Four stages, always in that order. If you remember nothing else about how the code is arranged, remember that the third stage exists — because almost every design decision in the repository follows from separating "what happened" from "what we think of it".</p>
+
+  <figure>
+    <svg viewBox="0 0 900 260" role="img" aria-label="Four stages: a scenario file, the conversation running, the trace, and grading. Everything after stage three reads only the trace.">
+      <rect x="20" y="40" width="180" height="90" fill="#10131A" stroke="#9D8DFF" stroke-width="1.5"/>
+      <text x="110" y="70" text-anchor="middle" class="svg-title" fill="#F2EEE6">1. Described</text>
+      <text x="110" y="92" text-anchor="middle" class="svg-sub" fill="#CFCBC2">a scenario file</text>
+      <text x="110" y="110" text-anchor="middle" class="svg-label" fill="#9D8DFF">scenarios/*.yaml</text>
+
+      <rect x="240" y="40" width="180" height="90" fill="#10131A" stroke="#5FCBBB" stroke-width="1.5"/>
+      <text x="330" y="70" text-anchor="middle" class="svg-title" fill="#F2EEE6">2. It happens</text>
+      <text x="330" y="92" text-anchor="middle" class="svg-sub" fill="#CFCBC2">agent talks to customer</text>
+      <text x="330" y="110" text-anchor="middle" class="svg-label" fill="#5FCBBB">the adapter</text>
+
+      <rect x="460" y="30" width="180" height="110" fill="#0E1520" stroke="#5FCBBB" stroke-width="3"/>
+      <text x="550" y="62" text-anchor="middle" class="svg-title" fill="#F2EEE6">3. Written down</text>
+      <text x="550" y="84" text-anchor="middle" class="svg-sub" fill="#CFCBC2">the trace</text>
+      <text x="550" y="104" text-anchor="middle" class="svg-label" fill="#5FCBBB">one JSONL file</text>
+      <text x="550" y="124" text-anchor="middle" class="svg-label" fill="#9E9B93">the only thing stage 4 sees</text>
+
+      <rect x="680" y="40" width="180" height="90" fill="#10131A" stroke="#F2B84B" stroke-width="1.5"/>
+      <text x="770" y="70" text-anchor="middle" class="svg-title" fill="#F2EEE6">4. Graded</text>
+      <text x="770" y="92" text-anchor="middle" class="svg-sub" fill="#CFCBC2">checks, judges, scores</text>
+      <text x="770" y="110" text-anchor="middle" class="svg-label" fill="#F2B84B">lab/checks, lab/judges</text>
+
+      <path d="M200 85 L236 85" stroke="#9E9B93" stroke-width="1.5" marker-end="url(#a)"/>
+      <path d="M420 85 L456 85" stroke="#9E9B93" stroke-width="1.5" marker-end="url(#a)"/>
+      <path d="M640 85 L676 85" stroke="#9E9B93" stroke-width="1.5" marker-end="url(#a)"/>
+      <defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#9E9B93"/></marker></defs>
+
+      <path d="M550 150 L550 180 L110 180 L110 200" stroke="#FF7A5C" stroke-width="1.5" stroke-dasharray="4 4" fill="none"/>
+      <text x="330" y="215" text-anchor="middle" class="svg-label" fill="#FF7A5C">the same trace can be re-graded years later, with no agent and no keys — that is "replay"</text>
+    </svg>
+    <figcaption>Stage 3 is the hinge. Because grading only ever reads the recording, a disputed mark can be reopened without re-running anything, and a spoken call and a typed call are graded by identical code.</figcaption>
+  </figure>
+
+  <h2>Walking one conversation through all four</h2>
+
+  <ol>
+    <li><strong>Described.</strong> Somebody writes a file: this customer, this situation, these are the things the agent must do. It is <button class="t" data-t="scenario">YAML</button>, so a compliance officer can read and edit it without touching Python.</li>
+    <li><strong>It happens.</strong> The harness runs the conversation. The agent under test is reached through an <button class="t" data-t="adapter">adapter</button>. The customer is played by a <button class="t" data-t="persona">persona</button> — sometimes scripted, sometimes a real language model, sometimes speaking out loud through a real speech engine.</li>
+    <li><strong>Written down.</strong> Every turn, every tool call, every audio chunk becomes an <button class="t" data-t="event">event</button> appended to the <button class="t" data-t="trace">trace</button>.</li>
+    <li><strong>Graded.</strong> <button class="t" data-t="contract">Contracts</button> ask mechanical questions. <button class="t" data-t="judge">Judges</button> ask questions of taste. A <button class="t" data-t="scorecard">scorecard</button> turns the answers into a verdict.</li>
+  </ol>
+
+  <div class="note"><b>The rule that falls out of this</b>
+    Nothing in stage 4 is allowed to ask the agent anything. It cannot call it back, cannot inspect its memory, cannot read its logs. If a fact is not in the trace, it does not exist for grading purposes. That sounds restrictive; it is what makes every number reproducible.</div>
+
+  <div class="recap"><b>What to take from lesson 01</b>
+    <ul>
+      <li>Describe, run, record, grade — in that order, always.</li>
+      <li>The recording sits between running and grading, and everything downstream reads only it.</li>
+      <li>That separation is what makes replay, dispute resolution and voice-versus-text comparison possible at all.</li>
+    </ul>
+  </div>
+
+  <div class="pager"><button data-prev></button><button data-next></button></div>
+</article>
+
+<!-- ══════════════════════════════ 02 ══════════════════════════════ -->
+<article class="lesson" id="trace">
+  <p class="eyebrow">Lesson 02 &middot; The idea</p>
+  <h1>The trace: the one big idea</h1>
+
+  <div class="oneline"><b>In one sentence</b>
+    A trace is the complete, ordered recording of one conversation — and it is the only thing any grader is allowed to look at.</div>
+
+  <div class="analogy">
+    <div>
+      <span class="analogy__tag">The everyday version</span>
+      <p>Think of a hospital patient's notes. Every observation, every drug given, every doctor who saw them, each with a time, in order, in one file.</p>
+      <p>Nobody argues about care from memory. They open the notes. The notes are the record; opinions come afterwards and must point at a line in them.</p>
+      <p>Crucially, the notes are written <em>as things happen</em>, not reconstructed later by whoever is defending their decision.</p>
+    </div>
+    <div>
+      <span class="analogy__tag">This project</span>
+      <p>A trace is a <button class="t" data-t="jsonl">JSONL</button> file: one line per <button class="t" data-t="event">event</button>, in the order they happened.</p>
+      <p>Every verdict, every latency figure and every judge call is a function of that file. <code>session_view(trace)</code> is a pure function — same trace in, same view out.</p>
+      <p>It is written by the harness while the conversation runs, using an <button class="t" data-t="clock">injected clock</button>, not by the agent afterwards.</p>
+    </div>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 900 340" role="img" aria-label="A trace as a vertical list of timed events, with three different consumers all reading from it.">
+      <text x="30" y="28" class="svg-label" fill="#9E9B93">ONE TRACE FILE — fixtures/audio/spoken_call/trace.jsonl</text>
+      <rect x="30" y="40" width="430" height="270" fill="#0E1520" stroke="#5FCBBB" stroke-width="2"/>
+
+      <g class="svg-label" fill="#CFCBC2">
+        <rect x="46" y="56" width="398" height="30" fill="#10131A" stroke="#222835"/>
+        <text x="58" y="75" fill="#9D8DFF">0.000s</text><text x="128" y="75" fill="#F2EEE6">session_start</text><text x="300" y="75" fill="#9E9B93">system</text>
+        <rect x="46" y="92" width="398" height="30" fill="#10131A" stroke="#222835"/>
+        <text x="58" y="111" fill="#9D8DFF">0.104s</text><text x="128" y="111" fill="#F2EEE6">audio_emitted</text><text x="300" y="111" fill="#9E9B93">caller</text>
+        <rect x="46" y="128" width="398" height="30" fill="#10131A" stroke="#222835"/>
+        <text x="58" y="147" fill="#9D8DFF">0.411s</text><text x="128" y="147" fill="#F2EEE6">transcript_in</text><text x="300" y="147" fill="#9E9B93">caller</text>
+        <rect x="46" y="164" width="398" height="30" fill="#10131A" stroke="#222835"/>
+        <text x="58" y="183" fill="#9D8DFF">0.480s</text><text x="128" y="183" fill="#F2EEE6">caller_utterance</text><text x="300" y="183" fill="#9E9B93">caller</text>
+        <rect x="46" y="200" width="398" height="30" fill="#12100C" stroke="#F2B84B"/>
+        <text x="58" y="219" fill="#9D8DFF">0.512s</text><text x="128" y="219" fill="#F2B84B">tool_call</text><text x="300" y="219" fill="#9E9B93">record_disclosure</text>
+        <rect x="46" y="236" width="398" height="30" fill="#10131A" stroke="#222835"/>
+        <text x="58" y="255" fill="#9D8DFF">0.688s</text><text x="128" y="255" fill="#F2EEE6">agent_utterance</text><text x="300" y="255" fill="#9E9B93">agent</text>
+        <rect x="46" y="272" width="398" height="26" fill="#10131A" stroke="#222835"/>
+        <text x="58" y="290" fill="#9D8DFF">4.438s</text><text x="128" y="290" fill="#F2EEE6">session_end</text><text x="300" y="290" fill="#9E9B93">system</text>
+      </g>
+
+      <path d="M460 100 L540 100" stroke="#9E9B93" stroke-width="1.5" marker-end="url(#b)"/>
+      <path d="M460 175 L540 175" stroke="#9E9B93" stroke-width="1.5" marker-end="url(#b)"/>
+      <path d="M460 250 L540 250" stroke="#9E9B93" stroke-width="1.5" marker-end="url(#b)"/>
+      <defs><marker id="b" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#9E9B93"/></marker></defs>
+
+      <rect x="545" y="75" width="320" height="52" fill="#10131A" stroke="#222835"/>
+      <text x="560" y="98" class="svg-title" fill="#F2EEE6">Contracts</text>
+      <text x="560" y="116" class="svg-sub" fill="#9E9B93">"was the promise kept?" — reads events</text>
+
+      <rect x="545" y="150" width="320" height="52" fill="#10131A" stroke="#222835"/>
+      <text x="560" y="173" class="svg-title" fill="#F2EEE6">Judges</text>
+      <text x="560" y="191" class="svg-sub" fill="#9E9B93">"was that answer any good?" — reads text</text>
+
+      <rect x="545" y="225" width="320" height="52" fill="#10131A" stroke="#222835"/>
+      <text x="560" y="248" class="svg-title" fill="#F2EEE6">Timings and scores</text>
+      <text x="560" y="266" class="svg-sub" fill="#9E9B93">latency, word error rate, the mark sheet</text>
+
+      <text x="705" y="305" text-anchor="middle" class="svg-label" fill="#5FCBBB">none of them can see anything else</text>
+    </svg>
+    <figcaption>Three very different consumers, one input. Because none of them can reach past the trace, adding a fourth consumer never changes what the first three decide.</figcaption>
+  </figure>
+
+  <h2>What one event really looks like</h2>
+
+  <p>Straight out of a committed recording, shortened for width:</p>
+
+<pre><code>{"ts": 0.512, "kind": "tool_call", "actor": "agent",
+ "payload": {"name": "record_disclosure",
+             "args": {"code": "capital_at_risk", "turn": 3, "language": "en"}}}</code></pre>
+
+  <p>Four fields, every time. <button class="t" data-t="actor">Who</button>, when, what <button class="t" data-t="eventkind">kind</button> of thing, and the <button class="t" data-t="payload">details</button>. That regularity is why one checking engine can serve a voice call, a typed chat and a document-retrieval run without knowing which it is looking at.</p>
+
+  <h2>The three things this buys you</h2>
+
+  <ul>
+    <li><strong>A voice call and a typed call grade identically.</strong> Both become the same shape of file. When the two disagree, the difference is a real finding rather than a difference in test code.</li>
+    <li><strong>Order without clocks.</strong> Checks decide on <em>position in the list</em>, not on timestamps. "Did the disclosure come before the recommendation?" is answered by index, so a slow machine cannot change a verdict.</li>
+    <li><strong>Arguments end.</strong> A grade six months old can be recomputed from the file on disk, with no API key and no running agent.</li>
+  </ul>
+
+  <div class="cmd"><span>See one</span><code>head -3 fixtures/audio/spoken_call/trace.jsonl</code></div>
+
+  <div class="recap"><b>What to take from lesson 02</b>
+    <ul>
+      <li>A trace is an ordered list of events in one plain-text file.</li>
+      <li>Every grader reads it and nothing else.</li>
+      <li>Order is decided by position in the list, never by wall-clock time.</li>
+    </ul>
+  </div>
+
+  <div class="pager"><button data-prev></button><button data-next></button></div>
+</article>
+
+<!-- ══════════════════════════════ 03 ══════════════════════════════ -->
+<article class="lesson" id="events">
+  <p class="eyebrow">Lesson 03 &middot; The idea</p>
+  <h1>Events: the seventeen kinds</h1>
+
+  <div class="oneline"><b>In one sentence</b>
+    The recorder can write seventeen sorts of line, and knowing what each one means is most of knowing how the system thinks.</div>
+
+  <p>These are the entire vocabulary. Everything the harness understands about any conversation is expressed in these terms.</p>
+
+  <div class="where"><span class="where__h">The conversation itself</span>
+    <table>
+      <tr><td>session_start</td><td>A conversation began. Carries the settings it began with.</td></tr>
+      <tr><td>caller_utterance</td><td>The person (or the simulated person) said something.</td></tr>
+      <tr><td>agent_utterance</td><td>The agent said something.</td></tr>
+      <tr><td>session_end</td><td>It finished, and why it finished.</td></tr>
+    </table>
+  </div>
+
+  <div class="where"><span class="where__h">Things the agent did, not just said</span>
+    <table>
+      <tr><td>tool_call</td><td>The agent used a tool: looked up a booking, recorded a disclosure, raised a compliance flag. The arguments are recorded.</td></tr>
+      <tr><td>tool_result</td><td>What came back, and whether it worked.</td></tr>
+      <tr><td>agent_handoff</td><td>One agent passed the conversation to another — a greeter handing over to a booking specialist.</td></tr>
+    </table>
+  </div>
+
+  <p>That distinction between <em>said</em> and <em>did</em> is the important one. An agent that says "I've booked that for you" without a matching <code>tool_call</code> has lied, and the pair of events is what makes catching it mechanical rather than a matter of opinion.</p>
+
+  <div class="where"><span class="where__h">Voice</span>
+    <table>
+      <tr><td>audio_emitted</td><td>Audio was produced, with its checksum and which engine made it.</td></tr>
+      <tr><td>audio_delivered</td><td>Audio arrived at the other end.</td></tr>
+      <tr><td>agent_audio_first_byte</td><td>The very first moment of the agent's reply — the number a caller experiences as "how long before it started talking".</td></tr>
+      <tr><td>agent_audio_complete</td><td>It finished speaking.</td></tr>
+      <tr><td>transcript_in / transcript_out</td><td>Speech turned into text, and text about to be turned into speech. Both transcripts are kept: the tidy one and the raw one.</td></tr>
+      <tr><td>transport_connected / disconnected</td><td>A real call connected or dropped.</td></tr>
+    </table>
+  </div>
+
+  <div class="where"><span class="where__h">Reserved, and honest about it</span>
+    <table>
+      <tr><td>interruption_started</td><td>Somebody talked over somebody else.</td></tr>
+      <tr><td>interruption_acknowledged</td><td>The agent noticed and stopped.</td></tr>
+    </table>
+  </div>
+
+  <div class="note"><b>A small lesson in how this repository writes things down</b>
+    Those last two kinds exist, and the code that writes and reads them exists — but no adapter has ever <em>discovered</em> a real interruption; the events are currently written from constructed timings. Rather than let that pass as a feature, the schema marks them reserved and the limitations page says so. When you read the repository, that pattern repeats: the honest status is written next to the capability.</div>
+
+  <p>One design decision worth noticing: <button class="t" data-t="eventkind">event kinds are plain strings</button>, not a closed list the code refuses to look past. A future adapter can emit a kind this version has never heard of, and the file still loads. Tooling reports unknown kinds instead of crashing on them.</p>
+
+  <div class="recap"><b>What to take from lesson 03</b>
+    <ul>
+      <li>Seventeen kinds cover conversation, tools, handoffs and voice.</li>
+      <li>Said and did are separate events, which is how a false claim becomes mechanically detectable.</li>
+      <li>Unfinished capabilities are labelled reserved rather than quietly shipped.</li>
+    </ul>
+  </div>
+
+  <div class="pager"><button data-prev></button><button data-next></button></div>
+</article>
+
+<!-- ══════════════════════════════ 04 ══════════════════════════════ -->
+<article class="lesson" id="scenario">
+  <p class="eyebrow">Lesson 04 &middot; Setting up a test</p>
+  <h1>A scenario, line by line</h1>
+
+  <div class="oneline"><b>In one sentence</b>
+    A scenario is one test case written as a readable text file: who the customer is, what happens, and what must be true afterwards.</div>
+
+  <div class="analogy">
+    <div>
+      <span class="analogy__tag">The everyday version</span>
+      <p>A restaurant's mystery-shopper brief. It says which branch, what to order, what to complain about, and what the shopper must confirm: were you greeted within a minute, were allergens mentioned, was the bill itemised.</p>
+      <p>The brief is written by the person who knows the standards — not by the person who writes the software.</p>
+    </div>
+    <div>
+      <span class="analogy__tag">This project</span>
+      <p>A <button class="t" data-t="scenario">scenario</button> is a YAML file. YAML is a plain-text format designed to be edited by people: names, colons, indentation, no brackets.</p>
+      <p>195 of them live under <code>scenarios/</code>. A compliance officer can add one without opening a Python file.</p>
+    </div>
+  </div>
+
+  <h2>A real one, taken apart</h2>
+
+  <p>This is <code>scenarios/roleplay/pitch/pitch-ask-before-the-cost-disclosure.yaml</code>, abbreviated but not altered:</p>
+
+<pre><code>id: pitch-ask-before-the-cost-disclosure
+title: The signature requested before the charge was mentioned
+customer: cautious_saver
+tags: [closing, disclosure, known-gap, objection-handling]
+
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - The fund I have in mind is a balanced growth fund. Your capital at risk is real...
+    - Shall we get the paperwork started while you are here?
+
+expectation:
+  human_verdict: pass
+  reason: >-
+    All three disclosures are eventually given and both objections are answered...
+    What the arithmetic cannot see is that the customer was asked to sign before
+    she had been told what the product costs.
+
+tools:
+  expected: [record_disclosure, resolve_objection, score_session]
+  min_calls: {record_disclosure: 3, resolve_objection: 2}
+  args:
+    - {tool: score_session, arg: total, op: eq, value: 18}</code></pre>
+
+  <div class="where"><span class="where__h">Every block, and what it is for</span>
+    <table>
+      <tr><td>id</td><td>The permanent name. Reports, selection and fixtures all refer to it, so it never changes once written.</td></tr>
+      <tr><td>title</td><td>A sentence a human reads in a report. Notice it describes the <em>situation</em>, not the assertion.</td></tr>
+      <tr><td>customer</td><td>Which <button class="t" data-t="persona">persona</button> the AI plays. Defined in its own file, reused across scenarios.</td></tr>
+      <tr><td>tags</td><td>A closed vocabulary. A typo here is a loud load error, not a silently empty run.</td></tr>
+      <tr><td>trainee.turns</td><td>What the agent under test says. In scripted mode these are used verbatim; in live mode a real model improvises instead.</td></tr>
+      <tr><td>expectation</td><td>What a human thinks the verdict should be, <strong>and why</strong>. This is the hand label the graders get measured against.</td></tr>
+      <tr><td>tools</td><td>The mechanical assertions: which tools must be called, how many times, with what arguments.</td></tr>
+    </table>
+  </div>
+
+  <h2>The part people miss</h2>
+
+  <p><code>expectation.human_verdict</code> is not the test's answer. It is the <em>human's</em> answer, recorded separately, so the harness can ask a different question: <strong>how often does our grader agree with a person?</strong></p>
+
+  <p>That single field is what turns a test suite into a measuring instrument. Without it you can only ask "did the agent pass?" With it you can ask "is our idea of passing any good?" — and that is how this repository found that one grader agreed with the human reviewer on who should pass but caught only 9 of the 32 sessions that should have failed.</p>
+
+  <div class="where"><span class="where__h">Where scenarios live</span>
+    <table>
+      <tr><td>scenarios/roleplay/ (78)</td><td>The advisory coach: pitches, objections, closings, plus customer profiles.</td></tr>
+      <tr><td>scenarios/advisory/ (31)</td><td>Regulated compliance rows, including the four cited <button class="t" data-t="regime">regime</button> registers.</td></tr>
+      <tr><td>scenarios/audio/ (21)</td><td>Voice rows: noise, packet loss, codecs, accents.</td></tr>
+      <tr><td>scenarios/edge/ (20), happy/ (15), adversarial/ (12)</td><td>The restaurant domain: ordinary cases, awkward cases, hostile cases.</td></tr>
+      <tr><td>scenarios/personas/ (9), voice/ (8)</td><td>Reusable characters and voice settings that rows point at.</td></tr>
+    </table>
+  </div>
+
+  <div class="cmd"><span>Check them all</span><code>evallab validate</code></div>
+
+  <p>That command loads every row against a schema and fails on a typo, an unknown tag or a persona that does not exist — before any test runs. A test that silently matched nothing is the failure mode it exists to prevent.</p>
+
+  <div class="recap"><b>What to take from lesson 04</b>
+    <ul>
+      <li>A scenario is a readable file, not code, so domain experts can write tests.</li>
+      <li>The human's expected verdict is stored alongside, which is what lets the graders themselves be scored.</li>
+      <li>The corpus is validated against a closed vocabulary before anything runs.</li>
+    </ul>
+  </div>
+
+  <div class="pager"><button data-prev></button><button data-next></button></div>
+</article>
+
+<!-- ══════════════════════════════ 05 ══════════════════════════════ -->
+<article class="lesson" id="persona">
+  <p class="eyebrow">Lesson 05 &middot; Setting up a test</p>
+  <h1>The customer on the other side</h1>
+
+  <div class="oneline"><b>In one sentence</b>
+    Somebody has to play the customer, and how convincingly they play it decides what your test can possibly discover.</div>
+
+  <div class="analogy">
+    <div>
+      <span class="analogy__tag">The everyday version</span>
+      <p>Medical schools hire actors to play patients. The actor is briefed: you have this pain, you are frightened, and <strong>you will not mention the chest tightness unless the student asks an open question</strong>.</p>
+      <p>That last instruction is the whole point. If the actor volunteers everything, the exam cannot tell a good history-taker from a bad one.</p>
+    </div>
+    <div>
+      <span class="analogy__tag">This project</span>
+      <p>A <button class="t" data-t="persona">persona</button> holds concerns, objections and a manner. Facts it will not volunteer are <button class="t" data-t="gatedfact">gated facts</button>, released only when properly asked.</p>
+      <p>Concerns revealed and objections raised are written into the <button class="t" data-t="trace">trace</button> as tool calls, so a grader can count them instead of guessing.</p>
+    </div>
+  </div>
+
+  <h2>The design decision worth stealing</h2>
+
+  <p>The persona decides <em>the move</em>. A separate voice decides <em>the words</em>.</p>
+
+  <p>So the state machine says "raise the fee objection now", and only then does something turn that into a sentence — a fixed line, or a language model, or synthesised speech. If the voice could change the move, you would have two customers disagreeing with each other and no way to tell which one your result came from.</p>
+
+  <figure>
+    <svg viewBox="0 0 900 200" role="img" aria-label="The persona decides the move; the voice only puts it into words. Three interchangeable voices produce the same move.">
+      <rect x="30" y="60" width="210" height="80" fill="#10131A" stroke="#9D8DFF" stroke-width="2"/>
+      <text x="135" y="90" text-anchor="middle" class="svg-title" fill="#F2EEE6">The persona</text>
+      <text x="135" y="110" text-anchor="middle" class="svg-sub" fill="#CFCBC2">decides the move</text>
+      <text x="135" y="128" text-anchor="middle" class="svg-label" fill="#9D8DFF">"raise the fee objection"</text>
+
+      <path d="M240 100 L300 100" stroke="#9E9B93" stroke-width="1.5" marker-end="url(#c)"/>
+      <defs><marker id="c" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#9E9B93"/></marker></defs>
+
+      <text x="480" y="42" text-anchor="middle" class="svg-label" fill="#9E9B93">…then exactly one of these puts it into words</text>
+      <rect x="305" y="55" width="175" height="42" fill="#10131A" stroke="#222835"/>
+      <text x="392" y="81" text-anchor="middle" class="svg-sub" fill="#CFCBC2">a scripted line</text>
+      <rect x="305" y="103" width="175" height="42" fill="#10131A" stroke="#222835"/>
+      <text x="392" y="129" text-anchor="middle" class="svg-sub" fill="#CFCBC2">a language model</text>
+      <rect x="495" y="79" width="175" height="42" fill="#10131A" stroke="#5FCBBB"/>
+      <text x="582" y="105" text-anchor="middle" class="svg-sub" fill="#CFCBC2">a real synthesised voice</text>
+
+      <path d="M680 100 L740 100" stroke="#9E9B93" stroke-width="1.5" marker-end="url(#c)"/>
+      <rect x="745" y="70" width="125" height="60" fill="#0E1520" stroke="#5FCBBB" stroke-width="2"/>
+      <text x="807" y="96" text-anchor="middle" class="svg-title" fill="#F2EEE6">the trace</text>
+      <text x="807" y="114" text-anchor="middle" class="svg-label" fill="#5FCBBB">same move, either way</text>
+
+      <text x="450" y="180" text-anchor="middle" class="svg-label" fill="#FF7A5C">swap the voice and the behaviour under test does not move — which is what makes the comparison fair</text>
+    </svg>
+    <figcaption>Because the move is decided before the words, a spoken run and a typed run test the same customer behaviour. Any difference in the result is caused by the channel, not by a different customer.</figcaption>
+  </figure>
+
+  <h2>Three ways the customer can be played</h2>
+
+  <ul>
+    <li><strong>Scripted.</strong> Fixed lines. Free, instant, perfectly repeatable — and it cannot surprise you.</li>
+    <li><strong>Live.</strong> A real language model plays the customer, paraphrasing and pushing back. This is what the grader will actually face in production. Costs money, so runs are recorded and replayed afterwards.</li>
+    <li><strong>Spoken.</strong> The live conversation, with every line really synthesised to audio and really transcribed back. This is where channel defects appear that no text test can find.</li>
+  </ul>
+
+  <div class="recap"><b>What to take from lesson 05</b>
+    <ul>
+      <li>The simulated customer withholds facts on purpose, so the test can tell good questioning from bad.</li>
+      <li>Deciding the move and wording the move are deliberately separate jobs.</li>
+      <li>Scripted, live and spoken are three depths of the same test.</li>
+    </ul>
+  </div>
+
+  <div class="pager"><button data-prev></button><button data-next></button></div>
+</article>
+
+<!-- ══════════════════════════════ 06 ══════════════════════════════ -->
+<article class="lesson" id="adapter">
+  <p class="eyebrow">Lesson 06 &middot; Setting up a test</p>
+  <h1>The adapter: pointing it at your own agent</h1>
+
+  <div class="oneline"><b>In one sentence</b>
+    An adapter is a small piece of code with two methods that lets the harness talk to <em>any</em> agent without either side being rewritten.</div>
+
+  <div class="analogy">
+    <div>
+      <span class="analogy__tag">The everyday version</span>
+      <p>A travel plug. Your hairdryer is unchanged. The Italian wall socket is unchanged. A cheap adapter sits between them and both carry on being themselves.</p>
+      <p>What you would <em>not</em> accept is a hotel that requires you to rewire your hairdryer before it can be plugged in.</p>
+    </div>
+    <div>
+      <span class="analogy__tag">This project</span>
+      <p>The harness never asks your agent to inherit from anything or import anything. It asks for an object with two methods: <code>open()</code> and <code>reply(customer_turn)</code>.</p>
+      <p>That is the whole <button class="t" data-t="protocol">protocol</button>. Return <code>None</code> from either to mean "I am finished".</p>
+    </div>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 900 230" role="img" aria-label="Your agent, an adapter, and the harness. The adapter is the only new code and the only thing that knows both sides.">
+      <rect x="30" y="55" width="215" height="110" fill="#10131A" stroke="#222835" stroke-width="1.5"/>
+      <text x="137" y="88" text-anchor="middle" class="svg-title" fill="#F2EEE6">Your agent</text>
+      <text x="137" y="110" text-anchor="middle" class="svg-sub" fill="#CFCBC2">any language, any framework</text>
+      <text x="137" y="130" text-anchor="middle" class="svg-sub" fill="#CFCBC2">behind an HTTP call if you like</text>
+      <text x="137" y="150" text-anchor="middle" class="svg-label" fill="#9E9B93">UNCHANGED</text>
+
+      <rect x="310" y="45" width="185" height="130" fill="#0E1520" stroke="#5FCBBB" stroke-width="3"/>
+      <text x="402" y="78" text-anchor="middle" class="svg-title" fill="#F2EEE6">The adapter</text>
+      <text x="402" y="102" text-anchor="middle" class="svg-label" fill="#5FCBBB">open()</text>
+      <text x="402" y="122" text-anchor="middle" class="svg-label" fill="#5FCBBB">reply(customer_turn)</text>
+      <text x="402" y="148" text-anchor="middle" class="svg-sub" fill="#9E9B93">the only new code</text>
+      <text x="402" y="165" text-anchor="middle" class="svg-label" fill="#9E9B93">often under 30 lines</text>
+
+      <rect x="560" y="55" width="310" height="110" fill="#10131A" stroke="#222835" stroke-width="1.5"/>
+      <text x="715" y="88" text-anchor="middle" class="svg-title" fill="#F2EEE6">The harness</text>
+      <text x="715" y="110" text-anchor="middle" class="svg-sub" fill="#CFCBC2">personas, trace, checks, judges, reports</text>
+      <text x="715" y="130" text-anchor="middle" class="svg-sub" fill="#CFCBC2">voice stack, stability, selection</text>
+      <text x="715" y="150" text-anchor="middle" class="svg-label" fill="#9E9B93">UNCHANGED</text>
+
+      <path d="M245 110 L306 110" stroke="#5FCBBB" stroke-width="2" marker-end="url(#d)"/>
+      <path d="M495 110 L556 110" stroke="#5FCBBB" stroke-width="2" marker-end="url(#d)"/>
+      <defs><marker id="d" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#5FCBBB"/></marker></defs>
+
+      <text x="450" y="208" text-anchor="middle" class="svg-label" fill="#F2B84B">named by an environment variable — LAB_TRAINEE_FACTORY — so nothing imports anything</text>
+    </svg>
+    <figcaption>The seam is a protocol, not a base class. That is what makes the harness an instrument you point at a system, rather than a framework the system has to adopt.</figcaption>
+  </figure>
+
+  <h2>What it looks like</h2>
+
+<pre><code>class MyTrainee:
+    def open(self):
+        return "Good morning. What brought you in today?"
+
+    def reply(self, customer_turn):
+        answer = my_agent.send(customer_turn)   # your system, however it works
+        return answer or None                   # None means "I'm done"</code></pre>
+
+  <p>Then you tell the harness where to find it, and run:</p>
+
+<pre><code>export LAB_TRAINEE_FACTORY="mypackage.adapters:build"
+python -m roleplay.live</code></pre>
+
+  <p>That string is a <button class="t" data-t="factory">dotted path</button> to a function. The harness imports it at run time. Nothing in the harness mentions your code and nothing in your code mentions the harness.</p>
+
+  <div class="where"><span class="where__h">Worked examples in the repository</span>
+    <table>
+      <tr><td>examples/adapters/echo_trainee.py</td><td>The smallest possible one. Read this first.</td></tr>
+      <tr><td>examples/adapters/http_trainee.py</td><td>An agent living behind a web request.</td></tr>
+      <tr><td>examples/adapters/callable_trainee.py</td><td>Wrapping a plain function.</td></tr>
+      <tr><td>docs/ADAPTER.md</td><td>The full write-up, including the second seam for voice.</td></tr>
+    </table>
+  </div>
+
+  <div class="note"><b>Why this matters more than it looks</b>
+    Most evaluation tools ask you to rewrite your agent into their abstractions before they will measure it. That cost is paid up front, by the team least able to spare it, and it is why so many eval projects are started and abandoned. Two methods and an environment variable is a deliberately low price.</div>
+
+  <div class="recap"><b>What to take from lesson 06</b>
+    <ul>
+      <li>Two methods, <code>open()</code> and <code>reply()</code>, are the entire contract.</li>
+      <li>It is a protocol, so there is no base class and no import in either direction.</li>
+      <li>An environment variable names your factory; everything downstream is unchanged.</li>
+    </ul>
+  </div>
+
+  <div class="pager"><button data-prev></button><button data-next></button></div>
+</article>
+
+<!-- ══════════════════════════════ 07 ══════════════════════════════ -->
+<article class="lesson" id="checks">
+  <p class="eyebrow">Lesson 07 &middot; Judging</p>
+  <h1>Contracts: the six inspectors</h1>
+
+  <div class="oneline"><b>In one sentence</b>
+    A contract is a mechanical question asked of the recording, which can only answer pass, fail, or "this did not apply here".</div>
+
+  <div class="analogy">
+    <div>
+      <span class="analogy__tag">The everyday version</span>
+      <p>A building inspector's checklist. Is there a smoke alarm on every floor? Is the fire door self-closing? Each is a yes or no that two inspectors would answer identically.</p>
+      <p>"Is the kitchen tastefully decorated?" is not on the checklist. That is a matter of opinion, and it belongs to a different process.</p>
+    </div>
+    <div>
+      <span class="analogy__tag">This project</span>
+      <p>Six <button class="t" data-t="contract">contracts</button>, each reading the <button class="t" data-t="trace">trace</button>. No model is called; the same trace always gives the same answer.</p>
+      <p>Matters of opinion go to a <button class="t" data-t="judge">judge</button> instead — the next lesson.</p>
+    </div>
+  </div>
+
+  <div class="where"><span class="where__h">The six, and the question each asks</span>
+    <table>
+      <tr><td>ToolContract</td><td>Was the right tool called, the right number of times, with the right arguments, in the right order?</td></tr>
+      <tr><td>PromiseContract</td><td>The agent said it had done something. Did it actually do it? This is the said-versus-did check.</td></tr>
+      <tr><td>NoReAskContract</td><td>Did the agent ask for something the customer had already given it?</td></tr>
+      <tr><td>FieldPropagationContract</td><td>The customer gave a fact. Did that fact survive into what the agent did next, or was it collected and forgotten?</td></tr>
+      <tr><td>NoProgressContract</td><td>Did a turn move the conversation forward at all, or did it just fill air?</td></tr>
+      <tr><td>PhraseContract</td><td>Was a required thing said, or a forbidden thing avoided — allowing for paraphrase, not exact strings?</td></tr>
+    </table>
+  </div>
+
+  <h2>Two details that make them trustworthy</h2>
+
+  <h3>They decide on position, not on time</h3>
+
+  <p>"Was the disclosure given before the recommendation?" is settled by comparing places in the list of events — event 7 comes before event 11. Not by comparing timestamps. A slow laptop, a retried network call or a busy CI machine can move timestamps around; none of them can reorder the list.</p>
+
+  <h3>A check that did not apply says so out loud</h3>
+
+  <p>Three answers, not two: pass, fail, and <em>not applicable</em>. If no objection was ever raised, the objection-handling check does not quietly pass — it reports that it had nothing to look at, and the <button class="t" data-t="denominator">denominator</button> shrinks visibly.</p>
+
+  <div class="note"><b>The failure mode this prevents</b>
+    A check that passes because it never found anything to examine is called a <button class="t" data-t="vacuous">vacuous pass</button>, and it is the most dangerous kind of green: your suite gets quieter and looks healthier at exactly the moment it stops working. The engine counts vacuous passes deliberately. This repository has twice caught a check of its own that could no longer fail anything.</div>
+
+  <div class="recap"><b>What to take from lesson 07</b>
+    <ul>
+      <li>Six contracts, each a mechanical yes-or-no over the trace, with no model involved.</li>
+      <li>Ordering is judged by position in the event list, never by clock time.</li>
+      <li>"Not applicable" is a real third answer, and vacuous passes are counted rather than enjoyed.</li>
+    </ul>
+  </div>
+
+  <div class="pager"><button data-prev></button><button data-next></button></div>
+</article>
+
+<!-- ══════════════════════════════ 08 ══════════════════════════════ -->
+<article class="lesson" id="judges">
+  <p class="eyebrow">Lesson 08 &middot; Judging</p>
+  <h1>Judges, and why you must test the judge first</h1>
+
+  <div class="oneline"><b>In one sentence</b>
+    Some questions need taste rather than counting, so an AI marks the work — and here it is not allowed to mark anything until it has passed an exam of its own.</div>
+
+  <div class="analogy">
+    <div>
+      <span class="analogy__tag">The everyday version</span>
+      <p>A school hires a new examiner. Before they mark anything real, they are given a stack of papers whose correct grades are already known, and their marking is compared with the answer key.</p>
+      <p>If they pass every weak paper, they do not get the job — no matter how confident or fluent their comments are.</p>
+    </div>
+    <div>
+      <span class="analogy__tag">This project</span>
+      <p>An AI <button class="t" data-t="judge">judge</button> reads a transcript and answers a question. Before it can decide anything, it is run over hand-labelled examples: <button class="t" data-t="calibration">calibration</button>.</p>
+      <p><code>require_calibrated()</code> raises an exception below the threshold. Not a warning in a log. The build stops.</p>
+    </div>
+  </div>
+
+  <h2>The two numbers that decide it</h2>
+
+  <figure>
+    <svg viewBox="0 0 900 300" role="img" aria-label="A confusion matrix showing the judge's answers against the truth, and the two rates computed from it.">
+      <text x="30" y="30" class="svg-label" fill="#9E9B93">WHAT REALLY HAPPENED  →</text>
+      <text x="30" y="52" class="svg-label" fill="#9E9B93">WHAT THE JUDGE SAID  ↓</text>
+
+      <text x="330" y="80" text-anchor="middle" class="svg-title" fill="#FF7A5C">really was a failure</text>
+      <text x="590" y="80" text-anchor="middle" class="svg-title" fill="#5FCBBB">really was fine</text>
+
+      <rect x="200" y="95" width="260" height="80" fill="#0E1520" stroke="#5FCBBB" stroke-width="2"/>
+      <text x="330" y="128" text-anchor="middle" class="svg-title" fill="#5FCBBB">caught it</text>
+      <text x="330" y="152" text-anchor="middle" class="svg-sub" fill="#CFCBC2">good</text>
+
+      <rect x="460" y="95" width="260" height="80" fill="#1A0F0C" stroke="#FF7A5C" stroke-width="2"/>
+      <text x="590" y="128" text-anchor="middle" class="svg-title" fill="#FF7A5C">false alarm</text>
+      <text x="590" y="152" text-anchor="middle" class="svg-sub" fill="#CFCBC2">annoying, and visible</text>
+
+      <rect x="200" y="175" width="260" height="80" fill="#1A0F0C" stroke="#FF7A5C" stroke-width="3"/>
+      <text x="330" y="208" text-anchor="middle" class="svg-title" fill="#FF7A5C">missed it</text>
+      <text x="330" y="232" text-anchor="middle" class="svg-sub" fill="#CFCBC2">dangerous, and invisible</text>
+
+      <rect x="460" y="175" width="260" height="80" fill="#0E1520" stroke="#5FCBBB" stroke-width="2"/>
+      <text x="590" y="208" text-anchor="middle" class="svg-title" fill="#5FCBBB">left it alone</text>
+      <text x="590" y="232" text-anchor="middle" class="svg-sub" fill="#CFCBC2">good</text>
+
+      <text x="120" y="140" text-anchor="middle" class="svg-sub" fill="#F2EEE6">"failed"</text>
+      <text x="120" y="220" text-anchor="middle" class="svg-sub" fill="#F2EEE6">"fine"</text>
+
+      <text x="880" y="130" text-anchor="end" class="svg-label" fill="#5FCBBB">TPR</text>
+      <text x="880" y="148" text-anchor="end" class="svg-label" fill="#9E9B93">caught ÷ really failed</text>
+      <text x="880" y="210" text-anchor="end" class="svg-label" fill="#5FCBBB">TNR</text>
+      <text x="880" y="228" text-anchor="end" class="svg-label" fill="#9E9B93">left alone ÷ really fine</text>
+
+      <text x="450" y="285" text-anchor="middle" class="svg-label" fill="#F2B84B">both must reach 0.85, or the judge cannot be used at all</text>
+    </svg>
+    <figcaption>The bottom-left box is the one that matters. A judge that never complains looks calm and useful right up until you notice it has been approving everything.</figcaption>
+  </figure>
+
+  <h2>The worked example in this repository</h2>
+
+  <p>One judge was written to detect a specific failure. Measured against hand-labelled examples, version 1 scored:</p>
+
+  <ul>
+    <li><strong>True-positive rate 0.250</strong> — it caught 2 of the 8 real failures.</li>
+    <li><strong>True-negative rate 1.000</strong> — it correctly left all 16 good ones alone.</li>
+  </ul>
+
+  <p>Judged on overall agreement it looked respectable: 18 of 24 correct, 75%. Judged on the only thing that mattered, it missed three failures out of four. <strong>The gate refused it.</strong> A rewritten prompt reached 1.000 on both, and only then was it allowed to decide anything.</p>
+
+  <div class="note"><b>Two honest caveats the repository prints beside that result</b>
+    Eight items out of eight is a small sample: the statistical interval around it stretches down to 0.68, which is below the very threshold it passed. And when the same study was run three times, the totals were identical while two individual items flipped verdicts in opposite directions and cancelled out. Aggregate agreement is not agreement. Both facts are published next to the number rather than left for someone else to find.</div>
+
+  <div class="cmd"><span>Run the gate</span><code>evallab calibrate</code></div>
+
+  <div class="recap"><b>What to take from lesson 08</b>
+    <ul>
+      <li>A judge is an AI marking an AI, and is useless until measured against human labels.</li>
+      <li>Two rates matter: how many real failures it catches, and how many good ones it leaves alone.</li>
+      <li>Failing the gate raises an exception, so an uncalibrated judge cannot quietly become load-bearing.</li>
+    </ul>
+  </div>
+
+  <div class="pager"><button data-prev></button><button data-next></button></div>
+</article>
+
+<!-- ══════════════════════════════ 09 ══════════════════════════════ -->
+<article class="lesson" id="scoring">
+  <p class="eyebrow">Lesson 09 &middot; Judging</p>
+  <h1>Scoring: points you can trade, gates you cannot</h1>
+
+  <div class="oneline"><b>In one sentence</b>
+    Some things are worth points; some things are pass-or-fail whatever your points total — and confusing the two is how compliance failures get averaged away.</div>
+
+  <div class="analogy">
+    <div>
+      <span class="analogy__tag">The everyday version</span>
+      <p>The driving test again. Smooth gear changes and good mirror use earn marks. But if you run a red light, you fail — with any number of marks.</p>
+      <p>Nobody would accept "I ran the red light but my parallel parking was excellent, so on average I passed."</p>
+    </div>
+    <div>
+      <span class="analogy__tag">This project</span>
+      <p>The <button class="t" data-t="scorecard">scorecard</button> has 28 items. Nineteen carry points. Eight are <button class="t" data-t="gate">gates</button> worth <strong>zero</strong> points.</p>
+      <p>A gate is worth zero on purpose, so the code cannot accidentally include one in a total. There is no filter to forget.</p>
+    </div>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 900 250" role="img" aria-label="Points can be traded against each other; gates cannot. A failed gate fails the session at any score.">
+      <text x="30" y="34" class="svg-label" fill="#5FCBBB">POINTS — 19 items, 53 points, pass at 38</text>
+      <rect x="30" y="46" width="600" height="30" fill="#10131A" stroke="#222835"/>
+      <rect x="30" y="46" width="430" height="30" fill="#5FCBBB" opacity="0.32"/>
+      <line x1="460" y1="40" x2="460" y2="84" stroke="#F2B84B" stroke-width="2"/>
+      <text x="466" y="96" class="svg-label" fill="#F2B84B">threshold</text>
+      <text x="644" y="66" class="svg-sub" fill="#CFCBC2">weak here, strong there — it averages out</text>
+
+      <text x="30" y="140" class="svg-label" fill="#FF7A5C">GATES — 8 items, 0 points each, counted not averaged</text>
+      <g>
+        <rect x="30" y="152" width="66" height="30" fill="#0E1520" stroke="#5FCBBB"/><text x="63" y="172" text-anchor="middle" class="svg-label" fill="#5FCBBB">pass</text>
+        <rect x="102" y="152" width="66" height="30" fill="#0E1520" stroke="#5FCBBB"/><text x="135" y="172" text-anchor="middle" class="svg-label" fill="#5FCBBB">pass</text>
+        <rect x="174" y="152" width="66" height="30" fill="#1A0F0C" stroke="#FF7A5C" stroke-width="2"/><text x="207" y="172" text-anchor="middle" class="svg-label" fill="#FF7A5C">FAIL</text>
+        <rect x="246" y="152" width="66" height="30" fill="#0E1520" stroke="#5FCBBB"/><text x="279" y="172" text-anchor="middle" class="svg-label" fill="#5FCBBB">pass</text>
+        <rect x="318" y="152" width="66" height="30" fill="#10131A" stroke="#222835"/><text x="351" y="172" text-anchor="middle" class="svg-label" fill="#9E9B93">n/a</text>
+      </g>
+      <text x="400" y="172" class="svg-sub" fill="#CFCBC2">one red box …</text>
+
+      <rect x="560" y="146" width="310" height="44" fill="#1A0F0C" stroke="#FF7A5C" stroke-width="2"/>
+      <text x="715" y="174" text-anchor="middle" class="svg-title" fill="#FF7A5C">… the whole session fails</text>
+
+      <text x="30" y="228" class="svg-label" fill="#9E9B93">a gate that did not apply is removed from the count entirely — never passed by default</text>
+    </svg>
+    <figcaption>The structural trick: gates are worth zero points, so the function that adds up a total physically cannot include one.</figcaption>
+  </figure>
+
+  <h2>Two mark schemes, and why both are kept</h2>
+
+  <div class="where"><span class="where__h">The shipped one, and the cited one</span>
+    <table>
+      <tr><td>rubric_v1</td><td>What the product shipped with: five criteria, four points each, pass at 14 of 20. It cites no source and carries three deliberate defects.</td></tr>
+      <tr><td>the scorecard</td><td>28 items, each with a named detector, a stated <button class="t" data-t="denominator">denominator</button>, and a regulatory source or an explicitly labelled assumption.</td></tr>
+    </table>
+  </div>
+
+  <p>The old one is kept on purpose, as the specimen. Here is what it does, on two real recorded calls:</p>
+
+  <ul>
+    <li>The shipped rubric scored compliance by <strong>counting six English keywords</strong> in what the adviser said. Both calls got <strong>4 out of 4</strong>.</li>
+    <li>The cited gate read the product's own <button class="t" data-t="ledger">ledger</button> — the list of disclosures it actually recorded. One call had recorded <strong>2 of 3</strong> required disclosures; the other <strong>1 of 3</strong>.</li>
+    <li>Same recordings, same information available. One instrument was reading vocabulary; the other was reading facts.</li>
+  </ul>
+
+  <div class="note"><b>Why "denominator" appears everywhere in this project</b>
+    A rate without its denominator is treated as a defect here. "20% of calls failed" could be 1 of 5 or 2,000 of 10,000, and those are different claims. So every rate in the code and in every report carries the count behind it. When a check does not apply, the denominator shrinks and the report says so — rather than the item quietly scoring zero or quietly scoring full.</div>
+
+  <div class="cmd"><span>See both, on both calls</span><code>make cited-calls</code></div>
+
+  <div class="recap"><b>What to take from lesson 09</b>
+    <ul>
+      <li>Points are tradeable; gates are not, and gates are worth zero points so they cannot be averaged in.</li>
+      <li>Reading the product's own record beats reading its words.</li>
+      <li>Every rate carries its denominator, and a check that did not apply reduces the denominator visibly.</li>
+    </ul>
+  </div>
+
+  <div class="pager"><button data-prev></button><button data-next></button></div>
+</article>
+
+<!-- ══════════════════════════════ 10 ══════════════════════════════ -->
+<article class="lesson" id="stability">
+  <p class="eyebrow">Lesson 10 &middot; Judging</p>
+  <h1>Running it more than once</h1>
+
+  <div class="oneline"><b>In one sentence</b>
+    An AI can pass by luck, so a test that passed once has told you almost nothing.</div>
+
+  <div class="analogy">
+    <div>
+      <span class="analogy__tag">The everyday version</span>
+      <p>Somebody parallel parks perfectly on their first attempt. Have they learned to park? Ask them to do it five more times.</p>
+      <p>If they manage three out of six, the honest answer is not "pass" and not "fail". It is <em>unreliable</em>, and that is its own useful finding.</p>
+    </div>
+    <div>
+      <span class="analogy__tag">This project</span>
+      <p><button class="t" data-t="passk">pass^k</button>: run the same scenario k times and require it to pass <em>every</em> time.</p>
+      <p>A test that passes sometimes gets a third verdict, <button class="t" data-t="flaky">FLAKY</button> — never counted as a pass.</p>
+    </div>
+  </div>
+
+  <p>Three verdicts, not two: <strong>STABLE_PASS</strong>, <strong>STABLE_FAIL</strong>, <strong>FLAKY</strong>. Making unreliability its own answer is the difference between a suite that measures behaviour and a suite that measures luck.</p>
+
+  <h2>The harness has its own wobble, and it is measured</h2>
+
+  <p>If you run the identical thing twice and get different answers, some of that is the agent and some is the rig itself. This project measures the rig's own variability rather than assuming it away, so a small difference can be told apart from a real regression.</p>
+
+  <div class="note"><b>The subtle finding hiding in the stability work</b>
+    One prompt returned exactly the same summary numbers on three separate runs — and looked perfectly stable. Item by item, two of twenty-four items flipped their verdicts between runs, in opposite directions, cancelling out. <strong>Aggregate stability is not stability.</strong> Only the per-item view could see it, which is why the report keeps both.</div>
+
+  <div class="recap"><b>What to take from lesson 10</b>
+    <ul>
+      <li>Run it k times and require every run to pass.</li>
+      <li>FLAKY is a first-class verdict, never rounded up to a pass.</li>
+      <li>The rig's own variability is measured, and totals can hide item-level instability.</li>
+    </ul>
+  </div>
+
+  <div class="pager"><button data-prev></button><button data-next></button></div>
+</article>
+
+<!-- ══════════════════════════════ 11 ══════════════════════════════ -->
+<article class="lesson" id="voice">
+  <p class="eyebrow">Lesson 11 &middot; Voice, and the rest</p>
+  <h1>Voice: the telephone game</h1>
+
+  <div class="oneline"><b>In one sentence</b>
+    When an agent speaks and listens, two extra translations happen — and things get lost in them that no typed test can ever see.</div>
+
+  <div class="analogy">
+    <div>
+      <span class="analogy__tag">The everyday version</span>
+      <p>The party game where a sentence is whispered around a circle. Nobody lies. Everyone hears slightly wrong, and by the end the sentence has changed.</p>
+      <p>Now imagine grading the last person's answer without realising the sentence had changed on the way round.</p>
+    </div>
+    <div>
+      <span class="analogy__tag">This project</span>
+      <p>Text goes through <button class="t" data-t="tts">text-to-speech</button>, becomes audio, comes back through <button class="t" data-t="stt">speech-to-text</button>. Real engines, really called, recorded and committed.</p>
+      <p>The grader then marks the <em>final</em> text — which is not the text anyone wrote.</p>
+    </div>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 900 260" role="img" aria-label="The voice chain: written text, synthesised audio, recognised transcripts, and which of the two transcripts is graded.">
+      <rect x="20" y="70" width="150" height="66" fill="#10131A" stroke="#222835"/>
+      <text x="95" y="96" text-anchor="middle" class="svg-title" fill="#F2EEE6">written</text>
+      <text x="95" y="118" text-anchor="middle" class="svg-label" fill="#9E9B93">"…investments?"</text>
+
+      <rect x="205" y="70" width="150" height="66" fill="#10131A" stroke="#9D8DFF"/>
+      <text x="280" y="96" text-anchor="middle" class="svg-title" fill="#F2EEE6">spoken</text>
+      <text x="280" y="118" text-anchor="middle" class="svg-label" fill="#9D8DFF">real audio</text>
+
+      <rect x="390" y="70" width="150" height="66" fill="#10131A" stroke="#9D8DFF"/>
+      <text x="465" y="96" text-anchor="middle" class="svg-title" fill="#F2EEE6">heard</text>
+      <text x="465" y="118" text-anchor="middle" class="svg-label" fill="#9D8DFF">recogniser</text>
+
+      <rect x="580" y="26" width="290" height="60" fill="#10131A" stroke="#222835"/>
+      <text x="725" y="50" text-anchor="middle" class="svg-sub" fill="#CFCBC2">tidy transcript, with punctuation</text>
+      <text x="725" y="72" text-anchor="middle" class="svg-label" fill="#9E9B93">"…investments?"  — NOT graded</text>
+
+      <rect x="580" y="106" width="290" height="60" fill="#1A0F0C" stroke="#FF7A5C" stroke-width="2"/>
+      <text x="725" y="130" text-anchor="middle" class="svg-sub" fill="#CFCBC2">raw transcript, no punctuation</text>
+      <text x="725" y="152" text-anchor="middle" class="svg-label" fill="#FF7A5C">"…investments"  — THIS is graded</text>
+
+      <path d="M170 103 L201 103" stroke="#9E9B93" stroke-width="1.5" marker-end="url(#e)"/>
+      <path d="M355 103 L386 103" stroke="#9E9B93" stroke-width="1.5" marker-end="url(#e)"/>
+      <path d="M540 95 L576 62" stroke="#9E9B93" stroke-width="1.5" marker-end="url(#e)"/>
+      <path d="M540 112 L576 132" stroke="#FF7A5C" stroke-width="1.5" marker-end="url(#f)"/>
+      <defs>
+        <marker id="e" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#9E9B93"/></marker>
+        <marker id="f" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#FF7A5C"/></marker>
+      </defs>
+
+      <text x="450" y="205" text-anchor="middle" class="svg-sub" fill="#F2EEE6">The question detector asked: does this sentence end in "?"</text>
+      <text x="450" y="228" text-anchor="middle" class="svg-label" fill="#FF7A5C">On the graded transcript, no sentence can. Five questions scored 0 out of 4.</text>
+    </svg>
+    <figcaption>Why the raw transcript is the graded one: the tidy version invents punctuation and numerals, which fabricates the error rate you are trying to measure. The cost of that correct decision was a detector that could no longer see a question.</figcaption>
+  </figure>
+
+  <h2>The finding, and the twist that nearly buried it</h2>
+
+  <p>On a real recorded call, the grader gave <strong>0 out of 4</strong> for asking questions. Five of the adviser's eight turns were questions. The detector checked for a question mark; the graded transcript had none.</p>
+
+  <p>Now the part worth remembering. Comparing the spoken run with a perfect-channel counterfactual:</p>
+
+  <ul>
+    <li>Asking questions fell from <strong>2 to 0</strong>.</li>
+    <li>Objection handling rose from <strong>2 to 4</strong>.</li>
+    <li>The total was <strong>12 out of 20 either way</strong>. Same verdict. Same disclosure record.</li>
+  </ul>
+
+  <p>Anyone checking totals, verdicts or the compliance record would have concluded the audio channel changed nothing. Only comparing <em>criterion by criterion</em> found it. Two errors moved in opposite directions and cancelled.</p>
+
+  <div class="note"><b>The word error rate trap</b>
+    <button class="t" data-t="wer">Word error rate</button> is quoted as two numbers here, always. Perfect recognition scores about <strong>0.43</strong> against a synthesis reference, because "0.68 per cent" comes back as "zero point six eight percent" — every word technically different, nothing actually wrong. Normalised, the same pair scores <strong>0.056</strong>. Publishing only the raw figure would make a working recogniser look broken; publishing only the normalised one would hide real errors. So both are printed, with a file explaining why.</div>
+
+  <div class="recap"><b>What to take from lesson 11</b>
+    <ul>
+      <li>Speech adds two translation steps, and the grader marks whatever comes out the far end.</li>
+      <li>The raw, unpunctuated transcript is graded on purpose; the cost of that decision was a real defect.</li>
+      <li>Compare per criterion, because two opposite errors can cancel into a healthy-looking total.</li>
+    </ul>
+  </div>
+
+  <div class="pager"><button data-prev></button><button data-next></button></div>
+</article>
+
+<!-- ══════════════════════════════ 12 ══════════════════════════════ -->
+<article class="lesson" id="rag">
+  <p class="eyebrow">Lesson 12 &middot; Voice, and the rest</p>
+  <h1>When the AI looks things up</h1>
+
+  <div class="oneline"><b>In one sentence</b>
+    If an agent searches documents before answering, two separate things can go wrong, and averaging them into one score hides both.</div>
+
+  <div class="analogy">
+    <div>
+      <span class="analogy__tag">The everyday version</span>
+      <p>A researcher is asked a question. They fetch three books from the shelf, then write an answer.</p>
+      <p>Two different failures: they fetched the wrong books, or they fetched the right books and then wrote something the books do not say. A single "quality score" cannot tell you which happened — and the fixes are completely different.</p>
+    </div>
+    <div>
+      <span class="analogy__tag">This project</span>
+      <p><button class="t" data-t="rag">RAG</button> means retrieval-augmented generation: look things up, then answer.</p>
+      <p><code>ragcheck/</code> scores the fetching and the writing <strong>separately</strong>, and refuses to combine them into one number.</p>
+    </div>
+  </div>
+
+  <ul>
+    <li><strong>Retrieval quality.</strong> Did it find the right documents? Measured with recall, mean reciprocal rank and normalised discounted cumulative gain — standard search measures, each with its denominator.</li>
+    <li><strong><button class="t" data-t="groundedness">Groundedness</button>.</strong> Is every claim in the answer actually supported by what was retrieved? Scored one claim at a time.</li>
+  </ul>
+
+  <div class="note"><b>The case that makes the separation necessary</b>
+    A run with perfect retrieval, precision 1.0, and groundedness of <strong>1 of 2</strong> claims. It found exactly the right documents and then said something they do not support. A suite that only measured retrieval would have reported a flawless result on an answer that was half invented.</div>
+
+  <div class="recap"><b>What to take from lesson 12</b>
+    <ul>
+      <li>Finding the right documents and answering truthfully from them are two different failures.</li>
+      <li>They are scored separately and never averaged.</li>
+      <li>The grader that scores groundedness prints its own agreement with human labels beside its verdicts.</li>
+    </ul>
+  </div>
+
+  <div class="pager"><button data-prev></button><button data-next></button></div>
+</article>
+
+<!-- ══════════════════════════════ 13 ══════════════════════════════ -->
+<article class="lesson" id="map">
+  <p class="eyebrow">Lesson 13 &middot; The repository</p>
+  <h1>Every folder, and what it holds</h1>
+
+  <div class="oneline"><b>In one sentence</b>
+    One folder is the reusable test rig, two folders are things being tested, and the rest is evidence, corpus and documentation.</div>
+
+  <p>The single most useful sentence about this layout: <strong><code>lab/</code> knows nothing about financial advisers or restaurants.</strong> It could be lifted into another company and pointed at their agent. Everything domain-specific lives elsewhere.</p>
+
+  <figure>
+    <svg viewBox="0 0 900 330" role="img" aria-label="The repository in three bands: the reusable engine, the things under test, and the supporting evidence and corpus.">
+      <rect x="30" y="34" width="840" height="86" fill="#0E1520" stroke="#5FCBBB" stroke-width="2"/>
+      <text x="46" y="58" class="svg-label" fill="#5FCBBB">THE REUSABLE ENGINE — knows nothing about any domain</text>
+      <g class="svg-sub" fill="#CFCBC2">
+        <rect x="46" y="68" width="152" height="38" fill="#10131A" stroke="#222835"/><text x="122" y="92" text-anchor="middle">lab/trace</text>
+        <rect x="206" y="68" width="152" height="38" fill="#10131A" stroke="#222835"/><text x="282" y="92" text-anchor="middle">lab/checks</text>
+        <rect x="366" y="68" width="152" height="38" fill="#10131A" stroke="#222835"/><text x="442" y="92" text-anchor="middle">lab/judges</text>
+        <rect x="526" y="68" width="152" height="38" fill="#10131A" stroke="#222835"/><text x="602" y="92" text-anchor="middle">lab/voice</text>
+        <rect x="686" y="68" width="168" height="38" fill="#10131A" stroke="#222835"/><text x="770" y="92" text-anchor="middle">lab/simulator, report</text>
+      </g>
+
+      <rect x="30" y="140" width="410" height="86" fill="#12100C" stroke="#F2B84B" stroke-width="2"/>
+      <text x="46" y="164" class="svg-label" fill="#F2B84B">THINGS UNDER TEST — deliberately imperfect</text>
+      <g class="svg-sub" fill="#CFCBC2">
+        <rect x="46" y="174" width="182" height="38" fill="#10131A" stroke="#222835"/><text x="137" y="198" text-anchor="middle">roleplay/</text>
+        <rect x="238" y="174" width="186" height="38" fill="#10131A" stroke="#222835"/><text x="331" y="198" text-anchor="middle">tablemate/</text>
+      </g>
+
+      <rect x="460" y="140" width="410" height="86" fill="#141020" stroke="#9D8DFF" stroke-width="2"/>
+      <text x="476" y="164" class="svg-label" fill="#9D8DFF">WHAT THE TESTS EAT</text>
+      <g class="svg-sub" fill="#CFCBC2">
+        <rect x="476" y="174" width="182" height="38" fill="#10131A" stroke="#222835"/><text x="567" y="198" text-anchor="middle">scenarios/</text>
+        <rect x="668" y="174" width="186" height="38" fill="#10131A" stroke="#222835"/><text x="761" y="198" text-anchor="middle">fixtures/</text>
+      </g>
+
+      <rect x="30" y="246" width="840" height="60" fill="#10131A" stroke="#222835" stroke-width="1.5"/>
+      <text x="46" y="270" class="svg-label" fill="#9E9B93">AROUND THE EDGES</text>
+      <text x="46" y="292" class="svg-sub" fill="#CFCBC2">tests/  ·  scripts/  ·  ragcheck/  ·  error_analysis/  ·  examples/  ·  docs/  ·  reports/</text>
+    </svg>
+    <figcaption>Read it top to bottom: the engine, then the two systems it is pointed at, then the corpus and recordings it consumes.</figcaption>
+  </figure>
+
+  <div class="where"><span class="where__h">lab/ — the test rig, about 39,500 lines</span>
+    <table>
+      <tr><td>lab/clock.py</td><td>An <button class="t" data-t="clock">injectable clock</button>. Because time is handed in rather than fetched, every timing figure is testable.</td></tr>
+      <tr><td>lab/trace/</td><td>The <button class="t" data-t="trace">trace</button>: the event vocabulary, the builder that writes one, the JSONL reader and writer.</td></tr>
+      <tr><td>lab/checks/</td><td>The six <button class="t" data-t="contract">contracts</button>, paraphrase-tolerant text matching, and the engine that runs them and counts <button class="t" data-t="vacuous">vacuous passes</button>.</td></tr>
+      <tr><td>lab/judges/</td><td>The <button class="t" data-t="judge">judge</button>, the <button class="t" data-t="calibration">calibration</button> maths, and <code>registry.py</code> — the gate that raises.</td></tr>
+      <tr><td>lab/simulator/</td><td>Personas, the loop that drives a conversation, <button class="t" data-t="passk">pass^k</button>, and the measured <button class="t" data-t="flakeband">flake band</button>.</td></tr>
+      <tr><td>lab/voice/</td><td>The speech stack: engines, the timing gate, <button class="t" data-t="wer">word error rate</button>, silence attribution, audio perturbations.</td></tr>
+      <tr><td>lab/report/</td><td>Reports that refuse to print a rate without its denominator, plus export to other eval tools.</td></tr>
+      <tr><td>lab/selection/</td><td><button class="t" data-t="selection">Which tests a change can reach</button> — fail-safe, and it measures its own miss rate.</td></tr>
+      <tr><td>lab/cli.py</td><td>The <code>evallab</code> command: run, validate, select, report, calibrate, replay.</td></tr>
+    </table>
+  </div>
+
+  <div class="where"><span class="where__h">roleplay/ — the advisory coach under test, about 16,900 lines</span>
+    <table>
+      <tr><td>persona.py</td><td>The AI customer: concerns, objections, and the turn classifier that decides whether a sentence is a question.</td></tr>
+      <tr><td>runtime.py</td><td>Runs a session and writes the trace. Holds the <button class="t" data-t="adapter">Trainee protocol</button> — the adapter seam.</td></tr>
+      <tr><td>scorer.py</td><td>The shipped <button class="t" data-t="rubric">rubric</button>. Contains all three deliberate defects, documented in <code>SEEDED_DEFECTS.md</code>.</td></tr>
+      <tr><td>scorecard.py</td><td>The 28-item cited <button class="t" data-t="scorecard">scorecard</button>. Refuses at import to hold a row without a source and a denominator.</td></tr>
+      <tr><td>scorecard_eval.py</td><td>Grades a recorded trace against that scorecard, reporting every item it cannot decide, with the reason.</td></tr>
+      <tr><td>register.py</td><td>The disclosure <button class="t" data-t="register">register</button>: what must be said, in which market, in which language.</td></tr>
+      <tr><td>regime_eval.py</td><td>The four cited <button class="t" data-t="regime">regimes</button>. The same transcript can pass under one and fail under another.</td></tr>
+      <tr><td>live.py / spoken.py</td><td>The same conversation with real models, and then with real speech in both directions.</td></tr>
+    </table>
+  </div>
+
+  <div class="where"><span class="where__h">Everything else</span>
+    <table>
+      <tr><td>tablemate/</td><td>The restaurant booking bot: several agents handing work to each other. Proves the harness is not shaped around one domain.</td></tr>
+      <tr><td>scenarios/</td><td>195 <button class="t" data-t="scenario">scenario</button> files plus the loader and its schema.</td></tr>
+      <tr><td>fixtures/</td><td>Committed recordings: traces, audio, transcripts. This is why the whole suite runs with no API key.</td></tr>
+      <tr><td>scripts/</td><td>The only code that can spend money — the five recorders — plus the generator that builds the public page's data.</td></tr>
+      <tr><td>tests/</td><td>2,351 tests. A large share of them prove that a check is still <em>capable of failing</em>.</td></tr>
+      <tr><td>ragcheck/</td><td>Retrieval and groundedness, scored separately.</td></tr>
+      <tr><td>error_analysis/</td><td>Failures read by hand and classified. The step most eval projects skip.</td></tr>
+      <tr><td>examples/adapters/</td><td>Three worked adapters to copy.</td></tr>
+      <tr><td>docs/</td><td>This tour, the case-study page, the wiki, and the specialist write-ups.</td></tr>
+    </table>
+  </div>
+
+  <div class="recap"><b>What to take from lesson 13</b>
+    <ul>
+      <li><code>lab/</code> is the portable half and imports no domain package.</li>
+      <li><code>roleplay/</code> and <code>tablemate/</code> are the things being tested, broken on purpose.</li>
+      <li><code>scenarios/</code> and <code>fixtures/</code> are what the tests eat; <code>scripts/</code> is the only code that spends money.</li>
+    </ul>
+  </div>
+
+  <div class="pager"><button data-prev></button><button data-next></button></div>
+</article>
+
+<!-- ══════════════════════════════ 14 ══════════════════════════════ -->
+<article class="lesson" id="run">
+  <p class="eyebrow">Lesson 14 &middot; The repository</p>
+  <h1>Running it yourself</h1>
+
+  <div class="oneline"><b>In one sentence</b>
+    Clone it, install it, and every number in the whole project recomputes on your machine with no account and no API key.</div>
+
+  <p>This is a deliberate design rule, not a convenience. Every path that costs money is opt-in behind an environment variable; everything else replays from committed recordings.</p>
+
+<pre><code>git clone https://github.com/Pinglesagar/conversation-eval-lab
+cd conversation-eval-lab
+make install</code></pre>
+
+  <div class="where"><span class="where__h">The four to run first, in this order</span>
+    <table>
+      <tr><td>make start</td><td>Prints the headline finding with the evidence behind it. Start here.</td></tr>
+      <tr><td>make spoken-replay</td><td>Replays the recorded spoken call and re-grades it. No network, no keys.</td></tr>
+      <tr><td>make cited-calls</td><td>Grades both recorded calls against the cited scorecard, printing which items it could not decide and why.</td></tr>
+      <tr><td>make test</td><td>The full suite: 2,351 pass, 4 skip. The four skips are the live-transport tier, behind a flag.</td></tr>
+    </table>
+  </div>
+
+  <div class="where"><span class="where__h">Then, when you want to go deeper</span>
+    <table>
+      <tr><td>evallab validate</td><td>Every scenario against its schema. A typo fails loudly here rather than silently later.</td></tr>
+      <tr><td>evallab calibrate</td><td>The timing gate and the judge gate. Non-zero exit if either fails.</td></tr>
+      <tr><td>evallab replay &lt;trace&gt;</td><td>Re-check any committed trace with no agent running.</td></tr>
+      <tr><td>evallab select --changed-since</td><td>Which scenarios a code change can reach. Fail-safe: unsure means run it.</td></tr>
+      <tr><td>make advisory-verdicts</td><td>The 18 compliance rows decided from the four cited registers.</td></tr>
+      <tr><td>make ragcheck</td><td>Retrieval and groundedness, separately.</td></tr>
+      <tr><td>make gate</td><td>Everything that gates, cheapest first, stopping at the first failure.</td></tr>
+    </table>
+  </div>
+
+  <div class="note"><b>What "no API key" actually costs</b>
+    Replay is <strong>blind to a prompt change</strong>. If you edit a prompt, the recorded conversation does not change, so a green replay proves the checks still work — not that the new prompt is good. That is stated as a limitation in the repository rather than glossed over, and it is why the live paths exist behind their flags.</div>
+
+  <div class="recap"><b>What to take from lesson 14</b>
+    <ul>
+      <li><code>make start</code>, then <code>make spoken-replay</code>, then <code>make cited-calls</code>, then <code>make test</code>.</li>
+      <li>Everything runs offline because the expensive paths were run once and committed.</li>
+      <li>Replay cannot see a prompt change, and the project says so.</li>
+    </ul>
+  </div>
+
+  <div class="pager"><button data-prev></button><button data-next></button></div>
+</article>
+
+<!-- ══════════════════════════════ 15 ══════════════════════════════ -->
+<article class="lesson" id="glossary">
+  <p class="eyebrow">Lesson 15 &middot; The repository</p>
+  <h1>Glossary: every term in one place</h1>
+
+  <div class="oneline"><b>How to read each entry</b>
+    First the everyday meaning. Then what it is in this repository. Then the file to open.</div>
+
+  <p><span data-glosscount>0</span> terms, the same definitions the pop-ups use. Type to filter.</p>
+
+  <input class="filter" type="search" data-filter placeholder="filter — try trace, adapter, gate, denominator…" aria-label="Filter the glossary">
+
+  <dl class="gloss" data-glossary></dl>
+
+  <div class="recap"><b>Where to go next</b>
+    <ul>
+      <li><a href="../index.html">The case study</a> — the finding, told as a story, with both recordings.</li>
+      <li><a href="../WIKI.md">The wiki</a> — the same material at full depth, file by file.</li>
+      <li><a href="https://github.com/Pinglesagar/conversation-eval-lab">The repository</a> — where every claim here can be checked.</li>
+    </ul>
+  </div>
+
+  <div class="pager"><button data-prev></button><button data-next></button></div>
+</article>
+
+</main>
+</div>
+
+<script src="learn.js?v=0b8dd02209"></script>
+</body>
+</html>
