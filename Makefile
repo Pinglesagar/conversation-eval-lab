@@ -272,6 +272,12 @@ ragcheck: python-ok  ## evidence: Retrieval + groundedness, scored and never ave
 roleplay-demo: python-ok  ## evidence: The advisory pack: contracts, consistency, calibration.
 	$(PYTHON) -m roleplay.demo
 
+scenarios-excel: python-ok  ## corpus: Export the advisory scenarios to a workbook for a domain expert to edit.
+	$(PYTHON) -m roleplay.excel_corpus export roleplay_scenarios.xlsx
+
+scenarios-excel-check: python-ok  ## corpus: Validate an edited workbook without writing anything.
+	$(PYTHON) -m roleplay.excel_corpus check roleplay_scenarios.xlsx
+
 roleplay-validate: python-ok  ## evidence: Validate the roleplay corpus, with coverage.
 	$(PYTHON) -m roleplay.corpus --coverage --list
 
