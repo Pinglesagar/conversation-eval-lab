@@ -48,7 +48,7 @@
       "scenarios": "make validate && make roleplay-validate",
       "tests": "python -m pytest --collect-only -q"
     },
-    "commits_outside_docs_and_this_generator": 71,
+    "commits_outside_docs_and_this_generator": 72,
     "first_commit_date": "2026-08-22",
     "note": "tests_collected is the collection count; the suite's pass/skip split is not recomputed here (it needs a 70 s run) — `pytest` prints it. The commit count excludes docs/ and this generator so that committing this pack does not stale it; every other commit does, and should.",
     "scenario_rows": 182,

@@ -168,7 +168,7 @@
   <h2>Walking one conversation through all four</h2>
 
   <ol>
-    <li><strong>Described.</strong> Somebody writes a file: this customer, this situation, these are the things the agent must do. It is <button class="t" data-t="scenario">YAML</button>, so a compliance officer can read and edit it without touching Python.</li>
+    <li><strong>Described.</strong> Somebody writes a file: this customer, this situation, these are the things the agent must do. It is <button class="t" data-t="scenario">YAML</button>, so a compliance officer can read and edit it without touching Python &mdash; or a <button class="t" data-t="workbook">spreadsheet</button>, which converts to the same thing.</li>
     <li><strong>It happens.</strong> The harness runs the conversation. The agent under test is reached through an <button class="t" data-t="adapter">adapter</button>. The customer is played by a <button class="t" data-t="persona">persona</button> — sometimes scripted, sometimes a real language model, sometimes speaking out loud through a real speech engine.</li>
     <li><strong>Written down.</strong> Every turn, every tool call, every audio chunk becomes an <button class="t" data-t="event">event</button> appended to the <button class="t" data-t="trace">trace</button>.</li>
     <li><strong>Graded.</strong> <button class="t" data-t="contract">Contracts</button> ask mechanical questions. <button class="t" data-t="judge">Judges</button> ask questions of taste. A <button class="t" data-t="scorecard">scorecard</button> turns the answers into a verdict.</li>
@@ -432,8 +432,8 @@ tools:
   <h2>Writing them in Excel instead</h2>
 
   <p>YAML is readable, but it is still a programmer's file: one wrong indent and it will not load. The people who
-    actually know what a suitability report must contain have a spreadsheet open all day. So the corpus converts
-    both ways.</p>
+    actually know what a suitability report must contain have a spreadsheet open all day. So the advisory corpus &mdash;
+    the <b class="num">70</b> rows under <code>scenarios/roleplay/</code> &mdash; converts both ways.</p>
 
   <div class="where"><span class="where__h">The loop</span>
     <table>
@@ -1088,6 +1088,7 @@ python -m roleplay.live</code></pre>
       <tr><td>scorer.py</td><td>The shipped <button class="t" data-t="rubric">rubric</button>. Contains all three deliberate defects, documented in <code>SEEDED_DEFECTS.md</code>.</td></tr>
       <tr><td>scorecard.py</td><td>The 28-item cited <button class="t" data-t="scorecard">scorecard</button>. Refuses at import to hold a row without a source and a denominator.</td></tr>
       <tr><td>scorecard_eval.py</td><td>Grades a recorded trace against that scorecard, reporting every item it cannot decide, with the reason.</td></tr>
+      <tr><td>excel_corpus.py</td><td>The same scenarios as a <button class="t" data-t="workbook">spreadsheet</button>, both ways. An Excel row gets no validation of its own: it becomes the mapping the YAML parser produces and goes through the same model.</td></tr>
       <tr><td>register.py</td><td>The disclosure <button class="t" data-t="register">register</button>: what must be said, in which market, in which language.</td></tr>
       <tr><td>regime_eval.py</td><td>The four cited <button class="t" data-t="regime">regimes</button>. The same transcript can pass under one and fail under another.</td></tr>
       <tr><td>live.py / spoken.py</td><td>The same conversation with real models, and then with real speech in both directions.</td></tr>
@@ -1100,7 +1101,7 @@ python -m roleplay.live</code></pre>
       <tr><td>scenarios/</td><td>195 <button class="t" data-t="scenario">scenario</button> files plus the loader and its schema.</td></tr>
       <tr><td>fixtures/</td><td>Committed recordings: traces, audio, transcripts. This is why the whole suite runs with no API key.</td></tr>
       <tr><td>scripts/</td><td>The only code that can spend money — the five recorders — plus the generator that builds the public page's data.</td></tr>
-      <tr><td>tests/</td><td>2,351 tests. A large share of them prove that a check is still <em>capable of failing</em>.</td></tr>
+      <tr><td>tests/</td><td>2,369 tests. A large share of them prove that a check is still <em>capable of failing</em>.</td></tr>
       <tr><td>ragcheck/</td><td>Retrieval and groundedness, scored separately.</td></tr>
       <tr><td>error_analysis/</td><td>Failures read by hand and classified. The step most eval projects skip.</td></tr>
       <tr><td>examples/adapters/</td><td>Three worked adapters to copy.</td></tr>
@@ -1138,7 +1139,7 @@ make install</code></pre>
       <tr><td>make start</td><td>Prints the headline finding with the evidence behind it. Start here.</td></tr>
       <tr><td>make spoken-replay</td><td>Replays the recorded spoken call and re-grades it. No network, no keys.</td></tr>
       <tr><td>make cited-calls</td><td>Grades both recorded calls against the cited scorecard, printing which items it could not decide and why.</td></tr>
-      <tr><td>make test</td><td>The full suite: 2,351 pass, 4 skip. The four skips are the live-transport tier, behind a flag.</td></tr>
+      <tr><td>make test</td><td>The full suite: 2,369 pass, 4 skip. The four skips are the live-transport tier, behind a flag.</td></tr>
     </table>
   </div>
 
@@ -1148,6 +1149,8 @@ make install</code></pre>
       <tr><td>evallab calibrate</td><td>The timing gate and the judge gate. Non-zero exit if either fails.</td></tr>
       <tr><td>evallab replay &lt;trace&gt;</td><td>Re-check any committed trace with no agent running.</td></tr>
       <tr><td>evallab select --changed-since</td><td>Which scenarios a code change can reach. Fail-safe: unsure means run it.</td></tr>
+      <tr><td>make scenarios-excel</td><td>Writes the 70 advisory scenarios to a workbook for a domain expert to edit.</td></tr>
+      <tr><td>python -m roleplay.excel_corpus import &lt;file&gt;</td><td>Reads an edited workbook back. Lists what would change and writes nothing; add <code>--to-yaml</code> to apply it.</td></tr>
       <tr><td>make advisory-verdicts</td><td>The 18 compliance rows decided from the four cited registers.</td></tr>
       <tr><td>make ragcheck</td><td>Retrieval and groundedness, separately.</td></tr>
       <tr><td>make gate</td><td>Everything that gates, cheapest first, stopping at the first failure.</td></tr>
@@ -1196,6 +1199,6 @@ make install</code></pre>
 </main>
 </div>
 
-<script src="learn.js?v=0b8dd02209"></script>
+<script src="learn.js?v=d753471fdd"></script>
 </body>
 </html>
