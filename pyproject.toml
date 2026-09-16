@@ -3,8 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
+name = "conversation-eval-lab"
 version = "0.1.0"
-description = "An evaluation harness for conversational AI agents (voice and text), plus an applied case study on a deliberately imperfect restaurant-booking agent."
+description = "An evaluation harness for conversational AI agents, voice and text, built on one auditable trace: contracts decided on event position, judges calibrated before they can gate, and every figure reproducible offline with no API key."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
@@ -121,6 +122,8 @@ transport = [
 evallab = "lab.cli:main"
 
 [project.urls]
+Homepage = "https://github.com/Pinglesagar/conversation-eval-lab"
+Source = "https://github.com/Pinglesagar/conversation-eval-lab"
 
 [tool.setuptools.packages.find]
 include = ["lab*", "ragcheck*", "roleplay*"]
