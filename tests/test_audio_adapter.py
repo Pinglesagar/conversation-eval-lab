@@ -54,18 +54,18 @@ from lab.voice.engines.base import DEFAULT_SAMPLE_RATE, SynthesisResult, Transcr
 from lab.voice.engines.stt import RecordedSTT, TranscriptCassette
 from lab.voice.engines.tts import ClipManifest, FixtureTTS
 from lab.voice.metrics import speaking_times
-from tablemate import build_agent
 from tests.audio_doubles import (
     SECONDS_PER_WORD,
     EchoSTT,
     ScriptedSTT,
     ToneTTS,
+    build_agent,
     expected_duration_s,
 )
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "audio"
 
-SCRIPT = ["Table for two on Friday at eight, please.", "Marta Reyes."]
+SCRIPT = ["I would like to invest twenty thousand pounds, please.", "Marta Reyes."]
 
 
 # --------------------------------------------------------------------------- #
@@ -116,7 +116,11 @@ def run_session(
     scenario_id: str = "audio-unit",
     max_turns: int = 12,
 ) -> tuple[Trace, AudioAdapter]:
-    """One deterministic audio session against the real TableMate agent."""
+    """One deterministic audio session against the scripted agent double.
+
+    The double is in `tests.audio_doubles`: the audio layer is what these tests
+    measure, and nothing below asserts on what the agent said.
+    """
     lines = script if script is not None else SCRIPT
     clock = FakeClock()
     caller_tts: Any = ToneTTS(name="tts:test-tone-caller", hz=180.0)

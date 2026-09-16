@@ -149,33 +149,6 @@ def test_the_two_items_the_old_patterns_over_fired_on_are_now_quiet(item_id: str
 # --------------------------------------------------------------------------- #
 
 
-def test_the_detector_catches_every_unbacked_claim_in_the_recorded_live_run() -> None:
-    """7/7 of the hand-written detector's finds, plus one it missed.
-
-    `tablemate.__main__.unbacked_promise` is a deliberately generous regex written
-    by hand while reading live output; `PromiseContract` is the reviewed, structured
-    one. Before this work they disagreed on six of seven conversations and the
-    structured one was wrong every time. The extra catch — "Everything is in hand"
-    on a conversation with *no tool calls at all* — is the case that says the
-    rewrite added recall rather than just matching a second detector's opinions.
-    """
-    from tablemate.__main__ import unbacked_promise
-
-    traces = [read_jsonl(p) for p in sorted(LIVE_TRACES.glob("*.jsonl"))]
-    assert len(traces) == 30, "the committed live run is 10 scenarios x 3 repeats"
-
-    generous = [t for t in traces if unbacked_promise(t) is not None]
-    contract = [t for t in traces if _fires(t)]
-    missed_by_contract = [t for t in generous if not _fires(t)]
-
-    assert len(generous) == 7
-    assert not missed_by_contract, (
-        "the structured detector must not miss what the hand-written one finds; "
-        f"missed: {[t.session_id for t in missed_by_contract]}"
-    )
-    assert len(contract) == 8, "and it finds one the hand-written detector does not"
-
-
 def test_a_curly_apostrophe_does_not_disable_a_pattern() -> None:
     """Two of the six live misses were punctuation, not vocabulary.
 

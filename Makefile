@@ -1,4 +1,4 @@
-# tablemate-evals — developer entry points.
+# conversation-eval-lab — developer entry points.
 #
 # Every target here must work with ZERO API keys. Anything that talks to a live
 # provider is opt-in behind an environment variable and has a recorded fixture
@@ -104,138 +104,58 @@ test: python-ok  ## start: The full offline test suite. No keys.
 # prompt, a persona or a rubric, a green gate here is necessary and not
 # sufficient — docs/GATES.md says which live tier answers that question instead.
 gate: python-ok  ## every: Every offline check, cheapest first, stops at red.
-	@echo "== 1/8  lint: syntax errors and undefined names =="
+	@echo "== 1/6  lint: syntax errors and undefined names =="
 	@if $(PYTHON) -m ruff --version >/dev/null 2>&1; then \
 		$(PYTHON) -m ruff check --select E9,F63,F7,F82 --exclude .venv . ; \
 	else \
 		echo "   ruff is not installed here, so this stage is skipped."; \
 		echo "   CI installs it; run 'pip install ruff' to have it locally."; \
 	fi
-	@echo "== 2/8  the two corpora, against their schemas =="
-	$(PYTHON) -m lab.cli validate --coverage
+	@echo "== 2/6  the advisory corpus, against its schema =="
 	$(PYTHON) -m roleplay.corpus --coverage --list
-	@echo "== 3/8  the committed traces, re-checked with no agent and no runner =="
-	$(PYTHON) -m lab.cli replay --failures-only
-	@echo "== 4/8  the case study, against its baseline, then byte for byte =="
-	$(PYTHON) -m lab.cli run --replay --ci --out fixtures/replay_run
-	git diff --exit-code -- fixtures/replay_run
-	@echo "== 5/8  the calibration gates, then the artefacts they wrote =="
-	@echo "        (this diff and the one above read the WORKING TREE: uncommitted"
-	@echo "         work of your own under fixtures/ or lab/judges/ shows up here.)"
+	@echo "== 3/6  the calibration gates, then the artefacts they wrote =="
+	@echo "        (this diff reads the WORKING TREE: uncommitted work of your own"
+	@echo "         under fixtures/ or lab/judges/ shows up here.)"
 	$(PYTHON) -m lab.cli calibrate --ci
 	git diff --exit-code -- fixtures lab/judges
-	@echo "== 6/8  the error analysis still agrees with the artefacts =="
-	$(PYTHON) -m error_analysis.pareto --check --no-chart
-	@echo "== 7/8  the other packs and the recorded tiers, all offline =="
+	@echo "== 4/6  the recorded calls, re-graded with no agent and no key =="
+	$(PYTHON) -m roleplay.spoken
+	$(PYTHON) -m roleplay.scorecard_eval fixtures/audio/spoken_call/trace.jsonl fixtures/audio/spoken_call_pass/trace.jsonl
+	@echo "== 5/6  the other packs and the recorded tiers, all offline =="
 	$(PYTHON) -m roleplay.demo
 	$(PYTHON) -m roleplay.regime_eval --divergence --shadow
 	$(PYTHON) -m ragcheck
-	$(PYTHON) -m roleplay.spoken
 	$(PYTHON) -m lab.voice.transport.report --out reports/transport_report.md
-	$(PYTHON) -m lab.cli run -k 3 --live-agent --live-caller --live-judge \
-		--out reports/live --no-traces \
-		--baseline fixtures/live_full/run_report.json --ci
-	$(PYTHON) -m tablemate --score fixtures/live_full
-	$(PYTHON) -m scripts.make_audio_fixtures --check
-	@echo "== 8/8  the offline suite =="
+	@echo "== 6/6  the offline suite =="
 	$(PYTHON) -m pytest -q
-	@echo
-	@echo "gate: all eight stages passed, and none of them asked a model anything."
-	@echo "      If this change touched a prompt, a persona or a rubric, that is"
-	@echo "      not yet an answer: see docs/GATES.md, stage 9."
 
-# Line and branch coverage over all seven packages, printed twice on purpose.
-#
-# The first figure is the whole tree. The second omits the five recording scripts
-# that need vendor keys and spend money, which no offline run can execute — so
-# the difference between the two figures is exactly "code that cannot be covered
-# without a bill". Printing both is the only version of this number that carries
-# its own denominator, which is the rule everything else here follows.
-#
-# Deliberately NOT a CI gate and deliberately NOT a threshold. A coverage floor
-# fails for reasons that have nothing to do with the change in front of it, and a
-# repository whose argument is that instruments must be measured before they are
-# trusted should not adopt one it has not calibrated. What line coverage cannot
-# tell you is in README.md and WIKI §10.4, next to the number.
 coverage: python-ok  ## every: Coverage, twice: whole tree, then offline-executable.
 	$(PYTHON) -m pytest -q --cov --cov-report=term:skip-covered
 	@echo
 	@echo "== omitting the five key-requiring recording scripts =="
 	@$(PYTHON) -m coverage report \
-	  --omit="scripts/make_audio_fixtures.py,scripts/make_audio_suite_fixtures.py,scripts/make_cloud_fixtures.py,scripts/make_transport_fixtures.py,scripts/run_audio_live.py" \
+	  --omit="scripts/make_audio_fixtures.py,scripts/make_cloud_fixtures.py,scripts/make_transport_fixtures.py" \
 	  | grep TOTAL
 
 calibrate: python-ok  ## every: The timing and judge calibration gates.
 	$(PYTHON) -m lab.cli calibrate
 
-validate: python-ok  ## every: Validate the scenario corpus, with coverage.
-	$(PYTHON) -m lab.cli validate --coverage
-
 audio-fixtures: python-ok  ## record: local TTS  Re-record fixtures/audio. No key, no spend.
 	$(PYTHON) -m scripts.make_audio_fixtures
-
-audio-check: python-ok  ## evidence: Replay the committed audio fixtures; fail on drift.
-	$(PYTHON) -m scripts.make_audio_fixtures --check
-
-audio-suite: python-ok  ## evidence: The 18-row audio tier, in process.
-	$(PYTHON) -m pytest tests/test_audio_suite.py -q
-
-audio-suite-plan: python-ok  ## record: free       What re-recording the tier would cost.
-	$(PYTHON) -m scripts.make_audio_suite_fixtures --dry-run
-
-audio-suite-record: python-ok  ## record: MONEY+KEY  Re-record the audio tier. Needs both keys.
-	$(PYTHON) -m scripts.make_audio_suite_fixtures
-
-audio-suite-evidence: python-ok  ## evidence: Re-derive the tier's evidence from the cassette.
-	$(PYTHON) -m scripts.make_audio_suite_fixtures --evidence-only
-
-audio-setup:  ## maint: Install the local speech engines (shows the download).
-	./scripts/setup_audio.sh
 
 # The demo is the two-minute tour, so it produces every artefact the README
 # discusses rather than only the one the runner happens to write: the report, the
 # handoff heatmap, and the Pareto chart of hand-coded failure modes. The two PNGs
 # need matplotlib, which `[dev]` installs; without it both steps print what is
 # missing and carry on, and the tables they annotate are printed either way.
-demo: python-ok  ## every: The case study end to end, into reports/.
-	$(PYTHON) -m lab.cli run --out reports --heatmap reports/handoff_heatmap.png
-	@echo
-	$(PYTHON) -m error_analysis.pareto --out reports/pareto.png
-
-report: python-ok  ## evidence: Re-render the committed report from its own JSON.
-	$(PYTHON) -m lab.cli report
-
-replay: python-ok  ## every: Re-check every committed trace, no agent involved.
-	$(PYTHON) -m lab.cli replay --failures-only
-
-errors: python-ok  ## maint: Recount the coded failure modes, redraw the chart.
-	$(PYTHON) -m error_analysis.pareto --check
-
-reference: python-ok  ## maint: Regenerate the committed baseline; review the diff.
-	$(PYTHON) -m lab.cli run --out fixtures/replay_run
-	@git --no-pager diff --stat -- fixtures/replay_run
-
 # The live run replays committed recordings: no key, no network, no spend. It is a
 # separate target from `demo` because it is a different *build* of the system under
-# test — a model in the decision seat rather than `tablemate/agents.py` — and it is
+# test — a model in the decision seat rather than a scripted one — and it is
 # gated against its own baseline for that reason. A live run diffed against the
 # scripted baseline would report the difference between two builds as a regression.
-live-replay: python-ok  ## evidence: Replay the committed live run: models in all 3 seats.
-	$(PYTHON) -m lab.cli run -k 3 --live-agent --live-caller --live-judge \
-		--out reports/live --no-traces \
-		--baseline fixtures/live_full/run_report.json --ci
-
-live-score: python-ok  ## evidence: Recompute the seeded-defect rates from live traces.
-	$(PYTHON) -m tablemate --score fixtures/live_full
-
 # Re-recording spends money and needs LAB_LIVE_AGENT / LAB_LIVE_CALLER /
 # LAB_LIVE_JUDGE plus a provider key. It draws new samples, so it produces a
 # *different* report — review the diff as a new measurement, not as a regression.
-live-record: python-ok  ## record: MONEY+KEY  Draw a new live run. Needs LAB_LIVE_*.
-	$(PYTHON) -m lab.cli run -k 3 --live-agent --live-caller --live-judge --record \
-		--out fixtures/live_full --baseline fixtures/live_full/run_report.json
-	@git --no-pager diff --stat -- fixtures/live_full
-
 # The WebRTC transport tier. Three rows, because three things only exist in
 # transport; everything else in this harness runs in process.
 #

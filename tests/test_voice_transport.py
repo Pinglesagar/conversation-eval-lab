@@ -163,21 +163,6 @@ def test_every_row_justifies_needing_a_real_network(rows: list[TransportRow]) ->
     )
 
 
-def test_the_transport_vocabulary_is_disjoint_from_the_audio_tier(
-    rows: list[TransportRow],
-) -> None:
-    """If `webrtc` were legal on an in-process row, that row could claim this tier's
-    coverage. One-directional separation, same argument as the audio tier's own
-    vocabulary makes against the text suites."""
-    loader = pytest.importorskip("scenarios.loader")
-    # This test has already earned its place: `control-arm` was defined in both
-    # dictionaries with different meanings, and this is what caught it.
-    overlap = set(TRANSPORT_TAG_VOCABULARY) & set(loader.AUDIO_TAG_VOCABULARY)
-    assert not overlap, f"tag(s) {sorted(overlap)} mean two things in two vocabularies"
-    overlap_categories = set(TRANSPORT_CATEGORIES) & set(loader.AUDIO_TAG_VOCABULARY)
-    assert not overlap_categories
-
-
 def test_every_transport_tag_is_used_by_a_row(rows: list[TransportRow]) -> None:
     """An aspirational tag makes a coverage table read better than the tier is."""
     counts = coverage(rows)["tags"]
@@ -238,25 +223,6 @@ def test_row_files_are_named_after_their_ids(rows: list[TransportRow]) -> None:
     """A failing row has to name its own file without a lookup."""
     for row in rows:
         assert (REPO_ROOT / "scenarios" / "audio" / "transport" / f"{row.id}.yaml").exists()
-
-
-def test_transport_rows_are_invisible_to_the_scenario_corpus() -> None:
-    """They live under `scenarios/audio/transport/` and are NOT `Scenario`s.
-
-    The corpus loader globs one level, so the subdirectory is not parsed as
-    conversational rows — which it would fail, having no contracts. This test
-    pins that, because the day the loader recurses, three files that cannot be
-    `Scenario`s would start breaking a corpus that has nothing to do with them.
-    """
-    loader = pytest.importorskip("scenarios.loader")
-    paths = list(loader.iter_scenario_paths(suites=(loader.AUDIO_TIER,)))
-    assert paths, "the audio tier should have rows of its own"
-    assert not any("transport" in path.parts for path in paths)
-
-
-# --------------------------------------------------------------------------- #
-# Records: the evidence format
-# --------------------------------------------------------------------------- #
 
 
 def test_a_url_digest_is_not_the_url() -> None:

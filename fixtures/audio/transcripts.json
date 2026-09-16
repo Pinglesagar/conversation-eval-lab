@@ -1,190 +1,86 @@
 {
   "generated_by": "scripts/make_audio_fixtures.py",
-  "keyed_by": "sha256 of the perturbed clip as 16-bit PCM, per lab.voice.engines.base.audio_digest",
+  "keyed_by": "sha256 of the clip as 16-bit PCM after the Opus round trip, per lab.voice.engines.base.audio_digest",
   "entries": {
-    "ee0fc7d8420587080987f121bd5678df7f094d6d2c453aa3805e35fc05d8c994": {
-      "text": "Can I get a table for six on Thursday, half seven?",
+    "220ee5208a68650888d2e017bc7e6b6417894c7d00d456e03b7d3f738cfb8157": {
+      "text": "I would like to invest twenty thousand pounds, please.",
       "engine": "reference-text",
       "provenance": "reference",
       "language": "en",
-      "spoken": "Can I get a table for six on Thursday, half seven?",
-      "scenario": "voice-chain-telephone-then-noise"
+      "spoken": "I would like to invest twenty thousand pounds, please.",
+      "role": "caller"
     },
-    "f3492d4d8f7d30811558d4eb8d56e532040ae1f317acd5115bf158093b01b790": {
-      "text": "Danny Okereke.",
+    "5ecabcf70bd41492796d1acf9ee1121505348ebcfd45e28f9d79e2e095395671": {
+      "text": "Marta Reyes.",
       "engine": "reference-text",
       "provenance": "reference",
       "language": "en",
-      "spoken": "Danny Okereke.",
-      "scenario": "voice-chain-telephone-then-noise"
+      "spoken": "Marta Reyes.",
+      "role": "caller"
     },
-    "8d26f2214ad400d1db11c676435bf94c01c810217b3bdc68a8ac31e70de4d3b4": {
-      "text": "Table for four Saturday around seven and is there parking anywhere near you?",
+    "3f0b14d1320a12aede6665c605aaf255c59f7a3318360c928ce6f0090b5624f8": {
+      "text": "My reference is T M one zero four two.",
       "engine": "reference-text",
       "provenance": "reference",
       "language": "en",
-      "spoken": "Table for four Saturday around seven and is there parking anywhere near you?",
-      "scenario": "voice-fast-speech-multi-intent"
+      "spoken": "My reference is T M one zero four two.",
+      "role": "caller"
     },
-    "c55354178593e1c6d4c74f861e2d5122f7319ea228926feee7e83ba6fd18d51e": {
-      "text": "Tomas Bergqvist.",
+    "7507945f0215b70a0b1c6e18fde9e1e5fdd937b84844417eaa5d453bbd0e6fe9": {
+      "text": "What happens if I need the money back early?",
       "engine": "reference-text",
       "provenance": "reference",
       "language": "en",
-      "spoken": "Tomas Bergqvist.",
-      "scenario": "voice-fast-speech-multi-intent"
+      "spoken": "What happens if I need the money back early?",
+      "role": "caller"
     },
-    "ec3706e3162a488b44fa4eb20b991c9ab787d6c3d5bbf2c30b734faf1b87487f": {
-      "text": "Hello, could I book a table for two on Friday at seven? One of us is coeliac.",
+    "857253938d4d7a570cfd55439af1a8bf361cc6557136535105fb822fc5cd7f1c": {
+      "text": "About ten years, I should think.",
       "engine": "reference-text",
       "provenance": "reference",
       "language": "en",
-      "spoken": "Hello, could I book a table for two on Friday at seven? One of us is coeliac.",
-      "scenario": "voice-noise-over-dietary-note"
+      "spoken": "About ten years, I should think.",
+      "role": "caller"
     },
-    "53e641cdfff6ccccba840aa50e23ee7779ac85f04a97aef358defbc8da70243f": {
-      "text": "How does the kitchen handle gluten, do you know?",
+    "9cd551aa95ad86fe16546e4ba2fc119f9f7fef355fbcf22a2f8b61d389dadf18": {
+      "text": "Good morning. What would you like this money to be doing for you?",
       "engine": "reference-text",
       "provenance": "reference",
       "language": "en",
-      "spoken": "How does the kitchen handle gluten, do you know?",
-      "scenario": "voice-noise-over-dietary-note"
+      "spoken": "Good morning. What would you like this money to be doing for you?",
+      "role": "agent"
     },
-    "92edda1c5132dcbbe79cd4d335e6c15de6d054bf7378fc8abb600a73038d542d": {
-      "text": "Elin Ruthven.",
+    "480332fe50ac61b37473a80b280adb8063a89347bca3523824e606852f816c99": {
+      "text": "Your capital is at risk: you could get back less than you put in.",
       "engine": "reference-text",
       "provenance": "reference",
       "language": "en",
-      "spoken": "Elin Ruthven.",
-      "scenario": "voice-noise-over-dietary-note"
+      "spoken": "Your capital is at risk: you could get back less than you put in.",
+      "role": "agent"
     },
-    "b624b6acc50984500e0b2d040bdf12c8256ca490d233b3d60023e2b5d2bc2455": {
-      "text": "Table for seven on Friday, please.",
+    "c17daf3ea21e1707f98bb4e9aff750ee8511cbc91a0976d09404efe01120a33f": {
+      "text": "The annual management charge is 0.68 per cent a year.",
       "engine": "reference-text",
       "provenance": "reference",
       "language": "en",
-      "spoken": "Table for seven on Friday, please.",
-      "scenario": "voice-noise-over-party-size"
+      "spoken": "The annual management charge is 0.68 per cent a year.",
+      "role": "agent"
     },
-    "2b08a1ada80c752a61db868bfe50cf070b0d6a03ce83617dd608e84108528647": {
-      "text": "Eight o'clock.",
+    "3453e4c88ef5918ef6b16887f56d07175ee3d2756f10f79ed95898df2ba3a137": {
+      "text": "That is all in hand. Is there anything else I can help with?",
       "engine": "reference-text",
       "provenance": "reference",
       "language": "en",
-      "spoken": "Eight o'clock.",
-      "scenario": "voice-noise-over-party-size"
+      "spoken": "That is all in hand. Is there anything else I can help with?",
+      "role": "agent"
     },
-    "f6b3955f0d8b89bf1224260bb0218593e13687b4bc3481acf89fb15788c43881": {
-      "text": "Nadia Haddad.",
+    "962bb827864ab9d97b7785fe00fb86b2e7554f4fa2e9d391308bfefd29c3c21d": {
+      "text": "What date were you thinking of?",
       "engine": "reference-text",
       "provenance": "reference",
       "language": "en",
-      "spoken": "Nadia Haddad.",
-      "scenario": "voice-noise-over-party-size"
-    },
-    "dc5a5f2091bb904dc903452718f2952e10b450f45722904481149c75e1cf2cd5": {
-      "text": "I need to move a booking. The reference is T M one zero four two.",
-      "engine": "reference-text",
-      "provenance": "reference",
-      "language": "en",
-      "spoken": "I need to move a booking. The reference is T M one zero four two.",
-      "scenario": "voice-packet-loss-over-reference"
-    },
-    "959fa4950f7bca8e00c4262b5493a9d0f684c4cf93b31713022a7718021e9b2d": {
-      "text": "Nine o'clock instead of eight, same day.",
-      "engine": "reference-text",
-      "provenance": "reference",
-      "language": "en",
-      "spoken": "Nine o'clock instead of eight, same day.",
-      "scenario": "voice-packet-loss-over-reference"
-    },
-    "5c0376ea6e1389235535c78f6aca93f6cf61fd7dc9303afdbb6db349d223860d": {
-      "text": "Could I book a table for four on Saturday at half twelve?",
-      "engine": "reference-text",
-      "provenance": "reference",
-      "language": "en",
-      "spoken": "Could I book a table for four on Saturday at half twelve?",
-      "scenario": "voice-pitch-shift-unfamiliar-voice"
-    },
-    "b3bea74fdc149edb49386f8918b4b647f69811aab69bd592c503fa03aceead43": {
-      "text": "Sinead Doherty.",
-      "engine": "reference-text",
-      "provenance": "reference",
-      "language": "en",
-      "spoken": "Sinead Doherty.",
-      "scenario": "voice-pitch-shift-unfamiliar-voice"
-    },
-    "46322373fa14da3d17b4a813e4aacce33fe59c782b3b473dc81eb2c366d6b4b2": {
-      "text": "It is my daughter's birthday, could you put a candle on the cake?",
-      "engine": "reference-text",
-      "provenance": "reference",
-      "language": "en",
-      "spoken": "It is my daughter's birthday, could you put a candle on the cake?",
-      "scenario": "voice-pitch-shift-unfamiliar-voice"
-    },
-    "527832576e04517bac9a5a59034df6557b947cf8504e1db73387598cf876c7ff": {
-      "text": "I would like to book a table, please, for three of us.",
-      "engine": "reference-text",
-      "provenance": "reference",
-      "language": "en",
-      "spoken": "I would like to book a table, please, for three of us.",
-      "scenario": "voice-slow-speech-with-pauses"
-    },
-    "35175dbf952ce496848af56bccf23cdcfa41bd6162962b06a0e0e33491589ed0": {
-      "text": "Wednesday, if you have anything.",
-      "engine": "reference-text",
-      "provenance": "reference",
-      "language": "en",
-      "spoken": "Wednesday, if you have anything.",
-      "scenario": "voice-slow-speech-with-pauses"
-    },
-    "11890ff9f42884f6e7b4acb7ba5909bbe53ff4d1d2b9fb7c3f3f763f71bad03f": {
-      "text": "6pm",
-      "engine": "reference-text",
-      "provenance": "reference",
-      "language": "en",
-      "spoken": "6pm",
-      "scenario": "voice-slow-speech-with-pauses"
-    },
-    "25021c985d870b69ea13c4f414c75a603aa3948887e6a297129e0b1af11e93d5": {
-      "text": "Margaret Ellwood.",
-      "engine": "reference-text",
-      "provenance": "reference",
-      "language": "en",
-      "spoken": "Margaret Ellwood.",
-      "scenario": "voice-slow-speech-with-pauses"
-    },
-    "42dc14ec27b8eaee7efbe0510348318fe66fabc50f039f7b7a955b3c3ec6b93d": {
-      "text": "Six o'clock.",
-      "engine": "reference-text",
-      "provenance": "reference",
-      "language": "en",
-      "spoken": "Six o'clock.",
-      "scenario": "voice-slow-speech-with-pauses"
-    },
-    "0ccf7b852b698728e61ae1293a9ba935b3b0992265221a2d5b080ad27ecd5dbe": {
-      "text": "Hello, I would like to book a table for two on Sunday lunchtime, please.",
-      "engine": "reference-text",
-      "provenance": "reference",
-      "language": "en",
-      "spoken": "Hello, I would like to book a table for two on Sunday lunchtime, please.",
-      "scenario": "voice-telephone-band-booking"
-    },
-    "c11f49e858964539cf1a5719b42c523e5397c06ce835810ae7ddede8ac94e0d6": {
-      "text": "One o'clock would be lovely.",
-      "engine": "reference-text",
-      "provenance": "reference",
-      "language": "en",
-      "spoken": "One o'clock would be lovely.",
-      "scenario": "voice-telephone-band-booking"
-    },
-    "6cd46c7f72bfaf92a8ea955294bcdc81ade9163309bdf03f232210962dd993bd": {
-      "text": "Bernard Ashcroft.",
-      "engine": "reference-text",
-      "provenance": "reference",
-      "language": "en",
-      "spoken": "Bernard Ashcroft.",
-      "scenario": "voice-telephone-band-booking"
+      "spoken": "What date were you thinking of?",
+      "role": "agent"
     }
   }
 }

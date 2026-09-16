@@ -188,3 +188,50 @@ class UnavailableTTS:
 
         require_available(self)
         raise AssertionError("unreachable: require_available must have raised")
+
+
+class ScriptedAgent:
+    """A deterministic adviser for the audio tier, and nothing more.
+
+    The audio tests measure the *audio layer* — synthesis, recognition, timing,
+    perturbation, trace shape. They need a conversational partner so a session
+    has two sides, but nothing they assert depends on what that partner says.
+
+    So this is a stand-in, not a system under test: it answers in order from a
+    short fixed list and repeats the last line once the list runs out, which
+    keeps a session of any length deterministic. The real system under test in
+    this repository is `roleplay/`, and it is exercised by its own tests.
+
+    Satisfies `lab.simulator.driver.AgentUnderTest`: one call, one reply.
+    """
+
+    #: Plain adviser turns. Deliberately domain-light: these are here to make
+    #: sound, and a reader should not have to learn a product to read a timing
+    #: assertion.
+    REPLIES: tuple[str, ...] = (
+        "Good morning. What would you like this money to be doing for you?",
+        "Thank you. And over what sort of timescale were you thinking?",
+        "Understood. Your capital is at risk: you could get back less than you put in.",
+        "The annual management charge is 0.68 per cent, and there is no exit penalty.",
+        "Is there anything else I can go over before we finish?",
+    )
+
+    def __init__(self, replies: Sequence[str] | None = None) -> None:
+        self.replies = tuple(replies) if replies is not None else self.REPLIES
+        if not self.replies:
+            raise ValueError("a scripted agent needs at least one reply")
+        self.heard: list[str] = []
+
+    def __call__(self, utterance: str) -> str:
+        self.heard.append(utterance)
+        index = min(len(self.heard) - 1, len(self.replies) - 1)
+        return self.replies[index]
+
+
+def build_agent(**_kwargs: object) -> ScriptedAgent:
+    """A fresh `ScriptedAgent`, ignoring the keyword arguments a real factory takes.
+
+    Named to match the factory shape the harness expects so a caller can swap a
+    real system under test in without changing the call site.
+    """
+    return ScriptedAgent()

@@ -480,56 +480,6 @@ def test_the_override_has_no_environment_or_config_equivalent(monkeypatch) -> No
         )
 
 
-def test_the_run_command_refuses_to_record_a_self_grading_rig(monkeypatch) -> None:
-    from lab import cli
-
-    monkeypatch.setenv("LAB_LIVE_AGENT", "1")
-    monkeypatch.setenv("LAB_LIVE_JUDGE", "1")
-    monkeypatch.setenv(cli.AGENT_MODEL_ENV_VAR, "azure/gpt-4.1")
-    monkeypatch.setenv("LAB_JUDGE_MODEL", "azure/gpt-4.1")
-
-    rig = cli.LiveRig(agent=True, judge=True, record=True)
-    refusals = cli._live_refusals(rig)
-    assert len(refusals) == 1
-    assert refusals[0].startswith("--record refused: ")
-    assert "grading its own output" in refusals[0]
-
-    # Different routes: no refusal at all.
-    monkeypatch.setenv("LAB_JUDGE_MODEL", "azure/gpt-4o-mini")
-    assert cli._live_refusals(rig) == []
-
-    # And the check is a *record*-time check: replaying a committed cassette
-    # spends nothing and records nothing, so there is nothing to refuse.
-    monkeypatch.setenv("LAB_JUDGE_MODEL", "azure/gpt-4.1")
-    assert cli._live_refusals(cli.LiveRig(agent=True, judge=True)) == []
-
-
-def test_a_live_caller_sharing_the_judges_route_is_not_refused(monkeypatch) -> None:
-    """The caller is an input to the verdict, not the thing being graded.
-
-    `lab.simulator.flake_band` runs a live caller against the deterministic agent
-    on purpose. Refusing that would break the only configuration that produces a
-    clean flake number.
-    """
-    from lab import cli
-
-    monkeypatch.setenv("LAB_LIVE_CALLER", "1")
-    monkeypatch.setenv("LAB_LIVE_JUDGE", "1")
-    monkeypatch.setenv("LAB_CALLER_MODEL", "azure/gpt-4.1")
-    monkeypatch.setenv("LAB_JUDGE_MODEL", "azure/gpt-4.1")
-    monkeypatch.delenv(cli.AGENT_MODEL_ENV_VAR, raising=False)
-
-    assert cli._live_refusals(cli.LiveRig(caller=True, judge=True, record=True)) == []
-
-
-def test_the_cli_and_the_case_study_name_the_same_agent_route_variable() -> None:
-    """`lab.cli` mirrors the name rather than importing it; this pins the mirror."""
-    from lab import cli
-    from tablemate import runtime
-
-    assert cli.AGENT_MODEL_ENV_VAR == runtime.MODEL_ENV_VAR
-
-
 def test_the_rubric_scorer_refuses_to_grade_its_own_trainee(monkeypatch) -> None:
     from roleplay import live as roleplay_live
     from roleplay import livescorer
