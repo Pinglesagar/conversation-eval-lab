@@ -619,7 +619,7 @@ packages:
 
 Per package, statements missed of statements total: `lab` **90%** (812/9,199),
 `ragcheck` **88%** (109/999), `scenarios` **87%** (86/852), `roleplay` **84%**
-(581/4,297), `tablemate` **84%** (225/1,603), `error_analysis` **42%** (79/141),
+(581/4,297), `error_analysis` **42%** (79/141),
 `scripts` **9%** (674/748).
 
 **What it excludes.** Nothing is omitted from the headline figure — the earlier
