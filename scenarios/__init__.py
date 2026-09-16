@@ -1,9 +1,12 @@
 """The scenario corpus: what the simulated caller wants, and what must be true afterwards.
 
-Scenarios are YAML data — one file per row, grouped into four suites by
-directory: `happy/`, `edge/`, `adversarial/` and `voice/`. Shared personas live
-in `personas/`. Nothing in this package executes a scenario; `loader.py` parses
-and validates the corpus into `lab.simulator` callers and `lab.checks`
+Scenarios are YAML data — one file per row. The advisory corpus lives under
+`roleplay/`, grouped into five suites by directory (`pitch/`, `compliance/`,
+`objection/`, `locale/`, `consistency/`) with shared customer profiles in
+`roleplay/customers/`; the cited regulatory registers live under `advisory/`;
+and `audio/transport/` holds the three WebRTC rows. Nothing in this package
+executes a scenario — `roleplay/corpus.py` parses and validates the corpus into
+`lab.checks`
 contracts, and `lab.simulator.driver` runs them.
 
 Validate the corpus before trusting a result built from it:

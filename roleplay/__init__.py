@@ -1,12 +1,20 @@
-"""A BFSI sales-roleplay coach — the second system under test in this repo.
+"""A BFSI sales-roleplay coach — the system under test in this repo.
 
-WHY A SECOND DOMAIN EXISTS AT ALL
----------------------------------
-`tablemate/` is a restaurant-booking assistant. This is an AI sales-roleplay
-coach for regulated financial advice: a trainee practises a pitch against an AI
-customer persona, and the product then grades the trainee against a rubric and
-writes them feedback. Nothing about the two domains is alike — different actors,
-different tools, different failure modes, different regulator.
+WHAT THIS IS
+------------
+An AI sales-roleplay coach for regulated financial advice: a trainee practises a
+pitch against an AI customer persona, and the product then grades the trainee
+against a rubric and writes them feedback.
+
+It is deliberately imperfect. A harness demonstrated against working software
+proves nothing — a green result is equally consistent with a good product and a
+blind test suite — so the scorer here carries three documented defects, listed in
+exactly one place (`SEEDED_DEFECTS.md`) that nothing in `lab/` imports.
+
+The harness once drove a second, unrelated domain as well, which is how it
+argued portability. That domain was removed; the argument is now made by the
+adapter seam in `runtime.py` instead, which is a weaker claim and is stated as
+one wherever it appears.
 
 What is alike is everything underneath. `lab/` is imported unchanged. The trace
 schema, the contract engine, the judge and calibration machinery, and the pass^k
