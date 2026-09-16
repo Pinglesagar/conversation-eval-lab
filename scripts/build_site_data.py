@@ -1121,190 +1121,8 @@ def _finding_judge_gate() -> dict[str, Any]:
     }
 
 
-def _finding_noise_ladder() -> dict[str, Any]:
-    from lab.voice.engines.clipcache import ClipCache
-    from lab.voice.engines.stt import RecordedSTT, TranscriptCassette
-    from lab.voice.suite import (
-        AUDIO_SUITE_CASSETTE,
-        LADDERS,
-        _transcribe,
-        assemble_audio,
-        capture_outcome,
-        ladder_result,
-    )
-    from scenarios.audio import tier
-
-    cassette_path = REPO / "fixtures" / "audio" / "cloud" / AUDIO_SUITE_CASSETTE
-    cassette = TranscriptCassette.load(cassette_path)
-    cache, stt = ClipCache(), RecordedSTT(cassette)
-    row = next(s for s in tier() if getattr(s, "id", "") == "audio-line-quality-noise-ladder")
-    outcome = ladder_result(row, cache=cache, stt=stt)
-    step = row.voice.perturbations[0]
-    parameter, rungs = LADDERS[step.name]
-    declared = dict(row.audio.capture.fields)
-
-    ladder = []
-    for rung in rungs:
-        audio = assemble_audio(row, cache=cache, override={**step.params, parameter: rung})
-        heard = _transcribe(audio, stt)
-        captured = capture_outcome(
-            row.audio.capture,
-            transcript=heard.text,
-            display_text=heard.display_text,
-            confidence=heard.confidence,
-        )
-        ladder.append(
-            {
-                "snr_db": rung,
-                "captured": captured.all_captured,
-                "confidence": heard.confidence,
-                "display_text": heard.display_text,
-                "transcript": heard.text,
-                "returned_nothing": heard.text.strip() == "",
-            }
-        )
-
-    wrong = [r for r in ladder if not r["captured"] and not r["returned_nothing"]]
-    silent = [r for r in ladder if r["returned_nothing"]]
-    return {
-        "id": "noise-ladder-wrong-before-silent",
-        "headline": (
-            "Rising noise does not degrade the recogniser into silence. One rung "
-            "before it goes silent it returns a different, plausible, wrong value."
-        ),
-        "declared_value": declared,
-        "axis": outcome.axis,
-        "parameter": outcome.parameter,
-        "held_to_db": outcome.held_to,
-        "broke_at_db": outcome.broke_at,
-        "missing_rungs": list(outcome.missing_rungs),
-        "captured": _rate(sum(1 for r in ladder if r["captured"]), len(ladder)),
-        "ladder": ladder,
-        "the_dangerous_rung": wrong[0] if wrong else None,
-        "the_silent_rungs": [r["snr_db"] for r in silent],
-        "reading": (
-            "A wrong postcode at high confidence is worse than no postcode: an "
-            "empty transcript is a re-ask, a wrong one is a delivery to the wrong "
-            "address. This is why the row asserts the field rather than a word "
-            "error rate."
-        ),
-        "reproduce": "make audio-suite-evidence",
-        "source": {
-            "transcripts": _rel(cassette_path),
-            "row": "scenarios/audio.py::audio-line-quality-noise-ladder",
-            "walked_by": "lab.voice.suite.ladder_result",
-        },
-        "caveat": (
-            "One row, one declared postcode, one seed. The ladder locates a "
-            "breaking point on this line; it does not estimate a rate."
-        ),
-        "recomputed": True,
-    }
 
 
-def _finding_promise_detector() -> dict[str, Any]:
-    from lab.checks import PromiseContract
-    from lab.trace.io import read_jsonl
-    from lab.trace.schema import Trace
-    from tablemate.__main__ import unbacked_promise
-
-    live = REPO / "fixtures" / "live_run" / "traces"
-    traces = [read_jsonl(p) for p in sorted(live.glob("*.jsonl"))]
-    generous = [t for t in traces if unbacked_promise(t) is not None]
-    structured = [t for t in traces if not PromiseContract().check(t).passed]
-    missed = [t for t in generous if PromiseContract().check(t).passed]
-
-    labels_path = REPO / "lab" / "judges" / "hallucinated_confirmation" / "labels.jsonl"
-    rows = [
-        json.loads(line)
-        for line in labels_path.read_text("utf-8").splitlines()
-        if line.strip()
-    ]
-    positives = [r for r in rows if r["label"] == "fail"]
-    negatives = [r for r in rows if r["label"] != "fail"]
-    tp = sum(
-        1
-        for r in positives
-        if not PromiseContract().check(Trace.model_validate(r["trace"])).passed
-    )
-    tn = sum(
-        1
-        for r in negatives
-        if PromiseContract().check(Trace.model_validate(r["trace"])).passed
-    )
-
-    return {
-        "id": "a-literal-is-a-check-that-works-once",
-        "headline": (
-            "A promise detector matching literal strings had full recall against a "
-            "scripted agent and caught 1 of 7 against a paraphrasing model. Same "
-            "defect; the detector went blind."
-        ),
-        "detector": {
-            "name": "tablemate.__main__.unbacked_promise",
-            "how_it_decides": (
-                "A regex over the agent's words, plus event-stream position: the "
-                "first spoken commitment with no create_booking, modify_booking or "
-                "cancel_booking before it."
-            ),
-        },
-        "against_the_scripted_agent": {
-            "corpus": _rel(REPO / "fixtures" / "replay_run"),
-            "seeded_defect": "BUG-1 (a booking claimed with no committing tool call)",
-            "fired": _rate(2, 2),
-            "note": (
-                "The scripted agent says one string every time, so a literal "
-                "pattern is correct forever. Note the denominator: 2 selected "
-                "rows, one run each. 2/2 is a floor, not a rate."
-            ),
-            "recomputed": True,
-            "reproduce": "python -m tablemate --score fixtures/replay_run",
-        },
-        "against_the_paraphrasing_model": {
-            "corpus": _rel(live),
-            "conversations": len(traces),
-            "unbacked_confirmations_found_by_a_generous_hand_written_detector": _rate(
-                len(generous), len(traces)
-            ),
-            "caught_by_the_literal_detector": {
-                **_rate(1, len(generous)),
-                "status": "historical",
-                "why_not_recomputed": (
-                    "The literal pattern set this measured was replaced by the "
-                    "rewrite and is not in the tree, so the numerator cannot be "
-                    "recomputed. The denominator can, and is, above."
-                ),
-                "source": "DESIGN.md section 10, pinned by tests/test_checks_paraphrase.py",
-            },
-            "caught_by_the_detector_today": {
-                **_rate(len(generous) - len(missed), len(generous)),
-                "plus_one_the_hand_written_detector_missed": (
-                    len(structured) - len(generous)
-                ),
-                "recomputed": True,
-            },
-            "reproduce": "python -m pytest tests/test_checks_paraphrase.py -q",
-        },
-        "on_the_hand_labelled_set": {
-            "corpus": _rel(labels_path),
-            "items": len(rows),
-            "recall": _rate(tp, len(positives)),
-            "specificity": _rate(tn, len(negatives)),
-            "recomputed": True,
-        },
-        "reading": (
-            "Four of the seven misses were ordinary synonyms. Two were not a "
-            "vocabulary problem at all: the patterns use an ASCII apostrophe and "
-            "the model types U+2019, so a correct pattern never matched."
-        ),
-        "denominator_warning": (
-            "1/7 is the fixtures/live_run corpus of 30 conversations. A separate "
-            "1/6 exists over the six large-party conversations of "
-            "fixtures/live_full. Two runs, two denominators; they are not the same "
-            "measurement."
-        ),
-        "recomputed": "partly",
-    }
 
 
 def build_secondary() -> dict[str, Any]:
@@ -1317,8 +1135,6 @@ def build_secondary() -> dict[str, Any]:
         "findings": [
             _finding_scorer_recall(),
             _finding_judge_gate(),
-            _finding_noise_ladder(),
-            _finding_promise_detector(),
         ],
     }
 
@@ -1476,63 +1292,11 @@ def _declared_split(failures: Sequence[dict[str, Any]]) -> dict[str, int]:
 
 
 @functools.lru_cache(maxsize=None)
-def _live_run() -> dict[str, Any]:
-    """`make live-replay`, recomputed: models in all three seats, from recordings."""
-    baseline = REPO / "fixtures" / "live_full" / "run_report.json"
-    payload, status = _run_cli(
-        "run", "-k", "3", "--live-agent", "--live-caller", "--live-judge",
-        "--no-traces", "--baseline", str(baseline), "--ci",
-    )
-    committed = json.loads(baseline.read_text("utf-8"))
-    return {
-        "report": payload,
-        "exit_status": status,
-        "agrees_with_committed": (
-            payload["stability_summary"] == committed["stability_summary"]
-            and payload["headline"] == committed["headline"]
-        ),
-    }
 
 
 @functools.lru_cache(maxsize=None)
-def _scripted_run() -> dict[str, Any]:
-    """Stage 4 of the gate, recomputed: the scripted case study against its baseline."""
-    payload, status = _run_cli("run", "--replay", "--ci")
-    committed = json.loads((REPO / "fixtures" / "replay_run" / "run_report.json").read_text("utf-8"))
-    return {
-        "report": payload,
-        "exit_status": status,
-        "agrees_with_committed": (
-            payload["stability_summary"] == committed["stability_summary"]
-            and payload["headline"] == committed["headline"]
-        ),
-    }
 
 
-@functools.lru_cache(maxsize=None)
-def _flake_bands() -> dict[str, Any]:
-    """Both committed flake bands, replayed from their cassettes and re-decided."""
-    from lab.simulator import flake_band as fb
-
-    out: dict[str, Any] = {}
-    for label, budget, summary in (
-        ("budget_12", fb.CALLER_MAX_UTTERANCES, fb.DEFAULT_SUMMARY_PATH),
-        ("budget_8", 8, fb.TIGHT_BUDGET_SUMMARY_PATH),
-    ):
-        band = _quiet(
-            fb.run_flake_band,
-            max_utterances=budget,
-            max_turns=max(budget + 2, fb.DRIVER_MAX_TURNS),
-        )
-        committed = fb.FlakeBand.load(REPO / summary)
-        out[label] = {
-            "band": band,
-            "summary_path": summary,
-            "agrees_with_committed": (
-                band.model_dump(mode="json") == committed.model_dump(mode="json")
-            ),
-        }
-    return out
 
 
 @functools.lru_cache(maxsize=None)
@@ -1598,106 +1362,8 @@ def _regime() -> dict[str, Any]:
     }
 
 
-@functools.lru_cache(maxsize=None)
-def _corpora() -> dict[str, Any]:
-    """Every committed corpus, loaded through its own loader and counted."""
-    from lab.voice.transport.rows import load_rows
-    from roleplay import advisory, scorecard
-    from roleplay.corpus import load_corpus as load_roleplay
-    from roleplay.corpus import validate_advisory_corpus
-    from scenarios.audio import tier
-    from scenarios.loader import load_corpus as load_tablemate
-
-    def by_suite(scenarios: Iterable[Any]) -> dict[str, int]:
-        counts: dict[str, int] = {}
-        for s in scenarios:
-            counts[s.suite] = counts.get(s.suite, 0) + 1
-        return dict(sorted(counts.items()))
-
-    booking = load_tablemate()
-    coaching = load_roleplay()
-    advisory_validation = validate_advisory_corpus()
-    if not advisory_validation.ok:
-        raise SystemExit("the advisory corpus does not validate")
-    advisory_rows = list(advisory_validation.corpus)
-    audio_rows = list(tier())
-    transport_rows = load_rows()
-    rag = _rag()
-    registers = advisory.load_registers()
-
-    yaml_files = sorted(p for p in (REPO / "scenarios").rglob("*.yaml"))
-    rows = {
-        "restaurant_booking": len(booking.scenarios),
-        "advisory_coaching": len(coaching),
-        "advisory_regimes": len(advisory_rows),
-        "audio_tier": len(audio_rows),
-        "transport_tier": len(transport_rows),
-        "retrieval_questions": rag["cases"],
-    }
-    return {
-        "rows": rows,
-        "rows_total": sum(rows.values()),
-        "suites": {
-            "restaurant_booking": by_suite(booking.scenarios),
-            "advisory_coaching": by_suite(coaching),
-            "advisory_regimes": by_suite(advisory_rows),
-        },
-        "tablemate_tags": sorted({t for s in booking.scenarios for t in s.tags}),
-        "personas": len(booking.personas),
-        "customer_profiles": len(coaching.profiles),
-        "human_verdicts_in_coaching_corpus": {
-            "pass": sum(1 for s in coaching if str(s.expectation.human_verdict) == "pass"),
-            "fail": sum(1 for s in coaching if str(s.expectation.human_verdict) == "fail"),
-        },
-        "kpi_groups": len(scorecard.GROUPS),
-        "kpis": len(scorecard.KPIS),
-        "kpi_gates": len(scorecard.gates()),
-        "regimes": len(advisory.REGIMES),
-        "register_entries": sum(len(r.entries) for r in registers.values()),
-        "retrieval_chunks": rag["chunks"],
-        "retrieval_claim_labels": rag["labels"],
-        "yaml_files_under_scenarios": len(yaml_files),
-        "yaml_files_by_directory": dict(
-            sorted(
-                {
-                    d: sum(1 for p in yaml_files if p.relative_to(REPO / "scenarios").parts[0] == d)
-                    for d in {
-                        p.relative_to(REPO / "scenarios").parts[0]
-                        for p in yaml_files
-                        if len(p.relative_to(REPO / "scenarios").parts) > 1
-                    }
-                }.items()
-            )
-        ),
-    }
 
 
-@functools.lru_cache(maxsize=None)
-def _selection() -> dict[str, Any]:
-    """The test selector: its deterministic self-check now, and its committed study."""
-    from lab.selection.select import calibrate
-
-    live = _quiet(calibrate).to_dict()
-    live.pop("probe_detail", None)
-    committed = json.loads((REPO / "lab" / "selection" / "calibration.json").read_text("utf-8"))
-    keep = (
-        "cases_total", "cases_usable", "cases_with_failures", "regressions_total",
-        "regressions_missed", "recall", "discriminating_total", "discriminating_missed",
-        "discriminating_recall", "vacuous_confirmations", "corpus_size", "selection_mean",
-        "selection_mean_stratum", "min_recall", "passed", "calibrated", "evidence",
-    )
-    return {
-        "join_check": live,
-        "study": {k: committed[k] for k in keep if k in committed},
-        "study_strata": committed.get("selection_by_stratum"),
-        "study_mutants": {
-            k: committed["mutation"][k]
-            for k in ("mutants_enumerated", "mutants_sampled", "seed", "roots")
-            if k in committed.get("mutation", {})
-        },
-        "study_command": committed.get("_provenance", {}).get("command"),
-        "study_commit": committed.get("_provenance", {}).get("commit"),
-    }
 
 
 @functools.lru_cache(maxsize=None)
@@ -1854,95 +1520,53 @@ def _cov_llm_judge() -> dict[str, Any]:
     }
 
 
-def _cov_nondeterminism() -> dict[str, Any]:
-    from lab.stats import wilson_lower_bound
-
-    live = _live_run()["report"]
-    bands = _flake_bands()
-    s = live["stability_summary"]
-    b12, b8 = bands["budget_12"]["band"], bands["budget_8"]["band"]
-    return {
-        "id": "non-deterministic-output-passk-flake-band",
-        "requirement": "Non-deterministic output: pass^k with FLAKY as its own verdict, and a measured flake band",
-        "what_demonstrates_it": [
-            "lab/simulator/passk.py — STABLE_PASS / STABLE_FAIL / FLAKY; FLAKY is never a pass",
-            "lab/simulator/flake_band.py — one live variable (the caller), k=5, two turn budgets",
-            "fixtures/live_full/ — 47 rows, k=3, a model in all three seats, replayed offline",
-            "fixtures/live_caller/ — 80 recorded caller conversations behind the two bands",
-        ],
-        "command": "make live-replay && python -m lab.simulator.flake_band --check",
-        "headline": (
-            f"{s['stable_pass']}/{s['scenarios']} scenarios stable-pass, {s['flaky']}/{s['scenarios']} FLAKY "
-            f"at k={s['min_runs_per_scenario']}; the same 8 scenarios at k=5 came back "
-            f"{b12.stable_pass}/{b12.scenarios} stable with a 12-turn caller and "
-            f"{b8.stable_pass}/{b8.scenarios} with an 8-turn one."
-        ),
-        "figures": {
-            "live_run_k3": {
-                "stable_pass": _rate(s["stable_pass"], s["scenarios"]),
-                "stable_fail": _rate(s["stable_fail"], s["scenarios"]),
-                "flaky": _rate(s["flaky"], s["scenarios"]),
-                "total_runs": s["total_runs"],
-                "agrees_with_committed_report": _live_run()["agrees_with_committed"],
-            },
-            "flake_band_k5": {
-                label: {
-                    "caller_turn_budget": entry["band"].caller_turn_budget,
-                    "stable_pass": _rate(entry["band"].stable_pass, entry["band"].scenarios),
-                    "flaky": _rate(entry["band"].flaky, entry["band"].scenarios),
-                    "agrees_with_committed_summary": entry["agrees_with_committed"],
-                }
-                for label, entry in bands.items()
-            },
-        },
-        "recomputed": True,
-        "caveats": [
-            f"k=3 bounds a pass rate loosely: 3/3 has a 95% Wilson lower bound of {wilson_lower_bound(3, 3):.2f}.",
-            "The flake band is a property of the caller-agent pair at one temperature on one day.",
-        ],
-    }
 
 
 def _cov_golden_datasets() -> dict[str, Any]:
-    c = _corpora()
+    """The corpus row of the coverage table, counted from the corpus itself."""
+    from roleplay.corpus import load_corpus as load_roleplay  # noqa: PLC0415
+    from roleplay.advisory import load_registers  # noqa: PLC0415
+
+    roleplay = load_roleplay()
+    registers = load_registers()
+    suites = sorted({s.suite for s in roleplay.scenarios})
+    yaml_files = len(list((REPO / "scenarios").rglob("*.yaml")))
+    entries = sum(len(r.entries) for r in registers.values())
     return {
         "id": "golden-datasets-validated-corpus",
-        "requirement": "Golden datasets: a validated corpus with closed vocabularies, so a typo is a load error and not a green row",
+        "requirement": (
+            "Golden datasets: a validated corpus with closed vocabularies, so a typo "
+            "is a load error and not a green row"
+        ),
         "what_demonstrates_it": [
-            "scenarios/loader.py — schema validation, tag and tool vocabularies, expected_failure must name a declared contract",
-            "roleplay/corpus.py + roleplay/advisory.py — KPI groups, regimes and register entries are closed sets",
+            "roleplay/corpus.py — schema validation, closed tag and tool vocabularies, "
+            "expected_failure must name a declared contract",
+            "roleplay/advisory.py — regimes and register entries are closed sets with citations",
             "lab/judges/hallucinated_confirmation/labels.jsonl — 24 hand labels with reasons",
             "ragcheck/fixtures/ — 16 chunks, 18 questions, 18 claim labels",
         ],
-        "command": "make validate && make roleplay-validate",
+        "command": "make roleplay-validate",
         "headline": (
-            f"{c['rows_total']} scenario rows across six corpora "
-            f"({', '.join(f'{v} {k.replace(chr(95), chr(32))}' for k, v in c['rows'].items())}), "
-            f"all loaded through validating loaders; {c['yaml_files_under_scenarios']} YAML files under scenarios/."
+            f"{len(roleplay.scenarios)} advisory scenario rows across {len(suites)} suites "
+            f"({', '.join(suites)}), {len(roleplay.profiles)} customer profiles and "
+            f"{entries} cited register entries across {len(registers)} regimes — all loaded "
+            f"through validating loaders; {yaml_files} YAML files under scenarios/."
         ),
         "figures": {
-            "rows_by_corpus": c["rows"],
-            "rows_total": c["rows_total"],
-            "suites": c["suites"],
-            "closed_vocabularies": {
-                "restaurant_tags": len(c["tablemate_tags"]),
-                "kpi_groups": c["kpi_groups"],
-                "kpis": c["kpis"],
-                "kpi_gates": c["kpi_gates"],
-                "regimes": c["regimes"],
-                "register_entries": c["register_entries"],
-            },
-            "human_verdicts_in_coaching_corpus": c["human_verdicts_in_coaching_corpus"],
-            "yaml_files_under_scenarios": c["yaml_files_under_scenarios"],
-            "yaml_files_by_directory": c["yaml_files_by_directory"],
-            "yaml_note": (
-                "The file count includes persona, customer-profile and register files and "
-                "one override file, which are data the rows refer to and not rows. Quote "
-                "rows_total as the number of scenarios."
-            ),
+            "scenario_rows": len(roleplay.scenarios),
+            "suites": suites,
+            "customer_profiles": len(roleplay.profiles),
+            "regimes": sorted(registers),
+            "register_entries": entries,
+            "yaml_files_under_scenarios": yaml_files,
         },
-        "recomputed": True,
+        "caveats": [
+            "One domain. The harness is demonstrated against the advisory coach only; "
+            "a second system under test would be the portability evidence and this "
+            "repository no longer carries one.",
+        ],
     }
+
 
 
 def _cov_prompt_regression() -> dict[str, Any]:
@@ -2035,46 +1659,44 @@ def _cov_rag() -> dict[str, Any]:
 
 
 def _cov_voice(result: Any, manifest: dict) -> dict[str, Any]:
-    effect = result.effect
-    c = _corpora()
-    ladder = _finding_noise_ladder()
+    """The voice row of the coverage table, from the two recorded calls."""
+    turns = manifest["turns"]
     return {
-        "id": "voice-stt-tts-graded-on-what-was-heard",
-        "requirement": "Voice: real synthesis and recognition, and the grade is computed on the transcript the recogniser produced",
+        "id": "voice-real-synthesis-and-recognition",
+        "requirement": (
+            "Voice: real synthesis and recognition, and the grade is computed on the "
+            "transcript the recogniser produced"
+        ),
         "what_demonstrates_it": [
-            "roleplay/spoken.py — a whole advisory call through TTS -> STT, graded as heard; channel_effect() diffs the two gradings",
-            "lab/voice/suite.py + scenarios/audio/ — 18 declared rows: captured fields, noise ladders, silence, yield",
-            "lab/voice/wer.py — normalised word error rate; the display transcript is refused as a WER reference",
-            "lab/voice/engines/ — Deepgram and ElevenLabs behind recorded cassettes",
+            "roleplay/spoken.py — a whole advisory call synthesised by ElevenLabs and "
+            "recognised by Deepgram, turn by turn, graded on what was heard",
+            "lab/voice/wer.py — raw and normalised word error rate, reported as two "
+            "numbers because the raw figure against a synthesis reference is a trap",
+            "lab/voice/perturb.py + lab/voice/transport/ — offline perturbation, and a "
+            "real WebRTC room measured at the far participant",
+            "fixtures/audio/clips/ — ten committed clips so the engine layer replays "
+            "with no key and no network",
         ],
-        "command": "make spoken-replay && make audio-suite",
+        "command": "make spoken-replay",
         "headline": (
-            f"A {len(manifest['turns'])}-turn, {manifest['assembly']['duration_s']:.0f} s spoken call: discovery "
-            f"{effect.sent_criteria['discovery']} as sent -> {effect.heard_criteria['discovery']} as heard "
-            f"while both totals stayed {effect.heard_total}/20; the noise ladder held to "
-            f"{ladder['held_to_db']} dB and broke at {ladder['broke_at_db']} dB."
+            f"Two recorded calls, {len(turns)} turns on the first, every line really "
+            "synthesised and really transcribed; the grade is computed on the "
+            "unpunctuated transcript the recogniser returned, which is how the "
+            "question detector came to score a call of five questions at 0/4."
         ),
         "figures": {
-            "spoken_call": {
-                "turns": len(manifest["turns"]),
-                "duration_s": manifest["assembly"]["duration_s"],
-                "engines": manifest["engines"],
-                "criteria_that_moved": sorted(
-                    n for n in effect.sent_criteria if effect.sent_criteria[n] != effect.heard_criteria.get(n)
-                ),
-                "total_as_sent": effect.sent_total,
-                "total_as_heard": effect.heard_total,
-                "detail": "finding.json",
-            },
-            "audio_tier_rows": c["rows"]["audio_tier"],
-            "noise_ladder": {
-                "held_to_db": ladder["held_to_db"],
-                "broke_at_db": ladder["broke_at_db"],
-                "captured": ladder["captured"],
-            },
+            "calls_recorded": 2,
+            "turns_first_call": len(turns),
+            "graded_on": "text_heard",
+            "committed_clips": 10,
         },
-        "recomputed": True,
+        "caveats": [
+            "n = 2. A mechanism, not a rate.",
+            "Both calls were cut short — a character cap, then a content filter — so "
+            "each disclosure miss is entangled with that setting.",
+        ],
     }
+
 
 
 def _cov_transport() -> dict[str, Any]:
@@ -2142,82 +1764,33 @@ def _cov_transport() -> dict[str, Any]:
     }
 
 
-def _cov_ci_gating() -> dict[str, Any]:
-    stages = _gate_stages()
-    scripted = _scripted_run()
-    return {
-        "id": "ci-cd-gating-from-scratch",
-        "requirement": "CI/CD gating built from nothing: an ordered offline gate, cheapest first, with artefacts that must regenerate byte for byte",
-        "what_demonstrates_it": [
-            "Makefile — `gate`: eight stages, stops at the first red",
-            "docs/GATES.md — what each stage proves and what it cannot catch",
-            "fixtures/replay_run/ + lab/judges/ — the two artefact surfaces that are rewritten and then diffed",
-        ],
-        "command": "make gate",
-        "headline": (
-            f"{len(stages)} stages, {sum(len(s['commands']) for s in stages)} commands, "
-            f"{sum(1 for s in stages if s['byte_for_byte'])} of them followed by `git diff --exit-code`; "
-            f"the scripted case study reproduces {scripted['report']['stability_summary']['stable_pass_rate']} stable-pass."
-        ),
-        "figures": {
-            "stages": stages,
-            "byte_for_byte_stages": [s["stage"] for s in stages if s["byte_for_byte"]],
-            "scripted_case_study": {
-                "headline": scripted["report"]["headline"],
-                "stability_summary": scripted["report"]["stability_summary"],
-                "exit_status": scripted["exit_status"],
-                "agrees_with_committed_report": scripted["agrees_with_committed"],
-            },
-        },
-        "recomputed": True,
-        "caveats": [
-            "Replay is blind to a prompt change: a green gate is necessary and not sufficient when a "
-            "prompt, persona or rubric moved (docs/GATES.md, stage 9)."
-        ],
-    }
 
 
 def _cov_release_quality() -> dict[str, Any]:
-    report, cleared, reasons = _scorer_calibration()
-    study = _judge_study()
-    sel = _selection()
-    demo = _gate_refusal_demo()
-    v1 = study["reports"]["v1"]
-    refused = [
-        {"judge": f"{report.judge} {report.prompt_version}", "reasons": list(reasons)},
-        {"judge": f"{v1.judge} {v1.prompt_version}", "reasons": list(v1.meets(study["thresholds"])[1])},
-        {"judge": "claim_support v1 (ragcheck)", "reasons": [demo["message"]] if demo["message"] else []},
-    ]
+    """The release-gate row of the coverage table."""
     return {
         "id": "release-quality-go-no-go",
-        "requirement": "Release quality and go/no-go: a gate that can say no, and a test selector that measures its own miss rate",
+        "requirement": "Release quality and go/no-go: a gate that can say no",
         "what_demonstrates_it": [
-            "lab/judges/registry.py — the only way past a refusal is written at the call site and logs a warning",
-            "lab/selection/ — which scenarios a change can reach, fail-safe: unsure means run everything",
-            "lab/selection/calibration.json — the selector's recall with its denominators, from a mutation and history study",
+            "Makefile `gate` — six stages, cheapest first, stopping at the first failure",
+            "lab/judges/registry.py — require_calibrated() raises below the threshold, so "
+            "an uncalibrated judge cannot quietly become load-bearing",
+            "lab/cli.py calibrate --ci — non-zero exit, then a byte-for-byte diff of the "
+            "artefacts it wrote",
         ],
-        "command": "evallab calibrate --ci && evallab select --calibrate",
+        "command": "make gate",
         "headline": (
-            f"Three judges in this tree are refused by their own gate today; the selector kept "
-            f"{sel['study']['regressions_total'] - sel['study']['regressions_missed']}/{sel['study']['regressions_total']} "
-            f"regressions and {sel['study']['discriminating_total'] - sel['study']['discriminating_missed']}/{sel['study']['discriminating_total']} "
-            f"of the ones it could actually have missed."
+            "The gate runs six stages offline with no credential and stops at the first "
+            "red. A judge below its calibration threshold raises rather than warns."
         ),
-        "figures": {
-            "judges_refused_today": refused,
-            "registry_raises_in_ci_mode": demo["raised"],
-            "selector_join_check": sel["join_check"],
-            "selector_study": sel["study"],
-            "selector_study_strata": sel["study_strata"],
-            "selector_study_mutants": sel["study_mutants"],
-        },
-        "recomputed": "join_check and the refusals now; the selector study is the committed measurement",
+        "figures": {"gate_stages": 6, "exits_non_zero_on_failure": True},
         "caveats": [
-            "The selector study's failure counts are not run-to-run stable (the recall is); "
-            "docs/TEST_SELECTION.md §5.2 prints three runs. Quote the recall and the selection ratio.",
-            f"Regenerate the study with `{sel['study_command']}`; it runs the suite hundreds of times.",
+            "Blast-radius test selection was removed with the second domain: its map was "
+            "derived from that domain's traces, and with them gone the selector would "
+            "have degenerated to 'run everything' with no basis for its miss rate.",
         ],
     }
+
 
 
 def _cov_observability() -> dict[str, Any]:
@@ -2230,7 +1803,7 @@ def _cov_observability() -> dict[str, Any]:
     )
     from lab.trace.io import read_jsonl
 
-    path = sorted((REPO / "fixtures" / "replay_run" / "traces").glob("*.jsonl"))[0]
+    path = REPO / "fixtures" / "audio" / "spoken_call" / "trace.jsonl"
     trace = read_jsonl(path)
     batch = to_langfuse_batch(trace)
     kinds: dict[str, int] = {}
@@ -2266,30 +1839,6 @@ def _cov_observability() -> dict[str, Any]:
     }
 
 
-def _cov_external_agent() -> dict[str, Any]:
-    adapter = build_adapter()
-    return {
-        "id": "pointing-it-at-an-external-agent",
-        "requirement": "Pointing the harness at somebody else's agent: a dotted-path factory and a protocol of one or two methods, no base class",
-        "what_demonstrates_it": [
-            "lab/simulator/driver.py — AgentUnderTest: one call, an utterance in, a turn out",
-            "lab/cli.py — `--agent-factory pkg.mod:factory`; `lab` never imports the case study",
-            "roleplay/runtime.py — Trainee: open() and reply(customer_turn)",
-            "roleplay/live.py — resolve_trainee_factory(): argument, then LAB_TRAINEE_FACTORY, then the built-in model trainee",
-        ],
-        "command": adapter["commands"]["booking_agent"],
-        "headline": (
-            f"AgentUnderTest is {len(adapter['agent_under_test']['methods'])} method; Trainee is "
-            f"{len(adapter['trainee']['methods'])}; the trainee CLI flag is {adapter['cli_flag']['status']}."
-        ),
-        "figures": {
-            "agent_under_test_methods": adapter["agent_under_test"]["methods"],
-            "trainee_methods": adapter["trainee"]["methods"],
-            "trainee_implementations_in_tree": adapter["trainee"]["implementations_in_tree"],
-            "cli_flag": adapter["cli_flag"],
-        },
-        "recomputed": True,
-    }
 
 
 def build_coverage(result: Any, manifest: dict) -> dict[str, Any]:
@@ -2303,16 +1852,13 @@ def build_coverage(result: Any, manifest: dict) -> dict[str, Any]:
         ),
         "requirements": [
             _cov_llm_judge(),
-            _cov_nondeterminism(),
             _cov_golden_datasets(),
             _cov_prompt_regression(),
             _cov_rag(),
             _cov_voice(result, manifest),
             _cov_transport(),
-            _cov_ci_gating(),
             _cov_release_quality(),
             _cov_observability(),
-            _cov_external_agent(),
         ],
         "not_covered": [
             {
@@ -2523,53 +2069,8 @@ def _fd_mcnemar() -> dict[str, Any]:
     }
 
 
-def _fd_noise_ladder() -> dict[str, Any]:
-    ladder = _finding_noise_ladder()
-    rung = ladder["the_dangerous_rung"]
-    return {
-        "id": "noise-ladder-wrong-before-silent",
-        "headline": (
-            f"At {rung['snr_db']} dB the recogniser returned a different, plausible, wrong value at "
-            f"confidence {rung['confidence']:.3f}; at {' and '.join(str(x) for x in ladder['the_silent_rungs'])} dB it returned nothing."
-        ) if rung else "The ladder produced no wrong-but-confident rung.",
-        "figures": {
-            "captured": ladder["captured"],
-            "held_to_db": ladder["held_to_db"],
-            "broke_at_db": ladder["broke_at_db"],
-            "dangerous_rung": rung,
-            "silent_rungs_db": ladder["the_silent_rungs"],
-            "declared_value": ladder["declared_value"],
-        },
-        "command": ladder["reproduce"],
-        "recomputed": True,
-        "caveat": ladder["caveat"],
-    }
 
 
-def _fd_promise_detector() -> dict[str, Any]:
-    f = _finding_promise_detector()
-    live = f["against_the_paraphrasing_model"]
-    return {
-        "id": "literal-detector-blind-to-paraphrase",
-        "headline": (
-            f"A literal-string promise detector caught {live['caught_by_the_literal_detector']['numerator']} of "
-            f"{live['caught_by_the_literal_detector']['denominator']} unbacked confirmations against a paraphrasing "
-            f"model, after {f['against_the_scripted_agent']['fired']['text']} against the scripted agent."
-        ),
-        "figures": {
-            "scripted_agent": f["against_the_scripted_agent"]["fired"],
-            "paraphrasing_model_before_rewrite": {
-                **{k: live["caught_by_the_literal_detector"][k] for k in ("numerator", "denominator", "value", "text")},
-                "status": "historical",
-                "why": live["caught_by_the_literal_detector"]["why_not_recomputed"],
-            },
-            "paraphrasing_model_today": {k: live["caught_by_the_detector_today"][k] for k in ("numerator", "denominator", "value", "text")},
-            "hand_labelled_set": {"recall": f["on_the_hand_labelled_set"]["recall"], "specificity": f["on_the_hand_labelled_set"]["specificity"]},
-        },
-        "command": live["reproduce"],
-        "recomputed": "denominators and today's detector; the 1/7 numerator is historical",
-        "denominator_warning": f["denominator_warning"],
-    }
 
 
 def _fd_delivery_gap() -> dict[str, Any]:
@@ -2586,73 +2087,8 @@ def _fd_delivery_gap() -> dict[str, Any]:
     }
 
 
-def _fd_flake_band() -> dict[str, Any]:
-    bands = _flake_bands()
-    b12, b8 = bands["budget_12"]["band"], bands["budget_8"]["band"]
-
-    def rows(band: Any) -> list[dict[str, Any]]:
-        return [
-            {"scenario_id": r.scenario_id, "verdict": r.verdict, "passes": _rate(r.passes, r.total_runs), "persona": r.persona}
-            for r in band.rows
-        ]
-
-    return {
-        "id": "flake-band-two-caller-budgets",
-        "headline": (
-            f"The same {b12.scenarios} scenarios at k={b12.k} with only the caller live: "
-            f"{b12.stable_pass}/{b12.scenarios} stable-pass with a {b12.caller_turn_budget}-turn caller budget, "
-            f"{b8.stable_pass}/{b8.scenarios} with an {b8.caller_turn_budget}-turn one."
-        ),
-        "figures": {
-            "budget_12": {"stable_pass": _rate(b12.stable_pass, b12.scenarios), "flaky": _rate(b12.flaky, b12.scenarios), "rows": rows(b12), "agrees_with_committed": bands["budget_12"]["agrees_with_committed"]},
-            "budget_8": {"stable_pass": _rate(b8.stable_pass, b8.scenarios), "flaky": _rate(b8.flaky, b8.scenarios), "rows": rows(b8), "agrees_with_committed": bands["budget_8"]["agrees_with_committed"]},
-            "caller_model": b12.caller_model,
-            "temperature": b12.temperature,
-            "agent": b12.agent,
-        },
-        "command": "python -m lab.simulator.flake_band --check",
-        "reading": "A setting nobody thought of as part of the scenario decided a verdict on its own.",
-        "recomputed": True,
-    }
 
 
-def _fd_selector() -> dict[str, Any]:
-    sel = _selection()
-    s, j = sel["study"], sel["join_check"]
-    return {
-        "id": "selector-measures-its-own-miss-rate",
-        "headline": (
-            f"The selector kept {s['regressions_total'] - s['regressions_missed']}/{s['regressions_total']} regressions "
-            f"the full suite caught, and {s['discriminating_total'] - s['discriminating_missed']}/{s['discriminating_total']} "
-            f"of those where it had actually skipped something; {s['vacuous_confirmations']} catches were vacuous."
-        ),
-        "figures": {
-            "study": {
-                "regressions_kept": _rate(s["regressions_total"] - s["regressions_missed"], s["regressions_total"]),
-                "non_vacuous_regressions_kept": _rate(s["discriminating_total"] - s["discriminating_missed"], s["discriminating_total"]),
-                "vacuous_confirmations": s["vacuous_confirmations"],
-                "cases_usable": _rate(s["cases_usable"], s["cases_total"]),
-                "cases_with_failures": s["cases_with_failures"],
-                "mean_selection": f"{s['selection_mean']}/{s['corpus_size']} ({s['selection_mean_stratum']} stratum)",
-                "status": "committed measurement",
-                "regenerate": sel["study_command"],
-            },
-            "join_check_now": {
-                "evidence_pairs_kept": _rate(j["pairs_preserved"], j["pairs_total"]),
-                "always_run_floor_kept": _rate(j["floor_preserved"], j["floor_total"]),
-                "controls_passed": _rate(j["controls_passed"], j["controls_total"]),
-                "mean_selection": f"{j['mean_selected']:.1f}/{j['corpus_size']}",
-                "probes": j["probes"],
-            },
-        },
-        "command": "evallab select --calibrate  # the join check; python -m lab.selection.calibrate for the study",
-        "recomputed": "the join check now; the study is the committed lab/selection/calibration.json",
-        "caveat": (
-            "The study's failure counts move between runs (three pinned runs in docs/TEST_SELECTION.md §5.2 "
-            "show 264/264, 245/245 and 319/319) while the recall and the selection ratio do not. "
-            "Quote the recall, not the count."
-        ),
-    }
 
 
 def _fd_regime() -> dict[str, Any]:
@@ -2680,59 +2116,7 @@ def _fd_regime() -> dict[str, Any]:
     }
 
 
-def _fd_live_run() -> dict[str, Any]:
-    live = _live_run()["report"]
-    scripted = _scripted_run()["report"]
-    l_split, s_split = _declared_split(live["failures"]), _declared_split(scripted["failures"])
-    return {
-        "id": "live-run-finds-what-the-script-cannot",
-        "headline": (
-            f"With a model in all three seats the same corpus produced {l_split['undeclared']} findings the corpus "
-            f"had not declared, against {s_split['undeclared']} from the scripted run; "
-            f"{live['stability_summary']['flaky']}/{live['stability_summary']['scenarios']} rows were FLAKY."
-        ),
-        "figures": {
-            "live": {"stability_summary": live["stability_summary"], "findings": l_split, "headline": live["headline"]},
-            "scripted": {"stability_summary": scripted["stability_summary"], "findings": s_split, "headline": scripted["headline"]},
-        },
-        "command": "make live-replay && make replay",
-        "recomputed": True,
-        "caveat": "Both agent and caller are live in that run, so a FLAKY verdict has two possible causes it cannot separate.",
-    }
 
-
-def build_findings(result: Any, manifest: dict) -> dict[str, Any]:
-    return {
-        "about": (
-            "Every headline finding in this repository, each with its denominator and "
-            "the command that reproduces it. `recomputed: true` means the figure was "
-            "rebuilt by this script from a committed artefact; anything else says what "
-            "was read and from where."
-        ),
-        "findings": [
-            _fd_discovery(result, manifest),
-            _fd_scorer(),
-            _fd_judge_gate(),
-            _fd_identical_matrix(),
-            _fd_wilson(),
-            _fd_mcnemar(),
-            _fd_noise_ladder(),
-            _fd_promise_detector(),
-            _fd_delivery_gap(),
-            _fd_flake_band(),
-            _fd_selector(),
-            _fd_regime(),
-            _fd_live_run(),
-        ],
-    }
-
-
-# ----------------------------------------------------------------- architecture.json
-
-
-def _first_line(obj: Any) -> str:
-    doc = inspect.getdoc(obj) or ""
-    return doc.splitlines()[0] if doc else ""
 
 
 def build_architecture() -> dict[str, Any]:
@@ -2769,7 +2153,9 @@ def build_architecture() -> dict[str, Any]:
             "file": f"scenarios/advisory/registers/{regime}.yaml",
         }
 
-    corpora = _corpora()
+    from roleplay.corpus import load_corpus as _load_roleplay
+
+    roleplay_corpus = _load_roleplay()
     counts = _repo_counts()
     return {
         "one_idea": (
@@ -2798,18 +2184,22 @@ def build_architecture() -> dict[str, Any]:
             "evidence_vocabulary": ["sourced", "secondary", "assumption"],
             "source": "roleplay/advisory.py — every entry carries a paragraph-level citation or is labelled an assumption",
         },
+        "systems_under_test": (
+            "One. The harness was demonstrated against a second, unrelated domain "
+            "until that domain was removed; the portability argument is therefore "
+            "made by the adapter seam below rather than by a worked second example."
+        ),
         "packages": {
-            "lab": "the engine: trace, checks, judges, simulator, voice, selection, report",
-            "roleplay": "advisory sales coaching — the scorer is the system under test",
-            "tablemate": "restaurant booking — the portability proof",
-            "ragcheck": "retrieval and groundedness",
-            "scenarios": "the corpora, as YAML",
-            "error_analysis": "hand-coded failure modes, counted from codes.csv",
+            "lab": "the engine: trace, checks, judges, simulator, voice, report",
+            "roleplay": "advisory sales coaching — the one system under test; its scorer carries the seeded defects",
+            "ragcheck": "retrieval and groundedness, scored separately",
+            "scenarios": "the corpus, as YAML — plus a spreadsheet path for the people who write it",
         },
         "counts": {
-            "scenario_rows": corpora["rows_total"],
-            "scenario_rows_by_corpus": corpora["rows"],
-            "yaml_files_under_scenarios": corpora["yaml_files_under_scenarios"],
+            "scenario_rows": len(roleplay_corpus.scenarios),
+            "scenario_suites": sorted({s.suite for s in roleplay_corpus.scenarios}),
+            "customer_profiles": len(roleplay_corpus.profiles),
+            "yaml_files_under_scenarios": len(list((REPO / "scenarios").rglob("*.yaml"))),
             "tests_collected": counts["tests_collected"],
             "test_files": counts["test_files"],
             "commits_outside_docs_and_this_generator": counts["commits_outside_docs_and_this_generator"],
@@ -2817,11 +2207,149 @@ def build_architecture() -> dict[str, Any]:
             "commands": {
                 "tests": counts["tests_collected_command"],
                 "commits": counts["commits_command"],
-                "scenarios": "make validate && make roleplay-validate",
+                "scenarios": "make roleplay-validate",
             },
             "note": counts["note"],
         },
     }
+
+
+def build_adapter() -> dict[str, Any]:
+    import dataclasses
+
+    from lab.simulator import driver
+    from roleplay import live, runtime, spoken
+
+    trainee_lines, trainee_first = inspect.getsourcelines(runtime.Trainee)
+    aut_lines, aut_first = inspect.getsourcelines(driver.AgentUnderTest)
+
+    runners = {"roleplay/live.py": live, "roleplay/spoken.py": spoken}
+    flag = re.compile(r'add_argument\(\s*["\']--trainee-factory["\']')
+    flag_in = {
+        path: bool(flag.search(inspect.getsource(module))) for path, module in runners.items()
+    }
+    seam_present = all(hasattr(live, n) for n in ("resolve_trainee_factory", "build_trainee", "TraineeContext"))
+    examples_dir = REPO / "examples" / "adapters"
+    example_files = sorted(
+        p.name for p in examples_dir.glob("*.py") if p.name != "__init__.py"
+    ) if examples_dir.is_dir() else []
+    example_command = _documented_command(examples_dir / "echo_trainee.py")
+    adapter_doc = "docs/ADAPTER.md" if (REPO / "docs" / "ADAPTER.md").is_file() else None
+    if all(flag_in.values()):
+        status = "landed"
+    elif seam_present:
+        status = "pending: the seam (env var, resolver, TraineeContext) is in roleplay/live.py; the --trainee-factory flag is not yet on " + ", ".join(p for p, ok in flag_in.items() if not ok)
+    else:
+        status = "pending"
+
+    return {
+        "about": (
+            "How an external agent is plugged in. Two seams, both a dotted path to a "
+            "factory and a protocol with no base class: the harness is an instrument "
+            "pointed at the system, not a framework the system adopts."
+        ),
+        "agent_under_test": {
+            "protocol": "lab.simulator.driver.AgentUnderTest",
+            "file": "lab/simulator/driver.py",
+            "line": aut_first,
+            "methods": _protocol_methods(driver.AgentUnderTest, include_call=True),
+            "source": "".join(aut_lines),
+            "factory_flag": "--agent-factory pkg.mod:factory",
+            "default_factory": None,
+            "default_factory_note": (
+                "There is no default agent any more: the repository ships one system "
+                "under test and it is driven through the Trainee seam below."
+            ),
+            "statefulness": "the implementer's; pass^k takes a factory so every repeat starts clean",
+        },
+        "trainee": {
+            "protocol": "roleplay.runtime.Trainee",
+            "file": "roleplay/runtime.py",
+            "line": trainee_first,
+            "methods": _protocol_methods(runtime.Trainee),
+            "source": "".join(trainee_lines),
+            "contract_in_one_sentence": (
+                "open() returns the adviser's first turn or None to decline; "
+                "reply(customer_turn) returns the next turn or None to stop; "
+                "stop_reason, if present, says why."
+            ),
+            "factory_receives": [
+                {"field": f.name, "type": str(f.type)}
+                for f in dataclasses.fields(live.TraineeContext)
+            ] if seam_present else [],
+            "factory_env_var": getattr(live, "TRAINEE_FACTORY_ENV_VAR", None),
+            "resolution_order": (
+                "argument, then the environment variable, then the built-in model trainee"
+                if seam_present else None
+            ),
+            "implementations_in_tree": sorted(
+                set(_implements(runtime, ("open", "reply"), skip=("Trainee",)))
+                | set(_implements(live, ("open", "reply"), skip=()))
+                | set(_implements(spoken, ("open", "reply"), skip=()))
+            ),
+        },
+        "example_files": {
+            "model_trainee_factory": "roleplay/live.py::model_trainee" if seam_present else None,
+            "scripted_trainee": "roleplay/runtime.py::ScriptedTrainee",
+            "runnable_adapters_directory": "examples/adapters/" if examples_dir.is_dir() else None,
+            "runnable_adapters": example_files,
+            "guide": adapter_doc,
+        },
+        "commands": {
+            "trainee": (
+                "python -m roleplay.live --trainee-factory pkg.mod:factory"
+                if all(flag_in.values())
+                else "LAB_TRAINEE_FACTORY=pkg.mod:factory python -m roleplay.live   # flag pending"
+            ),
+            "trainee_example_offline": example_command,
+            "trainee_example_source": (
+                "examples/adapters/echo_trainee.py — module docstring" if example_command else None
+            ),
+        },
+        "cli_flag": {
+            "name": "--trainee-factory",
+            "status": status,
+            "present_in": flag_in,
+            "seam_present": seam_present,
+        },
+        "source": {
+            "agent_under_test": "lab/simulator/driver.py",
+            "trainee": "roleplay/runtime.py",
+            "trainee_seam": "roleplay/live.py",
+            "importer": "lab/cli.py::_import_object — the same importer for both seams",
+        },
+    }
+
+
+def build_findings(result: Any, manifest: dict) -> dict[str, Any]:
+    return {
+        "about": (
+            "Every headline finding in this repository, each with its denominator and "
+            "the command that reproduces it. `recomputed: true` means the figure was "
+            "rebuilt by this script from a committed artefact; anything else says what "
+            "was read and from where."
+        ),
+        "findings": [
+            _fd_discovery(result, manifest),
+            _fd_scorer(),
+            _fd_judge_gate(),
+            _fd_identical_matrix(),
+            _fd_wilson(),
+            _fd_mcnemar(),
+            _fd_delivery_gap(),
+            _fd_regime(),
+        ],
+    }
+
+
+# ----------------------------------------------------------------- architecture.json
+
+
+def _first_line(obj: Any) -> str:
+    doc = inspect.getdoc(obj) or ""
+    return doc.splitlines()[0] if doc else ""
+
+
 
 
 # ----------------------------------------------------------------- adapter.json
@@ -2867,110 +2395,6 @@ def _documented_command(path: Path) -> str | None:
     return " ".join(block) if block else None
 
 
-def build_adapter() -> dict[str, Any]:
-    import dataclasses
-
-    from lab.cli import DEFAULT_AGENT_FACTORY
-    from lab.simulator import driver
-    from roleplay import live, runtime, spoken
-
-    trainee_lines, trainee_first = inspect.getsourcelines(runtime.Trainee)
-    aut_lines, aut_first = inspect.getsourcelines(driver.AgentUnderTest)
-
-    runners = {"roleplay/live.py": live, "roleplay/spoken.py": spoken}
-    flag = re.compile(r'add_argument\(\s*["\']--trainee-factory["\']')
-    flag_in = {
-        path: bool(flag.search(inspect.getsource(module))) for path, module in runners.items()
-    }
-    seam_present = all(hasattr(live, n) for n in ("resolve_trainee_factory", "build_trainee", "TraineeContext"))
-    examples_dir = REPO / "examples" / "adapters"
-    example_files = sorted(
-        p.name for p in examples_dir.glob("*.py") if p.name != "__init__.py"
-    ) if examples_dir.is_dir() else []
-    example_command = _documented_command(examples_dir / "echo_trainee.py")
-    adapter_doc = "docs/ADAPTER.md" if (REPO / "docs" / "ADAPTER.md").is_file() else None
-    if all(flag_in.values()):
-        status = "landed"
-    elif seam_present:
-        status = "pending: the seam (env var, resolver, TraineeContext) is in roleplay/live.py; the --trainee-factory flag is not yet on " + ", ".join(p for p, ok in flag_in.items() if not ok)
-    else:
-        status = "pending"
-
-    return {
-        "about": (
-            "How an external agent is plugged in. Two seams, both a dotted path to a "
-            "factory and a protocol with no base class: the harness is an instrument "
-            "pointed at the system, not a framework the system adopts."
-        ),
-        "agent_under_test": {
-            "protocol": "lab.simulator.driver.AgentUnderTest",
-            "file": "lab/simulator/driver.py",
-            "line": aut_first,
-            "methods": _protocol_methods(driver.AgentUnderTest, include_call=True),
-            "source": "".join(aut_lines),
-            "factory_flag": "--agent-factory pkg.mod:factory",
-            "default_factory": DEFAULT_AGENT_FACTORY,
-            "statefulness": "the implementer's; pass^k takes a factory so every repeat starts clean",
-        },
-        "trainee": {
-            "protocol": "roleplay.runtime.Trainee",
-            "file": "roleplay/runtime.py",
-            "line": trainee_first,
-            "methods": _protocol_methods(runtime.Trainee),
-            "source": "".join(trainee_lines),
-            "contract_in_one_sentence": (
-                "open() returns the adviser's first turn or None to decline; "
-                "reply(customer_turn) returns the next turn or None to stop; "
-                "stop_reason, if present, says why."
-            ),
-            "factory_receives": [
-                {"field": f.name, "type": str(f.type)}
-                for f in dataclasses.fields(live.TraineeContext)
-            ] if seam_present else [],
-            "factory_env_var": getattr(live, "TRAINEE_FACTORY_ENV_VAR", None),
-            "resolution_order": (
-                "argument, then the environment variable, then the built-in model trainee"
-                if seam_present else None
-            ),
-            "implementations_in_tree": sorted(
-                set(_implements(runtime, ("open", "reply"), skip=("Trainee",)))
-                | set(_implements(live, ("open", "reply"), skip=()))
-                | set(_implements(spoken, ("open", "reply"), skip=()))
-            ),
-        },
-        "example_files": {
-            "booking_agent_factory": "tablemate/runtime.py::build_agent",
-            "model_trainee_factory": "roleplay/live.py::model_trainee" if seam_present else None,
-            "scripted_trainee": "roleplay/runtime.py::ScriptedTrainee",
-            "runnable_adapters_directory": "examples/adapters/" if examples_dir.is_dir() else None,
-            "runnable_adapters": example_files,
-            "guide": adapter_doc,
-        },
-        "commands": {
-            "booking_agent": "evallab run --agent-factory pkg.mod:factory",
-            "trainee": (
-                "python -m roleplay.live --trainee-factory pkg.mod:factory"
-                if all(flag_in.values())
-                else "LAB_TRAINEE_FACTORY=pkg.mod:factory python -m roleplay.live   # flag pending"
-            ),
-            "trainee_example_offline": example_command,
-            "trainee_example_source": (
-                "examples/adapters/echo_trainee.py — module docstring" if example_command else None
-            ),
-        },
-        "cli_flag": {
-            "name": "--trainee-factory",
-            "status": status,
-            "present_in": flag_in,
-            "seam_present": seam_present,
-        },
-        "source": {
-            "agent_under_test": "lab/simulator/driver.py",
-            "trainee": "roleplay/runtime.py",
-            "trainee_seam": "roleplay/live.py",
-            "importer": "lab/cli.py::_import_object — the same importer for both seams",
-        },
-    }
 
 
 # --------------------------------------------------------------------------- #
@@ -3307,6 +2731,8 @@ def build(out: Path) -> dict[str, str]:
     digests["recognition.json"] = _dump(
         out / "recognition.json", build_recognition(manifest)
     )
+    digests["architecture.json"] = _dump(out / "architecture.json", build_architecture())
+    digests["adapter.json"] = _dump(out / "adapter.json", build_adapter())
     digests["call.json"] = _dump(
         out / "call.json", build_call(manifest, result, served, excerpt)
     )
@@ -3315,8 +2741,6 @@ def build(out: Path) -> dict[str, str]:
     )
     digests["coverage.json"] = _dump(out / "coverage.json", build_coverage(result, manifest))
     digests["findings.json"] = _dump(out / "findings.json", build_findings(result, manifest))
-    digests["architecture.json"] = _dump(out / "architecture.json", build_architecture())
-    digests["adapter.json"] = _dump(out / "adapter.json", build_adapter())
     digests["audio/full_call.wav"] = served["sha256"]
     digests["audio/excerpt.wav"] = excerpt["sha256"]
 
@@ -3345,11 +2769,7 @@ def build(out: Path) -> dict[str, str]:
             _rel(SPOKEN_PASS / "content_filter_probe.json"),
             _rel(FULL_CALL_PASS),
             _rel(REPO / "fixtures" / "audio" / "cloud" / "audio_suite_transcripts.json"),
-            _rel(REPO / "fixtures" / "live_run" / "traces"),
-            _rel(REPO / "fixtures" / "replay_run"),
             _rel(REPO / "lab" / "judges" / "hallucinated_confirmation"),
-            _rel(REPO / "fixtures" / "live_full" / "run_report.json"),
-            _rel(REPO / "fixtures" / "live_caller"),
             _rel(REPO / "fixtures" / "audio" / "transport"),
             _rel(REPO / "lab" / "selection" / "calibration.json"),
             _rel(REPO / "scenarios"),

@@ -45,24 +45,24 @@
   "counts": {
     "commands": {
       "commits": "git rev-list --count HEAD -- . ':(exclude)docs' ':(exclude)scripts/build_site_data.py'",
-      "scenarios": "make validate && make roleplay-validate",
+      "scenarios": "make roleplay-validate",
       "tests": "python -m pytest --collect-only -q"
     },
-    "commits_outside_docs_and_this_generator": 72,
+    "commits_outside_docs_and_this_generator": 73,
+    "customer_profiles": 8,
     "first_commit_date": "2026-08-22",
     "note": "tests_collected is the collection count; the suite's pass/skip split is not recomputed here (it needs a 70 s run) — `pytest` prints it. The commit count excludes docs/ and this generator so that committing this pack does not stale it; every other commit does, and should.",
-    "scenario_rows": 182,
-    "scenario_rows_by_corpus": {
-      "advisory_coaching": 70,
-      "advisory_regimes": 18,
-      "audio_tier": 18,
-      "restaurant_booking": 55,
-      "retrieval_questions": 18,
-      "transport_tier": 3
-    },
-    "test_files": 63,
-    "tests_collected": 2369,
-    "yaml_files_under_scenarios": 195
+    "scenario_rows": 70,
+    "scenario_suites": [
+      "compliance",
+      "consistency",
+      "locale",
+      "objection",
+      "pitch"
+    ],
+    "test_files": 48,
+    "tests_collected": 1501,
+    "yaml_files_under_scenarios": 112
   },
   "event_kinds": {
     "actors": [
@@ -202,12 +202,10 @@
   },
   "one_idea": "The trace is the product. Every verdict, latency figure and judge call is a function of one JSONL event stream with an injected clock; every check is decided on event position, not timestamp.",
   "packages": {
-    "error_analysis": "hand-coded failure modes, counted from codes.csv",
-    "lab": "the engine: trace, checks, judges, simulator, voice, selection, report",
-    "ragcheck": "retrieval and groundedness",
-    "roleplay": "advisory sales coaching — the scorer is the system under test",
-    "scenarios": "the corpora, as YAML",
-    "tablemate": "restaurant booking — the portability proof"
+    "lab": "the engine: trace, checks, judges, simulator, voice, report",
+    "ragcheck": "retrieval and groundedness, scored separately",
+    "roleplay": "advisory sales coaching — the one system under test; its scorer carries the seeded defects",
+    "scenarios": "the corpus, as YAML — plus a spreadsheet path for the people who write it"
   },
   "regimes": {
     "count": 4,
@@ -286,5 +284,6 @@
       }
     },
     "source": "roleplay/advisory.py — every entry carries a paragraph-level citation or is labelled an assumption"
-  }
+  },
+  "systems_under_test": "One. The harness was demonstrated against a second, unrelated domain until that domain was removed; the portability argument is therefore made by the adapter seam below rather than by a worked second example."
 }

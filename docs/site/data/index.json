@@ -3,11 +3,11 @@
   "files": [
     {
       "path": "adapter.json",
-      "sha256": "ee6d073144ce5199b796d496696fe25c33d5c421401abcf1568057dd84135151"
+      "sha256": "7dc8ec47a1a3c68f1671009b01838374e71207ce8074d798f53fdd6821b21807"
     },
     {
       "path": "architecture.json",
-      "sha256": "bf094869ac361f3a44edd1665a56938188de2bce224faf22789d4782361023fb"
+      "sha256": "36859b5a931bae028859d0e099ea3ec750d31027e492e698f3521c697337948f"
     },
     {
       "path": "audio/excerpt.wav",
@@ -31,7 +31,7 @@
     },
     {
       "path": "coverage.json",
-      "sha256": "335de4240f47dcb0ce9e96692bd0a6cf9e11c7b19acfb7da193e178a69f15155"
+      "sha256": "fcaed3102efc11f1f516cd76e8ebad02148d20578f7cc5eec06ed876f3a2bcfe"
     },
     {
       "path": "finding.json",
@@ -39,7 +39,7 @@
     },
     {
       "path": "findings.json",
-      "sha256": "159aa173e7796091339d7e6d3cdf4af4a34644247038f3d269a6c8b4a9c1ff19"
+      "sha256": "9a93164268cfc1095dedf2a8116e80d011726d89a22292ef59129bf997a0bcf5"
     },
     {
       "path": "question_turns.json",
@@ -51,7 +51,7 @@
     },
     {
       "path": "secondary_findings.json",
-      "sha256": "65abd1e918cc22c8feb0a83db0aa0d68662a2c81b7962cbdbddc8b6fcf42a798"
+      "sha256": "3a57da01dde423b4b933f50df038e3effda7c861d8ea696f2c4c4aa5cc42a7cd"
     }
   ],
   "house_rules": [
@@ -72,11 +72,7 @@
     "fixtures/audio/spoken_call_pass/content_filter_probe.json",
     "fixtures/audio/spoken_call_pass/full_call.wav",
     "fixtures/audio/cloud/audio_suite_transcripts.json",
-    "fixtures/live_run/traces",
-    "fixtures/replay_run",
     "lab/judges/hallucinated_confirmation",
-    "fixtures/live_full/run_report.json",
-    "fixtures/live_caller",
     "fixtures/audio/transport",
     "lab/selection/calibration.json",
     "scenarios",

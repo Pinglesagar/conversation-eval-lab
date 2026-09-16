@@ -104,7 +104,7 @@
   <div class="where"><span class="where__h">The two systems under test that ship with it</span>
     <table>
       <tr><td>roleplay/</td><td>A coaching product for financial advisers: an AI plays a customer, a trainee practises a sales call, and software grades the result. Carries three deliberate, documented defects.</td></tr>
-      <tr><td>tablemate/</td><td>A restaurant booking assistant with several agents handing work to each other. Also deliberately imperfect.</td></tr>
+      <tr><td>ragcheck/</td><td>A separate, smaller subject: an agent that looks things up in documents before answering. Its retrieval and its truthfulness are scored apart.</td></tr>
     </table>
   </div>
 
@@ -112,7 +112,7 @@
 
   <div class="recap"><b>What to take from lesson 00</b>
     <ul>
-      <li>The project is a test rig, not a product. The rig is <code>lab/</code>; the things being tested are <code>roleplay/</code> and <code>tablemate/</code>.</li>
+      <li>The project is a test rig, not a product. The rig is <code>lab/</code>; the thing being tested is <code>roleplay/</code>.</li>
       <li>Recording first, judging second. That order is the whole design.</li>
       <li>The grader is software, so the grader is also under test.</li>
     </ul>
@@ -307,9 +307,9 @@
 
   <div class="where"><span class="where__h">Things the agent did, not just said</span>
     <table>
-      <tr><td>tool_call</td><td>The agent used a tool: looked up a booking, recorded a disclosure, raised a compliance flag. The arguments are recorded.</td></tr>
+      <tr><td>tool_call</td><td>The agent used a tool: recorded a disclosure, raised a compliance flag, loaded the customer's profile. The arguments are recorded.</td></tr>
       <tr><td>tool_result</td><td>What came back, and whether it worked.</td></tr>
-      <tr><td>agent_handoff</td><td>One agent passed the conversation to another — a greeter handing over to a booking specialist.</td></tr>
+      <tr><td>agent_handoff</td><td>One agent passed the conversation to another — a first-line agent handing over to a specialist. Multi-agent systems are the reason this event kind exists.</td></tr>
     </table>
   </div>
 
@@ -360,7 +360,7 @@
   <div class="analogy">
     <div>
       <span class="analogy__tag">The everyday version</span>
-      <p>A restaurant's mystery-shopper brief. It says which branch, what to order, what to complain about, and what the shopper must confirm: were you greeted within a minute, were allergens mentioned, was the bill itemised.</p>
+      <p>A mystery-shopper brief. It says which branch to visit, what to ask for, what to object to, and what the shopper must confirm: were you greeted within a minute, were the charges explained, was the paperwork itemised.</p>
       <p>The brief is written by the person who knows the standards — not by the person who writes the software.</p>
     </div>
     <div>
@@ -422,7 +422,7 @@ tools:
       <tr><td>scenarios/roleplay/ (78)</td><td>The advisory coach: pitches, objections, closings, plus customer profiles.</td></tr>
       <tr><td>scenarios/advisory/ (31)</td><td>Regulated compliance rows, including the four cited <button class="t" data-t="regime">regime</button> registers.</td></tr>
       <tr><td>scenarios/audio/ (21)</td><td>Voice rows: noise, packet loss, codecs, accents.</td></tr>
-      <tr><td>scenarios/edge/ (20), happy/ (15), adversarial/ (12)</td><td>The restaurant domain: ordinary cases, awkward cases, hostile cases.</td></tr>
+      <tr><td>scenarios/audio/transport/ (3)</td><td>The WebRTC tier: three rows that audit the instrument rather than the adviser.</td></tr>
       <tr><td>scenarios/personas/ (9), voice/ (8)</td><td>Reusable characters and voice settings that rows point at.</td></tr>
     </table>
   </div>
@@ -1047,10 +1047,10 @@ python -m roleplay.live</code></pre>
       </g>
 
       <rect x="30" y="140" width="410" height="86" fill="#12100C" stroke="#F2B84B" stroke-width="2"/>
-      <text x="46" y="164" class="svg-label" fill="#F2B84B">THINGS UNDER TEST — deliberately imperfect</text>
+      <text x="46" y="164" class="svg-label" fill="#F2B84B">THE SYSTEM UNDER TEST — deliberately imperfect</text>
       <g class="svg-sub" fill="#CFCBC2">
         <rect x="46" y="174" width="182" height="38" fill="#10131A" stroke="#222835"/><text x="137" y="198" text-anchor="middle">roleplay/</text>
-        <rect x="238" y="174" width="186" height="38" fill="#10131A" stroke="#222835"/><text x="331" y="198" text-anchor="middle">tablemate/</text>
+        <rect x="238" y="174" width="186" height="38" fill="#10131A" stroke="#222835"/><text x="331" y="198" text-anchor="middle">ragcheck/</text>
       </g>
 
       <rect x="460" y="140" width="410" height="86" fill="#141020" stroke="#9D8DFF" stroke-width="2"/>
@@ -1097,7 +1097,7 @@ python -m roleplay.live</code></pre>
 
   <div class="where"><span class="where__h">Everything else</span>
     <table>
-      <tr><td>tablemate/</td><td>The restaurant booking bot: several agents handing work to each other. Proves the harness is not shaped around one domain.</td></tr>
+      <tr><td>ragcheck/</td><td>Retrieval and groundedness, scored separately and never averaged into one number.</td></tr>
       <tr><td>scenarios/</td><td>195 <button class="t" data-t="scenario">scenario</button> files plus the loader and its schema.</td></tr>
       <tr><td>fixtures/</td><td>Committed recordings: traces, audio, transcripts. This is why the whole suite runs with no API key.</td></tr>
       <tr><td>scripts/</td><td>The only code that can spend money — the five recorders — plus the generator that builds the public page's data.</td></tr>
@@ -1112,7 +1112,7 @@ python -m roleplay.live</code></pre>
   <div class="recap"><b>What to take from lesson 13</b>
     <ul>
       <li><code>lab/</code> is the portable half and imports no domain package.</li>
-      <li><code>roleplay/</code> and <code>tablemate/</code> are the things being tested, broken on purpose.</li>
+      <li><code>roleplay/</code> is the thing being tested, broken on purpose.</li>
       <li><code>scenarios/</code> and <code>fixtures/</code> are what the tests eat; <code>scripts/</code> is the only code that spends money.</li>
     </ul>
   </div>
@@ -1199,6 +1199,6 @@ make install</code></pre>
 </main>
 </div>
 
-<script src="learn.js?v=d753471fdd"></script>
+<script src="learn.js?v=672d87b3b1"></script>
 </body>
 </html>

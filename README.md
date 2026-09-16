@@ -1,9 +1,10 @@
 # conversation-eval-lab
 
 An evaluation harness for conversational AI agents, voice and text, built on one
-auditable trace. One engine drives two unrelated domains — an **advisory
-sales-coaching platform** for regulated financial services, and a
-restaurant-booking assistant — which is the evidence that it will drive a third.
+auditable trace. It is pointed at an **advisory sales-coaching platform** for
+regulated financial services: an AI plays the customer, a trainee adviser
+practises the call, and software grades the result — out loud, through real
+speech engines, as well as in text.
 **It needs no API key:** every live path has a recorded fixture that replays in
 its place, so a clean clone installs and goes green offline, in under two
 minutes, with no credential of any kind.
@@ -37,11 +38,17 @@ Then, in the order you will want them:
 
 Everything below is the detail, and none of it is needed to run anything.
 
-The advisory domain is the one to read first. The restaurant domain is kept
-deliberately, and its job is stated plainly: **one engine, two unrelated domains,
-which is the evidence it will work on a third.** A harness that only runs against
-the domain it was written for has proved nothing about portability. Retrieval
-comes after both, as a different *kind* of evaluation rather than a third domain.
+The advisory domain is the one to read first. Retrieval comes after it, as a
+different *kind* of evaluation rather than a second domain.
+
+**On portability, plainly.** An earlier version of this repository carried a
+second, unrelated system under test — a restaurant-booking assistant — and its
+job was to show that one engine drives two domains. It was removed to keep the
+repository to one subject. So portability is now argued by the seam rather than
+demonstrated by a worked second example: `lab/` imports no domain package, and an
+external agent is plugged in through a two-method protocol and a dotted path
+([`docs/ADAPTER.md`](docs/ADAPTER.md)). That is a weaker claim than a second
+working domain, and it is stated as one.
 
 ## The advisory domain, first
 
@@ -124,85 +131,6 @@ recorded as a finding rather than hidden — no TTS vendor synthesises Cantonese
 a market with a regional hub cannot be audio-tested on this stack, and the
 remediation is named. See [`docs/AUDIO_SUITE.md`](docs/AUDIO_SUITE.md) for the
 vendor capability matrix.
-
----
-
-## The restaurant case study — portability, and what it found
-
-Two committed runs, because the harness is pointed at the same corpus twice: once
-at the **deterministic** build of the system under test, and once at a build with a
-model in the agent's decision seat, a model playing the caller and a model judging.
-Both replay offline from committed fixtures with no key.
-
-### Live — a model in all three seats
-
-[`fixtures/live_full/`](fixtures/live_full/) — 47 rows × k=3 = **141
-conversations**, agent, caller and judge all `azure-openai/gpt-4.1`, 2,056 recorded
-model calls.
-
-| | |
-| --- | --- |
-| scenarios driven | **47/55** (8 voice rows need the audio path, not the text adapter) |
-| stable-pass / flaky / stable-fail | **34/47 · 6/47 · 7/47** — the flake band is the middle one, 12.8% |
-| contract evaluations that failed | **50/361** (13.9%) |
-| findings, each anchored to trace evidence | **23** — 5 the corpus declares, **18 it did not** |
-| seeded defect BUG-1 (phantom confirmation) | fired **6/6** conversations where it was reachable |
-| seeded defect BUG-2 (head-count re-ask) | fired **2/5**; 1 of 6 conversations never reached the desk |
-| seeded defect BUG-3 (dietary note dropped) | fired **0/4**; the live agent carried the note every time |
-| judge flag rate, against its own calibration | **10/38 (26.3%)** flagged, at TPR 8/8 and TNR 16/16 on 24 hand labels |
-| repeats that were identical | **not required, and not expected** — see below |
-
-### Deterministic — the same corpus, the scripted build
-
-[`fixtures/replay_run/`](fixtures/replay_run/), which CI regenerates and diffs byte
-for byte on every commit:
-
-| | |
-| --- | --- |
-| scenarios with no *undeclared* failure, on every repeat | **44/47** |
-| contract evaluations that failed | **36/369** |
-| findings | **12** (9 declared by the corpus, 3 not) |
-| repeats that were byte-identical (k = 3) | **47/47** |
-| response latency, p50 / p95 (175 turn samples) | **717 ms / 1104 ms**, calibration gate PASS |
-| judge agreement with hand labels (prompt v2) | **TPR 8/8, TNR 16/16** on 24 labelled calls |
-| failure modes found by reading the traces by hand | **13** modes, 32 coded occurrences |
-| product occurrences the checks caught | **9/31** |
-
-The last two lines are the ones I would ask about: the suite is good at what it
-was told to look for, and blind to 22 of the 31 product occurrences a human
-found. That gap is why
-[`error_analysis/`](error_analysis/) is a committed part of this repository
-rather than a paragraph about methodology.
-
-### The three sentences that matter about those two tables
-
-**Every literal in a check is a check that works once.** The single most valuable
-thing the live run produced is a number about the *harness*, not the agent:
-`PromiseContract` — the most reviewed pattern set in this repository — caught **1 of
-7** unbacked confirmations in the previous phase's live output. Two of the six
-misses were not even a vocabulary problem; the pattern was right and the *punctuation*
-was wrong, because the patterns use an ASCII apostrophe and a model types U+2019. It
-now catches 7 of 7, and the same rewrite scores **TPR 8/8, TNR 16/16** on the
-judge's own 24 hand-labelled items — the same score as the judge, from a rule that
-costs nothing and cannot be rate-limited. [DESIGN.md](DESIGN.md) §10 is the whole
-argument.
-
-**A seeded defect is a certainty in one build and a tendency in the other.**
-BUG-1 fired 6/6, BUG-2 2/5, BUG-3 0/4 — against 3/3 each under the scripted build.
-So four `expected_failure` blocks in the corpus now name the build they describe and
-record what the other build was observed to do instead. The machinery had to change
-to allow that: staleness is now decided across k repeats rather than per repeat,
-because a probabilistic defect that fires twice in three was being reported as both
-reproduced *and* a stale expectation in the same run.
-
-**`FAIL` and `PASS` are both correct, and they answer different questions.** Both
-reports' verdicts are **FAIL**, because the system under test really does tell a
-party of six their table is booked and then never book it. CI is green because the
-*regression gate* passed on each: nothing changed since that build's own baseline.
-The live run is diffed against a live baseline and the scripted run against a
-scripted one, because a live run compared to a scripted baseline would report the
-difference between two builds as a regression. Neither verdict is derived from the
-other — see [DESIGN.md](DESIGN.md) §9.
 
 ---
 
@@ -394,8 +322,8 @@ object is worse than no name at all.
 | The name you may be looking for | What it is here | What it is **not** |
 | --- | --- | --- |
 | **guardrails** | `lab/checks/` — `ToolContract(forbidden=…)` and `PhraseContract(forbidden=…)` declared as scenario data. 20 of 55 rows forbid a tool, 6 forbid a phrase, 23 do at least one | a runtime enforcement layer, a content-safety or PII classifier. These are assertions over a recorded trace, offline, after the fact |
-| **red-teaming, prompt injection** | `scenarios/adversarial/` — 12 of the 55 rows: injection inside a booking name, a dietary note, a policy question and a fake system turn; impersonation; over-reach; disclosure probes | a generated attack suite, a fuzzer, or an attack-success rate. Twelve hand-written rows is a corpus, not coverage |
-| **golden datasets** | `evallab validate --coverage` over 194 committed YAML files — 55 booking rows and 70 advisory rows, plus four hand-labelled sets. The loader **fails the load on an assertion that could never fire** | an annotation UI, a multi-rater workflow, or agreement between two humans. Every label here is one person, one pass |
+| **red-teaming, prompt injection** | `scenarios/roleplay/` — rows where the customer tries to pull the adviser across the licensing boundary, and the seeded blocklist that catches only two phrasings of it. See `roleplay/SEEDED_DEFECTS.md` | PLACEHOLDER_TAILurn; impersonation; over-reach; disclosure probes | a generated attack suite, a fuzzer, or an attack-success rate. Twelve hand-written rows is a corpus, not coverage |
+| **golden datasets** | `make roleplay-validate` over the committed YAML — 70 advisory rows, 8 customer profiles, 36 cited register entries, plus four hand-labelled sets. The loader **fails the load on an assertion that could never fire** | an annotation UI, a multi-rater workflow, or agreement between two humans. Every label here is one person, one pass |
 | **regression testing, drift detection** | a committed baseline diffed in both directions — a finding that *vanishes* fails the build too — and CI diffing `fixtures/replay_run/` byte for byte | production drift monitoring. Nothing samples live traffic, tracks a metric over time or alerts |
 | **observability** | `lab/trace/` as the schema and `lab/report/interop.py` as the export: langfuse round-trips exactly, promptfoo is a one-way projection, neither is a dependency | a collector, an agent, a hosted backend or a dashboard. This exports *to* an observability tool |
 | **LLM-as-judge, position bias** | `lab/judges/` — TPR/TNR/kappa against hand labels, every disagreement listed, and a registry that raises below threshold. Single-item binary grading against a fixed rubric has no position for a bias to attach to | a mitigation applied afterwards; it is a property of this shape of judge, and a pairwise judge would need the usual remedy |
@@ -582,7 +510,7 @@ way it was found rather than the way it was set up.
 
 Setting it up, plainly: the first three were **planted** when the system under
 test was built, and the answer key is
-[`tablemate/SEEDED_BUGS.md`](tablemate/SEEDED_BUGS.md) — a harness demonstrated
+[`roleplay/SEEDED_DEFECTS.md`](roleplay/SEEDED_DEFECTS.md) — a harness demonstrated
 against a working agent proves nothing, because green results are equally
 consistent with a good agent and a blind test suite. That key also promises there
 is no fourth planted bug. Findings 4 and 5 are the ones nobody put there.
@@ -636,7 +564,7 @@ lab/                    the reusable harness (destined for its own repository)
   simulator/            personas, goals, the driver, pass^k
   report/               markdown + JSON rendering, heatmaps, interop
   cli.py                `evallab` — the one entry point
-tablemate/              the system under test: a multi-agent booking assistant
+examples/adapters/      three worked adapters to copy
 roleplay/               the BFSI advisory pack, where the scorer is under test
   live.py               the multi-turn loop with a model in both seats
   spoken.py             that loop run through real TTS and STT, graded on what was heard
@@ -710,7 +638,7 @@ to print — refusals whose value is in the branch that raises, not the branch t
 returns. A suite that executes every line and asserts nothing scores 100%. The
 measurement that would actually answer the question is mutation testing — seed a
 defect, check the suite catches it — and it has not been run here; three seeded
-defects in `tablemate/` are the hand-built version of that idea, not a kill rate.
+defects in `roleplay/scorer.py` are the hand-built version of that idea, not a kill rate.
 Read 84% as evidence that the code is exercised, not as evidence that it is
 guarded.
 

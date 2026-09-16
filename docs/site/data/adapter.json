@@ -1,7 +1,8 @@
 {
   "about": "How an external agent is plugged in. Two seams, both a dotted path to a factory and a protocol with no base class: the harness is an instrument pointed at the system, not a framework the system adopts.",
   "agent_under_test": {
-    "default_factory": "tablemate.runtime:build_agent",
+    "default_factory": null,
+    "default_factory_note": "There is no default agent any more: the repository ships one system under test and it is driven through the Trainee seam below.",
     "factory_flag": "--agent-factory pkg.mod:factory",
     "file": "lab/simulator/driver.py",
     "line": 300,
@@ -22,13 +23,11 @@
     "status": "landed"
   },
   "commands": {
-    "booking_agent": "evallab run --agent-factory pkg.mod:factory",
     "trainee": "python -m roleplay.live --trainee-factory pkg.mod:factory",
     "trainee_example_offline": "LAB_TRAINEE_FACTORY=examples.adapters.echo_trainee:build_trainee python -m roleplay.live --scripted-customer --only eu --root /tmp/echo_run",
     "trainee_example_source": "examples/adapters/echo_trainee.py — module docstring"
   },
   "example_files": {
-    "booking_agent_factory": "tablemate/runtime.py::build_agent",
     "guide": "docs/ADAPTER.md",
     "model_trainee_factory": "roleplay/live.py::model_trainee",
     "runnable_adapters": [
