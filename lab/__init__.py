@@ -2,11 +2,11 @@
 
 WHAT THIS DEMONSTRATES
 ----------------------
-`lab` is the framework half of this repository; `tablemate` is the system it is
+`lab` is the framework half of this repository; `roleplay` is the system it is
 pointed at. The split is deliberate and load-bearing: a harness that can only
 evaluate the one agent it was written for has not been shown to evaluate
 anything. `lab` knows about traces, checks, judges and timing. It does not know
-what a restaurant is.
+what financial advice is.
 
 The subpackages, in the order the data flows:
 
@@ -23,7 +23,7 @@ The subpackages, in the order the data flows:
     lab.report     rendering results for humans
 
 Intended to be split into its own distribution later; nothing in `lab` imports
-from `tablemate`, and that boundary is worth keeping.
+from `roleplay`, and that boundary is worth keeping.
 """
 
 __version__ = "0.1.0"

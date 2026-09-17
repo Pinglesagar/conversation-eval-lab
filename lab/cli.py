@@ -41,7 +41,7 @@ TPR/TNR next to the abstention. An abstention is visible; a guess is not.
 LAYERING
 --------
 `lab` is meant to be extractable into its own package, and the case study
-(`tablemate`, `scenarios`, `fixtures`) is not part of it. So nothing here is
+(`roleplay`, `scenarios`, `fixtures`) is not part of it. So nothing here is
 imported at module scope: the corpus loader, the agent factory and the caller
 fixtures are resolved lazily, by dotted path, through `--corpus-module` and
 `--agent-factory`. `import lab` therefore never pulls in the case study, and the
@@ -113,7 +113,7 @@ DEFAULT_CORPUS_MODULE: str = "roleplay.corpus"
 #: Dotted path to a callable with `build_agent`'s keyword signature.
 
 #: Where a live agent reads its litellm route from. A *name*, not an import from
-#: the case study, for the layering reason above — `tablemate.runtime` holds the
+#: the case study, for the layering reason above — the domain package holds the
 #: same string on the other side of the seam, and a test asserts the two agree so
 #: that renaming one without the other is a failure rather than a silent gap in
 #: the self-grading check.
@@ -218,7 +218,7 @@ def _import_module(name: str) -> Any:
             raise SystemExit(
                 f"cannot import '{name}', and it is not beside the library either "
                 f"(looked in {root}).\n"
-                "The case study — scenarios/, tablemate/'s fixtures, error_analysis/ — "
+                "The case study — scenarios/, roleplay/, fixtures/ — "
                 "ships in the checkout, not in the wheel, so an installed copy has "
                 "only the library.\n"
                 "Install for development from a clone instead:\n"

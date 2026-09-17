@@ -45,7 +45,7 @@ onto the field's.
 
 The package is deliberately excluded from the installed distribution (see
 `pyproject.toml`): the corpus is the case study's data, not part of the reusable
-`lab` harness, and shipping it inside a library would make one restaurant's
+`lab` harness, and shipping it inside a library would make one firm's
 evaluation rows look like part of the framework's API.
 """
 

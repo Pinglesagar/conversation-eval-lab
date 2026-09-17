@@ -1,15 +1,15 @@
 # Retargeting the harness: a BFSI sales-roleplay coach
 
-This document is the tour of `roleplay/` — a second system under test, in a
-domain that shares nothing with the restaurant-booking case study except the
-framework underneath it.
+This document is the tour of `roleplay/` — the system under test, and the tour
+to read first.
 
-**The claim being tested is about `lab/`, not about the new domain.** An eval
-framework earns its name by surviving a change of subject, and the only way to
-show that is to change the subject. So: a different product, different actors,
-different tools, a different regulator, a different failure taxonomy — and
-`lab/` imported without one line of modification. `roleplay/` depends on `lab/`;
-`lab/` has never heard of `roleplay/`.
+**The claim being tested is about `lab/`, not about the domain.** An eval
+framework earns its name by surviving a change of subject. This domain was built
+second, against a `lab/` that had been written for a different subject entirely,
+and `lab/` was imported without one line of modification: different product,
+different actors, different tools, a different regulator, a different failure
+taxonomy. `roleplay/` depends on `lab/`; `lab/` has never heard of `roleplay/`,
+and that import graph is checked rather than claimed.
 
 ```
 make roleplay-validate      # the corpus against its schema, with coverage
@@ -107,11 +107,11 @@ whole transcript. So `roleplay/runtime.py` owns the loop. That is the right plac
 for it: domain shape belongs in the adapter, and everything downstream of the
 trace was unaffected by the change.
 
-**Also not reused:** `scenarios/loader.py`. The roleplay corpus has its own
-loader with its own closed vocabularies, because the booking loader's tool-name
-set, tag vocabulary and suite list are *booking* data. Sharing the code would
-have produced one loader holding two products' vocabularies. What is shared is
-the four rules — see §3.
+**And the corpus loader is domain code, not harness code.** `roleplay/corpus.py`
+holds its own closed vocabularies — tool names, tags, suites — because all three
+are *this domain's* data. A shared loader would be one loader holding every
+product's vocabulary, which is how a closed vocabulary stops being closed. What
+transfers between domains is the four rules, not the lists — see §3.
 
 ---
 
@@ -127,11 +127,11 @@ the four rules — see §3.
   rows with a declared expected failure: 38
 ```
 
-Same four rules as the booking corpus: closed vocabularies; every assertion must
-be *able* to fire; `expected_failure` is an expectation about the system rather
-than a note; collect every problem, then report.
+Four rules, and they are the part that transfers: closed vocabularies; every
+assertion must be *able* to fire; `expected_failure` is an expectation about the
+system rather than a note; collect every problem, then report.
 
-Two things this corpus has that the booking one cannot:
+Two things this corpus has that a corpus of recorded calls cannot:
 
 **A human column.** Every row declares `expectation.human_verdict` — pass or
 fail — and a `reason`. The golden dataset and the regression suite are one
@@ -152,11 +152,11 @@ row asserts a stimulus it does not contain and the check can only ever fail for
 the wrong reason
 ```
 
-Note the inversion, which is worth naming: in the booking corpus a phrase
-contract constrains the *agent*, and constraining the simulated caller would be
-checking the harness. Here the trainee **is** the stimulus, and asserting that
-the offending sentence is genuinely present is what makes a green compliance
-verdict a real miss rather than an empty row.
+Note the inversion, which is worth naming: a phrase contract normally constrains
+the *system under test*, and constraining the simulated counterpart would be
+checking the harness. Here the system under test is the **grader**, so the trainee
+is the stimulus, and asserting that the offending sentence is genuinely present is
+what makes a green compliance verdict a real miss rather than an empty row.
 
 ---
 

@@ -57,8 +57,8 @@ def _calibration() -> JudgeCalibration:
 
 def _report() -> RunReport:
     return RunReport(
-        title="TableMate evaluation",
-        subject="tablemate 0.1.0",
+        title="Advisory evaluation",
+        subject="roleplay 0.1.0",
         run_label="fixture-run",
         stability=[
             _verdict("booking/simple", "PPPPP"),
@@ -382,8 +382,8 @@ def test_rendering_is_deterministic_so_a_committed_report_diffs_cleanly() -> Non
 
 def test_write_produces_both_formats(tmp_path) -> None:
     paths = _report().write(tmp_path, stem="run_report")
-    assert paths["markdown"].read_text(encoding="utf-8").startswith("# TableMate evaluation")
-    assert json.loads(paths["json"].read_text(encoding="utf-8"))["subject"] == "tablemate 0.1.0"
+    assert paths["markdown"].read_text(encoding="utf-8").startswith("# Advisory evaluation")
+    assert json.loads(paths["json"].read_text(encoding="utf-8"))["subject"] == "roleplay 0.1.0"
 
 
 def test_an_empty_suite_renders_without_pretending_it_ran(tmp_path) -> None:

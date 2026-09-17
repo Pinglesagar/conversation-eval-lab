@@ -2,7 +2,7 @@
 
 WHY THIS MODULE EXISTS
 ----------------------
-Every live number in this repository was measured on the restaurant-booking
+Every live number in this repository was measured on the advisory
 domain. `roleplay/` — the domain that actually resembles the systems a
 financial-services coaching product ships — had no live path at all: no
 `litellm`, no opt-in flag, no recording. Its scorer was deterministic code
@@ -613,7 +613,7 @@ class LiveRubricScorer:
 def require_independent_scorer(*, allow_self_grading: bool = False) -> None:
     """Refuse to score a live trainee's words with the trainee's own model.
 
-    The same exposure `lab.cli` guards on the restaurant side, in the domain that
+    The same exposure `lab.cli` guards at the CLI boundary, in the domain that
     actually has two model seats: `LAB_LIVE_TRAINEE` puts a model in the adviser's
     chair and `LAB_LIVE_SCORER` puts one behind the rubric, both routes are read
     from the environment, and on a machine with one provider configured the

@@ -85,7 +85,7 @@ of answering a question nobody asked.
 
 CONSOLIDATION NOTE
 ------------------
-`tablemate.runtime.ModelClient` is a sibling implementation of the same
+A domain package's own model client is a sibling implementation of the same
 record/replay/backoff discipline for a different domain, and `lab.simulator.
 LLMCaller` is a third for the caller side. Three homes for one idea is a debt, and
 the honest place to say so is here rather than in a commit message: the shape they

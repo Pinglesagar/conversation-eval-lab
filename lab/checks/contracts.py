@@ -219,7 +219,7 @@ def _or_group(spec: str) -> list[str]:
 # --------------------------------------------------------------------------- #
 
 
-#: Default ask-patterns per field name, for the restaurant-booking domain. These
+#: Default ask-patterns per field name, for a conversational-booking domain. These
 #: are starting points, not a taxonomy: a scenario that phrases things unusually
 #: adds its own `ask_patterns` on top (`Goal.is_asked_for` unions the two — it used
 #: to replace, and the reason it no longer does is in that method's docstring).

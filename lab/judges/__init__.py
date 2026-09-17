@@ -58,7 +58,7 @@ can enter this package; there is deliberately no code path that manufactures one
 THE ONE SUBPACKAGE BOTH KINDS OF EVALUATION USE
 -----------------------------------------------
 `lab.judges` is the only part of the engine shared by the two different
-activities in this repository. Conversation evaluation (`roleplay/`, `tablemate/`,
+activities in this repository. Conversation evaluation (`roleplay/`,
 `scenarios/`) reaches into seven `lab` subpackages; retrieval evaluation
 (`ragcheck/`) imports three — this one, `lab.trace` and `lab.clock` — and nothing
 else. So the calibration machinery lives here rather than in either domain, and

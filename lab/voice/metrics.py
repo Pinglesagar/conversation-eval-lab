@@ -37,7 +37,7 @@ thing a reader needs to judge it.
 
 WHY POOLING ACROSS SESSIONS IS THE NORMAL CASE
 ----------------------------------------------
-A single restaurant-booking conversation has perhaps four to eight turns. p95
+A single advisory conversation has perhaps four to eight turns. p95
 needs twenty samples, p99 needs a hundred. So per-session percentiles are
 *expected* to be refused, and the intended usage is `response_latency_report`
 over a whole suite of traces. Reporting a per-session p95 across a five-turn
