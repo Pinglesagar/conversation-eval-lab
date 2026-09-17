@@ -27,7 +27,7 @@ rather than a stack trace. If you use [uv](https://docs.astral.sh/uv/):
 python3.12 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 
-pytest                 # 2,302 offline tests, 46 s, no keys
+pytest                 # 1,505 offline tests, 18 s, no keys
 make start             # one finding, printed in a screen
 ```
 
@@ -42,7 +42,7 @@ Then, in the order you will want them:
 
 | | |
 | --- | --- |
-| `make help` | every target, grouped — the four that spend money are marked |
+| `make help` | every target, grouped — the two that spend money are marked |
 | `make gate` | every offline check, cheapest first; run it before you push |
 | [docs/README.md](docs/README.md) | the documentation, indexed by question |
 
@@ -54,11 +54,11 @@ The advisory domain is the one to read first. Retrieval comes after it, as a
 different *kind* of evaluation rather than a second domain.
 
 **On portability, plainly.** An earlier version of this repository carried a
-second, unrelated system under test — a restaurant-booking assistant — and its
-job was to show that one engine drives two domains. It was removed to keep the
-repository to one subject. So portability is now argued by the seam rather than
-demonstrated by a worked second example: `lab/` imports no domain package, and an
-external agent is plugged in through a two-method protocol and a dotted path
+second, unrelated system under test, and its job was to show that one engine
+drives two domains. It was removed to keep the repository to one subject. So
+portability is now argued by the seam rather than demonstrated by a worked second
+example: `lab/` imports no domain package, and an external agent is plugged in
+through a two-method protocol and a dotted path
 ([`docs/ADAPTER.md`](docs/ADAPTER.md)). That is a weaker claim than a second
 working domain, and it is stated as one.
 
@@ -204,33 +204,25 @@ demonstrate retrieval engineering") are written down in
 
 ## Beyond the first screen
 
-Install is above. Past that, four targets cover the everyday work:
+Install is above. Past that, `make help` groups every target; these are the ones
+that produce evidence, and each finishes in about a second:
 
 ```bash
-make demo                   # the case study end to end, into reports/
-make replay                 # re-check every committed trace, no agent involved
-make calibrate              # the timing and judge gates
-make errors                 # recount the hand-coded failure modes, redraw the chart
+make roleplay-demo          # all 70 behavioural rows, contracts and consistency
+make cited-calls            # both recorded calls, shipped rubric vs cited scorecard
+make spoken-replay          # the same call through the recorded speech
+make ragcheck               # retrieval, groundedness, and the judge's own error rate
+make advisory-verdicts      # the 18 advisory rows, decided from the registers
+make transport-report       # the WebRTC tier, recomputed from its recordings
 ```
 
 No keys, no network at test time, no fixture generation step. `[charts]` adds
 matplotlib for the plots; `[audio]` adds the audio dependencies. Neither is needed
 for the suite.
 
-Then read one conversation and one verdict:
-
-```bash
-evallab run --scenario edge-large-party-of-six --transcript -k 1
-evallab replay fixtures/replay_run/traces/edge-large-party-of-six.jsonl
-```
-
-Then read the same row as a model actually played it — still no key, because the
-run is recorded:
-
-```bash
-evallab run --scenario edge-large-party-of-six --live-agent --live-caller \
-  --transcript -k 3 --no-baseline
-```
+If you only run one, run `make cited-calls`. It puts the headline on screen: a
+rubric awarding full marks for a disclosure the product's own ledger says was never
+recorded.
 
 Full command reference: [docs/cli.md](docs/cli.md).
 
@@ -238,30 +230,28 @@ Full command reference: [docs/cli.md](docs/cli.md).
 
 ## The gate — what to run, in what order
 
-Thirty-two documented `make` targets (`make help`), and one procedure that
-puts them in order:
+Every documented `make` target is on `make help`, and one procedure puts them in
+order:
 
 ```bash
 make gate
 ```
 
-Eight stages, cheapest first, stopping at the first failure. No key, no spend, no
-socket. In cost order, wall-clock, best of three on the machine this was measured on:
+Six stages, cheapest first, stopping at the first failure. No key, no spend, no
+socket:
 
-| # | stage | cost |
-| --- | --- | --- |
-| 1 | lint — syntax and undefined names | 0.05 s |
-| 2 | both corpora against their schemas | 0.85 s |
-| 3 | every committed trace, re-checked with no agent | 0.45 s |
-| 4 | the case study against its baseline, then byte for byte | 0.81 s |
-| 5 | the timing and judge calibration gates, then byte for byte | 0.24 s |
-| 6 | the error analysis still agrees with the artefacts | 0.35 s |
-| 7 | the other packs and the recorded tiers | 5.61 s |
-| 8 | the offline test suite | 73 s |
+| # | stage |
+| --- | --- |
+| 1 | lint — syntax errors and undefined names |
+| 2 | the advisory corpus, against its schema |
+| 3 | the calibration gates, then the artefacts they wrote, byte for byte |
+| 4 | both recorded calls, re-graded with no agent and no key |
+| 5 | the other packs and the recorded tiers, all offline |
+| 6 | the offline test suite |
 
-**Stages 1–7 are fifteen commands and 8.4 s in total; stage 8 alone is 73 s.** That
-ratio is the argument for the ordering: running the whole artefact surface costs less
-than deciding whether to.
+**Stages 1–5 are nine commands and a few seconds in total; stage 6 is most of the
+wall clock.** That ratio is the argument for the ordering: running the whole
+artefact surface costs less than deciding whether to.
 
 > **The one operational fact: replay is blind to a prompt change.** Every stage above
 > reads a recording made against the prompt as it was on the day. Measured — inserting
@@ -273,8 +263,8 @@ than deciding whether to.
 What each stage proves, what it **cannot** catch, and which changes require paying to
 go live: **[docs/GATES.md](docs/GATES.md)**.
 What to do when one of them goes red: **[docs/DEBUGGING.md](docs/DEBUGGING.md)** —
-every failure on that page was induced on purpose and the output is what actually
-happened.
+every failure on that page is a real row from `make roleplay-demo`, and the output
+is what actually happened.
 
 ---
 
@@ -317,9 +307,9 @@ disk months later (`evallab replay`). And everything upstream of it is an adapte
 so the same checks, judges, metrics and reports apply to a text run, an audio run
 or a replayed recording without knowing which they are looking at.
 
-The audio adapter is the one box in that diagram the committed run does not
-exercise: `evallab run` drives the text path, and the voice rows are reported as
-not driven rather than run as text. See [Limitations](#limitations).
+The speech path is the one box in that diagram most runs do not exercise: the
+default path is text, and the two committed spoken calls are what prove the box is
+wired. See [Limitations](#limitations).
 
 ---
 
@@ -333,10 +323,10 @@ object is worse than no name at all.
 
 | The name you may be looking for | What it is here | What it is **not** |
 | --- | --- | --- |
-| **guardrails** | `lab/checks/` — `ToolContract(forbidden=…)` and `PhraseContract(forbidden=…)` declared as scenario data. 20 of 55 rows forbid a tool, 6 forbid a phrase, 23 do at least one | a runtime enforcement layer, a content-safety or PII classifier. These are assertions over a recorded trace, offline, after the fact |
-| **red-teaming, prompt injection** | `scenarios/roleplay/` — rows where the customer tries to pull the adviser across the licensing boundary, and the seeded blocklist that catches only two phrasings of it. See `roleplay/SEEDED_DEFECTS.md` | PLACEHOLDER_TAILurn; impersonation; over-reach; disclosure probes | a generated attack suite, a fuzzer, or an attack-success rate. Twelve hand-written rows is a corpus, not coverage |
+| **guardrails** | `lab/checks/` — `ToolContract(forbidden=…)` and `PhraseContract(forbidden=…)` declared as scenario data. 41 of 70 rows forbid a tool, 21 forbid a phrase, 49 do at least one | a runtime enforcement layer, a content-safety or PII classifier. These are assertions over a recorded trace, offline, after the fact |
+| **red-teaming, prompt injection** | `scenarios/roleplay/` — rows where the customer tries to pull the adviser across the licensing boundary, and the seeded blocklist that catches only two phrasings of it. See `roleplay/SEEDED_DEFECTS.md` | a generated attack suite, a fuzzer, or an attack-success rate. A hand-written corpus is a corpus, not coverage |
 | **golden datasets** | `make roleplay-validate` over the committed YAML — 70 advisory rows, 8 customer profiles, 36 cited register entries, plus four hand-labelled sets. The loader **fails the load on an assertion that could never fire** | an annotation UI, a multi-rater workflow, or agreement between two humans. Every label here is one person, one pass |
-| **regression testing, drift detection** | a committed baseline diffed in both directions — a finding that *vanishes* fails the build too — and CI diffing `fixtures/replay_run/` byte for byte | production drift monitoring. Nothing samples live traffic, tracks a metric over time or alerts |
+| **regression testing, drift detection** | a committed baseline diffed in both directions — a finding that *vanishes* fails the build too — and CI diffing `fixtures/` and `lab/judges/` byte for byte | production drift monitoring. Nothing samples live traffic, tracks a metric over time or alerts |
 | **observability** | `lab/trace/` as the schema and `lab/report/interop.py` as the export: langfuse round-trips exactly, promptfoo is a one-way projection, neither is a dependency | a collector, an agent, a hosted backend or a dashboard. This exports *to* an observability tool |
 | **LLM-as-judge, position bias** | `lab/judges/` — TPR/TNR/kappa against hand labels, every disagreement listed, and a registry that raises below threshold. Single-item binary grading against a fixed rubric has no position for a bias to attach to | a mitigation applied afterwards; it is a property of this shape of judge, and a pairwise judge would need the usual remedy |
 | **TTFT vs TTFA, WER/CER, Entity Error Rate, endpointing** | two distinct event kinds rather than one derived number; `scoring_unit()` labelling character-vs-word; the 5 `digits-and-names` rows asserting values; `vad_false_silence` / `would_not_fire` | benchmark figures. The WER is harness-relative, the latencies come from an injected clock, and the entity rows are n=1 each |
@@ -490,6 +480,13 @@ by `evallab calibrate --judges`, not typed:
 Every verdict in that table came from `azure/gpt-4.1` at temperature 0, was
 recorded, and is recomputed offline from the recording by `pytest`.
 
+**One disclosure about this set.** These 24 calls were recorded against the second
+system under test, before it was removed, so the calls themselves are from that
+earlier domain. They are kept because the finding is about the *judge*, not about
+the domain — and because re-recording them would mean spending at a vendor to
+change the subject of a conclusion that does not depend on it. Re-theming them is
+a key and about a dollar away, and it is listed here rather than quietly left.
+
 **The interesting part is that the prediction was wrong.** An earlier revision of
 this section scored the same two prompts against hand-written stand-in verdicts,
 which encoded a confident guess about how v1 would fail: that it would *over-fire*,
@@ -517,46 +514,44 @@ prompt tuned against a set it already passes.
 ## What it found
 
 Full write-ups with reproductions and controls in
-way it was found rather than the way it was set up.
+[`roleplay/SEEDED_DEFECTS.md`](roleplay/SEEDED_DEFECTS.md), which is the answer key:
+three of these were **planted** when the system under test was built, because a
+harness demonstrated against a working agent proves nothing — green results are
+equally consistent with a good agent and a blind test suite. The answer key also
+promises there is no fourth planted bug. The last two are the ones nobody put there.
 
-Setting it up, plainly: the first three were **planted** when the system under
-test was built, and the answer key is
-[`roleplay/SEEDED_DEFECTS.md`](roleplay/SEEDED_DEFECTS.md) — a harness demonstrated
-against a working agent proves nothing, because green results are equally
-consistent with a good agent and a blind test suite. That key also promises there
-is no fourth planted bug. Findings 4 and 5 are the ones nobody put there.
+1. **The cohort curve moves an individual score.** The scorer steers its recent pass
+   rate towards a target and applies the correction to the *next* session's total, so
+   an identical transcript scores 16, 15, 14, 13, 12 across five identical
+   submissions — certified three times and refused twice. Every scorecard is
+   well-formed; the defect is only visible if you check a number against its own
+   repeats. Caught by `roleplay.consistency`, which scores k repeats two ways at once.
+2. **The written feedback is composed from the rubric, not from the session.** It
+   reads as competent coaching and cites an objection the customer never raised.
+   Caught by the feedback-grounded contract, which requires every claim in the
+   feedback to be present in the session's own ledger: *"fee objection: claimed but
+   never came up — searched 2 objection(s) in the ledger"*.
+3. **Compliance is scored on vocabulary, not on the ledger.** The rubric counts
+   English keywords in the transcript, so a session that said the right words and
+   recorded nothing scores 4/4 for mandatory disclosure. The cited scorecard reads
+   the `record_disclosure` events instead, and gate CG-1 fails the same call. Both
+   recorded calls show the contradiction: `make cited-calls`.
 
-1. **A party of six is told the table is booked, and it is not.** No
-   `create_booking` anywhere in the trace; the transcript alone reads as the most
-   competent call in the corpus. Caught from two directions — the tool contract
-   sees an absence, the promise contract sees a claim with nothing behind it — and
-   neither channel alone would have found it. The party of five books correctly,
-   which locates the defect at the threshold rather than in group bookings.
-2. **A dietary requirement is lost when the call passes through the policy
-   desk.** Stated, discussed correctly, and absent from `create_booking.notes` —
-   after the policy answer has told the caller that the kitchen accommodates
-   allergies "if it is noted on the booking". Three allergens, three callers,
-   three routes; the control with no detour carries the note fine.
-3. **The amendment desk re-asks the party size the caller already gave**, and the
-   caller's "That is everything, thanks" is then consumed as the answer, so the
-   call ends with no closing turn. The re-ask does not just annoy; it creates a
-   pending slot for whatever the caller says next to fall into.
+And two that were not on anybody's list:
 
-And two that were not on anybody's list, both found by reading a transcript and
-then probing the parser directly:
-
-4. **"No dairy for one of us" reaches nobody** — a real requirement phrased in the
-   negative is discarded by the heuristic that exists to ignore "no allergies,
-   thanks".
-5. **A change the parser does not understand is reported as "nothing to
-   change".** The caller asks to go from four covers to six, and is told the diary
-   already says what they asked for. **No check in the suite fails this row**: the
-   contract requires `modify_booking` to be called with a `changes` argument, and
-   it was — just without the change. A green row, a happy caller and a wrong
-   diary is the most useful thing in this repository.
-
-The taxonomy behind all of it, with counts and a Pareto chart:
-stopped teaching me things — spoiler: it had not —
+4. **A grader that requires a question mark reports zero questions on a voice call.**
+   `classify_trainee_turn` decides "is this a question?" with `body.endswith("?")`.
+   The graded transcript comes from speech recognition with `smart_format=false`, so
+   it carries no punctuation. Discovery goes 2 → 0 and objection handling 2 → 4, and
+   **both totals stay at 12/20** — the verdicts and the ledgers are identical, so only
+   a per-criterion comparison surfaces it. `make spoken-replay` prints it.
+   The sharpest part: a punctuation-independent detector already exists in
+   `lab/checks/text.py`, and its docstring says exactly why. The unsafe version was
+   reimplemented inline. The safe version existing somewhere was not protection.
+5. **The same assumption, in a second language.** The keyword list is English, so a
+   Spanish session fails a disclosure it actually gave. One root cause, two symptoms,
+   found in two different tiers — which is the argument for grading a channel and a
+   locale rather than asserting that they do not matter.
 
 ---
 
@@ -571,18 +566,24 @@ lab/                    the reusable harness (destined for its own repository)
   voice/                latency, WER, silence, perturbations, calibration gate
   simulator/            personas, goals, the driver, pass^k
   report/               markdown + JSON rendering, heatmaps, interop
-  cli.py                `evallab` — the one entry point
+  cli.py                `evallab` — calibrate and replay, the two offline entry points
 examples/adapters/      three worked adapters to copy
 roleplay/               the BFSI advisory pack, where the scorer is under test
-  live.py               the multi-turn loop with a model in both seats
+  persona.py            the AI customer, and the question detector that started it
+  runtime.py            one session, turn by turn — the Trainee seam is here
+  scorer.py             the rubric that SHIPPED, with three seeded defects
+  scorecard.py          the 28-KPI registry, each KPI carrying a paragraph citation
   spoken.py             that loop run through real TTS and STT, graded on what was heard
   regime_eval.py        the cited registers, computed into per-regime verdicts
 ragcheck/               a second KIND of evaluation, not a third domain: retrieval
                         + groundedness. Imports lab.judges, lab.trace, lab.clock
                         and nothing else — that import list is the boundary
-scenarios/              55 rows of validated YAML, four suites, nine personas
-                        adversarial/ — the 12 red-team rows
-fixtures/               recordings, the calibration report, the reference run
+scenarios/              112 files of validated YAML
+  roleplay/             70 behavioural rows across five suites, 8 customer profiles
+  advisory/             the cited regulatory corpus and the four regulator registers
+  audio/transport/      the three WebRTC instrument-audit rows
+fixtures/               the recordings: two spoken calls, the WebRTC rooms, the
+                        calibration report. This folder is why nothing needs a key
 docs/                   trace schema, CLI reference, how to add a scenario
                         GATES.md — the ordered gate: cost, proof, and blind spot
                                    per stage, and which changes need a live tier
@@ -615,27 +616,24 @@ Published rather than declined, because a repository arguing that instruments
 must be measured before they are trusted cannot be silent about the most
 conspicuous measurement of its own tests. Reproduce with `make coverage`.
 
-Measured at commit `006dbd4` over 1,992 offline tests, branch mode, all seven
-packages:
+Measured at commit `03dfbe7` over 1,505 offline tests, branch mode, every package:
 
 | denominator | coverage.py reports | statements never executed | branches taken one way only |
 | --- | --- | --- | --- |
-| whole tree | **84%** | 2,566 of 17,839 | 614 of 5,056 |
-| omitting the five recording scripts that need vendor keys | **87%** | 1,892 of 17,091 | 611 of 4,854 |
+| whole tree | **78%** | 3,183 of 15,460 | 516 of 4,276 |
+| omitting the five recording scripts that need vendor keys or spend | **79%** | 2,918 of 15,195 | 516 of 4,220 |
 
-Per package, statements missed of statements total: `lab` **90%** (812/9,199),
-`ragcheck` **88%** (109/999), `scenarios` **87%** (86/852), `roleplay` **84%**
-(581/4,297), `error_analysis` **42%** (79/141),
-`scripts` **9%** (674/748).
+Per package, statements missed of statements total: `ragcheck` **89%**
+(109/999), `roleplay` **86%** (689/5,086), `lab` **83%** (1,401/8,391),
+`scripts` **0%** (974/974).
 
-**What it excludes.** Nothing is omitted from the headline figure — the earlier
-config named three packages of seven and produced a number whose denominator was
-silently wrong, which is now fixed. Seven modules sit at 0%: four recording
-scripts (504 statements) that need vendor keys and spend money, so no offline run
-can reach them; and three `__main__` entry points (83 statements). One of those is
-worth naming rather than burying — **`ragcheck/__main__.py`, 73 statements, 0%,
-is what `make ragcheck` runs.** A documented entry point that no test executes is
-a real gap and it is listed here rather than left for a reviewer to find.
+**What it excludes.** Nothing is omitted from the headline figure. Twelve modules
+sit at 0%: five generation and recording scripts (974 statements) that either need
+vendor keys or rebuild committed artefacts, so no offline run reaches them; three
+`__main__` entry points; and four modules reached only by a live path. One is worth
+naming rather than burying — **`ragcheck/__main__.py` is what `make ragcheck` runs,
+and no test executes it.** A documented entry point that no test covers is a real
+gap, listed here rather than left for a reviewer to find.
 
 **What it does not tell you, which is most of what you want to know.** Coverage
 says a line ran. It says nothing about whether an assertion would have noticed
@@ -644,9 +642,8 @@ to print — refusals whose value is in the branch that raises, not the branch t
 returns. A suite that executes every line and asserts nothing scores 100%. The
 measurement that would actually answer the question is mutation testing — seed a
 defect, check the suite catches it — and it has not been run here; three seeded
-defects in `roleplay/scorer.py` are the hand-built version of that idea, not a kill rate.
-Read 84% as evidence that the code is exercised, not as evidence that it is
-guarded.
+defects in `roleplay/scorer.py` are the hand-built version of that idea, not a kill
+rate. Read 78% as evidence that the code is exercised, not that it is guarded.
 
 **Not a CI gate, deliberately.** A coverage floor fails for reasons unrelated to
 the change in front of it, and adopting an uncalibrated instrument as a gate is
@@ -658,25 +655,15 @@ the thing this repository spends its length arguing against.
 
 Read this section as part of every number above.
 
-- **The corpus is synthetic, and it is written by the person it tests.** 55 rows
-  written by one person against a system built by the same person. The scripted
-  run drives one phrasing per row, which under-samples the way people actually
-  talk — exactly how findings 4 and 5 stayed invisible until somebody read a
-  transcript and poked the parser by hand. There is now a committed live run where
-  a model chooses the caller's words as well as the agent's
-  findings against the scripted run's 3; but it is still 47 rows chosen by one
-  person, and a defect nobody thought to write a row for is invisible to both.
-- **`k=3` bounds flakiness very loosely.** Three passes out of three put the 95%
-  Wilson lower bound on the pass rate at 0.44. A `STABLE_PASS` in the live run
-  means "three samples agreed", not "reliable", and the report says so in its own
-  notes. The 12.8% flake band is a reading of one model at one temperature on one
-  day; re-recording draws a different one.
-- **Both agent and caller are live in that run, so a FLAKY verdict has two
-  possible causes** and this run cannot separate them.
-  `lab.simulator.flake_band` holds the agent still and can, at k=5 over 8 rows.
-- **No spend figure here is exact.** 2,056 model calls are counted precisely from
-  the fixtures; the cost is estimated from a per-call figure measured in an
-  earlier phase (~$6.60), and is an estimate rather than an invoice.
+- **The corpus is synthetic, and it is written by the person it tests.** 70
+  behavioural rows written by one person against a system built by the same person.
+  The scripted run drives one phrasing per row, which under-samples the way people
+  actually talk — exactly how findings 4 and 5 stayed invisible until somebody read
+  a transcript and poked the parser by hand. A defect nobody thought to write a row
+  for is invisible to the whole suite.
+- **A small k bounds flakiness very loosely.** Three passes out of three put the
+  95% Wilson lower bound on the pass rate at 0.44. A `STABLE_PASS` means "three
+  samples agreed", not "reliable", and every report says so in its own notes.
 - **WER here is harness-relative.** It compares a transcript against the
   reference text the harness itself supplied to synthesis. That is a valid
   measure of what a perturbation did to a recognition path, and it is *not* a
@@ -715,14 +702,10 @@ Read this section as part of every number above.
   regressing. 8/8 and 16/16 are consistent with true rates as low as 0.68 and
   0.81 (95% Wilson lower bounds), and the sessions the judge graded in the live
   run are not the sessions it was calibrated on.
-- **The failure coding is one person, one pass, no second rater**, on 47 traces of
-  one build. Two of my notes were withdrawn on a second look, which is evidence
-  that some of the ones I kept are wrong too. What I would defend is the direction
-  of the argument — 9 of 31 product occurrences caught — not the third significant
-  figure.
-- **The voice suite has not been driven end to end here.** Eight rows are
-  declared, validated and counted, and the committed run reports them as not
-  driven rather than running them as text and calling the verdict an audio result.
+- **Every hand label is one person, one pass, no second rater.** The 18 RAG claim
+  labels, the 24 judge items and the 70 corpus verdicts were all written by the
+  same person who wrote the system they grade. Agreement between two independent
+  raters is the measurement that is missing, and nothing here substitutes for it.
 - **The spoken calls are two calls.** `roleplay/spoken.py` drives a whole advisory
   conversation turn by turn through real ElevenLabs synthesis and real Deepgram
   recognition and grades what was *heard*; the 181-second and 54-second recordings,
@@ -742,18 +725,18 @@ Read this section as part of every number above.
 
 ## Make targets
 
-Thirty-two of them, and the authoritative list is the one that cannot go stale:
+The authoritative list is the one that cannot go stale:
 
 ```bash
 make help
 ```
 
 It groups them — Start here, Everyday, Evidence, Recording, Maintenance — and
-marks the four that spend money at a vendor and refuse without keys
-(`live-record`, `spoken-record`, `audio-suite-record`, `transport-record`).
-Everything else on that screen is offline and free. `make gate` is the one to
-run before you push; [docs/GATES.md](docs/GATES.md) says what each of its eight
-stages proves and what it cannot catch.
+marks the two that spend money at a vendor and refuse without keys
+(`spoken-record`, `transport-record`). Everything else on that screen is offline
+and free. `make gate` is the one to run before you push;
+[docs/GATES.md](docs/GATES.md) says what each of its six stages proves and what
+it cannot catch.
 
 ## License
 
