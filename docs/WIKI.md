@@ -26,6 +26,14 @@ artefact — [Appendix A](#appendix-a--reproduction-log) lists each number again
 command that produced it. Where a figure could not be reproduced it was cut rather than
 rounded.
 
+> **Note, 17 September 2026.** This wiki was written while the repository carried a
+> second system under test — a restaurant-booking assistant — which has since been
+> removed, along with the blast-radius test selector, the audio-suite runner and the
+> flake band, whose evidence went with it. Section 1.1 lists what changed. Sections
+> that describe those parts are historical: the code they document is no longer in
+> the tree, and the figures they quote were true when they were measured. Everything
+> about `lab/`, `roleplay/`, `ragcheck/` and the two recorded calls is current.
+
 ## Table of contents
 
 - [1. Start here](#1-start-here)
@@ -14399,7 +14407,7 @@ category. [§7.4](#74-the-28-kpi-scorecard)
 recogniser's code-switching set — they are not the same question, and the second one is
 where a plausible-looking row turns out to be untestable. If no vendor synthesises it,
 record it as `untestable` with the remediation named, so the finding expires by itself.
-See the vendor capability matrix in [`docs/AUDIO_SUITE.md`](AUDIO_SUITE.md).
+See the vendor capability matrix in `docs/AUDIO_SUITE.md`.
 
 **Extract `lab/` into its own package.** It imports no domain package today, with one
 exception: a function-scope import of the corpus tag vocabulary in `lab/voice/suite.py`.

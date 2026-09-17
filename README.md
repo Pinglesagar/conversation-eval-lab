@@ -9,6 +9,18 @@ speech engines, as well as in text.
 its place, so a clean clone installs and goes green offline, in under two
 minutes, with no credential of any kind.
 
+```bash
+git clone https://github.com/Pinglesagar/conversation-eval-lab.git
+cd conversation-eval-lab
+python3.12 -m venv .venv && .venv/bin/python -m pip install -e ".[dev]"
+make start          # the finding, recomputed offline
+make test           # 1,505 pass, 4 skip
+```
+
+Python 3.12 or newer. `make install` refuses an older interpreter with the fix
+rather than a stack trace. If you use [uv](https://docs.astral.sh/uv/):
+`uv venv --python 3.12 && uv pip install -e ".[dev]"`.
+
 ## Sixty seconds
 
 ```bash
@@ -129,7 +141,7 @@ These are **n = 2**. They demonstrate that the pipeline is real; they support no
 Eighteen rows: **16 runnable, 1 blocked, 1 untestable**. The untestable one is
 recorded as a finding rather than hidden — no TTS vendor synthesises Cantonese, so
 a market with a regional hub cannot be audio-tested on this stack, and the
-remediation is named. See [`docs/AUDIO_SUITE.md`](docs/AUDIO_SUITE.md) for the
+remediation is named. See [`docs/SPOKEN_CALL.md`](docs/SPOKEN_CALL.md) for the
 vendor capability matrix.
 
 ---
@@ -505,7 +517,6 @@ prompt tuned against a set it already passes.
 ## What it found
 
 Full write-ups with reproductions and controls in
-[`error_analysis/FINDINGS.md`](error_analysis/FINDINGS.md), which is written the
 way it was found rather than the way it was set up.
 
 Setting it up, plainly: the first three were **planted** when the system under
@@ -545,10 +556,7 @@ then probing the parser directly:
    diary is the most useful thing in this repository.
 
 The taxonomy behind all of it, with counts and a Pareto chart:
-[`error_analysis/axial_coding.md`](error_analysis/axial_coding.md),
-[`pareto.png`](error_analysis/pareto.png). The honest note on where reading
 stopped teaching me things — spoiler: it had not —
-[`error_analysis/saturation.md`](error_analysis/saturation.md).
 
 ---
 
@@ -575,7 +583,6 @@ ragcheck/               a second KIND of evaluation, not a third domain: retriev
 scenarios/              55 rows of validated YAML, four suites, nine personas
                         adversarial/ — the 12 red-team rows
 fixtures/               recordings, the calibration report, the reference run
-error_analysis/         the traces read by hand, coded, counted and written up
 docs/                   trace schema, CLI reference, how to add a scenario
                         GATES.md — the ordered gate: cost, proof, and blind spot
                                    per stage, and which changes need a live tier
@@ -595,8 +602,7 @@ scoring model, and a file-by-file reference giving every file its job, its mecha
 the decision or bug behind it. Enter at any level; every figure is re-derived from a
 committed artefact or a named command.
 
-Design rationale: [DESIGN.md](DESIGN.md). The capability-to-question mapping:
-[INTERVIEW_NOTES.md](INTERVIEW_NOTES.md). If you arrived looking for a particular
+Design rationale: [DESIGN.md](DESIGN.md). If you arrived looking for a particular
 term — guardrails, red-teaming, golden datasets, drift detection, observability —
 start at [docs/VOCABULARY.md](docs/VOCABULARY.md), which maps each one onto what
 is already here and says plainly where the name would overreach.
@@ -658,7 +664,6 @@ Read this section as part of every number above.
   talk — exactly how findings 4 and 5 stayed invisible until somebody read a
   transcript and poked the parser by hand. There is now a committed live run where
   a model chooses the caller's words as well as the agent's
-  ([`fixtures/live_full/`](fixtures/live_full/)), and it found 18 undeclared
   findings against the scripted run's 3; but it is still 47 rows chosen by one
   person, and a defect nobody thought to write a row for is invisible to both.
 - **`k=3` bounds flakiness very loosely.** Three passes out of three put the 95%

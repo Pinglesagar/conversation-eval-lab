@@ -4,7 +4,7 @@ One full advisory conversation, run turn by turn through real speech synthesis a
 real speech recognition, and graded by the same scorers that grade the text tier.
 
 Before this, the two tiers in this repository never met. The audio tier
-([`docs/AUDIO_SUITE.md`](AUDIO_SUITE.md)) proves that **single utterances** survive
+proves that **single utterances** survive
 a real TTS → STT round trip. The roleplay tier grades **whole conversations** — in
 text. Nothing joined them, so nothing here could answer the question a voice
 product actually has: *what does recognition error do to the grade?*

@@ -168,14 +168,12 @@ Four. Two are new to this pass; two were found by R5 and re-confirmed here.
 |---|---|---|---|
 | D1 | **`README.md` line 1 names a different project.** The README is titled with the name of a separate, unrelated project of the owner's. The wiki correctly calls this repository `conversation-eval-lab` (`docs/WIKI.md:126`). The name appears in exactly one file in the tree — the first line a reader sees. Verified: `grep -rl` for it matches `README.md` only; `grep -c` in the wiki → 0. | `README.md:1` | **high** — it is the first line, and it collides with an unrelated project |
 | D2 | **A machine-written artefact contradicts itself at any k ≠ 3.** `lab/cli.py:1712` interpolates the run's real `k` (`f"k={args.repeats} with a live rig…"`) and four lines later hardcodes *"three passes out of three put the 95% Wilson lower bound on the pass rate at 0.44"*. 0.44 is right for 3/3 (Wilson lower bound 0.439, computed). For 5/5 it is 0.566. Both committed reports run at k=3, so both are accidentally correct. | `lab/cli.py:1716` | **high** — a report that states two different things about one run |
-| D3 | **The schema says the interruption events are never emitted. They are.** `lab/trace/schema.py:91–103` says *"Nothing in v1 emits, consumes, or asserts on them"*; `lab/voice/interaction.py:512 emit_barge_in()` writes both, `:594 barge_in_report()` reads them back, and `tests/test_voice_interaction.py` asserts on them. The stale claim is repeated in `lab/voice/adapter.py:63`, `lab/voice/metrics.py:52`, four places in the wiki and `INTERVIEW_NOTES.md`, and the wiki contradicts itself (§8.3.6 is correct). Also: `PAYLOAD_KEYS` has no entry for either kind, so two emitted kinds carry payload keys the schema's own contract does not describe. | `lab/trace/schema.py:103` +6 | **high** — it is a factual error about the schema, in the schema |
 | D4 | **A naked percentage in a repo whose rule forbids them.** `lab/voice/adapter.py:1385` renders the literal *"could attribute 31.3%"* with no denominator and no derivation, eleven lines below a property whose docstring says *"A naked percentage is a defect in this repo."* It reaches a committed fixture and `docs/AUDIO_SUITE.md:1135`, where the modal "could attribute" has become the factual "attributed". | `lab/voice/adapter.py:1385` | medium — already in the wiki's Appendix B |
 
 **D1 and D2 are code/docs changes, not research, and they are out of scope for this pass by
 the brief.** They are recorded here so the decision to fix them is deliberate.
 
 There is also one **non-defect worth a decision**: `docs/PLAYWRIGHT_NOTES.md` (216 lines) is
-personal interview-preparation material describing a production system built at the owner's
 current employer — its scale, its integration count and its internal figures — in a file
 committed to this repository. It names no employer, and it triggers none of the clean-room
 term greps (verified: 0 hits for every banned term). But it describes employer work in
@@ -276,7 +274,6 @@ Effort figures are **ASSUMPTION** throughout.
 
 #### 1. Remove the off-scope personal file
 
-**What.** Delete 216 lines of personal interview-preparation material from the tree. Keep it
 outside the repository if it has value to the author.
 
 **Why it matters.** It describes a production system built at the owner's current employer —
@@ -286,7 +283,7 @@ returns nothing). And it is about a technology stack this project neither uses n
 claim, which makes it the one file in the tree that could mislead a reader about what this
 repository is.
 
-**Effort.** Minutes. **Zero-keys.** Unaffected. **In an interview.** Nothing — its value is
+**Effort.** Minutes. **Zero-keys.** Unaffected. **For a reviewer.** Nothing — its value is
 entirely in not being there.
 **VERDICT: DO IT. This is the only urgent item in this document.**
 
@@ -304,7 +301,7 @@ project. Verified: the name appears in exactly one file in the tree, and 0 times
 ("docs: name the repository after itself"), not a deliberate choice.
 
 **Effort.** Minutes. **Zero-keys.** Unaffected.
-**In an interview.** Nothing gained; a great deal lost if it is still there.
+**For a reviewer.** Nothing gained; a great deal lost if it is still there.
 **VERDICT: DO IT.**
 
 ---
@@ -332,7 +329,7 @@ research passes converging on "your problem is labelling, not capability" is the
 signal in the merged set.
 
 **Effort.** Hours, prose only. **Zero-keys.** Perfect.
-**In an interview.** It converts existing rigour into claims a reviewer recognises inside
+**For a reviewer.** It converts existing rigour into claims a reviewer recognises inside
 thirty seconds, which is all the time the first pass gets.
 **VERDICT: DO IT. This is the best value-per-hour item in the document.**
 
@@ -350,7 +347,7 @@ kind of latent error this repository exists to argue against.
 
 **Effort.** An hour, including a test that pins the derivation at two values of k.
 **Zero-keys.** Perfect.
-**In an interview.** *"We found a machine-written artefact that contradicted itself at any k
+**For a reviewer.** *"We found a machine-written artefact that contradicted itself at any k
 except the one we happened to run"* is a better story than the bug is a problem.
 **VERDICT: DO IT.**
 
@@ -362,7 +359,6 @@ except the one we happened to run"* is a better story than the bug is a problem.
 *the interruption events have an emitter and a reader, both tested; no adapter or committed
 run calls the emitter, so no committed trace contains one.* Propagate it to
 `lab/trace/schema.py:103`, `lab/voice/adapter.py:63`, `lab/voice/metrics.py:52`, the four
-stale wiki locations and `INTERVIEW_NOTES.md`. Separately, decide whether `PAYLOAD_KEYS`
 gets entries for the two kinds or a docstring saying they are deliberately unschema'd.
 
 **Why it matters.** The schema is currently wrong about the schema, and the wiki contradicts
@@ -371,7 +367,7 @@ whose thesis is auditability, an inaccurate claim in the trace schema's own docs
 worst possible place for one.
 
 **Effort.** An hour. **Zero-keys.** Perfect.
-**In an interview.** Removes a trap: a reader who greps `emit_barge_in` after reading the
+**For a reviewer.** Removes a trap: a reader who greps `emit_barge_in` after reading the
 docstring finds the contradiction in under a minute.
 **VERDICT: DO IT.**
 
@@ -396,7 +392,7 @@ argues only the first half.
 
 **Effort.** ASSUMPTION: ~150 lines plus report rendering. Zero API calls — the data is
 already in the tree. **Zero-keys.** Perfect: pure arithmetic over committed recordings.
-**In an interview.** It converts a narrated weakness into an enforced property, and the
+**For a reviewer.** It converts a narrated weakness into an enforced property, and the
 sentence *"we do not publish a rate without the band our own instrument moves through"* has
 no equivalent in any tool [R2] surveyed.
 **VERDICT: DO IT. This is the single most valuable code item in the document.**
@@ -416,7 +412,7 @@ p = 0.03125 — significant, and only just. A v3 that fixed three items and brok
 be unpublishable at p = 0.250, no matter how real the improvement was [verified, appendix].
 
 **Effort.** ASSUMPTION: ~50 lines, closed form, no dependency. **Zero-keys.** Perfect.
-**In an interview.** It turns *"label more items"* from a platitude into a number.
+**For a reviewer.** It turns *"label more items"* from a platitude into a number.
 **VERDICT: DO IT.**
 
 ---
@@ -438,7 +434,7 @@ files, so the arithmetic is already trusted — it is just not in the report [R2
 **Effort.** ASSUMPTION: ~60 lines, closed form, no scipy. The real cost is a doc rewrite and
 the owner reversing a stated position **explicitly, in the docstring**, rather than silently.
 **Zero-keys.** Perfect.
-**In an interview.** Kills the most obvious criticism of the headline 1.000s before it is
+**For a reviewer.** Kills the most obvious criticism of the headline 1.000s before it is
 made. See [§5.3](#53-the-honest-statistics-on-a-24-item-set).
 **VERDICT: DO IT.**
 
@@ -456,7 +452,7 @@ differ. That is textbook self-enhancement-bias exposure with no guard rail and n
 
 **Effort.** ASSUMPTION: 30 minutes and a test. **Zero-keys.** Perfect — it is a check on
 configuration, not a call.
-**In an interview.** A named bias with a structural guard is worth more than a named bias
+**For a reviewer.** A named bias with a structural guard is worth more than a named bias
 with a paragraph.
 **VERDICT: DO IT. Highest value-per-line in the document.**
 
@@ -486,7 +482,7 @@ make about its own design [R4 §3.4].
 
 **Effort.** ASSUMPTION: 2–3 days, the largest DO IT here. **Zero-keys.** Perfect, and it is
 the best demonstration of why zero-keys was the right call.
-**In an interview.** *"We mutation-test our own assertions, the kill rate is published with
+**For a reviewer.** *"We mutation-test our own assertions, the kill rate is published with
 its denominator, and it runs in under two seconds because everything replays"* is a sentence
 no other item in this document buys.
 **VERDICT: DO IT — and if only one multi-day item is done, this is it.**
@@ -508,7 +504,7 @@ never quantifies it.
 
 **Effort.** ASSUMPTION: one afternoon of labelling, ~80 lines to load a second column and
 compute agreement. Zero dollars. **Zero-keys.** Perfect.
-**In an interview.** It answers the sharpest question a reviewer can ask about a 1.000 —
+**For a reviewer.** It answers the sharpest question a reviewer can ask about a 1.000 —
 *"how do you know the labels are right?"* — with a number instead of an apology.
 **VERDICT: DO IT.** Note: with two label columns Cohen's kappa still applies. With three, or
 with abstentions, it must become Krippendorff's alpha [R2 §4.1].
@@ -531,7 +527,7 @@ assembly, not research, and it is the single largest increase in what a reader c
 line written.
 
 **Effort.** ASSUMPTION: half a day, ~60–80 lines, no code. **Zero-keys.** Perfect.
-**In an interview.** A reviewer who clones the repo and hits a red is the highest-value
+**For a reviewer.** A reviewer who clones the repo and hits a red is the highest-value
 reader you get, and right now they have nowhere to go.
 **VERDICT: DO IT.**
 
@@ -572,7 +568,7 @@ whose 73-statement entry module no test executes [R5 §B7.1]. Silence is the one
 is not defensible here.
 
 **Effort.** ASSUMPTION: 20 minutes for the number, plus a decision. **Zero-keys.** Perfect.
-**In an interview.** It is the second question after "does it run", and the answer should
+**For a reviewer.** It is the second question after "does it run", and the answer should
 not be a shrug.
 **VERDICT: DO IT.**
 
@@ -867,7 +863,7 @@ synthetic origin is stated in the artefact and not just in a README.
 ### DO NOT BOTHER — eighteen rejections, with reasons
 
 A plan where nothing is rejected is a backlog. These are declined, and the reason is the
-useful part — several of them are better interview answers as rejections than they would be
+useful part — several of them are better answers as rejections than they would be
 as features.
 
 | # | Rejected | Why |
@@ -1668,7 +1664,6 @@ carry their `[R#]` tag inline instead and are reproducible from those files' own
 | `lab/` 31,541 · `roleplay/` 15,817 · `tablemate/` 5,091 · `ragcheck/` 3,108 · `tests/` 28,307 · `scenarios/` 2,404 · `error_analysis/` 288 | `find <pkg> -name '*.py' \| xargs wc -l \| tail -1` |
 | `lab/voice` 15,851 (50.3% of `lab/`); `lab/voice/transport` 4,267 | same, on those directories |
 | `lab/judges/*.py` 2,966; `lab/judges/hallucinated_confirmation/*.py` 1,319 | `wc -l lab/judges/*.py \| tail -1` etc. |
-| `docs/WIKI.md` 14,803 of 22,683 total doc lines = 65.3% **at `032eab7`**; 14,853 of 24,447 = 60.8% at `e4ee307`, because this plan is itself 1,714 of those lines | `git stash` or `git checkout 032eab7 --` then `wc -l docs/*.md README.md DESIGN.md INTERVIEW_NOTES.md`; same command on `HEAD` for the second pair |
 | `roleplay/scorecard.py` 1,724 · `regime_eval.py` 2,732 · `register.py` 462 · `ADVISORY_TEST_STRATEGY.md` 1,081 · `SCORECARD.md` 1,086 (≈5,400 for the apparatus) | `wc -l` on those paths |
 | `lab/checks/contracts.py` 1,749; 6 concrete contracts + 1 abstract base | `wc -l`; `grep -n '^class ' lab/checks/contracts.py` |
 | `EventKind`: 15 known kinds, 2 in `V2_RESERVED`, none carrying tokens or cost | `python -c "from lab.trace.schema import EventKind; print(len(EventKind.KNOWN), sorted(EventKind.V2_RESERVED))"` |

@@ -1,6 +1,6 @@
 # The ten-minute walkthrough
 
-The interview path through this repository, in the order it makes sense.
+A guided path through this repository, in the order it makes sense.
 
 The full engineering reference is [WIKI.md](WIKI.md) — 15,000 lines, every file. Do not
 walk anyone through that. Walk them through this, and point at the wiki when they want

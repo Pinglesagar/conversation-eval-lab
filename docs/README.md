@@ -19,7 +19,6 @@ If you have not run anything yet, close this page and run `make start`.
 | What can I run, and which of it costs money? | `make help` — grouped; four targets are marked MONEY+KEY |
 | What do I run before I push? | `make gate`, and [GATES.md](GATES.md) for what each of its eight stages proves — and what it cannot catch |
 | What are the CLI's six subcommands? | [cli.md](cli.md) |
-| Which tests does my change actually need? | [TEST_SELECTION.md](TEST_SELECTION.md) — derived from the trace, and it refuses to guess |
 
 ## Something failed and I need it to stop
 
@@ -64,7 +63,6 @@ If you have not run anything yet, close this page and run `make start`.
 | your question | the answer |
 | --- | --- |
 | The finding `make start` prints — in full | [SPOKEN_CALL.md](SPOKEN_CALL.md) |
-| The two real speech vendors, and what running them revealed | [AUDIO_SUITE.md](AUDIO_SUITE.md) — including the language no vendor could synthesise |
 | Why three rows go through real WebRTC and the rest do not | [AUDIO_TRANSPORT.md](AUDIO_TRANSPORT.md) |
 
 ## Proposals — written, not built
@@ -77,5 +75,5 @@ documentation of the repository.
 | [ENHANCEMENT_PLAN.md](ENHANCEMENT_PLAN.md) | options for what to build next, for the owner to choose from |
 | [REAL_STACK_ARCHITECTURE.md](REAL_STACK_ARCHITECTURE.md) | moving from a simulated harness to one driving a real voice stack |
 
-`_plan/` and `_research/` are the working notes behind those two. They are kept
+`_research/` holds the working notes behind those two. They are kept
 for provenance and are not part of the reading path.
