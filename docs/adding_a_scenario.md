@@ -1,148 +1,143 @@
 # Adding a scenario
 
-A scenario is two files: a row of YAML that says what the caller wants and what
-must be true afterwards, and an entry in the caller fixture that says the exact
-sentences they use. Both are data, both are reviewed in a pull request, and both
-are validated before anything runs.
+A scenario is one YAML file in `scenarios/roleplay/<suite>/`. The filename is the
+id. Nothing in the harness knows the difference between a row somebody wrote today
+and one that has been there since the beginning, which is the point: a test case is
+data, and a compliance specialist who will never open a terminal can write and
+review one.
 
-## 1. The row
+If you would rather edit a spreadsheet than YAML, `make scenarios-excel` exports the
+whole corpus to a four-sheet workbook and imports it back, comparing meaning rather
+than bytes, so a round trip through Excel changes nothing.
 
-`scenarios/<suite>/<id>.yaml`, where `<suite>` is `happy`, `edge`, `adversarial`
-or `voice`, and `<id>` starts with the suite name and equals the file stem.
+---
+
+## The file
 
 ```yaml
-id: happy-two-covers-thursday
-title: A straightforward booking for two on a Thursday
-persona: brisk_regular          # a file in scenarios/personas/, or an inline persona
-tags: [booking]                 # from the closed vocabulary in scenarios/loader.py
+id: pitch-close-with-a-summary       # must equal the filename
+title: The ask, with the session recapped first
+customer: comparison_shopper         # a profile in scenarios/roleplay/customers/
+tags: [closing, control, objection-handling, disclosure]
+# jurisdiction: eu-retail            # optional; defaults to eu-retail
+# language: es                       # optional; defaults to en
 
-goal:
-  intent: book a table for two on Thursday evening
-  facts:                        # everything the caller knows, as strings
-    party_size: "2"
-    date: Thursday
-    time: 7:30pm
-    name: Rachel Okonkwo
-  on_request_only: [name]       # …and what they will not volunteer
-  ask_patterns:                 # what counts as the agent asking for it
-    name: ["your name", "name for the booking"]
-  success_criteria:             # prose, for the reader; lab.checks owns assertions
-    - a real booking exists for two people
+trainee:
+  role: retail investment adviser
+  turns:
+    - Before I show you anything, what would you want this money to be doing for you in ten years?
+    - >-
+      The fund I have in mind is a balanced growth fund. Your capital at risk is
+      real: you could get back less than you put in, and past performance is not
+      a guide to future performance.
+    - >-
+      So to summarise: your capital at risk, 0.68 per cent a year. Shall we get
+      the paperwork started?
+
+expectation:
+  human_verdict: pass                # what a competent reviewer would decide
+  reason: >-
+    Three open questions, both objections answered on their own terms, all three
+    disclosures in registered wording, and an ask that comes after a recap.
 
 tools:
-  expected: [search_tables, create_booking]
-  min_calls: {create_booking: 1}
-  ordering:
-    - first: search_tables
-      then: create_booking
+  expected: [record_disclosure, resolve_objection, score_session]
+  forbidden: [flag_compliance_risk]
+  min_calls: {record_disclosure: 3, resolve_objection: 2}
   args:
-    - tool: create_booking
-      arg: party_size
+    - tool: score_session
+      arg: total
       op: eq
-      ref: party_size           # "what the caller actually asked for"
+      value: 20
 
-promises: {}                    # every spoken commitment must be backed by a call
+trainee_phrases:
+  required:
+    - So to summarise
 
-notes: >-                       # why this row exists; at least 20 characters
-  The control for the group-booking rows. …
+notes: >-
+  Why this row exists, in prose. Not optional.
 ```
 
-`on_request_only` is the field that turns a script into a probe: whether the
-agent ever *asks* is the thing under test, so the caller withholds those facts
-until the agent's own words match `ask_patterns`.
-
-## 2. The caller's words
-
-`fixtures/caller_scripts.yaml`:
-
-```yaml
-  happy-two-covers-thursday:
-    script:
-      - "Hello, I would like to book a table for two on Thursday at 7:30pm."
-    closing: "That is all, thank you."
-```
-
-Rules that are easy to get wrong:
-
-- **Do not script the gated facts.** They are released by the caller model when
-  the agent asks. Scripting them answers questions that were never put, and the
-  transcript then shows the caller volunteering details the agent already had.
-  (Two rows in this corpus had exactly that bug in their first draft; both showed
-  up as a spurious `no-progress-loop` failure.)
-- **Do not script a persona's behaviour.** A reluctant persona
-  (`cooperativeness < 0.5`) stalls once before answering, on its own.
-- **Seed state rather than stubbing a tool.** A row that names a booking
-  reference the diary does not hold, or that needs a full sitting, says so:
-
-```yaml
-    seed:
-      - book_out: { date: Saturday, time: 8pm }
-      - ensure_booking: { ref: TM-9001, name: Okonkwo, date: friday,
-                          time: 7pm, party_size: 4 }
-```
-
-  Stubbing the tool's answer instead would make the agent's skip-logic
-  untestable, because its next move depends on the shape of a real refusal.
-
-## 3. Check that the row can fail
+Every key above is validated on load. A tool name outside the closed vocabulary, a
+tag that is not in the tag list, or an `expected_failure` naming a contract the row
+does not declare is a **load error**, not a silent pass at run time:
 
 ```bash
-evallab validate --coverage
-evallab run --scenario <id> --transcript -k 1 --no-baseline
+python -m roleplay.corpus --coverage --list
 ```
 
-Read the transcript. Then read the check report and ask the only question that
-matters about a new row: **could this contract ever have failed?** A tracked field
-whose value the caller never says, a `ref:` that does not resolve, an argument
-predicate on a forbidden tool — all of those pass without asserting anything, so
-the loader rejects them by name. It cannot catch a contract that is merely weak:
-`edge-modify-across-group-threshold` requires `modify_booking` to be called with
-`changes` *present*, and the trace shows it called with a change set that does not
-contain the change the caller asked for. Green row, wrong diary. See
-`error_analysis/FINDINGS.md`, finding 5.
+---
 
-If the row is a known gap — a defect this build has and you want tracked rather
-than fixed today — declare it:
+## The five rules
+
+### 1. The vocabularies are closed
+
+Tool names, tags and suites all come from fixed lists. A typo cannot become a new
+tag that silently matches nothing; it stops the load and names itself. That is the
+single most valuable property of the loader, because the alternative failure is
+invisible: a check that can never fire is green forever and measures nothing.
+
+### 2. Every assertion must be able to fail
+
+Declaring `min_calls: {record_disclosure: 1}` on a row where the script discharges
+three requirements asserts nothing. The interesting assertion is the one that would
+break if the product changed. `locale-eu-three-disclosures-in-one-turn` is the
+example worth reading: it is the only row that pins *which turn* discharged each
+requirement, and the note says exactly why —
+
+> "how many disclosures were recorded" and "which turn recorded them" are different
+> questions with the same answer on every other row. A register that dropped a
+> second match inside one utterance would still record three codes and would still
+> look right everywhere except here.
+
+### 3. `notes:` is not optional
+
+A row without a written reason is a row nobody can safely delete in a year. Say what
+would have to break for this row to go red, and what a green means. The notes field
+is where the corpus explains itself to its next reader, and several of them name
+their own pair: `pitch-close-without-a-summary` runs the same script with the recap
+removed and scores nineteen, so the pair prices the summary at exactly one mark
+without an argument about tone.
+
+### 4. A row that is *expected* to fail says so
+
+38 of the 70 rows carry `expected_failure`, because a corpus of only healthy calls
+cannot tell you whether the grader notices an unhealthy one. Declare it, and declare
+*which contract* is expected to fail:
 
 ```yaml
 expected_failure:
-  contracts: [tools, promise-kept]
-  since: first observed in the 0.1.0 case-study build
+  contracts: [tools, score-claims-backed]
+  since: first observed in the 0.1.0 roleplay pack
   expectation: >-
-    We expect the caller to be told the table is confirmed and no create_booking
-    call to appear anywhere in the trace. …
+    We expect this session to be certified. The rubric awards full marks for the
+    disclosure criterion while the ledger holds two of the three codes this
+    jurisdiction requires.
 ```
 
-A declared gap that *stops* failing breaks the build, which is the point: nobody
-notices a fixed bug, and nobody notices a check that went quiet, unless one of
-them is loud.
+An undeclared failure is a build failure; a declared one is the row working. The
+loader refuses an `expected_failure` naming a contract the row never declares,
+because that expectation could never fire.
 
-## 4. Update the baseline in the same change
+### 5. Use the registered wording, or deliberately do not
 
-A new row usually means new findings, and the regression gate compares against
-the committed reference run:
+The register matches a closed list of approved phrasings, normalised. A trainee turn
+that says "there is some risk, of course" records nothing, and that is correct: the
+register is the instrument the grader's compliance claims are measured against, and
+an instrument that credits a paraphrase cannot catch a grader that credits one.
+
+If you want a row that *tests* that strictness, write the near-miss deliberately and
+declare what should happen. Five rows do exactly that.
+
+---
+
+## Before you commit
 
 ```bash
-make reference          # regenerates fixtures/replay_run and shows the diff
+python -m roleplay.corpus --coverage --list    # the row loads and is counted
+make roleplay-demo                             # it runs, and the verdict is what you expected
 ```
 
-Review that diff as part of the pull request. It is the record of what the suite
-learned, and it is the only place where "this used to fail and now it does not"
-is visible to a human.
-
-## Voice rows
-
-A row in the `voice` suite must declare at least one perturbation, and a row
-outside it must not:
-
-```yaml
-voice:
-  perturbations:
-    - name: add_noise
-      params: { snr_db: 10 }
-```
-
-`evallab run` drives the text adapter, so it counts the voice rows and reports
-them as not driven rather than running them as text — a perturbation row whose
-audio is never perturbed produces a verdict that says nothing about audio. The
-audio path lives in `lab/voice/`.
+If your row fails and you did not expect it to, work through
+[DEBUGGING.md](DEBUGGING.md) before changing the check — the cheapest source of a
+disagreement is usually your own new row.
