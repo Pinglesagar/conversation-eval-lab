@@ -223,7 +223,7 @@ flowchart TD
 
 **In plain terms.** Three different tools for three different kinds of question.
 
-**A contract** is ordinary code. *Did the booking actually get created?* is a yes or no
+**A contract** is ordinary code. *Did the disclosure actually get recorded?* is a yes or no
 you can check for free, instantly, with the same answer every time. Most teams reach for
 an AI here when they do not need to.
 
