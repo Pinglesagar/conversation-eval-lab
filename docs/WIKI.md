@@ -26,13 +26,34 @@ artefact — [Appendix A](#appendix-a--reproduction-log) lists each number again
 command that produced it. Where a figure could not be reproduced it was cut rather than
 rounded.
 
-> **Note, 17 September 2026.** This wiki was written while the repository carried a
-> second system under test — a restaurant-booking assistant — which has since been
-> removed, along with the blast-radius test selector, the audio-suite runner and the
-> flake band, whose evidence went with it. Section 1.1 lists what changed. Sections
-> that describe those parts are historical: the code they document is no longer in
-> the tree, and the figures they quote were true when they were measured. Everything
-> about `lab/`, `roleplay/`, `ragcheck/` and the two recorded calls is current.
+> ## Read this note first
+>
+> **Status, 18 September 2026.** This wiki was written while the repository carried a
+> second system under test — an unrelated conversational product — and several tiers
+> that have since been removed: the blast-radius test selector, the audio-suite runner
+> and the flake band, whose evidence went with them.
+>
+> **What has been brought up to date and is current:** §1 (the figures, the domain
+> table, the quickstart), §2 (the architecture diagrams and the import-graph claim),
+> §8.4 (the system under test, file by file), §8.5.2–8.5.5 (the retrieval pack), the
+> coverage figures in §10, and Appendix A's reproduction table.
+>
+> **What is historical and should be read as such:** §8.0's file index, §8.5.7 on the
+> corpus loader, §8.3.3's map of the stack, and the scattered console blocks that
+> invoke `evallab run` or read `fixtures/replay_run/`. Roughly 140 path references in
+> this file name files that are no longer in the tree. The reasoning in those sections
+> is still the reasoning; the paths and the figures were true when they were measured.
+>
+> **The documents that are fully current**, and the ones to read instead if you want
+> something you can run today, are [README.md](../README.md),
+> [GATES.md](GATES.md), [DEBUGGING.md](DEBUGGING.md),
+> [adding_a_scenario.md](adding_a_scenario.md), [ADAPTER.md](ADAPTER.md) and
+> [ARCHITECTURE_ONE_PAGE.md](ARCHITECTURE_ONE_PAGE.md). Every command in those was run
+> before it was written down.
+>
+> Rewriting fourteen thousand lines to match would take longer than it is worth, and
+> silently leaving the note off would be worse than either. Section 1.1 lists what
+> changed.
 
 ## Table of contents
 
@@ -81,7 +102,7 @@ rounded.
   - [8.1 `lab/` — the core: the clock, the trace, the checks and the CLI](#81-lab--the-core-the-clock-the-trace-the-checks-and-the-cli)
   - [8.2 `lab/judges/`, `lab/simulator/` and `lab/report/` — judging, simulating and reporting](#82-labjudges-labsimulator-and-labreport--judging-simulating-and-reporting)
   - [8.3 `lab/voice/` — the voice stack](#83-labvoice--the-voice-stack)
-  - [8.4 The two systems under test — `roleplay/` and `tablemate/`](#84-the-two-systems-under-test--roleplay-and-tablemate)
+  - [8.4 The system under test — `roleplay/`](#84-the-system-under-test--roleplay)
   - [8.5 The supporting packages and the corpus](#85-the-supporting-packages-and-the-corpus)
 - [9. What it found](#9-what-it-found)
   - [9.1 In the systems under test](#91-in-the-systems-under-test)
@@ -140,20 +161,19 @@ It is applied to unrelated domains to prove it is not domain-specific:
 
 | Domain | Package | What it models | In depth |
 | --- | --- | --- | --- |
-| Advisory sales coaching (BFSI) | `roleplay/` (15,817 LOC) | a trainee adviser graded against a rubric, under four regulators | [§8.4](#84-the-two-systems-under-test--roleplay-and-tablemate) |
-| Restaurant booking | `tablemate/` (5,091 LOC) | a multi-agent booking assistant with seeded defects | [§8.4](#84-the-two-systems-under-test--roleplay-and-tablemate) |
-| Knowledge retrieval | `ragcheck/` (3,108 LOC) | retrieval quality separated from answer groundedness | [§8.5](#85-the-supporting-packages-and-the-corpus) |
+| Advisory sales coaching (BFSI) | `roleplay/` (17,824 LOC) | a trainee adviser graded against a rubric, under four regulators | [§8.4](#84-the-system-under-test--roleplay) |
+| Knowledge retrieval | `ragcheck/` (3,142 LOC) | retrieval quality separated from answer groundedness | [§8.5](#85-the-supporting-packages-and-the-corpus) |
 
-**194 scenario files**, **2,351 tests**, and a clean clone runs green with **zero API
+**112 scenario files**, **1,505 tests**, and a clean clone runs green with **zero API
 keys**.
 
 ### Two minutes from a clean clone
 
 ```bash
 pip install -e ".[dev]"
-pytest                 # 1,976 pass, 4 skip — the 4 name the live flag they need
-make demo              # the restaurant case study, end to end, free
+pytest                 # 1,505 pass, 4 skip — the 4 name the live flag they need
 make roleplay-demo     # the advisory pack: contracts, consistency, scorer calibration
+make cited-calls       # both recorded calls, shipped rubric against the cited scorecard
 ```
 
 Nothing above needs a key, a network or a provider account. What each of the other
@@ -774,19 +794,16 @@ instrument pointed at a system*, not *a framework the system has to adopt*.
 
 ```mermaid
 graph TD
-    LAB["<b>lab/</b> — the reusable engine · 31,541 LOC<br/>trace · checks · judges · simulator · voice · report · cli"]
+    LAB["<b>lab/</b> — the reusable engine · 29,856 LOC<br/>trace · checks · judges · simulator · voice · report · cli"]
 
-    RP["<b>roleplay/</b> · 15,817 LOC<br/>advisory sales coaching<br/>under four regulators"]
-    TM["<b>tablemate/</b> · 5,091 LOC<br/>restaurant booking<br/>with seeded defects"]
-    RC["<b>ragcheck/</b> · 3,108 LOC<br/>retrieval vs<br/>groundedness"]
-    SC["<b>scenarios/</b> · 2,404 LOC<br/>+ 194 YAML rows"]
+    RP["<b>roleplay/</b> · 17,824 LOC<br/>advisory sales coaching<br/>under four regulators"]
+    RC["<b>ragcheck/</b> · 3,142 LOC<br/>retrieval vs<br/>groundedness"]
+    SC["<b>scenarios/</b><br/>112 YAML rows"]
 
     RP -->|imports| LAB
-    TM -->|imports| LAB
     RC -->|imports| LAB
     SC -->|imports| LAB
     LAB -.->|"<b>never</b> imports"| RP
-    LAB -.->|"<b>never</b> imports"| TM
     LAB -.->|"<b>never</b> imports"| RC
 
     classDef eng fill:#fff3cd,stroke:#8a6d3b,color:#3b2f0b,stroke-width:3px
@@ -800,12 +817,11 @@ has arrows in one.
 #### In detail
 
 **The claim is checkable, so here it is checked.** Importing the engine and its heaviest
-modules pulls in none of the four:
+modules pulls in none of the three:
 
 ```python
 import lab, lab.cli, lab.checks.contracts, lab.judges.registry, lab.report.report
 # roleplay   not imported
-# tablemate  not imported
 # ragcheck   not imported
 # scenarios  not imported
 # numpy      False
@@ -815,14 +831,12 @@ import lab, lab.cli, lab.checks.contracts, lab.judges.registry, lab.report.repor
 three `__init__.py` files use PEP 562 lazy re-exports, so `import lab` does not drag in
 the numerical stack that only the audio tier needs.
 
-**Within each domain the import surface is deliberately narrow.** In `tablemate/`
-exactly one module of the *system* imports `lab` — `runtime.py`, the adapter — and it
-imports three type names to build a reply with. `tablemate/__main__.py` imports `lab`
-too and is exempt because it is a runner, not part of the system. Both halves are
-asserted in `tests/test_tablemate_agents.py`. The four agents (`GreeterAgent`,
-`BookingAgent`, `ModificationAgent`, `PolicyAgent`) and the five tools (`search_tables`,
-`create_booking`, `modify_booking`, `cancel_booking`, `check_policy`) are `lab`-free
-entirely.
+**Within the domain the import surface is deliberately narrow.** In `roleplay/` the
+`lab`-importing modules are `runtime`, `contracts`, `consistency`, `calibration`,
+`corpus` and `regime_eval` — the adapter and the checking layer. Everything that
+decides, acts, grades or remembers is `lab`-free: `persona.py` (the AI customer),
+`register.py` (the disclosure ledger), `scorer.py` and `scorecard.py` (both graders)
+import nothing from the engine at all.
 
 **One crack in the claim, stated rather than glossed.** There is exactly one import
 from `lab/` into a non-`lab` package:
@@ -845,13 +859,11 @@ documentation task.
 | Package | LOC | What it is |
 | --- | --- | --- |
 | `lab/` | 39,540 | the reusable engine |
-| `tests/` | 33,610 | 2,351 tests across 62 `test_*.py` modules (65 `.py` files; the other three are shared fixtures) |
-| `roleplay/` | 16,926 | the advisory domain |
-| `tablemate/` | 5,091 | the restaurant domain |
-| `ragcheck/` | 3,141 | retrieval + groundedness |
-| `scripts/` | 6,129 | the five fixture recorders — every path that spends money — plus the site-data generator, which spends nothing |
-| `scenarios/` | 2,434 | the loader, plus the YAML rows |
-| `error_analysis/` | 288 | the hand-coded failure taxonomy |
+| `tests/` | 22,302 | 1,505 tests across 49 `test_*.py` modules |
+| `roleplay/` | 17,824 | the advisory domain |
+| `ragcheck/` | 3,142 | retrieval + groundedness |
+| `scripts/` | 4,006 | the fixture recorders — every path that spends money — plus the site-data generator, which spends nothing |
+| `scenarios/` | 97 | the package shim; the corpus itself is 112 YAML rows |
 
 **The 194 scenario rows, by directory:**
 
@@ -1031,9 +1043,10 @@ enough to hold in your head and large enough that no adapter has needed a sixtee
 A schema that grows a kind per feature stops being a shared vocabulary and becomes a
 union of private ones.
 
-> **A naming trap worth knowing before you read any trace.** In the restaurant domain
-> `caller_utterance` carries the *customer* and `agent_utterance` carries the system
-> under test. In the advisory domain the system under test is the trainee adviser, and
+> **A naming trap worth knowing before you read any trace.** The event names come from
+> the ordinary case, where `caller_utterance` carries the *customer* and
+> `agent_utterance` carries the system under test. In the advisory domain the system
+> under test is the trainee adviser, and
 > the adviser's turns are carried on **`caller_utterance`**. The names describe
 > positions in a conversation, not roles in a test. `roleplay/regime_eval.py` computes
 > disclosure position over "the ordered sequence of the adviser's `caller_utterance`
@@ -1246,7 +1259,7 @@ recorded live conversations in `fixtures/live_run/traces`. After the rewrite it 
 > **Two denominators, two runs — do not merge them.** The **1/7** above is the earlier
 > `fixtures/live_run` corpus (30 conversations), and it is the figure `DESIGN.md` §10 and
 > `tests/test_checks_paraphrase.py` both quote. The separate **1/6** in
-> [§8.4](#84-the-two-systems-under-test--roleplay-and-tablemate) is the later
+> [§8.4](#84-the-system-under-test--roleplay) is the later
 > `fixtures/live_full` run, counted over the six large-party conversations in it. Both are
 > real and neither supersedes the other; quoting one with the other's denominator is the
 > exact mistake Rule 3 exists to prevent.
@@ -1338,7 +1351,6 @@ owns the constant:
 
 | Flag | Declared in | Puts a real thing in the seat of |
 | --- | --- | --- |
-| `LAB_LIVE_AGENT` | `tablemate/runtime.py:119` | the restaurant agent's decisions |
 | `LAB_LIVE_CALLER` | `lab/simulator/driver.py:112` | the customer |
 | `LAB_LIVE_JUDGE` | `lab/judges/judge.py:158` | the judge |
 | `LAB_LIVE_TRAINEE` | `roleplay/live.py:173` | the trainee adviser |
@@ -1382,9 +1394,7 @@ clone can run every row below.
 | `make test` | the full offline suite — 2,351 pass, 4 skip at commit `78b610a` |
 | `make coverage` | line and branch coverage: whole tree, then the offline-executable subset ([§10.4](#104-the-harness-itself)) |
 | `make calibrate` | the timing and judge gates; **non-zero if either fails** |
-| `make validate` | the corpus against its schema, with coverage |
 | `make roleplay-validate` | the same, for the advisory corpus |
-| `make demo` | the restaurant case study end to end, into `reports/` |
 | `make roleplay-demo` | the advisory pack: contracts, score consistency, scorer calibration |
 | `make advisory-verdicts` | the 18 advisory rows' regime verdicts, computed from the registers |
 | `make spoken-replay` | replay the committed spoken call and re-grade it |
@@ -4993,16 +5003,14 @@ company. Nothing in it imports any domain package
 
 | Path | LOC | What it is | Where |
 | --- | --- | --- | --- |
-| `roleplay/` | 15,817 | the advisory domain under four regulators | [§8.4](#84-the-two-systems-under-test--roleplay-and-tablemate) |
+| `roleplay/` | 15,817 | the advisory domain under four regulators | [§8.4](#84-the-system-under-test--roleplay) |
 | `roleplay/scorer.py` | 505 | the rubric as arithmetic — **holds 3 seeded defects** | [§8.4.6](#846-scorerpy-and-the-three-seeded-defects) |
 | `roleplay/scorecard.py` | 1,724 | the 28-KPI behavioural scorecard | [§7.4](#74-the-28-kpi-scorecard) |
 | `roleplay/regime_eval.py` | 2,732 | registers → per-regime verdicts | [§8.4.5](#845-regime_evalpy--turning-a-citation-into-a-decision-procedure) |
 | `roleplay/spoken.py` | 2,100 | the same call through real speech; `--call second` for the second recording | [§8.4.8](#848-livepy-versus-spokenpy) |
 | `roleplay/scorecard_eval.py` | 470 | a trace graded against the cited registry; not-applicable KPIs carry their reasons | [§8.4.6](#846-scorerpy-and-the-three-seeded-defects) |
-| `tablemate/` | 5,091 | the restaurant domain, three seeded bugs | [§8.4.10](#8410-tablemate--the-portability-proof) |
-| `ragcheck/` | 3,108 | retrieval separated from groundedness | [§8.5.5](#855-ragcheck-file-by-file) |
-| `scenarios/` | 2,404 + 194 YAML | the corpus and its loader | [§8.5.7](#857-scenarios--the-corpus-and-the-loader) |
-| `error_analysis/` | 288 | traces read by hand, coded, counted | [§8.5.8](#858-error_analysis--traces-read-by-hand) |
+| `ragcheck/` | 3,142 | retrieval separated from groundedness | [§8.5.5](#855-ragcheck-file-by-file) |
+| `scenarios/` | 112 YAML rows | the corpus | [§8.5.7](#857-scenarios--the-corpus-and-the-loader) |
 | `scripts/` | 6,129 | the five fixture recorders — every path that spends money — and the site-data generator | [§8.5.9](#859-scripts--the-fixture-recorders) |
 | `tests/` | 33,610 | 2,351 tests across 62 `test_*.py` modules (65 `.py` files; the other three are shared fixtures) | [§8.5.10](#8510-tests--what-it-actually-protects) |
 | `docs/index.html`, `docs/site/` | — | the case-study page, its stylesheet and script, and the fourteen recomputed data files | [§8.5.11](#8511-docsindexhtml-and-docssite--the-case-study-page-and-its-data) |
@@ -6499,7 +6507,7 @@ Two smaller mechanisms in the same spirit:
 `lab` is meant to be extractable into its own distribution, and the case study is not part
 of it. So the corpus loader, the agent factory and the caller fixtures are resolved lazily,
 **by dotted path**, through `--corpus-module` and `--agent-factory`
-(`scenarios.loader` and `tablemate.runtime:build_agent` by default). `import lab` therefore
+(`roleplay.corpus` by default). `import lab` therefore
 never pulls in the case study, and the seam that will become a plugin point after the split
 is already the seam the default values sit behind.
 
@@ -7450,7 +7458,7 @@ same breath.
 **`prompt_v1.md` is 11 lines.** It is the prompt anybody writes first, and it is
 not obviously wrong:
 
-> You are reviewing a transcript from a restaurant's phone booking assistant.
+> You are reviewing a transcript from a phone booking assistant.
 > Did the assistant hallucinate a confirmation? … Answer PASS if the assistant did
 > not hallucinate a confirmation, or FAIL if it did, then give a one-line reason.
 
@@ -8156,7 +8164,7 @@ never fired on real data.**
 ##### 8.2.10.3 The design: exactly one live variable
 
 ```
-agent      scripted backend, FakeClock, fresh restaurant per repeat  (deterministic)
+agent      scripted backend, FakeClock, fresh state per repeat  (deterministic)
 caller     a model, temperature 0.7, playing the scenario's persona and goal
 k          5 repeats per scenario, 8 scenarios
 verdict    the same gate the suite uses (lab.cli.evaluate_trace)
@@ -8304,9 +8312,8 @@ easier to set by accident than an environment variable is.*
 
 **Layering.** `lab` must not depend on the case study, so the corpus, the agent
 factory and the caller fixtures are resolved lazily by dotted path
-(`scenarios.loader`, `tablemate.runtime:build_agent`) using `lab.cli`'s own
-importer rather than a second copy of it. Importing this module pulls in neither
-`scenarios` nor `tablemate`.
+(`roleplay.corpus`) using `lab.cli`'s own importer rather than a second copy of it.
+Importing this module pulls in neither `scenarios` nor `roleplay`.
 
 ---
 
@@ -10073,82 +10080,70 @@ happened.
 
 ---
 
-### 8.4 The two systems under test — `roleplay/` and `tablemate/`
+### 8.4 The system under test — `roleplay/`
 
-`roleplay/` (15,817 LOC) and `tablemate/` (5,091 LOC): what each file does, how it works,
-and why it is the way it is. These are the *products*, not the instrument — both contain
-defects planted on purpose, and the honest question this subsection answers is whether the
-instrument finds them.
+`roleplay/` (17,824 LOC): what each file does, how it works, and why it is the way
+it is. This is the *product*, not the instrument — it contains defects planted on
+purpose, and the honest question this subsection answers is whether the instrument
+finds them.
 
 The rubric arithmetic and the twenty-eight-KPI scorecard are covered in
 [§7](#7-the-scoring-model) rather than repeated here; this subsection covers the code.
 
-- [8.4.1 Two systems, one instrument](#841-two-systems-one-instrument)
+- [8.4.1 One system, one instrument, and the line between them](#841-one-system-one-instrument-and-the-line-between-them)
 - [8.4.2 The advisory domain: what the product is](#842-the-advisory-domain-what-the-product-is)
 - [8.4.4 The four regulators and the registers](#844-the-four-regulators-and-the-registers)
 - [8.4.5 `regime_eval.py` — turning a citation into a decision procedure](#845-regime_evalpy--turning-a-citation-into-a-decision-procedure)
 - [8.4.6 `scorer.py` and the three seeded defects](#846-scorerpy-and-the-three-seeded-defects)
 - [8.4.8 `live.py` versus `spoken.py`](#848-livepy-versus-spokenpy)
 - [8.4.9 The rest of `roleplay/`, file by file](#849-the-rest-of-roleplay-file-by-file)
-- [8.4.10 `tablemate/` — the portability proof](#8410-tablemate--the-portability-proof)
-- [8.4.11 What the two domains prove together](#8411-what-the-two-domains-prove-together)
+- [8.4.10 What the removed second domain proved, and what replaced the proof](#8410-what-the-removed-second-domain-proved-and-what-replaced-the-proof)
 
-#### 8.4.1 Two systems, one instrument
+#### 8.4.1 One system, one instrument, and the line between them
 
 ##### In plain terms
 
-The engine in `lab/` is the testing machine. It has to be pointed at *something*
-in order to be demonstrated, and a testing machine demonstrated against one
-product proves nothing — you cannot tell whether the machine is general or whether
-the product was simply built to suit it.
+The engine in `lab/` is the testing machine. It has to be pointed at *something* in
+order to be demonstrated, and the trap with a testing machine demonstrated against
+one product is that you cannot tell whether the machine is general or whether the
+product was simply built to suit it.
 
-So there are two products, chosen to have nothing in common. One is a sales
-coaching tool for financial advisers, under four countries' rulebooks. The other
-is a restaurant that takes bookings over the phone. Neither knows the testing
-machine exists. Both are graded by exactly the same checks.
+This repository carried a second, unrelated product for exactly that reason, and it
+has since been removed — see
+[§8.4.10](#8410-what-the-removed-second-domain-proved-and-what-replaced-the-proof),
+which says plainly what was lost with it. What is left is the structural version of
+the same claim, and the structural version is at least checkable.
 
 ##### In detail
 
-The dependency direction is the whole claim and it is asserted in code, not in
-prose.
+The dependency direction is the whole claim and it is asserted in code, not in prose.
 
 ```mermaid
 graph LR
     lab["lab/ — the engine<br/>trace · contracts · judges · voice"]
-    rp["roleplay/ — advisory coaching<br/>15,817 LOC"]
-    tm["tablemate/ — restaurant booking<br/>5,091 LOC"]
+    rp["roleplay/ — advisory coaching<br/>17,824 LOC"]
+    rc["ragcheck/ — retrieval evaluation<br/>3,142 LOC"]
 
     rp -->|imports| lab
-    tm -->|imports| lab
+    rc -->|"imports 3 subpackages"| lab
     lab -.->|"never imports"| rp
-    lab -.->|"never imports"| tm
+    lab -.->|"never imports"| rc
 ```
 
 *What to notice: the arrows only run one way. `lab/` has never heard of either
-domain. That asymmetry is what makes "an instrument pointed at a system, rather
-than a framework the system must adopt" a checkable claim.*
+package. That asymmetry is what makes "an instrument pointed at a system, rather
+than a framework the system must adopt" a checkable claim rather than a slogan.*
 
-Within each domain the import surface is deliberately narrow. In `tablemate/`
-exactly one module of the system — `runtime.py`, the adapter — imports `lab`, and
-it imports three type names to build a reply with; `tablemate/__main__.py` imports
-`lab` too and is exempt because it is a *runner*, not part of the system. Both
-halves are asserted in `tests/test_tablemate_agents.py`. In `roleplay/` the
+The import surface inside the domain is deliberately narrow too. In `roleplay/` the
 `lab`-importing modules are `runtime`, `contracts`, `consistency`, `calibration`,
 `corpus` and `regime_eval`; everything that decides, acts, grades or remembers is
-`lab`-free.
+`lab`-free. `ragcheck/` reaches three subpackages and no more — `lab.judges`,
+`lab.trace`, `lab.clock` — and that import list is the receipt for the claim in
+[§8.5](#85-the-retrieval-pack).
 
-Test coverage of the two domains, counted with `pytest --collect-only -q`:
-
-| Domain | Test files | Tests |
-| --- | --- | --- |
-| advisory / roleplay | 9 | 390 |
-| restaurant | 5 | 197 |
-
-(The suite as a whole collected **1,980** tests on this machine, not the 1,976
-recorded in [§1](#1-start-here). Four tests have been added since that figure was
-written. Stated rather than silently reconciled.)
-
----
+Test coverage, counted with `pytest --collect-only -q`: **1,509 tests collected
+across 49 files**, of which 451 in 12 files are named for the advisory domain. The
+whole suite runs offline in about 18 seconds.
 
 #### 8.4.2 The advisory domain: what the product is
 
@@ -10987,10 +10982,9 @@ a sha256 of the exact message list it was generated from, so **turn five replays
 into the conversation turn five was recorded in.**
 
 `live.py` also does something rare: it names its own technical debt in the module
-docstring. `tablemate.runtime.ModelClient` and `lab.simulator.LLMCaller` are two more
-implementations of the same record/replay/backoff discipline. *"Three homes for one
-idea is a debt, and the honest place to say so is here rather than in a commit
-message."*
+docstring. `lab.simulator.LLMCaller` is another implementation of the same
+record/replay/backoff discipline. *"More than one home for one idea is a debt, and
+the honest place to say so is here rather than in a commit message."*
 
 ##### The finding `spoken.py` produced
 
@@ -11559,486 +11553,43 @@ miss) and the `lab`-import inventory are stated.
 
 ---
 
-#### 8.4.10 `tablemate/` — the portability proof
-
-**5,091 LOC.** A restaurant that takes bookings over the telephone.
-
-##### Its actual job
-
-**In plain terms.** This domain is not here because anybody needs a restaurant booking
-bot. It is here to answer one question: *does the testing machine work on something
-completely different, without changing the machine?*
-
-Financial advice and restaurant bookings share nothing — different actors, different
-tools, different regulators, different failure modes. If the same trace schema, the
-same contracts, the same pass^k machinery and the same report layer grade both, then
-the engine is an engine. If they only work on the domain they were written alongside,
-the engine is a product with a framework painted on it.
-
-That is the whole assignment. Everything else about `tablemate/` is in service of it.
-
-**In detail.** The demonstration has a second half: **three seeded defects**, documented
-only in `tablemate/SEEDED_BUGS.md`, each planted to be caught by a specific class of
-check. Same discipline as the roleplay pack — real code paths, no flags, no random
-seed, plausible decisions, transcripts that read as competent courteous calls.
-
-##### The architecture, and where all three defects live
-
-```mermaid
-graph TD
-    C["Caller"] --> G["GreeterAgent<br/>routes, holds no tools"]
-    G -->|"project(record, inbound)"| B["BookingAgent<br/>search_tables, create_booking"]
-    G -->|"project(record, inbound)"| M["ModificationAgent<br/>modify_booking, cancel_booking, search_tables"]
-    G -->|"project(record, inbound)"| P["PolicyAgent<br/>check_policy"]
-    S["Session — the orchestrator's notebook<br/>what was asked · what was searched ·<br/>whether a booking is claimed"] -.->|"NOT part of any brief;<br/>survives every handoff"| G
-```
-
-*What to notice: the projection arrow. A specialist does not share the orchestrator's
-memory — it is briefed with the record narrowed to the fields it declared an interest
-in, and **that brief becomes the record** while it holds the turn. The notebook is
-separate and survives. Two of the three defects are the record and the notebook
-disagreeing; the third is the notebook believing a booking exists.*
-
-##### File by file
-
-###### `agents.py` — 1,053 lines — the four agents and the router
-
-**Job.** Decide who holds the turn, what they say, and what tool they reach for. All
-three seeded bugs live here.
-
-**Mechanism.** `AgentSpec` (name, `system_prompt`, `tools` allow-list, `inbound` brief
-fields) × 4 in `SPECS`. `project(record, inbound)` is *"the single line through which
-every handoff in this package passes."* `remit(agent)` is the one source of truth for
-the handoff-reason clause, because the reason lands in the trace and is grouped on in
-the transition heatmap — *"a second copy of these words elsewhere would split one
-column into two that mean the same thing."* `Orchestrator.turn` absorbs slots, routes,
-projects, delegates. `Session` is the notebook.
-
-**Why it is interesting.** Every branch is taken on the strength of
-`tablemate.understanding`, never a language model. That is *"the load-bearing design
-choice in this package, and it is here for a testing reason rather than an
-architectural one: a bug that only sometimes reproduces cannot anchor a case study."*
-
-`RECORD_FIELDS` is 8 fields; `SPECS[POLICY].inbound` is 6. The two it drops, verified:
-`('dietary', 'notes')`.
-
-###### `understanding.py` — 695 lines — the agent's ears
-
-**Job.** Turn an utterance into intents and slots, deterministically. Without it the
-agents cannot decide anything and the seeded defects become probabilistic.
-
-**Mechanism.** `SLOT_NAMES` (6), `Intent` + `INTENT_PRECEDENCE`, `intents_in`,
-`route_intent`, `extract_slots(utterance, expecting=)`, `note_clause`, `policy_topic`,
-`wants_to_end`, `is_affirmative`, `number_word`, `merged`. Regexes and a small
-vocabulary throughout.
-
-**Why it is interesting.** The docstring states its own limits without hedging: seven
-weekdays plus today/tomorrow/tonight, clock times in a handful of forms, integers and
-number words to twenty, a fixed allergen vocabulary; **no date arithmetic, no
-coreference, no spelling correction.** *"A production booking agent needs a real date
-parser and a real entity model; substituting one here would add code the harness cannot
-demonstrate anything about."*
-
-And the payoff of keeping the decisions here: swapping backends isolates exactly one
-variable — phrasing. *"That turns the LLM backend into a measurement — it answers 'how
-much of my detector's recall depends on the agent's phrasing?' — instead of a source of
-noise."*
-
-###### `store.py` — 473 lines — tables, diary, policy sheet
-
-**Job.** Be somewhere a booking can fail to appear. A claim like "the booking was never
-created" is only checkable if there is a place for it to be missing from.
-
-**Mechanism.** `Table`, `Booking`, `Restaurant` (6 tables, 3 seeded bookings, a policy
-sheet), `free_tables`, `alternative_times`, `mint_ref`, `add_booking`,
-`ensure_booking`, `book_out`, `policy`. `default_restaurant()`.
-
-**Why it is interesting — three deliberate properties.**
-
-*No randomness, no wall clock.* `FIRST_NEW_REF = 2001`, so the fourth booking of a
-session mints `TM-2001` *"on every machine, forever. A fixture that replays a
-conversation containing a reference must be able to match it exactly."*
-
-*Dates and times are stored as the caller said them* — `"friday"`, `"7pm"`, lower-cased
-and nothing more. No normalisation, because `lab.checks.text` deliberately refuses to
-equate `"7pm"` with `"19:00"`, and *"inventing a normaliser here would produce agreement
-the checks are entitled to disbelieve."* One surface form per value, end to end.
-
-*Availability is a real constraint, not a stub* — so "no availability" is a reachable
-path with a reachable alternative list, rather than a branch only a mock can enter.
-
-###### `tools.py` — 382 lines — the five tools
-
-**Job.** Be the half of the conversation a transcript cannot show you, and record every
-call in order.
-
-**Mechanism.** `TOOL_NAMES = (search_tables, create_booking, modify_booking,
-cancel_booking, check_policy)`. `Toolbox.invoke` enforces the per-agent allow-list and
-appends every call to `Toolbox.calls` with a deterministic `call_id`. `ToolError` /
-`ToolNotAllowed`.
-
-**Why it is interesting.** Three choices, each aimed at making the tool channel legible
-to a check:
-
-*Structured results, not booleans.* `search_tables` returns which tables it found, how
-big they are, and what else was free at other times — so a check can ask "did the agent
-offer an alternative it had actually been given?"
-
-*Failures are results too.* A tool that cannot do the thing raises `ToolError`, recorded
-as a call with `ok=False`. **Called-and-failed versus never-called is a distinction a
-contract is entitled to make, and it evaporates if a failing tool simply returns
-nothing.**
-
-*Allow-lists are enforced, not documented.* *"A permission model that is only a comment
-is not a permission model, and 'the policy agent quietly created a booking' is exactly
-the kind of multi-agent failure this repo is about."*
-
-No retries, no timeouts, no intermittent failure — *"modelling them here would make the
-seeded bugs non-deterministic, which is the one thing they may not be."*
-
-###### `runtime.py` — 1,648 lines — the adapter and the three backends
-
-**Job.** Present TableMate as `utterance in, AgentTurn out`, and be the only module of
-the system that imports `lab`.
-
-**Mechanism.** `TableMate.__call__` satisfies `lab.simulator.AgentUnderTest`.
-`ScriptedBackend` (default), `PhrasingBackend` (a model rewords a line the code
-decided), `LLMBackend` + `LLMEngine` (the model decides too). `PhraseCassette` and
-`SessionCassette` for record/replay; `ModelClient` for the provider call with 429
-backoff. `LIVE_PROMPTS`, `LIVE_BRIEFS`, `TOOL_SCHEMAS`, `TRANSFER_TOOLS`,
-`END_CALL_TOOL`. `LatencyModel.seconds_for`.
-
-**Why it is interesting.** Three claims are made here and each is checkable.
-
-*One call, one turn, nothing in between* — and it is the only place in the package that
-imports the harness.
-
-*Latency is produced, not asserted.* Fixed think time + per-tool cost + per-character
-speaking cost, spent on the injected clock. Under a `FakeClock` that is exact and free;
-under a real clock it is a real wait. Either way the number the harness recovers is a
-number the system actually spent, and `lab.voice.calibration` is what proves the
-recovery is faithful.
-
-*Three backends, two variables.* Scripted vs phrasing isolates **wording**; scripted vs
-LLM isolates **decisions**.
-
-`LLMEngine` keeps a **per-desk message history**, created when a desk takes the turn and
-discarded when it loses it. That is the architecture, not an optimisation: *"a desk that
-could read back over the whole call would recover every fact the projection dropped, and
-the narrow-brief architecture this system is built on would be decorative."*
-
-And the refusals: no retries around the model call, *"because a backend that quietly
-falls back would make the comparison above meaningless"*; a cassette miss raises
-`MissingExchangeError` rather than falling back to a scripted line.
-
-###### `__main__.py` — 788 lines — the live runner and the defect signals
-
-**Job.** Drive the LLM backend over selected scenarios, record the cassette, and report
-the two questions a live run raises that a replay run does not.
-
-**Mechanism.** `BUG_ROWS` / `CONTROL_ROWS`; `bug_1_signal`, `bug_2_signal`,
-`bug_3_signal` (hand-written signatures, independent of the corpus's contracts);
-`unbacked_promise`, `emergent_promise`; `score`, `replay`, `_rates`, `_print_rates`.
-
-**Why it is interesting.** It lives with the system under test rather than as a flag on
-`evallab run`, because *"teaching `lab.cli` about model-driven backends would put
-knowledge of one system under test into the instrument."*
-
-It prints **two independent signals per defect** — the corpus's contract verdicts and a
-hand-written signature — precisely because they can disagree: *"a contract can fail for
-a reason that is not the seeded defect at all, and counting it as the defect would
-inflate the number this whole exercise exists to report."*
-
-Two detector-precision bugs found by reading live output are recorded next to their
-fixes in this file. Both fired on **control** rows:
-
-- *"asked for the head count"* matched *"anything else you'd like to change — the date,
-  or the number of people in your party?"*, which mentions the head count and requests
-  nothing. Fixed with an offer/ask guard evaluated over the **clause**, not the turn.
-- *"the caller already stated the head count"* matched the *time* in *"move my booking
-  TM-2098 to 7:30pm"* — any digit counted. Fixed by asking
-  `understanding.extract_slots`, **the same extractor the agent's own record uses**. One
-  definition of the fact, shared between the memory and the detector that judges it.
-
-Neither was findable against the scripted agent, whose phrasing is fixed.
-
-###### `__init__.py` — 52 lines
-
-Re-exports `TableMate` and `build_agent`. Worth reading for the three-backends summary
-and the import-boundary statement.
-
-##### The three seeded bugs
-
-###### BUG-1 — phantom confirmation on a party of six
-
-**Plain.** Ask for six or more people and the agent says *"That is all booked in"*,
-explains the private room, the deposit and the pre-order — **and never creates the
-booking.** No reference is given, and none is asked for, because the group-booking
-patter accounts for its own absence: *"the events team sends those out."* The caller
-hangs up believing they have a table for eight on Saturday.
-
-**Plausible because** the group path was added later for a real reason: a party that size
-is a private-room booking with a deposit and a pre-order, and that flow belongs to the
-events team. Whoever wrote the branch wrote the words the caller needed to hear and left
-the commit to the flow that was going to replace it. **Reviewing this function, the
-branch looks *fuller* than the one below it, not emptier.**
-
-**Technically.** `BookingAgent._commit`, the branch guarded by
-`size >= LARGE_PARTY_THRESHOLD` (= 6). Caught by `PromiseContract` (a spoken commitment
-in the perfect or present-stative requires `create_booking` somewhere in the session)
-and by `ToolContract` from the other side, as a missing expected call.
-
-**What must not find it:** anything reading only the transcript. The words are fluent,
-warm, internally consistent and specific. *"Any judge, human or model, that is shown the
-conversation and not the tool ledger should score this call a success — and if a
-text-only judge does flag it, that is worth understanding, because on this trace it
-cannot have flagged it for the right reason."*
-
-**The boundary is the evidence.** `happy-party-of-five-boundary` and
-`edge-large-party-of-six` differ in exactly one digit. Five books; six does not. A suite
-that reports a difference between those two rows *has localised the defect to the
-threshold without anybody telling it where to look.*
-
-###### BUG-2 — the amendment desk asks what it already knows
-
-**Plain.** Every amendment opens with *"How many people will be dining?"*, unconditionally,
-however recently the caller said it. The change is then applied correctly. Nothing fails
-— the call is just one round trip longer than it needed to be, and the caller has
-repeated themselves for no reason.
-
-**Plausible because** the reasoning in the code is sound as far as it goes: moving a
-booking may mean re-seating the party, re-seating needs the head count, and the head
-count is not part of the *change request*. So the amendment flow establishes it. The
-mistake is that it establishes it **from the caller instead of from the brief it was
-handed, which already has it.** Two sources of truth for one fact, and the code consults
-the wrong one.
-
-**Technically.** `ModificationAgent._amend`, the block guarded by
-`session.headcount_checked` — which `Orchestrator.turn` resets to `False` on every fresh
-activation of the amendment desk. Caught by `NoReAskContract`, which quotes the caller's
-original answer *and* the later question and names `ModificationAgent` as the asker.
-
-**Why it is harder to detect than it looks.** The fix is *not* "never ask about party size
-after a handoff". A careful agent **should** confirm a head count before moving a table —
-*"still four of you?"* — and a detector that flags any interrogative mentioning the party
-size fires on that too, gets called noisy, and gets switched off. The distinction the
-check draws is the one that matters: **an ask requests information it does not state; a
-confirmation states what it is checking.** This code asks.
-
-**Cost, in the scenario that measures it.** `edge-modification-after-booking` uses the
-`distracted_parent` persona, whose cooperativeness sits below the reluctance threshold, so
-every question costs two turns rather than one. The transcript makes it look like one
-wasted exchange. For that caller it is two.
-
-###### BUG-3 — the dietary note falls out of the record at the policy desk
-
-**Plain.** The caller states a severe peanut allergy, then asks a question about the
-restaurant. The policy desk takes the turn. Its brief covers the shape of the booking and
-not the caller's free text, so `dietary` and `notes` are not in the projection — **and the
-brief is the record from that moment on.** The question is answered well. Control returns
-to the booking desk, which books the table with `notes=""`. The allergy is not on the
-booking, the kitchen never hears about it, **and nobody is told anything untrue.**
-
-**Plausible because** narrow briefs are good practice, chosen deliberately: a short prompt,
-and a sub-agent that cannot act on data it was never given. The policy desk genuinely does
-not need to know about an allergy in order to answer a question about parking. *"Every line
-of the projection is defensible; the failure is in the composition — that the projection is
-destructive, and that a desk with a narrow brief sits on the path back to the desk that
-needs the wide one."*
-
-**This is the one to read twice.** The reason nothing looks wrong is *a feature working as
-designed*. The dietary prompt is a courtesy question the orchestrator asks once, and the
-notebook — which survives the handoff — records that it has been dealt with. So the booking
-desk does not ask about allergies again. If it did, the caller would notice, repeat
-themselves, and the note would be recovered; the bug would be an annoyance rather than a
-silent data loss. **The bookkeeping that makes the system feel attentive is what makes this
-defect invisible.**
-
-**Technically.** `SPECS[POLICY].inbound` in combination with `Orchestrator.turn`'s single
-`project(...)` call. Caught by `FieldPropagationContract` with `require_handoff=True`,
-which quotes the caller's supplying utterance, every handoff the value had to survive, and
-the `create_booking` arguments that do not carry it.
-
-**The control that makes it evidence.** `happy-dietary-note-single-agent` is the same
-allergy, the same booking, no policy question — and the note arrives. So the finding is not
-*"this agent loses dietary requirements"*, which would be a guess about the model. It is
-*"this agent loses dietary requirements **across a handoff to the policy desk**"*, which is
-a statement about a boundary, and it names the line to change.
-
-##### The controls are the load-bearing half
-
-| Bug | Fires in | Controls that must stay green |
-|---|---|---|
-| BUG-1 | `edge-large-party-of-six`, `edge-large-party-eight-with-note` | `happy-party-of-five-boundary` |
-| BUG-2 | `edge-modification-after-booking`, `edge-modify-party-size-upward` | `happy-cancel-then-rebook`, `happy-move-booking-later` |
-| BUG-3 | `edge-dietary-then-policy-detour`, `edge-coeliac-then-menu-policy` | `happy-dietary-note-single-agent`, `happy-parking-question-midbooking` |
-
-*"A finding without one is a description of a symptom; a finding with one names a
-boundary."*
-
-And an explicit list of what the suite should **not** find, so that a suite reporting them
-is over-firing rather than thorough: no wrong values (every value that arrives is correct;
-the failures are omissions), no tool errors on the seeded paths, no non-determinism, **no
-fourth bug**.
-
-##### The same three defects under a live model
-
-`LLMBackend` does not run `agents.py` at all. Each desk gets its remit as a system prompt,
-its allow-list as tool schemas, and its brief as its only memory. **The defects are still
-not switches**, and the honest account of how they are induced is in `SEEDED_BUGS.md`:
-
-| Defect | How it is induced |
-| --- | --- |
-| BUG-1 | The booking prompt's small-party procedure is numbered and ends in `create_booking`. Its group paragraph is a list of things to *say* and accounts for its own missing reference. **No tool is named.** |
-| BUG-2 | `LIVE_BRIEFS[MODIFICATION]` omits `party_size` (verified) while the prompt says *"establish the head count before you move anything."* The desk is told to get a fact it was not given. |
-| BUG-3 | `LIVE_BRIEFS[POLICY]` has no field a dietary note could travel in, and the projection is destructive exactly as `Orchestrator.turn`'s is. |
-
-Measured, recomputed on this machine from `fixtures/live_full/` by
-`python -m tablemate --score fixtures/live_full` (**141 committed traces, no model
-called**):
-
-```
-defect   fired / applicable          selected  n/a  controls with no unexpected finding
-BUG-1    6/6 (100.0%)                6         0    3/3
-BUG-2    2/5 (40.0%)                 6         1    3/6
-BUG-3    0/4 (0.0%)                  6         2    4/6
-
-fired/applicable is the rate. n/a counts conversations where the detector's preconditions
-never occurred — the model took a different route — and those are excluded rather than
-counted clean.
-```
-
-Under `ScriptedBackend` all three are 6/6 (100%).
-
-**Read the "not applicable" column before the rate.** Five of the six BUG-3 conversations
-never reached a `create_booking` at all — the model answered the allergen question and the
-caller's script ran out — so there was no booking for the note to be missing from. Scoring
-those as clean would have reported BUG-3 at 1/6 (17%), *"which is not a defect rate: it is
-a measure of how often the agent finished the call, wearing a defect rate's clothes."*
-Under the scripted backend that column is always zero, which is exactly why the distinction
-never had to be drawn before.
-
-**BUG-3 at 0/4 is the most interesting cell.** With a live caller the model carried the
-dietary requirement into `create_booking.notes` in every conversation where a booking
-happened. The defect is a property of how the *deterministic* build projects a brief across
-a handoff; the live model keeps its own conversation and has nothing to drop.
-
-**One number, one model, one temperature, one day.** Sample size is three per row. An
-earlier ten-row run with a *scripted* caller read 5/6, 1/4 and 1/1 — two draws of the same
-three defects against the same model disagreeing by that much is the size of the sampling
-error at k=3, *"and the reason no confidence interval is offered."*
-
-##### What the live run found that the deterministic build cannot show
-
-1. **A literal promise detector loses most of its recall to paraphrase.** On the six
-   large-party conversations `ToolContract` reported the missing `create_booking` **6/6**,
-   and `PromiseContract` — BUG-1's supposed headline finding — reported it **1/6**. The
-   scripted agent says *"That is all booked in"*; the model says *"The room is yours for
-   Friday at 8pm, and everything is in hand"*. **The defect did not change. The detector's
-   recall collapsed from 6/6 (100%) against the scripted agent to 1/6 (17%) against a
-   paraphrasing model, because its evidence is a literal string.** That is
-   Rule 15, and it is an argument about eval design rather than about this
-   agent: *"a check whose subject is semantic ('did it claim something untrue?') and whose
-   implementation is a substring will pass a paraphrase-free build and fail in production,
-   silently, in the direction that looks green."* Fixed since;
-   `tests/test_checks_paraphrase.py` pins both directions.
-
-   *Denominator note.* This **1/6** is over the six large-party conversations of
-   `fixtures/live_full`. The **1/7** quoted at [Rule 15](#rule-15--a-literal-in-a-check-is-a-check-that-works-once)
-   is the earlier `fixtures/live_run` corpus of 30 conversations. Same lesson, two
-   separate runs; they are not the same measurement and must not be quoted as one.
-
-2. **An emergent defect that is not any of the three.** In two of three repeats of
-   `happy-move-booking-later` — a **control** row — the amendment desk said *"You're all
-   set for 7:30pm for two people"* and never called `modify_booking`. Root cause visible in
-   the brief: `_absorb` records `time: 7:30pm` from the caller's *request*, the brief
-   presents it as a bare fact, and the model reads it as the booking's current state.
-   **The brief carries values without provenance** — neither the record nor the prompt
-   distinguishes "what the caller asked for" from "what the diary says". Written up on its
-   merits rather than added to the three, exactly as `SEEDED_BUGS.md` requires.
-
-3. **A contract that encodes the incumbent's route rather than the requirement.**
-   `edge-modification-after-booking` expects `create_booking` then `modify_booking`. In two
-   of three repeats the live agent deferred the commit, heard the change, and booked once at
-   the final time — no amendment needed, the caller served, `tools` failed. *"Worth reading
-   before trusting any `tools.expected` list as a statement of requirements."*
-
-4. **A machinery bug that determinism had hidden.** `expected_failure` was classified per
-   repeat, so a declared gap that came back PASS was a *stale expectation*. Right on a
-   deterministic build where all k repeats are identical; wrong here — the same run reported
-   one row's gap as *reproduced* (twice) and *stale* (once). Staleness is now decided across
-   the k repeats. *"An eval harness written against a deterministic build encodes determinism
-   in places nobody chose to."*
-
-Trace-shape parity between the two backends is asserted in
-`tests/test_tablemate_runtime.py::test_the_live_trace_is_the_same_shape_as_the_scripted_trace`,
-with four honest differences documented and none of them a difference in *shape*.
-
-##### What the scripted run reports
-
-`make demo` drives the whole booking corpus offline:
-
-```
-FAIL — 44/47 (93.6%) scenarios stable-pass — 36/369 (9.8%) contract evaluations failed
-
-report verdict:   FAIL — the product's own state
-regression gate:  PASS — 0 new, 0 vanished, 0 stale expectation(s), 12 finding(s) total
-                  (9 declared by the corpus, 3 not)
-baseline:         0 new finding(s), 0 vanished, against 12 in fixtures/replay_run/run_report.json
-corpus coverage:  47/55 scenarios driven — 8 voice row(s) need the audio adapter, 0 unscripted
-```
-
-Same two-verdicts discipline as the roleplay demo: the report verdict is about the product,
-the regression gate is about movement. And the two backends **never share a baseline**:
-`fixtures/replay_run/run_report.json` gates the scripted build, `fixtures/live_full/run_report.json`
-gates the live one.
-
----
-
-#### 8.4.11 What the two domains prove together
-
-**In plain terms.** The same testing machine, unchanged, graded a financial-services
-coaching product under four regulators and a restaurant booking line. In both cases it
-found the defects that had been planted for it to find, and in both cases it also found
-defects in *itself* — a detector that only worked on one phrasing, a rate that was really a
-completion rate, a scoring failure hidden by two errors cancelling.
-
-That second category is the more valuable one, and it is the argument for owning the
-instrument as carefully as the product.
-
-**In detail.** Three properties transferred without modification:
-
-| Property | Advisory | Restaurant |
-| --- | --- | --- |
-| the trace is the only input to grading | `session_view(trace)` is pure | contracts read the trace, not the agent |
-| the seeded defect answer key is in one place | `roleplay/SEEDED_DEFECTS.md` | `tablemate/SEEDED_BUGS.md` |
-| every finding pairs with a control | cold-scorer arm, `compliance-guaranteed-return-caught`, `pitch-exemplary-eu-retail-run` | `happy-party-of-five-boundary`, `happy-dietary-note-single-agent` |
-| a defect becomes probabilistic under a live model | live scorer study: v2's matrix varies across 3 identical runs | 6/6, 2/5, 0/4 across 141 conversations |
-| the same class of instrument bug appears in both | the fee-objection claim grounded in prose before the ledger | `PromiseContract` at 1/6 against a paraphrasing model |
-
-The last row is the one to lead with. **The same defect — a semantic question
-implemented as a substring — was found independently in both domains.** That is not a
-coincidence; it is the most common way an eval check goes quietly blind, and finding it
-twice in unrelated code is the evidence that the pattern is general.
-
----
-
-### 8.5 The supporting packages and the corpus
-
-`ragcheck/` · `scenarios/` · `error_analysis/` · `scripts/` · `tests/` — retrieval and
-groundedness, the 194-row corpus and its loader, the hand-coded failure taxonomy, the five
-recorders that are the only paths which spend money, and the test suite itself.
-
-- [8.5.1 What these four packages are for](#851-what-these-four-packages-are-for)
-- [8.5.2 RAG from first principles](#852-rag-from-first-principles)
-- [8.5.3 The worked example that matters](#853-the-worked-example-that-matters)
-- [8.5.4 The retriever is lexical, and that is deliberate](#854-the-retriever-is-lexical-and-that-is-deliberate)
-- [8.5.5 `ragcheck/` file by file](#855-ragcheck-file-by-file)
-- [8.5.6 Why ragcheck diverges from Ragas and DeepEval](#856-why-ragcheck-diverges-from-ragas-and-deepeval)
-- [8.5.7 `scenarios/` — the corpus and the loader](#857-scenarios--the-corpus-and-the-loader)
-- [8.5.8 `error_analysis/` — traces read by hand](#858-error_analysis--traces-read-by-hand)
-- [8.5.9 `scripts/` — the fixture recorders](#859-scripts--the-fixture-recorders)
-- [8.5.10 `tests/` — what it actually protects](#8510-tests--what-it-actually-protects)
+#### 8.4.10 What the removed second domain proved, and what replaced the proof
+
+**In plain terms.** An earlier version of this repository carried a second system
+under test in a completely unrelated subject, and its only job was to answer one
+question: *does the testing machine work on something different, without changing
+the machine?*
+
+It did. The same trace schema, the same contracts, the same pass^k machinery and the
+same report layer graded both, and in both cases the harness found defects in
+*itself* as well as in the product — a detector that only worked on one phrasing, a
+rate that was really a completion rate, a scoring failure hidden by two errors
+cancelling out. That second category is the more valuable one, and it is the argument
+for owning the instrument as carefully as the product.
+
+**Why it is gone.** Carrying two subjects made the repository twice as long to read
+and no more convincing to a reader who was not going to read both. It was removed to
+keep the repository to one subject.
+
+**What proves portability now, and why it is a weaker claim.** Three things, and the
+honest ranking is that only the first is evidence:
+
+1. **The import graph, which is checked rather than claimed.** `lab/` imports no
+   domain package. Not "should not" — does not, and a test says so. That is the
+   structural property the second domain was demonstrating, and it survives the
+   demonstration being deleted.
+2. **Eight Protocol seams**, each small enough to implement in an afternoon. The
+   `Trainee` protocol is two methods: `open()` and `reply(customer_turn)`. Three
+   worked adapters sit in `examples/adapters/` — echo, callable, and HTTP.
+3. **A second *kind* of evaluation on the same engine.** `ragcheck/` grades retrieval
+   and grounding rather than a conversation, imports exactly three `lab` subpackages,
+   and its judges subclass `lab.judges` unchanged. That is a change of *shape* rather
+   than a change of subject, which is a different argument and worth less.
+
+**State the weakness rather than paper over it.** A seam that has been exercised by
+three toy adapters and one adjacent problem is a weaker claim than a second working
+domain that was actually graded end to end. The strongest version of this argument
+is the one this repository no longer makes, and a reader is entitled to know that.
 
 #### 8.5.1 What these four packages are for
 
@@ -12052,24 +11603,23 @@ expands the rest of it — the four things standing around the engine:
   that answers questions out of a document. It is the smallest package here and
   the one with the most teaching in it.
 - **`scenarios/`** — the test cases themselves, written as data files rather than
-  code, plus the program that refuses to load a bad one.
-- **`error_analysis/`** — somebody sat down and read forty-seven conversations by
-  hand, wrote down every way they went wrong, and counted. The automated checks
-  caught fewer than a third of what that found.
-- **`scripts/`** — the five programs that spend money on purpose, so that nothing
-  else ever has to.
-- **`tests/`** — 1,976 of them, and the interesting ones are not the ones that
+  code: 112 YAML rows that a compliance specialist could review without reading a
+  line of Python.
+- **`fixtures/`** — the recordings. Two whole spoken calls with the audio, the
+  per-turn manifests and the traces. This folder is why nothing needs a key.
+- **`scripts/`** — the programs that spend money on purpose, so that nothing else
+  ever has to.
+- **`tests/`** — 1,505 of them, and the interesting ones are not the ones that
   prove a check works. They are the ones that prove a check can **fail**.
 
 ##### In detail
 
 | Package | Size | Owns |
 | --- | --- | --- |
-| `ragcheck/` | 3,108 LOC across 13 modules | retrieval + groundedness metrics, three judges, an offline oracle, a calibration gate |
-| `scenarios/` | `loader.py` 2,340 LOC + 194 YAML files | the declarative corpus and its schema |
-| `error_analysis/` | `pareto.py` 281 LOC + 1,075 lines of coded notes | the hand-assigned failure taxonomy |
-| `scripts/` | 2,539 LOC across 5 recorders | every path that spends provider credit |
-| `tests/` | 28,307 LOC across 57 `.py` files (54 test modules), 1,976 tests | the whole of the above, plus `lab/`, `roleplay/`, `tablemate/` |
+| `ragcheck/` | 3,142 LOC across 13 modules | retrieval + groundedness metrics, three judges, an offline oracle, a calibration gate |
+| `scenarios/` | 112 YAML files | the declarative corpus; the schema lives in `roleplay/corpus.py` |
+| `scripts/` | 4,006 LOC | every path that spends provider credit, plus the site-data generator |
+| `tests/` | 22,302 LOC across 49 test modules, 1,505 tests | the whole of the above, plus `lab/` and `roleplay/` |
 
 Sizes from `wc -l`; the test figures from `python -m pytest -q`, which reports
 `1976 passed, 4 skipped in 26.78s` against `1980 tests collected`. The four
@@ -12085,9 +11635,9 @@ This section assumes nothing. If you already know what nDCG is, skip to §8.5.3.
 
 ##### 8.5.2.1 What retrieval actually is
 
-**In plain terms.** Suppose you have a restaurant's policy handbook — twenty pages
-about deposits, cancellations, dress codes, private rooms. A customer asks: *"Do I
-have to pay a deposit for a party of ten?"*
+**In plain terms.** Suppose you have an advice firm's policy handbook — twenty pages
+about fees, cancellations, identity checks, discretionary mandates. A client asks:
+*"Do I have to pay an advance fee on a portfolio of one million?"*
 
 An AI cannot read twenty pages every time somebody asks a question, and it should
 not answer from memory, because its memory of your handbook is either absent or
@@ -13153,7 +12703,7 @@ narration cannot drift from the numbers.
 
 | File | Lines | What it holds |
 | --- | --- | --- |
-| `fixtures/corpus.yaml` | 138 | the 16-chunk restaurant policy handbook |
+| `fixtures/corpus.yaml` | 138 | the 16-chunk advice-firm policy handbook |
 | `fixtures/cases.yaml` | 153 | the 18 questions, gold ids, answers, references |
 | `fixtures/claim_labels.yaml` | 208 | the 18 hand labels the grader is measured against |
 | `prompts/claim_support_v1.md` | 59 | one prompt, two metrics |
@@ -13535,214 +13085,6 @@ cause**: "the corpus is not allowed to assume it knows that."
 ##### `scenarios/__init__.py` — 19 lines
 
 A package marker with a short docstring. One line in this wiki and we move on.
-
----
-
-#### 8.5.8 `error_analysis/` — traces read by hand
-
-##### In plain terms
-
-This is the least automated thing in the repository and, per line of code, the
-most valuable.
-
-Somebody opened forty-seven recorded conversations, read each one as a
-conversation, and wrote down what went wrong — **before** looking at which
-automated checks had failed. Then those notes were collapsed into thirteen named
-failure modes, each one assigned to the traces it occurred in, and counted.
-
-The headline is uncomfortable and it is stated as the headline:
-
-> **The automated checks caught 9 of the 31 product failures that reading the
-> traces found.**
-
-##### In detail — why a repo with automated checks keeps a human-coded taxonomy
-
-The answer is in `pareto.py`'s docstring, and it is the sharpest statement of the
-problem in the repo:
-
-> A tempting version of this script would grep the traces for repeated utterances
-> and empty note fields and call the result a taxonomy. **That measures the grep,
-> not the failures**: it can only find modes someone already thought to write a
-> pattern for, which is the exact limitation that makes reading traces necessary.
-
-An automated suite is a record of the failures you have *already learned to
-describe*. Reading traces is how the next set gets described. The two are not
-substitutes and the gap between them is a measurement in its own right.
-
-`open_coding.md` (310 lines) makes the ordering explicit and it is the
-methodological point:
-
-> Notes from reading the 47 committed traces one at a time, **before looking at
-> which checks failed. That order is deliberate: if I read the check verdicts first
-> I only ever notice the things the checks already notice.**
-
-```mermaid
-flowchart LR
-    T["47 committed traces"] --> O["open_coding.md<br/>read blind, one at a time<br/>310 lines of notes"]
-    O --> A["axial_coding.md<br/>notes → 13 named codes<br/>+ what would catch each"]
-    A --> C["codes.csv<br/>32 data rows, one per<br/>(code, trace), hand-assigned"]
-    C --> P["pareto.py<br/>counts only — infers nothing"]
-    P --> R["the table + pareto.png"]
-    A --> S["saturation.md<br/>the discovery curve"]
-```
-
-*What to notice: `pareto.py` sits at the end and only counts. Every judgement in
-the chain was made by a person, and the script's job is to make sure the prose
-cannot disagree with the data.*
-
-##### `error_analysis/pareto.py` — 281 lines
-
-**Job.** Compute failure-mode frequencies from `codes.csv` and render them as a
-table and a chart. Delete it and the taxonomy's counts become prose nobody can
-check.
-
-**How it works.** `Coded` (a frozen dataclass: code, scenario_id, class, caught,
-note), `load_codes()` (skips `#` comments, validates the column list and the
-`class` / `caught` vocabularies with a `path:line` error message), `Row` and
-`pareto()` (sorted counts with a cumulative column), `render_table()`,
-`render_chart()`, `unknown_scenarios()`, `iter_uncaught()`, `main()`.
-
-**Why it is interesting — three refusals, each stated as a refusal.**
-
-1. **It does not infer codes.** The codes are human judgements; this script is a
-   counter. See the quote above.
-2. **It does not print a percentage without its denominator** — every figure is
-   `n/N`, *including the cumulative column*, "because '38% of failures' is
-   unreadable without knowing whether that is 12 occurrences or 1,200". This is
-   Rule 3, applied by a 281-line script.
-3. **It does not silently produce a chart nobody can check.** The table prints
-   whether or not matplotlib is installed; the PNG's bars are annotated with their
-   counts; and `--check` validates every scenario id in `codes.csv` against the
-   corpus and exits non-zero on a typo, "because a taxonomy that cites a trace which
-   does not exist is fiction that reads like data".
-
-`codes.csv` reconciles exactly: 43 lines = 10 `#` comment lines + 1 header + **32
-data rows**, matching the 32 coded occurrences the script reports. CSV rather than
-YAML, per the file's own comment, "so that one code changes one line in a diff".
-
-`make errors` runs it with `--check`. Verbatim tail of that run on this tree:
-
-```
-32 coded occurrences across 23 traces (13 distinct modes).
-Product defects: 31/32; the remainder are defects in a check or in the scenario that declares it.
-Caught by a contract in the committed run: 9/31 product occurrences.
-
-every scenario id in codes.csv exists in the corpus (32 rows)
-```
-
-The top of the table:
-
-| failure mode | occurrences | share | cumulative | caught by a check |
-|---|---|---|---|---|
-| NON-ENGAGEMENT-INSTEAD-OF-REFUSAL | 5/32 | 15.6% | 5/32 (15.6%) | 0/5 |
-| SIGN-OFF-CONSUMED-BY-PENDING-QUESTION | 5/32 | 15.6% | 10/32 (31.2%) | 0/5 |
-| NO-CLOSE-AFTER-TERMINAL-TURN | 3/32 | 9.4% | 13/32 (40.6%) | 0/3 |
-| NOTE-LOST-AT-HANDOFF | 3/32 | 9.4% | 16/32 (50.0%) | 3/3 |
-| PHANTOM-CONFIRMATION | 3/32 | 9.4% | 19/32 (59.4%) | 2/3 |
-
-(Thirteen rows in total; run `make errors` for the rest.)
-
-##### What the gap revealed — and this is the finding
-
-`axial_coding.md`'s closing section states it, and it is a structural insight
-rather than a list of misses:
-
-> The two biggest modes (**10/32 occurrences** between them) have nothing checking
-> them, and **both are *absences***: a refusal that never happened, a closing turn
-> that never happened. **Every contract in the corpus asserts about something
-> present** — a tool that was called, a phrase that was said, a value that
-> travelled. Absence needs a different shape of check, and that is the single most
-> useful thing this pass produced.
-
-That is a whole class of blind spot found by reading, and unfindable by adding more
-of the checks that already exist. The breakdown of the 22 uncaught product
-occurrences is triaged rather than lamented: three misses are **one line of
-scenario YAML each**, three need a **new contract shape**, one needs a stronger
-promise contract, and one is **not visible in a trace at all** (the masked case).
-
-##### The four other files, and why each earns its place
-
-**`open_coding.md` — 310 lines.** The raw notes, undedited, with the rules the
-reader gave themselves written at the top ("don't tidy it up, don't decide yet
-whether it is a bug"). Every note names its file so any claim can be checked with
-`evallab replay …`. It records that two notes were later **withdrawn**, which is
-the kind of thing that gets quietly deleted in most write-ups.
-
-**`axial_coding.md` — 311 lines.** The taxonomy. Each of the thirteen codes gets a
-definition "tight enough to argue about", the traces it was assigned to, and — the
-part that turns analysis into work — **"what would catch it"**, naming the contract
-shape or the line of YAML.
-
-It also contains the classification table, which is Rule 14 in action:
-
-| class | meaning | this pass |
-| --- | --- | --- |
-| product | a defect in the system under test | 31/32 |
-| label | a defect in the check, or in the scenario that declares it | 1/32 |
-| harness | a defect in the driver, the caller model or the trace | 0/32 |
-| variance | the same input produced different behaviour between repeats | 0/32 |
-
-And it explains both zeroes rather than claiming them. `variance` is 0 **by
-construction** — the replay fixture is deterministic and `evallab run` verifies it.
-`harness` being 0 is given "a caveat rather than a boast": two candidates were
-argued about and re-classified.
-
-**Code 13 is the one to read.** `VALUE-FORM-MISMATCH` is classed `label`, and it is
-the author's own defect: the tracked value is `high chair`, the caller and
-`create_booking.notes` both say `high chairs`, and `contains_value`'s `icontains`
-mode anchors on word boundaries — so a value that *did* propagate is reported as
-lost. Two things make it worth its place. First: *"at the moment the report is
-generated they are indistinguishable — both are a red row with an evidence quote —
-and the only thing that separated them was reading the quote. That is the argument
-for classifying before believing, made by the one case where I got to be the
-defect."* Second: the fix is **deliberately not applied**, with three candidate
-fixes named and each rejected for a reason of scope, so the defect stays in the
-baseline, coded `label`, **visible**.
-
-**`saturation.md` — 90 lines.** The file that answers "when did reading stop
-teaching you anything?" and answers it honestly: **it had not.** The thirteenth
-mode appeared in the forty-seventh and last trace read. The discovery curve is
-tabulated trace by trace, and the analysis of its shape is the transferable
-lesson:
-
-> **Three flat stretches, and each one ends at a suite boundary.** Traces 14–19
-> looked like saturation — six consecutive traces, nothing new — and then the first
-> correction row produced two modes at once. … Sampling from a corpus that is
-> deliberately stratified by suite means the curve resets every time the stratum
-> changes, and **reading the suites in order is the worst possible order for
-> telling saturation from a lull.**
-
-The next-steps list is concrete and ordered, and step 3 is "stop reading and write
-three checks", because "reading more traces before those exist mostly re-finds what
-is already written down". The closing limit is stated flatly: 47 traces, one build,
-one synthetic system, one coder, **no second rater**, and two withdrawn codes as
-evidence that some of the kept ones are wrong too. What is defended is "the
-direction of the argument — 9 of 31 product occurrences were caught by the suite —
-rather than the third significant figure of any number in it."
-
-**`FINDINGS.md` — 321 lines.** The write-up: five defects from 47 driven scenarios,
-"ordered by what it would cost the restaurant, not by how easy it was to find".
-Every quote is copied from a trace file, **and every reproduction has a control** —
-"a call that differs in one detail and behaves correctly — because a finding
-without a control is a symptom, and a finding with one names a boundary". Finding 1
-ships a runnable Python control beside its repro: a party of five books, a party of
-six does not, so the threshold *is* the boundary rather than group bookings in
-general. Its scoreboard:
-
-| | count |
-| --- | --- |
-| scenarios driven | 47/55 (8 voice rows need the audio path) |
-| scenarios where every check passed | 44/47 |
-| findings in the committed report | 12 (scenario × contract) |
-| distinct failure modes coded by hand | 13 |
-| coded occurrences | 32 |
-| product occurrences a contract caught | 9/31 |
-
-**`error_analysis/__init__.py` — 7 lines.** A docstring saying the directory is not
-an import target. One line here and we move on — though the docstring's last
-sentence is the section in miniature: *"Aggregate pass rates say a system is
-broken; only reading individual failures says why, and a report without that
-reading is a dashboard rather than an evaluation."*
 
 ---
 
@@ -14131,17 +13473,6 @@ documentation.
 - **A delivery gap the fast tier reports as free** — **89.0 ms mean over 12 turns**
   (86.0 ms net of the local send queue) against the 0.0 ms an in-process adapter implies
   by construction. → [§2.3](#23-where-the-vendors-sit)
-- **Emergent defects a scripted corpus could not reach** — a phantom promise about a
-  severe allergy, a double booking, and an agent answering a capacity question with **zero
-  tool calls, three times out of three**. → [§8.4.10](#8410-tablemate--the-portability-proof)
-- **Seeded defects that stop being deterministic under a live model.** Under the scripted
-  backend all three planted bugs fire 6/6 (100%). Recomputed from the 141 committed live
-  traces by `python -m tablemate --score fixtures/live_full`, they fire at **6/6 (100.0%)**,
-  **2/5 (40.0%)** and **0/4 (0.0%)** — and the *n/a* column, the conversations where the
-  detector's preconditions never occurred, is what makes those denominators differ. That is
-  itself the finding: a defect that reproduces two times in five is exactly the kind a
-  single manual test declares fixed.
-  → [§8.4.10](#8410-tablemate--the-portability-proof)
 
 - **The shipped rubric gave full marks for disclosure on two calls whose ledgers hold
   2 of 3 and 1 of 3 required codes.** `rubric_v1` counts six English keywords; the cited
@@ -14247,10 +13578,6 @@ none of them has to be taken on trust.
 - **Three probes name a judge that does not exist.** By design — the registry's refusal
   *is* the demonstration — but it means the substance limb of one FCA entry and two SFC/IA
   entries is currently *reported* and not *decided*.
-- **The `tablemate` live figures are one model, one temperature, one day**, three repeats
-  per row. No confidence interval is offered and none should be inferred; an earlier draw
-  of the same three defects against the same model disagreed by more than the difference
-  anybody would want to read into. [§8.4.10](#8410-tablemate--the-portability-proof)
 
 ### 10.2 The scoring model
 
@@ -14341,12 +13668,11 @@ none of them has to be taken on trust.
 - **Test coverage is published, and it is a weak signal.** `make coverage`, at commit
   `006dbd4` over 1,992 offline tests in branch mode: coverage.py reports **84%** over all
   seven packages — 2,566 of 17,839 statements never executed, 614 of 5,056 branches taken
-  one way only — and **87%** with the five recording scripts omitted (1,892 of 17,091
-  statements; those five need vendor keys and spend money, so no offline run reaches them).
-  Per package: `lab` 90%, `ragcheck` 88%, `scenarios` 87%, `roleplay` 84%, `tablemate` 84%,
-  `error_analysis` 42%, `scripts` 9%. Seven modules are at 0%, four of them recording
-  scripts; the one that is a genuine gap rather than an unreachable one is
-  **`ragcheck/__main__.py` — 73 statements, 0%, and it is what `make ragcheck` runs**.
+  one way only — and **79%** with the five recording scripts omitted (2,918 of 15,195
+  statements; those five need vendor keys or rebuild committed artefacts, so no offline run
+  reaches them). Per package: `ragcheck` 89%, `roleplay` 86%, `lab` 83%, `scripts` 0%.
+  Twelve modules are at 0%; the one that is a genuine gap rather than an unreachable one is
+  **`ragcheck/__main__.py`, which is what `make ragcheck` runs and no test executes**.
   The figure is published because silence on it is indefensible, and it is labelled weak
   because coverage says a line ran and nothing about whether an assertion would have caught
   it being wrong — which in a repository whose substance is *refusals* is most of the
@@ -14354,7 +13680,7 @@ none of them has to be taken on trust.
   run. It is deliberately **not** a CI gate: a coverage floor fails for reasons unrelated
   to the change in front of it.
 - **The coverage config used to measure three packages of seven.** `[tool.coverage.run]
-  source` named `lab`, `roleplay` and `tablemate` only, so anyone running coverage per the
+  source` named three packages of seven, so anyone running coverage per the
   committed config got a figure with a silently wrong denominator. Fixed; recorded here
   because it is the same class of defect this wiki spends its length warning about.
 - **It is Python.** Porting to another runtime means rewriting the adapters; the trace
@@ -14568,11 +13894,11 @@ Supports [§2](#2-architecture-with-the-diagrams).
 | compliance agreement + divergence | `python -m roleplay.regime_eval --divergence --shadow` | `agreement: 16/18 rows`; confusion `pass/pass=7, fail/pass=1, fail/fail=9, fail/undecidable=1`; `6/6 divergence blocks produce opposite computed verdicts` |
 | the opposite-verdict example | same, §2 | `divergence-verbal-close-nothing-in-writing`: fca `computed=fail` (missed `fca-suitability-report-before-conclusion`), reg-bi `computed=pass` (`reg-bi-no-suitability-report → not-applicable`) |
 | the naive control | same, §3 | naive check `would PASS 1/4` of the rows the register does not pass, over-credits `3` entries the register missed |
-| `lab` imports no domain | `grep -rn -E "^\s*(from\|import)\s+(roleplay\|tablemate\|ragcheck\|scenarios)\b" lab/` | one hit only: `lab/voice/suite.py:907`, function-scope |
-| the import graph is clean at runtime | `python -c "import lab, lab.cli, …"` then inspect `sys.modules` | roleplay / tablemate / ragcheck / scenarios all *not imported*; `numpy` False |
-| package sizes | `find <pkg> -name '*.py' \| xargs wc -l \| tail -1` | lab 31,541 · tests 28,307 · roleplay 15,817 · tablemate 5,091 · ragcheck 3,108 · scripts 2,539 · scenarios 2,404 · error_analysis 288 |
+| `lab` imports no domain | `grep -rn -E "^\s*(from\|import)\s+(roleplay\|ragcheck\|scenarios)\b" lab/` | no hit |
+| the import graph is clean at runtime | `python -c "import lab, lab.cli, …"` then inspect `sys.modules` | roleplay / ragcheck / scenarios all *not imported*; `numpy` False |
+| package sizes | `find <pkg> -name '*.py' \| xargs wc -l \| tail -1` | lab 29,856 · tests 22,302 · roleplay 17,824 · scripts 4,006 · ragcheck 3,142 |
 | 194 scenario rows | `find scenarios -name '*.yaml' -o -name '*.yml' \| wc -l` | 194; roleplay 78 · advisory 31 · audio 21 · edge 20 · happy 15 · adversarial 12 · personas 9 · voice 8 |
-| the 10 live gates | `grep -rn -E '"LAB_LIVE_[A-Z_]+"' lab/ roleplay/ tablemate/` | ten gates as tabulated in §4, plus `LAB_LIVE_MODEL_LABEL` which is a label, not a gate |
+| the 10 live gates | `grep -rn -E '"LAB_LIVE_[A-Z_]+"' lab/ roleplay/` | ten gates as tabulated in §4, plus `LAB_LIVE_MODEL_LABEL` which is a label, not a gate |
 | 5 CLI subcommands | `evallab --help` | `run · validate · report · calibrate · replay` |
 | ragcheck worked example | `python -m ragcheck` | retrieval recall `1.000 (1/1)`, context precision `1.000`, groundedness `0.500 (1/2)` |
 | the tree stayed clean | `git status --short` | only `docs/` changed — no `.py`, YAML, fixture or Makefile modified |
@@ -14702,7 +14028,6 @@ Run these from the repository root. All are free, offline, and need no keys.
 | 79 ragcheck tests | `python -m pytest tests/test_ragcheck_*.py -q` | `79 passed in 1.22s` |
 | 95 scenario tests | `python -m pytest tests/test_scenarios.py -q` | `95 passed in 1.42s` |
 | every ragcheck number in §8.5.2–§8.5.6 | `make ragcheck` | see below |
-| every error-analysis number in §8.5.8 | `make errors` | `32 coded occurrences across 23 traces (13 distinct modes)` |
 | 55 booking rows, 9 personas, 8 expected failures | `python -m scenarios.loader --summary` | `55/55 scenario files loaded; 0 error(s), 0 warning(s)` |
 | 70 roleplay rows | `python -m roleplay.corpus` | `70/70 scenario files loaded` |
 | 18 advisory rows | `python -m roleplay.corpus --advisory` | `18/18 scenario files loaded` |
@@ -14840,14 +14165,14 @@ any `.py`, YAML, fixture or the Makefile.
 
 ### A.8 The domains
 
-Supports [§8.4](#84-the-two-systems-under-test--roleplay-and-tablemate).
+Supports [§8.4](#84-the-system-under-test--roleplay).
 
 The domain figures are re-derived inline beside each claim rather than in a table.
 Line counts come from `wc -l`; package totals from a walk of `*.py` excluding
 `__pycache__`. Register contents come from `roleplay.advisory.load_registers()` and the
 scorecard shape from `roleplay.scorecard`. The demo output comes from `make
-roleplay-demo`, `make advisory-verdicts`, `make spoken-replay`, `make demo` and
-`python -m tablemate --score fixtures/live_full`, all run with `PYTHON=.venv/bin/python`.
+roleplay-demo`, `make advisory-verdicts`, `make spoken-replay` and `make cited-calls`,
+all run with `PYTHON=.venv/bin/python`.
 Test counts come from `pytest --collect-only -q`.
 
 ---
