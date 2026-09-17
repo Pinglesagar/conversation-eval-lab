@@ -53,7 +53,7 @@ def one_tool_one_handoff_trace() -> Trace:
 
     Timeline (seconds):
         0.0  session_start
-        0.2  agent first byte  ("Good evening, TableMate")
+        0.2  agent first byte  ("Good evening")
         1.2  agent complete
         1.4  caller turn ends  ("a table for four at seven thirty")
         1.6  tool_call search_tables

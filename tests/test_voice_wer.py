@@ -15,7 +15,7 @@ Three things worth more than the rest:
 * `test_seven_thirty_is_not_a_number` — the number parser refuses invalid
   cardinal compositions, so a spoken time stays two tokens instead of collapsing
   into 37. Without that rule the normaliser would *raise* WER on precisely the
-  utterances a restaurant-booking agent hears most.
+  utterances a booking agent hears most.
 """
 
 from __future__ import annotations
