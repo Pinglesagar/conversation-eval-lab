@@ -70,7 +70,7 @@ def _worked_examples(report) -> None:
     print(f"\n  question   {row.question}")
     print(f"  context    {row.context}   gold {row.gold}")
     print(f"  answer     {row.answer}")
-    print("  reference  A party of nine pays a deposit of GBP 15 per person. …")
+    print("  reference  A portfolio of nine hundred thousand pays an advance fee of GBP 15 per ten thousand. …")
     print(f"\n  groundedness                    {row.groundedness.rate}   <- perfect")
     print("  answer relevance                relevant")
     print(f"  recall of gold in the context   {row.context_recall_gold}   <- p01 missing")
@@ -119,8 +119,8 @@ def main(argv: list[str] | None = None) -> int:
         f"   (groundedness {measured}, context recall {recall})"
         f"\n  claims a human called supported:       {hand_supported}/{len(from_cases)}"
         "\n"
-        "\n  The gap is one row: c13#claim2. The passage says vouchers may NOT be used to\n"
-        "  pay a deposit; the answer says they may; every content word matches. The\n"
+        "\n  The gap is one row: c13#claim2. The passage says credits may NOT be used to\n"
+        "  pay an advance fee; the answer says they may; every content word matches. The\n"
         "  stand-in calls it supported, so the metric over-reports faithfulness — and\n"
         "  the calibration report above predicted exactly that, at TPR 4/5, before\n"
         "  anybody read a single claim."

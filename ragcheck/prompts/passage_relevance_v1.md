@@ -11,8 +11,8 @@ You are checking whether one retrieved passage was worth retrieving.
 ## Answer FAIL when
 
 - The passage is about the same general subject but contains nothing the answer
-  needs. A passage about cancelling with no deposit does not help a question
-  about a party of ten that has paid one.
+  needs. A passage about cancelling with no advance fee does not help a question
+  about a portfolio of one million that has paid one.
 - The passage is on an unrelated topic.
 - The passage would only mislead: it states a rule for a different case than the
   one asked about.

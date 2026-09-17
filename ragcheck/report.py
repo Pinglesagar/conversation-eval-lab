@@ -274,7 +274,7 @@ def offline_judges(
     contexts: dict[str, Retrieval],
     labels: Sequence[ClaimLabel] = (),
 ) -> tuple[Judge, Judge, Judge]:
-    """The three judges, wired to one table of stand-in verdicts.
+    """The three judges, wired to one set of stand-in verdicts.
 
     One table covering the dataset probes *and* the label probes, so the
     calibration measures the very same verdicts the metrics are computed from

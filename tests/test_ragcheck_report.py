@@ -73,7 +73,7 @@ def test_every_finding_quotes_the_evidence_for_itself() -> None:
     """"3 claims unsupported" is a number; a quoted claim is a bug report."""
     findings = REPORT.generation.findings()
     assert len(findings) == 5
-    assert any("GBP 25 per person" in finding for finding in findings)
+    assert any("GBP 25 per ten thousand" in finding for finding in findings)
     assert any("phone you to check" in finding for finding in findings)
     assert any("c12#answer" in finding for finding in findings)
     assert any("missing gold chunk(s) ['p01']" in finding for finding in findings)

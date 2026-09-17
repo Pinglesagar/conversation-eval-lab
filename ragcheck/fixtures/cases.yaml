@@ -18,7 +18,7 @@
 # -----------------------------
 #   c01  the control: retrieval right, every claim supported.
 #   c02  THE CLASSIC FAILURE. Retrieval is perfect (recall@3 = 1.0) and the
-#        answer states a deposit of GBP 25 when the retrieved chunk says 15.
+#        answer states an advance fee of GBP 25 per ten thousand when the retrieved chunk says 15.
 #        Retrieval metrics see nothing wrong. This is why groundedness exists.
 #   c04  a half-invented answer: one supported claim, one fabricated courtesy.
 #   c05  a grounded refusal. Saying "no" is not a defect.
@@ -26,12 +26,12 @@
 #   c12  GROUNDED AND USELESS. Every claim is supported by a retrieved chunk,
 #        and none of them answers the question that was asked. This is why
 #        groundedness alone cannot be the gate.
-#   c13  a contradiction the corpus states explicitly ("may not be used to pay a
-#        deposit"). The offline stand-in judge gets this one WRONG, on purpose:
+#   c13  a contradiction the corpus states explicitly ("may not be used to pay an
+#        advance fee"). The offline stand-in judge gets this one WRONG, on purpose:
 #        word overlap cannot see negation, and its calibration report is where
 #        that shows up.
 #   c18  GROUNDED, RELEVANT, AND STILL NOT THE ANSWER. Retrieval missed p01, so
-#        the deposit amount is absent from the context. The answer is faithful
+#        the fee amount is absent from the context. The answer is faithful
 #        to what it was given and incomplete anyway. This is the case that
 #        context recall — measured against a reference answer, not against the
 #        generated one — is the only metric here to catch.
@@ -42,53 +42,54 @@ cases:
     gold: [p02]
     retrieved: [p02, p03, p15]
     answer: >-
-      You can cancel free of charge up to 48 hours before your reservation time.
-      Inside 48 hours we keep the deposit in full.
+      You can cancel free of charge up to 48 hours before the recommendation is
+      issued. Inside 48 hours we keep the advance fee in full.
     note: control; both claims supported by p02
 
   - id: c02
-    question: Do I have to pay a deposit for a party of ten?
+    question: Do I have to pay an advance fee on a portfolio of one million?
     gold: [p01]
     retrieved: [p01, p03, p14]
     answer: >-
-      Yes, a party of ten requires a card deposit. It is GBP 25 per person,
-      taken on the night.
-    note: retrieval perfect, generation wrong; p01 says GBP 15 at time of booking
+      Yes, a portfolio of one million requires an advance advice fee. It is GBP
+      25 per ten thousand, taken on completion.
+    note: retrieval perfect, generation wrong; p01 says GBP 15 at the recommendation
 
   - id: c03
-    question: Is there a deposit for a table of six?
+    question: Is there anything to pay up front on a smaller holding?
     gold: [p03]
     note: near-duplicate of c01's neighbourhood; p02 is the wrong chunk here
 
   - id: c04
-    question: How long will you hold my table if I am running late?
+    question: How long will you hold my appointment if I am running late?
     gold: [p04]
     retrieved: [p04, p02, p08]
     answer: >-
-      We hold your table for 20 minutes past the booked time, and after that we
-      will phone you to check you are still coming.
+      We hold your appointment for 20 minutes past the booked time, and after
+      that we will phone you to check you are still coming.
     note: one supported claim, one invented courtesy
 
   - id: c05
-    question: Can you guarantee the kitchen is nut free?
+    question: Can you guarantee a specialist adviser?
     gold: [p05]
     retrieved: [p05, p06, p11]
     answer: >-
-      No, we cannot guarantee a nut-free environment. Your allergy note goes on
-      the booking record and is repeated to the kitchen at service.
+      No, we cannot guarantee a specialist adviser is available. Your
+      vulnerability note goes on the client record and is repeated to the adviser
+      at the meeting.
     note: a grounded refusal is a pass
 
   - id: c06
-    question: Where can I see the allergen information?
+    question: Where can I see the vulnerability indicators?
     gold: [p06]
 
   - id: c07
-    question: How many people fit in the private dining room?
+    question: How many portfolios fit in the premium service?
     gold: [p07]
-    note: the question never says "Cellar Room"; lexical retrieval has to earn this one
+    note: the question never says "Discretionary"; lexical retrieval has to earn this one
 
   - id: c08
-    question: What time does the kitchen stop taking orders in the evening?
+    question: What time does the advice line stop taking enquiries in the evening?
     gold: [p08]
 
   - id: c09
@@ -99,37 +100,37 @@ cases:
     note: single-claim control
 
   - id: c10
-    question: Can I bring my dog?
+    question: Can my son act on my behalf?
     gold: [p10]
 
   - id: c11
-    question: Do you have high chairs for toddlers?
+    question: Do you have junior accounts for my grandchildren?
     gold: [p11]
 
   - id: c12
-    question: Is there a dress code for the Cellar Room?
+    question: Is there an identity check for the Discretionary Service?
     gold: [p12]
     retrieved: [p12, p07, p10]
     answer: >-
-      The Cellar Room seats up to 22 people. Minimum spend is GBP 900 on Fridays
-      and Saturdays.
+      The Discretionary Service takes up to 22 model portfolios. The minimum fee
+      is GBP 900 a quarter.
     note: fully grounded in p07, answers a different question than the one asked
 
   - id: c13
-    question: Can I pay the deposit with a gift voucher?
+    question: Can I pay the advance fee with an introductory credit?
     gold: [p13, p01]
     retrieved: [p13, p01, p02]
     answer: >-
-      Gift vouchers are valid for 12 months from issue, and a voucher may be
-      used against your deposit.
+      Introductory credits are valid for 12 months from issue, and a credit may
+      be used against your advance fee.
     note: second claim contradicts p13; the lexical stand-in cannot see negation
 
   - id: c14
-    question: We are fourteen people, do we have to pre-order?
+    question: We hold fourteen positions, do we have to pre-select?
     gold: [p14]
 
   - id: c15
-    question: Can I move my booking to another night?
+    question: Can I rearrange for a different week?
     gold: [p15]
 
   - id: c16
@@ -137,17 +138,18 @@ cases:
     gold: [p16]
 
   - id: c17
-    question: What is the minimum spend for the Cellar Room on a Saturday?
+    question: What is the minimum fee for the Discretionary Service?
     gold: [p07]
 
   - id: c18
-    question: I booked for nine. What will I be charged if I cancel tomorrow?
+    question: I hold nine hundred thousand. What will I be charged if I cancel tomorrow?
     gold: [p01, p02]
     retrieved: [p02, p03, p15]
     answer: >-
-      Cancelling tomorrow is inside the 48-hour window, so your deposit is kept
-      in full.
+      Cancelling tomorrow is inside the 48-hour window, so your advance fee is
+      kept in full.
     reference: >-
-      A party of nine pays a deposit of GBP 15 per person. Cancelling tomorrow
-      is inside the 48-hour window, so the deposit is kept in full.
+      A portfolio of nine hundred thousand pays an advance fee of GBP 15 per ten
+      thousand. Cancelling tomorrow is inside the 48-hour window, so the fee is
+      kept in full.
     note: retrieval missed p01; the answer is faithful to its context and incomplete

@@ -18,7 +18,7 @@ else. That case is the reason this judge exists.
 ## Answer FAIL when
 
 - The answer discusses the right subject and never answers the question. Asked
-  for the dress code in a room, it describes the room's capacity and minimum
+  for the identity checks on a service, it describes the service's capacity and minimum
   spend: same subject, different question.
 - The answer changes the question to one it can answer.
 - The answer is a general statement with nothing specific to what was asked.

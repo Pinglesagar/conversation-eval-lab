@@ -189,7 +189,7 @@ def test_a_rag_turn_is_a_trace_with_the_retrieval_as_a_tool_call() -> None:
     ]
     # The chunk text travels with the trace, so a verdict recorded today can be
     # audited against the passage it was based on months later.
-    assert "deposit" in retrieval_of(trace)[0].text
+    assert "advance advice fee" in retrieval_of(trace)[0].text
 
 
 # --------------------------------------------------------------------------- #
@@ -327,7 +327,7 @@ def test_the_oracle_emits_the_same_output_format_a_model_is_asked_for() -> None:
             item_id="x",
             kind="support",
             question="q",
-            text="It is GBP 25 per person, taken on the night.",
+            text="It is GBP 25 per ten thousand, taken on completion.",
             chunk_ids=["p01"],
         )
     )

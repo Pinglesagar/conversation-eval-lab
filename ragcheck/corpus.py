@@ -135,8 +135,8 @@ class Corpus(BaseModel):
         """The `limit` highest-idf content words in `text` that the corpus knows.
 
         Used to ask "what is this question actually about": in "is there a dress
-        code for the Cellar Room", `dress` and `code` occur in one chunk each and
-        `cellar`/`room` in two, so the rare terms are the two that name the
+        check for the Discretionary Service", `identity` and `check` occur in one chunk
+        each and `discretionary`/`service` in two, so the rare terms name the
         subject rather than the two that name the place.
 
         Terms with a document frequency of zero are excluded first. They have the

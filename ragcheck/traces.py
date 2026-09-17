@@ -20,7 +20,8 @@ which had to be built:
 *   **`lab.checks` contract checks apply as they stand.** "The agent cited a
     source, therefore a retrieve call must exist and must have returned that
     chunk" is the same decision-versus-action contract shape as "the agent said
-    it booked the table, therefore create_booking must have been called". In a
+    it ran the suitability check, therefore assess_suitability must have been
+    called". In a
     regulated setting — a disclosure the model claims it made — that check is the
     compliance evidence.
 *   **One trace, one audit.** Whatever a metric reports, the retrieved chunk text

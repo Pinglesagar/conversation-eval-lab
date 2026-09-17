@@ -86,7 +86,7 @@ def test_groundedness_is_supported_claims_over_claims_and_names_the_failures() -
 
     The numerator naming its own failures is the difference between a metric and
     a bug report. "groundedness 0.5" starts an investigation; "c02#claim2: 'It is
-    GBP 25 per person'" ends one.
+    GBP 25 per ten thousand'" ends one.
     """
     case = CASES.get("c02")
     result = groundedness(
@@ -96,7 +96,7 @@ def test_groundedness_is_supported_claims_over_claims_and_names_the_failures() -
     )
     assert str(result.rate) == "0.500 (1/2)"
     assert [claim.claim for claim in result.unsupported] == [
-        "It is GBP 25 per person, taken on the night."
+        "It is GBP 25 per ten thousand, taken on completion."
     ]
     assert result.claims[0].item_id == "c02#claim1"
 
@@ -214,7 +214,7 @@ def test_context_recall_blames_retrieval_for_an_incomplete_answer() -> None:
     assert str(grounded.rate) == "1.000 (1/1)"
     assert relevance.relevant is True
     assert str(recall.rate) == "0.500 (1/2)"
-    assert "GBP 15 per person" in recall.unsupported[0].claim
+    assert "GBP 15 per ten thousand" in recall.unsupported[0].claim
     # And the deterministic retrieval metric on the same row agrees, without any
     # oracle at all: the context holds one of the two gold chunks.
     assert str(recall_at_k(retrieval.ids, case.gold_set, 3)) == "0.500 (1/2)"
@@ -318,10 +318,10 @@ def test_a_case_can_be_built_in_memory_without_the_fixture_files() -> None:
     """The metrics do not depend on the committed dataset — only on its shape."""
     case = RagCase(
         id="adhoc",
-        question="Is there a deposit for a party of ten?",
+        question="Is there an advance fee on a portfolio of one million?",
         gold=["p01"],
         retrieved=["p01"],
-        answer="A deposit of GBP 15 per person is taken at booking.",
+        answer="An advance fee of GBP 15 per ten thousand is taken at the recommendation.",
     )
     retrieval = context_for(case, CORPUS, k=1)
     result = groundedness(case, retrieval, _support_judge({"adhoc#claim1": True}))

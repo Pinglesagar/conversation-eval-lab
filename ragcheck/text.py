@@ -11,7 +11,7 @@ This is word matching. It has no embeddings, no model, and no semantics:
 
 *   `stem` chops a handful of English suffixes. It maps "cancelling" and
     "cancelled" onto "cancel", which is the point, and it also maps "policies"
-    onto "polic" and would happily conflate "booking" with "book". A real
+    onto "polic" and would happily conflate "holding" with "hold". A real
     system uses a proper stemmer or an embedding; this one is here so the
     fixtures run offline with no model and no network.
 *   `content_words` drops a 60-word stoplist. A stoplist is a blunt instrument:
@@ -59,8 +59,8 @@ STOPWORDS: frozenset[str] = frozenset(
 )
 
 #: Words whose presence flips the meaning of an otherwise matching sentence.
-#: Kept out of `STOPWORDS` and surfaced separately, because "vouchers may be
-#: used against a deposit" and "vouchers may not be used against a deposit"
+#: Kept out of `STOPWORDS` and surfaced separately, because "credits may be
+#: used against a fee" and "credits may not be used against a fee"
 #: share every content word they have.
 NEGATIONS: frozenset[str] = frozenset(
     {"no", "not", "never", "cannot", "without", "except", "unless", "nothing", "neither", "nor"}
@@ -106,7 +106,7 @@ def stem(word: str) -> str:
         drop a trailing e        minutes/minute       -> minut
 
     It is not a linguistically correct stemmer and does not try to be. It
-    conflates "booking" with "book", leaves "used" and "use" apart (the suffix
+    conflates "holding" with "hold", leaves "used" and "use" apart (the suffix
     rule would leave a two-character stem, so it is skipped), and has no idea
     that "held" is "hold". Those are the limits of the offline layer, written
     down here rather than discovered later.

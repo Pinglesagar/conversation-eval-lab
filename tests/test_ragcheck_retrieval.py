@@ -243,8 +243,8 @@ def test_the_lexical_retriever_scores_a_recorded_baseline_on_the_fixture_set() -
     assert str(report.hit_rate) == "0.778 (14/18)"
     assert str(report.pooled_recall) == "0.750 (15/20)"
     assert report.mean_recall.value == pytest.approx(0.75)
-    assert report.mrr.value == pytest.approx(0.722222, abs=1e-6)
-    assert report.mean_ndcg.value == pytest.approx(0.715278, abs=1e-6)
+    assert report.mrr.value == pytest.approx(0.694444, abs=1e-6)
+    assert report.mean_ndcg.value == pytest.approx(0.702706, abs=1e-6)
 
     # The four questions the lexical retriever cannot answer at all, plus c18,
     # whose answer is split across two chunks and only one is retrieved.

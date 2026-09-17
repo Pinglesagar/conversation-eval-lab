@@ -2,7 +2,7 @@
 
 WHAT THIS IS
 ------------
-A table of pre-computed verdicts, produced by word overlap and number matching,
+A set of pre-computed verdicts, produced by word overlap and number matching,
 that plugs into `lab.judges.judge.ScriptedCompletion` and lets every metric in
 this package run with **no model, no network and no API key**. It is what makes
 `pytest` a check on the arithmetic rather than a check on somebody's billing.
@@ -11,16 +11,16 @@ this package run with **no model, no network and no API key**. It is what makes
 negation, paraphrase or implication. Three specific things it gets wrong on this
 fixture, all of them deliberate and all of them measured:
 
-    "a voucher may be used against your deposit"     said SUPPORTED.
-        The passage says vouchers may not be used to pay a deposit. Every content
+    "a credit may be used against your advance fee"  said SUPPORTED.
+        The passage says credits may not be used to pay an advance fee. Every
         word matches; the word that reverses the meaning is one the overlap
         counts as a match too. This is a FALSE NEGATIVE on the defect, the
         dangerous cell.
-    "bookings can be pushed back a single time at no cost"   said UNSUPPORTED.
-        The passage says a booking may be moved once free of charge. Same fact,
+    "engagements can be pushed back a single time at no cost" said UNSUPPORTED.
+        The passage says an engagement may be moved once free of charge. Same fact,
         no shared vocabulary. A FALSE POSITIVE: a reviewer's time, wasted.
-    a passage on the group menu, for a question about deposits    said USEFUL.
-        Both mention parties of N or more.
+    a passage on the model range, for a question about fees       said USEFUL.
+        Both mention portfolios above a threshold.
 
 Those are not bugs to fix. They are the reason `ragcheck.calibration` exists and
 the reason its report refuses this oracle as a CI gate: measured against 18 hand
@@ -170,7 +170,7 @@ class LexicalOracle:
         "About" is the question's highest-idf corpus-known terms. It is a crude
         proxy for a real relevance judgement and it is right on this fixture for a
         reason worth naming: a fully grounded answer that discusses the room's
-        capacity instead of its dress code shares the *place* words with the
+        capacity instead of its identity checks shares the *service* words with the
         question and not the *subject* words, and idf is what separates those two.
         """
         focus = self.corpus.rare_terms(question, limit=self.focus_terms)
@@ -304,5 +304,5 @@ def probes_for_dataset(
 def offline_completion(
     corpus: Corpus, dataset: RagDataset, contexts: dict[str, Retrieval]
 ) -> ScriptedCompletion:
-    """One table of stand-in verdicts covering the whole dataset."""
+    """One set of stand-in verdicts covering the whole dataset."""
     return LexicalOracle(corpus).completion(probes_for_dataset(dataset, contexts))

@@ -24,7 +24,7 @@ THE THREE IDEAS WORTH THE READ
 tool call, retrieved chunks, answer. Expressed that way, `lab.judges` grades it
 unchanged, `lab.judges.calibration` measures the judge unchanged, and a claim
 that an answer cited a source becomes the same decision-versus-action contract as
-a claim that a booking was made — which, for a disclosure a regulated system says
+a claim that a suitability check was run — which, for a disclosure a regulated system says
 it gave, is the compliance check.
 
 **2. The retrieval half needs no model, and it bounds the other half.** recall@k

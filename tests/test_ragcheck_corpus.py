@@ -97,14 +97,14 @@ def test_ties_resolve_by_chunk_id_so_a_ranking_is_reproducible() -> None:
     """
     corpus = Corpus(
         chunks=[
-            Chunk(id="p02", text="deposits are taken at booking"),
-            Chunk(id="p01", text="deposits are taken at booking"),
+            Chunk(id="p02", text="fees are taken at the recommendation"),
+            Chunk(id="p01", text="fees are taken at the recommendation"),
         ]
     )
     retriever = LexicalRetriever(corpus)
-    first = retriever.retrieve("deposits", k=2).ids
+    first = retriever.retrieve("fees", k=2).ids
     assert first == ["p01", "p02"]
-    assert all(retriever.retrieve("deposits", k=2).ids == first for _ in range(5))
+    assert all(retriever.retrieve("fees", k=2).ids == first for _ in range(5))
 
 
 def test_a_zero_scoring_chunk_is_not_returned_to_pad_the_window() -> None:
@@ -112,28 +112,28 @@ def test_a_zero_scoring_chunk_is_not_returned_to_pad_the_window() -> None:
     raise recall@k for free."""
     corpus = Corpus(
         chunks=[
-            Chunk(id="p01", text="deposits are taken at booking"),
+            Chunk(id="p01", text="fees are taken at the recommendation"),
             Chunk(id="p02", text="the terrace is open to dogs"),
         ]
     )
-    result = LexicalRetriever(corpus).retrieve("deposit", k=2)
+    result = LexicalRetriever(corpus).retrieve("fee", k=2)
     assert result.ids == ["p01"]
     assert len(result.scores) == 1
 
 
 def test_the_retriever_finds_the_gold_chunk_for_a_question_using_other_words() -> None:
-    """c07 asks about "the private dining room"; the chunk says "Cellar Room".
+    """c07 asks about "the premium service"; the chunk says "Discretionary Service".
 
     And it works for a thin reason worth naming: the only word the two have in
-    common is "room". Neither "private" nor "dining" appears in any chunk, so
-    lexical retrieval gets this one right by a single shared noun, and would miss
-    it entirely if the passage said "the Cellar". That is what an embedding buys,
+    common is "service". "Premium" appears in no chunk, so lexical retrieval gets
+    this one right by a single shared noun, and would miss it entirely if the
+    passage said "the Discretionary". That is what an embedding buys,
     and it is why the recorded baseline in test_ragcheck_retrieval.py is a
     baseline rather than a target.
     """
     corpus = load_corpus()
     assert "p07" in LexicalRetriever(corpus).retrieve(
-        "How many people fit in the private dining room?", k=3
+        "How many portfolios fit in the premium service?", k=3
     ).ids
 
 
@@ -163,7 +163,10 @@ def test_rare_terms_ignore_words_the_corpus_has_never_seen() -> None:
     up keying on "much" and "need".
     """
     corpus = load_corpus()
-    assert corpus.rare_terms("Is there a dress code for the Cellar Room?") == ["code", "dres"]
+    assert corpus.rare_terms("Is there an identity check for the Discretionary Service?") == [
+        "check",
+        "identiti",
+    ]
     assert corpus.rare_terms("How much notice do I need to cancel?") == ["notic", "cancel"]
 
 
