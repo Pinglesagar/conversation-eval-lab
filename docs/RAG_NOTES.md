@@ -12,8 +12,8 @@ Run it: `python -m ragcheck` (offline, no keys), `pytest tests/test_ragcheck_*.p
 ## Where conversation evaluation ends and retrieval evaluation begins
 
 Read this first if you arrived from the README or the wiki, because the most
-common wrong reading of this repository is that `ragcheck/` is a *third domain*
-alongside `roleplay/` and `tablemate/`. It is not. It is a **second kind of
+common wrong reading of this repository is that `ragcheck/` is a *second domain*
+alongside `roleplay/`. It is not. It is a **second kind of
 evaluation running on the same engine**, and the difference is worth one screen.
 
 ### The boundary is a checkable fact, not a claim
@@ -40,11 +40,10 @@ the boundary itself, expressed in the import graph, and it is the reason the
 retrieval pack can be read, run or removed without touching anything else.
 
 The dependency is one-directional by design: the engine does not know the
-retrieval pack exists. Compare the conversation domains, which between them reach
-into seven subpackages:
+retrieval pack exists. Compare the conversation domain, which reaches into seven subpackages:
 
 ```bash
-grep -rhoE 'lab\.[a-z_]+' roleplay/*.py tablemate/*.py | sort | uniq -c | sort -rn
+grep -rhoE 'lab\.[a-z_]+' roleplay/*.py | sort | uniq -c | sort -rn
 ```
 
 **Why those three and only those three.** Conversation evaluation needs a
@@ -61,7 +60,7 @@ and the import graph is the receipt.*
 
 ### What is genuinely different about each
 
-| | Conversation evaluation (`roleplay/`, `tablemate/`, `scenarios/`) | Retrieval evaluation (`ragcheck/`) |
+| | Conversation evaluation (`roleplay/`, `scenarios/`) | Retrieval evaluation (`ragcheck/`) |
 |---|---|---|
 | Unit of evaluation | a multi-turn session | a single question–answer pair |
 | Where the truth lives | a seeded backend state, plus the trace of what the agent did | a corpus with gold chunk ids per question |

@@ -328,17 +328,3 @@ its own miss rate and refuses to gate below threshold.**
    pass anything, a metric reporting 43% error on perfect recognition, a harness that
    blamed the product for its own bug. Those are in the docs because that is the part
    nobody writes down.
-
----
-
-## Appendix — the second domain
-
-The repository also drives a **restaurant-booking assistant** with three deliberately
-seeded defects. It is not part of the story above and should not be walked through.
-
-Its job is one argument: **the same engine, a second unrelated domain.** A harness that
-only ever ran against the domain it was written for has proved nothing about portability
-— and portability is the whole claim in §9. One page of evidence that the engine is not
-secretly welded to advisory work.
-
-Mention it in a sentence. Move on.

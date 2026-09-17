@@ -1,9 +1,18 @@
 # Design
 
-Nine principles, and why each one is here rather than the obvious alternative.
+Ten principles, and why each one is here rather than the obvious alternative.
 Every one of them is enforced somewhere in the code, and the enforcement point is
 named — a principle a repository cannot break is a principle; one it merely
 believes in is a preference.
+
+> **One note before you start.** Sections 9 and 10 are the record of a study run
+> against a second system under test that has since been removed from this
+> repository, so their worked examples name a subject you will not find in the
+> tree. They are kept because what the study *produced* is still here and still
+> load-bearing — `fold_typography()` in `lab/checks/text.py`, `DEFAULT_PROMISES`
+> in `lab/checks/`, and the `strict_because` rule the corpus loader enforces.
+> Rewriting the history to match the current subject would make it a better read
+> and a worse record.
 
 ---
 
@@ -38,9 +47,9 @@ repo-relative or the artefact is machine-specific — there is a test for that
 `lab.simulator.AgentUnderTest` is a callable taking an utterance and returning a
 turn. `--agent-factory pkg.mod:factory` points the whole harness at something
 else. `lab` never imports the case study: `lab/cli.py` resolves the corpus loader
-and the agent factory lazily, by dotted path, so `import lab` does not pull in
-`tablemate` or `scenarios`, and the seam that will become a plugin point when
-`lab` moves to its own repository is already the seam the defaults sit behind.
+lazily, by dotted path, so `import lab` does not pull in `roleplay` or
+`scenarios`, and the seam that will become a plugin point when `lab` moves to its
+own repository is already the seam the defaults sit behind.
 
 The same argument applies one level down. Provider access goes through litellm,
 imported inside the functions that need it, and every live path is opt-in behind
@@ -78,39 +87,40 @@ matters: its claims are the size of its evidence.
 
 ## 5. Mocks must replicate side-effects, or skip-logic is untestable
 
-The restaurant is real state: six tables, a diary, a policy sheet, availability
-computed from what is actually booked (`tablemate/store.py`). A scenario that
-needs a full sitting fills the sitting (`book_out`); one that names a reference
-puts it in the diary (`ensure_booking`).
+The register is real state: a set of disclosures required per jurisdiction and
+language, and a ledger of the ones actually discharged, written turn by turn as
+`record_disclosure` events (`roleplay/register.py`). The customer is real state
+too — concerns not yet revealed, objections raised and not yet resolved, a
+resistance level that moves (`roleplay/persona.py`).
 
-**The alternative** — stubbing `search_tables` to return "no availability" — tests
-the stub. The agent's next move depends on the *shape* of a real refusal: which
-alternatives came back, whether any table is big enough, whether the reference it
-was given exists. Stub that and every branch downstream of it is measuring your
-mock's imagination. The same rule is why "did the booking happen" is answered by
-looking in the diary, not by checking a flag.
+**The alternative** — stubbing the register to return "disclosure given" — tests
+the stub. What the grader does next depends on the *shape* of a real ledger: which
+codes were discharged, in which language, on which turn, and which are still
+outstanding. Stub that and every branch downstream is measuring your mock's
+imagination. The same rule is why "was the disclosure actually given" is answered
+by reading the ledger, not by checking whether the word appeared in the
+transcript — which is exactly the defect the shipped rubric has.
 
 ## 6. Failures are classified before they are believed
 
 Four classes: **product** (the system under test is wrong), **harness** (the
 driver, the caller model or the trace is wrong), **label** (the check or the
 scenario that declares it is wrong), **variance** (the same input behaved
-differently between repeats). `error_analysis/codes.csv` carries the class for
-every coded occurrence; `error_analysis/axial_coding.md` argues the two that were
-re-classified.
+differently between repeats).
 
 **Because a red row is not a defect, it is a disagreement**, and the cheapest
-possible source of that disagreement is your own check. This repository's
-`happy-saturday-lunch-four` row fails because a tracked value says `high chair`
-and the caller said `high chairs`: the note reached the diary, the check's matcher
-anchors on word boundaries, and the agent is innocent. That row is left failing,
-in the committed baseline, coded `label`. A taxonomy that deletes its author's
-mistakes is not a taxonomy — and if I had "fixed" it by editing the caller's
-wording, the repository would contain a green row and a hidden matcher bug.
+possible source of that disagreement is your own check. The corpus makes that
+explicit: 38 of the 70 behavioural rows carry an `expected_failure`, so a red row
+there is the row working. `make roleplay-demo` prints both counts side by side —
+"human verdicts: 38 pass, 32 fail (70 rows)" and "32/70 traces passed every
+applicable check" — and a reader who sees only the second number has been given
+the wrong impression on purpose by nobody.
 
-The classification is human work by definition, so it lives in
-`error_analysis/`, not in the report. The report says what failed and quotes the
-evidence; it makes no claim about why.
+The classification is human work by definition, so it stays out of the report. The
+report says what failed and quotes the evidence; it makes no claim about why. The
+two places a human judgement is written down instead are
+`roleplay/SEEDED_DEFECTS.md`, which is the answer key, and the `notes:` field every
+scenario carries.
 
 ## 7. Stability is a dimension of the verdict, not a footnote
 
@@ -129,8 +139,7 @@ And k is reported with what it can support. Under `--replay` the caller is
 scripted and the agent's phrasing comes from a fixture, so k repeats measure
 *harness determinism*, not model variance. Calling that a variance measurement
 would be exactly the kind of claim this repository exists to avoid, so the run
-verifies it instead: 47/47 scenarios produced byte-identical repeats apart from
-the session id, and the report says that is what k bought.
+verifies it instead rather than claiming it, and the report says what k bought.
 
 ## 8. A judge without calibration is not evidence
 
@@ -177,8 +186,8 @@ The two middle cases are the ones people leave out, and they are the same case:
 from outside, a fixed defect and a check that quietly stopped applying are
 indistinguishable — one fewer failure. So a fix fails the gate until the baseline
 is updated in the same change, which forces somebody to say in a reviewable diff
-which of the two happened. `make reference` regenerates the baseline and prints
-the diff; that diff is the record of what the suite learned.
+which of the two happened. Regenerating the baseline prints the diff, and that diff is the record of what
+the suite learned.
 
 ---
 
@@ -243,25 +252,24 @@ answers and the side that scores.
 
 ## Two things this design costs
 
-**Committed artefacts are a maintenance burden.** The reference report, 47 traces,
-the calibration reports, the judge recordings and the coded failure modes are all
-in the repository, and all of them can go stale. That is paid for with tests:
-`tests/test_cli.py` asserts the report reloads and re-derives its own verdict,
-that the hand-written error analysis agrees with the machine-written report in
-both directions, and that every coded occurrence cites a trace that exists. CI
-regenerates the report and fails if a byte moved.
+**Committed artefacts are a maintenance burden.** The two spoken calls, their
+manifests and traces and score cards, the calibration reports and the judge
+recordings are all in the repository, and all of them can go stale. That is paid
+for with tests and with the gate: stage 3 of `make gate` runs the calibration and
+then `git diff --exit-code` over `fixtures/` and `lab/judges/`, so an artefact that
+no longer matches what produced it fails the build rather than sitting there
+looking authoritative.
 
-**The caller is part of the instrument, and the default one is scripted.** Caller
-lines live in `fixtures/caller_scripts.yaml` rather than being generated per run,
-and that is still the default because of the argument below. `--live-caller` and
-`--live-agent` put models in those seats when the question needs it, against
-committed cassettes (§10, and `fixtures/live_full/`). A model-driven
-caller is the more realistic instrument and the worse one to measure with: its
-variance lands in the results as agent variance, and the pass^k machinery then
-reports the caller's flakiness as the agent's. The cost is that the corpus
-exercises one phrasing per row, so it under-samples the space of ways people say
-things — which is precisely how two of the five findings were missed until
-somebody read a transcript and probed the parser by hand. `LLMCaller` exists for
-that exploration, behind `LAB_LIVE_CALLER`, with cassettes that key each turn on a
-hash of the conversation so far so a stale fixture raises instead of answering a
+**The customer is part of the instrument, and the default one is scripted.** The
+persona decides its moves deterministically and a separate object puts them into
+words, so a run is reproducible and a finding is attributable to the grader rather
+than to the customer. A model-driven customer is the more realistic instrument and
+the worse one to measure with: its variance lands in the results as the system's
+variance, and the pass^k machinery then reports the customer's flakiness as the
+system's. The cost is that each row exercises one phrasing, so the corpus
+under-samples the space of ways people say things — which is precisely how the
+punctuation defect stayed invisible until somebody read a transcript and probed
+the classifier by hand. The live seats exist for that exploration, behind
+`LAB_LIVE_CUSTOMER` and `LAB_LIVE_TRAINEE`, against cassettes that key each turn on
+a hash of the conversation so far, so a stale fixture raises instead of answering a
 question that was never asked.

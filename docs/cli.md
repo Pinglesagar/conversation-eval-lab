@@ -64,7 +64,7 @@ the product verdict as an exit code.
 | `--transcript` | print each conversation. The first thing to reach for when a row fails, and how the caller scripts were written. |
 | `-k N` | repeats. Under `--replay` this measures harness determinism, not model variance — the report says so in its notes. |
 | `--suite`, `--tag`, `--scenario` | subset. All repeatable and comma-separable. The baseline diff is scoped to what actually ran. |
-| `--agent-factory pkg.mod:factory` | point the harness at a different system under test. Nothing about `lab` knows about TableMate. |
+| `--agent-factory pkg.mod:factory` | point the harness at a different system under test. Nothing in `lab` knows which domain it is grading. |
 | `--corpus-module`, `--corpus` | point it at a different corpus. |
 | `--live` | paraphrase the agent's turns through a provider. Needs `LAB_LIVE_AGENT=1`; refuses otherwise rather than quietly replaying. Note this is *phrasing only* — the deterministic agent still decides. |
 | `--raise-errors` | let a harness exception propagate instead of being recorded as a failed run. For debugging the harness itself. |
@@ -76,7 +76,7 @@ Three seams, independently switchable, and none of them spends money without
 
 | flag | what becomes a model |
 | --- | --- |
-| `--live-agent` | the agent's decision seat: it picks the tools, the handoffs and the words (`tablemate.runtime.LLMBackend`) |
+| `--live-agent` | the agent's decision seat: it picks the tools, the handoffs and the words |
 | `--live-caller` | the caller, improvising from its persona and goal (`lab.simulator.LLMCaller`) |
 | `--live-judge` | the judge, grading the sessions the deterministic first stage selected |
 | `--record` | permits provider calls and writes the fixtures. Refuses unless `LAB_LIVE_AGENT` / `LAB_LIVE_CALLER` / `LAB_LIVE_JUDGE` are set for the parts that are live |

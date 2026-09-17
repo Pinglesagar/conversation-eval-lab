@@ -13,7 +13,7 @@ Canonical definition: `lab/trace/schema.py`. Codec: `lab/trace/io.py`. Builder:
 
 ```json
 {"ts": 1.374, "kind": "tool_call", "actor": "agent", "engine": null,
- "payload": {"name": "create_booking", "args": {"party_size": 4}, "call_id": "create_booking-1"}}
+ "payload": {"name": "record_disclosure", "args": {"code": "capital_at_risk"}, "call_id": "record_disclosure-1"}}
 ```
 
 | field | type | meaning |
@@ -137,9 +137,9 @@ checking one delay.
 ```python
 from lab.trace.io import read_jsonl, write_jsonl
 
-trace = read_jsonl("fixtures/replay_run/traces/edge-large-party-of-six.jsonl")
-trace.tool_names()      # ['search_tables']
-trace.handoff_pairs()   # [('GreeterAgent', 'BookingAgent')]
+trace = read_jsonl("fixtures/audio/spoken_call/trace.jsonl")
+trace.tool_names()      # ['load_customer_profile', 'raise_objection', 'record_disclosure', ...]
+trace.handoff_pairs()   # [] — this domain has one actor, so no handoff pairs
 trace.duration()        # seconds from first event to last
 [e.get("text") for e in trace.utterances()]
 ```

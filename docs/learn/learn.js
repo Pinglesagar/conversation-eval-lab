@@ -15,7 +15,7 @@
    * generated from this object, so adding a term here adds it everywhere.
    */
   var TERMS = {
-    harness: { t: "Harness", plain: "The test rig. Not the thing being tested — the thing doing the testing.", real: "Everything under lab/: the clock, the trace, the checks, the judges, the reporter. It knows nothing about advisers or restaurants.", where: "lab/" },
+    harness: { t: "Harness", plain: "The test rig. Not the thing being tested — the thing doing the testing.", real: "Everything under lab/: the clock, the trace, the checks, the judges, the reporter. It knows nothing about advisers, or about any other subject.", where: "lab/" },
     sut: { t: "System under test (SUT)", plain: "The thing being examined. In a driving test, the learner driver.", real: "One ships with the repo so the harness can be shown catching real bugs: roleplay/, an advisory sales coach whose scorer carries three documented, deliberate defects. A harness demonstrated against a flawless system proves nothing \u2014 green would be equally consistent with a good agent and a blind test suite.", where: "roleplay/" },
     trace: { t: "Trace", plain: "The recording of everything that happened during one conversation, in order. Like a dashcam plus a receipt.", real: "An ordered list of events with an injected clock, saved as one JSONL file. Every score, every timing figure and every check reads this and nothing else.", where: "lab/trace/schema.py" },
     event: { t: "Event", plain: "One thing that happened. Somebody spoke; a tool was called; audio arrived.", real: "A record with four fields: ts (when), kind (what sort), actor (who), payload (the details).", where: "lab/trace/schema.py" },
