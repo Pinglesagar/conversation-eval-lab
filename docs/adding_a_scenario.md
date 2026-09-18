@@ -1,6 +1,6 @@
 # Adding a scenario
 
-A scenario is one YAML file in `scenarios/roleplay/<suite>/`. The filename is the
+A scenario is one YAML file in `scenarios/roleplay/`. There are five of them, flat and numbered, and that is the whole corpus. The filename is the
 id. Nothing in the harness knows the difference between a row somebody wrote today
 and one that has been there since the beginning, which is the point: a test case is
 data, and a compliance specialist who will never open a terminal can write and
@@ -15,7 +15,7 @@ than bytes, so a round trip through Excel changes nothing.
 ## The file
 
 ```yaml
-id: pitch-close-with-a-summary       # must equal the filename
+id: 01-control-a-good-session        # must equal the filename
 title: The ask, with the session recapped first
 customer: comparison_shopper         # a profile in scenarios/roleplay/customers/
 tags: [closing, control, objection-handling, disclosure]
@@ -72,7 +72,7 @@ python -m roleplay.corpus --coverage --list
 
 ### 1. The vocabularies are closed
 
-Tool names, tags and suites all come from fixed lists. A typo cannot become a new
+Tool names and tags come from fixed lists. A typo cannot become a new
 tag that silently matches nothing; it stops the load and names itself. That is the
 single most valuable property of the loader, because the alternative failure is
 invisible: a check that can never fire is green forever and measures nothing.
@@ -81,7 +81,7 @@ invisible: a check that can never fire is green forever and measures nothing.
 
 Declaring `min_calls: {record_disclosure: 1}` on a row where the script discharges
 three requirements asserts nothing. The interesting assertion is the one that would
-break if the product changed. `locale-eu-three-disclosures-in-one-turn` is the
+break if the product changed. `02-grader-claims-a-disclosure-that-never-happened` is the
 example worth reading: it is the only row that pins *which turn* discharged each
 requirement, and the note says exactly why —
 
@@ -95,13 +95,11 @@ requirement, and the note says exactly why —
 A row without a written reason is a row nobody can safely delete in a year. Say what
 would have to break for this row to go red, and what a green means. The notes field
 is where the corpus explains itself to its next reader, and several of them name
-their own pair: `pitch-close-without-a-summary` runs the same script with the recap
-removed and scores nineteen, so the pair prices the summary at exactly one mark
-without an argument about tone.
+their own pair: each of the five names, in its own notes, the one mechanism it exists to isolate.
 
 ### 4. A row that is *expected* to fail says so
 
-38 of the 70 rows carry `expected_failure`, because a corpus of only healthy calls
+3 of the 5 rows carry `expected_failure`, because a corpus of only healthy calls
 cannot tell you whether the grader notices an unhealthy one. Declare it, and declare
 *which contract* is expected to fail:
 
@@ -127,7 +125,7 @@ register is the instrument the grader's compliance claims are measured against, 
 an instrument that credits a paraphrase cannot catch a grader that credits one.
 
 If you want a row that *tests* that strictness, write the near-miss deliberately and
-declare what should happen. Five rows do exactly that.
+declare what should happen. One of the five does exactly that.
 
 ---
 
