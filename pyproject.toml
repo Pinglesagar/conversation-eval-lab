@@ -74,6 +74,10 @@ report = ["openpyxl>=3.1"]
 dev = [
   "pytest>=8.0",
   "pytest-cov>=5.0",
+  # Declared rather than installed ad-hoc in CI, so the linter a contributor runs
+  # locally is the same version that gates the build. A lint that disagrees
+  # between the two is a lint people learn to ignore.
+  "ruff>=0.8",
   "openpyxl>=3.1",
   "numpy>=1.26",
   "jiwer>=3.0",

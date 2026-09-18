@@ -59,10 +59,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev,report]"
 
+      # E9/F63/F7/F82 only: syntax errors and undefined names. Nothing
+      # stylistic gates the build — a lint that fails on taste teaches people to
+      # skip the lint. The wider set runs in pre-commit where a person can see it.
       - name: Lint — syntax errors and undefined names
-        run: |
-          pip install ruff
-          ruff check --select E9,F63,F7,F82 --exclude .venv .
+        run: ruff check --select E9,F63,F7,F82 --exclude .venv .
 
       - name: Validate the scenario corpus
         run: python -m roleplay.corpus --coverage --list
