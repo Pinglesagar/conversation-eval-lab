@@ -100,7 +100,7 @@ here by a one-line change you can make yourself in thirty seconds.
 
 ### Step 4 — narrow to one row
 
-`make roleplay-demo` runs all 70. To read the one row that is failing, open its YAML
+`make roleplay-demo` runs all five. To read the one row that is failing, open its YAML
 — the id is the filename:
 
 ```bash
