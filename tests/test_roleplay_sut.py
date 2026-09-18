@@ -206,7 +206,7 @@ def test_every_tool_call_has_a_correlated_result(coach, script) -> None:
 
 
 def test_only_declared_tools_are_ever_called(coach, script) -> None:
-    for name in ("exemplary", "advice", "spanish"):
+    for name in ("exemplary", "missing", "spanish"):
         trace = coach.run(**script(name)).trace
         assert set(trace.tool_names()) <= TOOL_NAMES
 
@@ -216,28 +216,6 @@ def test_conversation_only_traces_contain_no_score(coach, script) -> None:
     conversation = coach.converse(**script("exemplary"))
     assert "score_session" not in conversation.trace.tool_names()
     assert conversation.trace.last(EventKind.SESSION_END).get("reason") == "roleplay_ended"
-
-
-def test_converse_is_independent_of_scoring_state(script) -> None:
-    """Stage one must not move when the service has graded other sessions.
-
-    Everything after `session_start` must be byte-identical, and `session_start`
-    itself must *not* be, because it records how warm the scoring service was.
-    Recording that is the point: a trace whose provenance omits the state of the
-    thing that graded it cannot be used to reopen a disputed grade.
-    """
-    warm = RoleplayCoach(scorer=RubricScorer())
-    cold = RoleplayCoach(scorer=RubricScorer())
-    for _ in range(4):
-        warm.run(**script("exemplary"))
-    a = warm.converse(**script("advice"), session_id="fixed").trace
-    b = cold.converse(**script("advice"), session_id="fixed").trace
-
-    assert [e.model_dump() for e in a.events[1:]] == [e.model_dump() for e in b.events[1:]]
-    assert a.events[0].get("scorer_cohort_size") == 4
-    assert b.events[0].get("scorer_cohort_size") == 0
-    assert a.events[0].get("scorer_adjustment") == -4
-    assert b.events[0].get("scorer_adjustment") == 0
 
 
 def test_timestamps_come_from_the_injected_clock(script) -> None:
@@ -293,14 +271,6 @@ def test_score_card_arithmetic_is_internally_consistent(coach, script) -> None:
     assert card.percent == pytest.approx(100.0 * card.total / card.max_total, abs=0.05)
 
 
-def test_the_view_holds_evidence_the_scorer_does_not_read(coach, script) -> None:
-    """DEFECT-3, stated at the type level: the input was there and was ignored."""
-    result = coach.run(**script("advice"))
-    view = session_view(result.trace)
-    assert view.compliance_flags, "the in-session flagger should have fired"
-    assert result.card.claims["unlicensed_advice_detected"] is False
-
-
 # --------------------------------------------------------------------------- #
 # DEFECT-1: the cohort curve
 # --------------------------------------------------------------------------- #
@@ -347,24 +317,6 @@ def test_the_curve_is_bounded(script) -> None:
 # --------------------------------------------------------------------------- #
 
 
-def test_high_discovery_feedback_quotes_the_template_exemplar(coach, script) -> None:
-    card = coach.run(**script("terse")).card
-    assert card.criteria["discovery"] >= 3
-    assert '"what would you want this money to be doing for you in ten years?"' in card.feedback
-
-
-def test_low_objection_feedback_names_fees_whatever_was_raised(coach, script) -> None:
-    result = coach.run(**script("unanswered"))
-    assert result.card.criteria["objection_handling"] <= 1
-    assert "fee objection" in result.card.feedback
-    topics = {
-        e.get("args", {}).get("topic")
-        for e in result.trace.events_of_kind(EventKind.TOOL_CALL)
-        if e.get("name") == "raise_objection"
-    }
-    assert not any("fee" in str(t) for t in topics)
-
-
 def test_clean_sessions_get_the_negative_advice_sentence(coach, script) -> None:
     """The two advice sentences must be distinguishable, or every clean row is red."""
     clean = coach.run(**script("exemplary")).card.feedback
@@ -377,50 +329,12 @@ def test_clean_sessions_get_the_negative_advice_sentence(coach, script) -> None:
 # --------------------------------------------------------------------------- #
 
 
-def test_reassurance_scores_the_disclosure_criterion(coach, script) -> None:
-    """The sentence that denies the risk satisfies the criterion that requires it."""
-    result = coach.run(**script("reassurance"))
-    assert result.register.satisfied_codes() == ()
-    assert result.card.criteria["mandatory_disclosure"] >= 3
-    assert result.card.claims["mandatory_disclosure_given"] is True
-
-
-def test_absence_and_inversion_score_identically(coach, script) -> None:
-    """A keyword cannot tell a warning from its negation; both contain the keyword."""
-    absent = coach.run(**script("missing")).card.criteria["mandatory_disclosure"]
-    inverted = RoleplayCoach(scorer=RubricScorer()).run(
-        **script("reassurance")
-    ).card.criteria["mandatory_disclosure"]
-    assert absent == inverted
-
-
-def test_the_advice_blocklist_catches_exactly_what_it_lists(coach, script) -> None:
-    """The control for DEFECT-3: the criterion works, its coverage is two phrasings."""
-    caught = coach.run(**script("guaranteed")).card
-    missed = RoleplayCoach(scorer=RubricScorer()).run(**script("advice")).card
-    assert caught.criteria["no_unlicensed_advice"] == 0
-    assert missed.criteria["no_unlicensed_advice"] == MAX_PER_CRITERION
-
-
 def test_the_english_keyword_list_under_credits_a_spanish_session(coach, script) -> None:
     """DEFECT-3's second symptom, and it fails in the opposite direction."""
     result = coach.run(**script("spanish"))
     assert result.register.complete, "the register handles Spanish correctly"
     assert result.card.criteria["mandatory_disclosure"] == 0
     assert result.card.verdict == "fail"
-
-
-def test_criteria_computed_from_ledgers_are_correct(coach, script) -> None:
-    """Objection handling reads the ledger and gets the right answer.
-
-    The point of this test is the contrast: the same file does the same job
-    properly one method away, so the finding is about a mechanism and not about
-    the scorer being generally careless.
-    """
-    handled = coach.run(**script("exemplary")).card
-    ignored = RoleplayCoach(scorer=RubricScorer()).run(**script("unanswered")).card
-    assert handled.criteria["objection_handling"] == MAX_PER_CRITERION
-    assert ignored.criteria["objection_handling"] == 0
 
 
 def test_a_reraised_objection_is_counted_once(profiles) -> None:

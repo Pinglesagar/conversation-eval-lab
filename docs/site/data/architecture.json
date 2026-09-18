@@ -48,21 +48,17 @@
       "scenarios": "make roleplay-validate",
       "tests": "python -m pytest --collect-only -q"
     },
-    "commits_outside_docs_and_this_generator": 78,
-    "customer_profiles": 8,
+    "commits_outside_docs_and_this_generator": 83,
+    "customer_profiles": 6,
     "first_commit_date": "2026-08-22",
     "note": "tests_collected is the collection count; the suite's pass/skip split is not recomputed here (it needs a 70 s run) — `pytest` prints it. The commit count excludes docs/ and this generator so that committing this pack does not stale it; every other commit does, and should.",
-    "scenario_rows": 70,
+    "scenario_rows": 5,
     "scenario_suites": [
-      "compliance",
-      "consistency",
-      "locale",
-      "objection",
-      "pitch"
+      "roleplay"
     ],
-    "test_files": 49,
-    "tests_collected": 1509,
-    "yaml_files_under_scenarios": 112
+    "test_files": 45,
+    "tests_collected": 1343,
+    "yaml_files_under_scenarios": 42
   },
   "event_kinds": {
     "actors": [

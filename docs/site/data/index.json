@@ -7,7 +7,7 @@
     },
     {
       "path": "architecture.json",
-      "sha256": "f777687d018949370a1fe055428effd71fac60a9e11e9a2c69ec671dd602c900"
+      "sha256": "79ac361bd66bdc335886bcb2d7d610c0f26c7590ba1ec155e2a35f74f46c4aa8"
     },
     {
       "path": "audio/excerpt.wav",
@@ -31,7 +31,7 @@
     },
     {
       "path": "coverage.json",
-      "sha256": "fcaed3102efc11f1f516cd76e8ebad02148d20578f7cc5eec06ed876f3a2bcfe"
+      "sha256": "63570bea0bd85729c088e885d3bdf727fc980f3fab2424724bc1d23715072dda"
     },
     {
       "path": "finding.json",
@@ -39,7 +39,7 @@
     },
     {
       "path": "findings.json",
-      "sha256": "9a93164268cfc1095dedf2a8116e80d011726d89a22292ef59129bf997a0bcf5"
+      "sha256": "48baef436ec1cd3f070b9d88d8d3d0b6faea80c716c0572585f35adcc71622ed"
     },
     {
       "path": "question_turns.json",
@@ -51,7 +51,7 @@
     },
     {
       "path": "secondary_findings.json",
-      "sha256": "3a57da01dde423b4b933f50df038e3effda7c861d8ea696f2c4c4aa5cc42a7cd"
+      "sha256": "aa94a4709a9c5f2f516639f7895016ab9c62ff1d77d7e6084b9195f5758fb315"
     }
   ],
   "house_rules": [
