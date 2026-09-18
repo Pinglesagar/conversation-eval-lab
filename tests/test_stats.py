@@ -18,6 +18,7 @@ which is wrong; these tests make that a test failure instead.
 from __future__ import annotations
 
 import math
+from pathlib import Path
 
 import pytest
 
@@ -218,7 +219,7 @@ def test_nothing_here_needs_a_third_party_package() -> None:
     import lab.stats as stats
 
     source = (stats.__file__ or "").replace(".pyc", ".py")
-    text = open(source, encoding="utf-8").read()
+    text = Path(source).read_text(encoding="utf-8")
     for banned in ("import numpy", "import scipy", "from scipy", "from numpy"):
         assert banned not in text
     assert math is not None  # the only maths import this module needs

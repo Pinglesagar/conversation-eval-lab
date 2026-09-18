@@ -112,7 +112,12 @@ def rag_trace(
                     "score": score,
                 }
                 for chunk, score in zip(
-                    retrieval.chunks, retrieval.scores or [None] * len(retrieval.chunks)
+                    retrieval.chunks,
+                    retrieval.scores or [None] * len(retrieval.chunks),
+                    # A score list of the wrong length would silently drop chunks
+                    # from the trace, and a trace missing a chunk is a trace that
+                    # cannot be re-graded. Raise instead.
+                    strict=True,
                 )
             ]
         },

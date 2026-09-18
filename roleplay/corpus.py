@@ -748,8 +748,7 @@ def iter_scenario_paths(
         directory = base / suite
         if not directory.is_dir():
             continue
-        for path in sorted(directory.glob("*.yaml")):
-            yield path
+        yield from sorted(directory.glob("*.yaml"))
 
 
 def load_scenario(path: str | Path, *, suites: Sequence[str] = SUITES) -> Scenario:

@@ -55,7 +55,7 @@ import re
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
-from functools import cache, lru_cache
+from functools import cache
 from typing import Any
 
 from lab.checks.result import CheckResult, Evidence

@@ -30,7 +30,7 @@ from lab.judges.calibration import (
     self_consistency,
 )
 from lab.judges.hallucinated_confirmation import dataset
-from lab.judges.judge import Recording, ReplayJudge, StaleRecordingError
+from lab.judges.judge import JudgeError, Recording, ReplayJudge, StaleRecordingError
 
 # --------------------------------------------------------------------------- #
 # The label set
@@ -480,7 +480,7 @@ def test_no_code_path_can_invent_a_verdict(tmp_path) -> None:
     having answered.
     """
     (tmp_path / "verdicts_v1.jsonl").write_text("", encoding="utf-8")
-    with pytest.raises(Exception):
+    with pytest.raises(JudgeError, match="can only name one"):
         story.calibrate_version("v1", directory=tmp_path)
 
 

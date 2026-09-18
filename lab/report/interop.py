@@ -57,7 +57,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Iterable, Sequence
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from lab.trace.schema import EventKind, Trace, TraceEvent

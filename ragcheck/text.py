@@ -47,15 +47,7 @@ __all__ = [
 #: the words that carry the comparison ("more", "only", "per"), and every one of
 #: those has already caused a wrong support verdict somewhere.
 STOPWORDS: frozenset[str] = frozenset(
-    """
-    a an the and or but if then than that this these those there here
-    is are was were be been being am do does did doing done
-    have has had having will would shall should can could may might must
-    i we you he she it they me us them my our your his her its their
-    of to in on at for with from by as into about over under between
-    so such very too also just still yet
-    what when where which who whom whose why how
-    """.split()
+    ["a", "an", "the", "and", "or", "but", "if", "then", "than", "that", "this", "these", "those", "there", "here", "is", "are", "was", "were", "be", "been", "being", "am", "do", "does", "did", "doing", "done", "have", "has", "had", "having", "will", "would", "shall", "should", "can", "could", "may", "might", "must", "i", "we", "you", "he", "she", "it", "they", "me", "us", "them", "my", "our", "your", "his", "her", "its", "their", "of", "to", "in", "on", "at", "for", "with", "from", "by", "as", "into", "about", "over", "under", "between", "so", "such", "very", "too", "also", "just", "still", "yet", "what", "when", "where", "which", "who", "whom", "whose", "why", "how"]
 )
 
 #: Words whose presence flips the meaning of an otherwise matching sentence.

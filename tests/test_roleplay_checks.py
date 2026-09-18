@@ -9,7 +9,6 @@ eventually deletes the whole suite to stop the noise.
 from __future__ import annotations
 
 import pytest
-import yaml
 
 from lab.trace.build import TraceBuilder
 from lab.trace.schema import Trace
@@ -23,11 +22,9 @@ from roleplay.contracts import (
 )
 from roleplay.corpus import (
     CONTRACT_NAMES,
-    SUITES,
     TAG_VOCABULARY,
     Corpus,
     iter_scenario_paths,
-    load_scenario,
     validate_corpus,
 )
 from roleplay.runtime import TOOL_NAMES, RoleplayCoach

@@ -20,8 +20,8 @@ from pathlib import Path
 
 import pytest
 
-from lab.report.excel import ExcelReport, FailureRow, MetricRow, ScenarioRow, write_excel
-from lab.report.junit import JUnitCase, JUnitSuite, write_junit
+from lab.report.excel import write_excel
+from lab.report.junit import JUnitCase, JUnitSuite
 from roleplay.demo import run_demo
 from roleplay.reporting import build_excel_report, build_junit_suite, write_reports
 

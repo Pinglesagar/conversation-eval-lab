@@ -167,7 +167,7 @@ from roleplay.livescorer import (
 from roleplay.persona import CustomerPersona, CustomerProfile, PersonaTurn
 from roleplay.register import required_codes
 from roleplay.runtime import RoleplayCoach, RoleplayConversation, Trainee
-from roleplay.scorer import RubricScorer, ScoreCard, session_view
+from roleplay.scorer import RubricScorer, ScoreCard
 
 __all__ = [
     "LIVE_SPOKEN_ENV_VAR",

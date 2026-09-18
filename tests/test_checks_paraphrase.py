@@ -54,7 +54,6 @@ import pytest
 from lab.checks import PromiseContract
 from lab.checks.text import fold_typography, normalize
 from lab.simulator.persona import Goal
-from lab.trace.io import read_jsonl
 from lab.trace.schema import Trace
 
 REPO = Path(__file__).resolve().parents[1]

@@ -126,7 +126,6 @@ from roleplay.register import (
     ShadowComparison,
     compliance_brief,
     normalise,
-    required_codes,
 )
 from roleplay.runtime import (
     CORPUS_ROOT,

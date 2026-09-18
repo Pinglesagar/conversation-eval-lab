@@ -14,7 +14,6 @@ product's own scorer, wired into `lab.judges` through the `Completion` protocol.
 from __future__ import annotations
 
 import math
-from collections import Counter
 
 import pytest
 

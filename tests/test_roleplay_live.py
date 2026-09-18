@@ -33,7 +33,6 @@ from roleplay.live import (
     ContentFilterError,
     LiveCustomerVoice,
     LiveRow,
-    LiveTrainee,
     MissingTurnError,
     ModelSpeaker,
     NotLiveError,
@@ -48,7 +47,7 @@ from roleplay.live import (
 )
 from roleplay.persona import SUSPICIOUS_AT, CustomerPersona
 from roleplay.register import compare_with_keyword_check, keyword_shadow_codes
-from roleplay.runtime import TOOL_NAMES, RoleplayCoach, ScriptedTrainee, ScriptedVoice
+from roleplay.runtime import TOOL_NAMES, RoleplayCoach
 from roleplay.scorer import CUSTOMER_AGENT, RubricScorer
 from tests.roleplay_fixtures import corpus, profiles, script  # noqa: F401
 
@@ -854,7 +853,7 @@ def test_the_retry_budget_is_bounded() -> None:
         max_retries=2,
         retry_base_s=0.0,
     )
-    with pytest.raises(Exception):
+    with pytest.raises(Throttled):
         speaker.say([{"role": "system", "content": "s"}])
     assert speaker.retries == 2
 
