@@ -58,17 +58,6 @@ if TYPE_CHECKING:  # pragma: no cover - for type checkers only, never at runtime
         recover_turn_wall_times,
         run_calibration,
     )
-    from lab.voice.adapter import (  # noqa: F401
-        AudioAdapter,
-        LatencyGate,
-        LatencyUnproven,
-        WERUnproven,
-        audio_latency_report,
-        audio_wer_report,
-        latency_gate_verdict,
-        load_audio_trace,
-        transcript_provenances,
-    )
     from lab.voice.metrics import (  # noqa: F401
         Distribution,
         Quantile,
@@ -124,16 +113,6 @@ _LAZY: dict[str, str] = {
     "recover_response_latencies": "lab.voice.calibration",
     "recover_turn_wall_times": "lab.voice.calibration",
     "run_calibration": "lab.voice.calibration",
-    # lab.voice.adapter — the audio adapter and its two refusals
-    "AudioAdapter": "lab.voice.adapter",
-    "LatencyGate": "lab.voice.adapter",
-    "LatencyUnproven": "lab.voice.adapter",
-    "WERUnproven": "lab.voice.adapter",
-    "audio_latency_report": "lab.voice.adapter",
-    "audio_wer_report": "lab.voice.adapter",
-    "latency_gate_verdict": "lab.voice.adapter",
-    "load_audio_trace": "lab.voice.adapter",
-    "transcript_provenances": "lab.voice.adapter",
     # lab.voice.metrics — latency distributions
     "Distribution": "lab.voice.metrics",
     "Quantile": "lab.voice.metrics",

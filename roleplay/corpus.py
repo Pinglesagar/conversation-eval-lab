@@ -121,13 +121,6 @@ from roleplay.contracts import (
     ScoreClaimContract,
 )
 from roleplay.persona import CustomerProfile, load_profiles
-from roleplay.advisory import (
-    ADVISORY_ROOT,
-    ADVISORY_SUITES,
-    KPI_IDS,
-    REGIMES,
-    register_entry,
-)
 from roleplay.register import JURISDICTIONS
 from roleplay.runtime import TOOL_NAMES
 
@@ -154,12 +147,6 @@ __all__ = [
     "validate_corpus",
     "iter_scenario_paths",
     "main",
-    "ADVISORY_ROOT",
-    "ADVISORY_SUITES",
-    "DivergenceSpec",
-    "RegimeVerdict",
-    "load_advisory_corpus",
-    "validate_advisory_corpus",
 ]
 
 #: Suite = subdirectory = id prefix, exactly as in the booking corpus. One idea
@@ -188,7 +175,6 @@ TAG_VOCABULARY: dict[str, str] = {
     "unlicensed-advice": "the trainee makes a personal recommendation",
     "jurisdiction": "the required disclosure set is not the default market's",
     # --- customer behaviour
-    "aggressive-customer": "objections are raised unprompted and repeated",
     "multilingual": "the session is not conducted in English",
     # --- what is being measured about the scorer
     "score-consistency": "the row exists to be run k times, not once",
@@ -196,10 +182,6 @@ TAG_VOCABULARY: dict[str, str] = {
     "cohort-curve": "the row exercises the scorer's cross-session state",
     "control": "the row must stay green; it is the counterpart to a failing row",
     # --- how the disclosure register is being probed
-    "market-parity": "one script run in more than one market, so a red names the market",
-    "near-miss": "the wording is close to a registered phrasing and does not satisfy it",
-    "recovery": "the trainee approaches a boundary and pulls back before crossing it",
-    "known-gap": "the row documents a limitation of this pack's own checks",
 }
 
 #: Contract names a scenario may compile to, and therefore the only names
@@ -487,88 +469,6 @@ class ConsistencySpec(_Block):
         return self
 
 
-class RegimeVerdict(_Block):
-    """What one regime says about this transcript, and the entry that says it.
-
-    The point of the block. A divergence row carries the *same* trainee script and
-    two or more of these, so the verdict split is attributable to a named register
-    entry rather than to a reviewer's taste. `register_entry` is resolved against
-    `scenarios/advisory/registers/<regime>.yaml` at load time, so a row cannot
-    cite a requirement nobody wrote down — which is the failure mode that makes a
-    jurisdiction suite look rigorous and prove nothing.
-
-    THE VERDICT IS ENTRY-SCOPED, AND THAT IS NOW MEASURED
-    ----------------------------------------------------
-    `verdict` is a claim about `register_entry`, not about every requirement that
-    regime imposes. The distinction was implicit while these blocks were
-    hand-written and became load-bearing the moment `roleplay.regime_eval` started
-    computing them: it reports both scopings, and on the eighteen-row corpus they
-    agree on 18 of 18 entry-scoped regime verdicts and 16 of 18 whole-register
-    ones. Both deviations are on
-    `divergence-commission-volunteered-four-verdicts`, where the full MAS and SFC
-    registers fail a transcript whose named entries are satisfied — MAS on the
-    recommendation document ¶36 requires before signing, which is the same rule
-    that makes `divergence-verbal-close-nothing-in-writing` fail under MAS. Neither
-    block is wrong; a reader who took `verdict` for a whole-register claim would
-    be.
-
-    Attributes:
-        regime: One of `roleplay.advisory.REGIMES`.
-        verdict: What a competent reviewer in that regime would say.
-        register_entry: The entry id that produces this verdict.
-        rule: The rule in one sentence, in the reviewer's own words. Required,
-            because "fails under the FCA" without the clause is an assertion the
-            next reader cannot check.
-    """
-
-    regime: str
-    verdict: Literal["pass", "fail"]
-    register_entry: str
-    rule: str = Field(min_length=20)
-
-    @model_validator(mode="after")
-    def _validate(self) -> "RegimeVerdict":
-        if self.regime not in REGIMES:
-            raise ValueError(
-                f"divergence regime {self.regime!r} unknown; legal: {sorted(REGIMES)}"
-            )
-        try:
-            register_entry(self.register_entry, regime=self.regime)
-        except KeyError as exc:
-            raise ValueError(str(exc)) from None
-        return self
-
-
-class DivergenceSpec(_Block):
-    """One transcript, more than one regime, and the reason the verdicts differ.
-
-    `axis` names the divergence in `docs/_research/regulators.md` §6 (D1..D10), so a
-    reader can go and read the divergence rather than trusting the row.
-    """
-
-    axis: str = Field(min_length=2)
-    regimes: tuple[RegimeVerdict, ...]
-
-    @model_validator(mode="after")
-    def _validate(self) -> "DivergenceSpec":
-        if len(self.regimes) < 2:
-            raise ValueError(
-                "divergence.regimes needs at least two regimes; one regime is not a "
-                "divergence, it is a verdict"
-            )
-        seen = [r.regime for r in self.regimes]
-        if len(set(seen)) != len(seen):
-            raise ValueError(f"divergence.regimes lists a regime twice: {seen}")
-        verdicts = {r.verdict for r in self.regimes}
-        if len(verdicts) < 2:
-            raise ValueError(
-                "divergence.regimes all return the same verdict, so the row demonstrates "
-                "nothing about divergence; a row where every regime agrees is a verdict, "
-                "and it belongs in another suite"
-            )
-        return self
-
-
 class ExpectedFailure(_Block):
     """Contracts this build is expected to fail on this row, and what to expect."""
 
@@ -604,20 +504,6 @@ class Scenario(_Block):
     jurisdiction: str | None = None
     language: str | None = None
 
-    #: Which of the seven KPI groups this row grades. Optional so the roleplay
-    #: pack is unchanged; required by the advisory suites, which are the rows
-    #: whose whole purpose is to be counted per group.
-    kpis: tuple[str, ...] = ()
-
-    #: The regime this row's primary verdict is given under. Distinct from
-    #: `jurisdiction`, deliberately: `jurisdiction` keys the generic three-market
-    #: register in `roleplay.register`, and that vocabulary cannot express the
-    #: difference between MAS and the SFC.
-    regime: str | None = None
-
-    #: The counterfactual verdicts, for a row whose point is that the same words
-    #: land differently elsewhere.
-    divergence: DivergenceSpec | None = None
 
     tools: ToolSpec = Field(default_factory=ToolSpec)
     trainee_phrases: PhraseSpec = Field(default_factory=PhraseSpec)
@@ -647,34 +533,6 @@ class Scenario(_Block):
             raise ValueError(
                 f"jurisdiction {self.jurisdiction!r} unknown; legal: {sorted(JURISDICTIONS)}"
             )
-        unknown_kpis = [k for k in self.kpis if k not in KPI_IDS]
-        if unknown_kpis:
-            raise ValueError(
-                f"kpis {unknown_kpis} are not KPI group ids; legal: {sorted(KPI_IDS)}"
-            )
-        if len(set(self.kpis)) != len(self.kpis):
-            raise ValueError(f"kpis lists a group twice: {list(self.kpis)}")
-        if self.regime is not None and self.regime not in REGIMES:
-            raise ValueError(f"regime {self.regime!r} unknown; legal: {sorted(REGIMES)}")
-        if self.divergence is not None:
-            if self.regime is None:
-                raise ValueError(
-                    "a divergence row must declare the regime its own human_verdict is "
-                    "given under, or the primary verdict is a verdict about nowhere"
-                )
-            named = {r.regime: r for r in self.divergence.regimes}
-            own = named.get(self.regime)
-            if own is None:
-                raise ValueError(
-                    f"divergence.regimes does not include this row's own regime "
-                    f"{self.regime!r}; it lists {sorted(named)}"
-                )
-            if own.verdict != self.expectation.human_verdict:
-                raise ValueError(
-                    f"expectation.human_verdict is {self.expectation.human_verdict!r} but "
-                    f"divergence says {own.verdict!r} under {self.regime!r}; the two "
-                    "columns are the same claim and cannot disagree"
-                )
 
         # Rule 2, the strong form: a phrase assertion about the stimulus is
         # checkable against the stimulus, here, now, without running anything.
@@ -807,13 +665,6 @@ class Corpus:
         keys = SUITES if not counts or set(counts) <= set(SUITES) else tuple(sorted(counts))
         return {suite: counts.get(suite, 0) for suite in keys}
 
-    def kpi_counts(self) -> dict[str, int]:
-        """Rows per KPI group. Zero-filled over all seven, because the interesting
-        number in a coverage table is the group nothing covers."""
-        counts: Counter[str] = Counter()
-        for scenario in self.scenarios:
-            counts.update(scenario.kpis)
-        return {kpi: counts.get(kpi, 0) for kpi in sorted(KPI_IDS)}
 
     def tag_counts(self) -> dict[str, int]:
         counts: Counter[str] = Counter()
@@ -998,23 +849,6 @@ def validate_corpus(
     )
 
 
-def load_advisory_corpus(root: Path | str = ADVISORY_ROOT) -> Corpus:
-    """The advisory corpus: same loader, different suite vocabulary and root.
-
-    Eighteen rows under `scenarios/advisory/`, graded against the four named
-    regulatory regimes in `roleplay.advisory.REGIMES` rather than the three
-    generic markets in `roleplay.register`. Nothing new is loading them: this is
-    `load_corpus` with `suites=ADVISORY_SUITES`, which is the whole reason the
-    suite set became a parameter.
-    """
-    return load_corpus(root, suites=ADVISORY_SUITES)
-
-
-def validate_advisory_corpus(root: Path | str = ADVISORY_ROOT) -> CorpusValidation:
-    """Every problem in the advisory corpus, collected rather than raised."""
-    return validate_corpus(root, suites=ADVISORY_SUITES)
-
-
 # --------------------------------------------------------------------------- #
 # CLI
 # --------------------------------------------------------------------------- #
@@ -1024,19 +858,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     """`python -m roleplay.corpus` — validate; non-zero exit on any error."""
     parser = argparse.ArgumentParser(description="Validate the roleplay scenario corpus.")
     parser.add_argument("--root", default=None)
-    parser.add_argument(
-        "--advisory",
-        action="store_true",
-        help="validate the advisory corpus (scenarios/advisory) instead of the roleplay pack",
-    )
-    parser.add_argument("--coverage", action="store_true", help="print suite and tag coverage")
+    parser.add_argument("--coverage", action="store_true", help="print tag coverage")
     parser.add_argument("--list", action="store_true", help="one line per scenario")
     parser.add_argument("--json", action="store_true", help="machine-readable report")
     args = parser.parse_args(argv)
 
-    suites = ADVISORY_SUITES if args.advisory else SUITES
-    default_root = ADVISORY_ROOT if args.advisory else CORPUS_ROOT
-    report = validate_corpus(args.root or default_root, suites=suites)
+    report = validate_corpus(args.root or CORPUS_ROOT)
     if args.json:
         print(
             json.dumps(
