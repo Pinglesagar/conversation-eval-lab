@@ -25,27 +25,6 @@ The one hard rule across all three: no result is reported that cannot be
 recomputed from the trace on disk.
 """
 
-from lab.simulator.driver import (
-    CALLER_MODEL_ENV_VAR,
-    DEFAULT_MAX_TURNS,
-    LIVE_CALLER_ENV_VAR,
-    REPEAT_LIMIT,
-    VERBOSITY_TOKEN_BUDGET,
-    AgentReply,
-    AgentTurn,
-    AgentUnderTest,
-    Caller,
-    CassetteKey,
-    DisclosureLeak,
-    DisclosureLeakError,
-    Handoff,
-    LLMCaller,
-    OnLeak,
-    ScriptedCaller,
-    ToolInvocation,
-    coerce_turn,
-    run_scenario,
-)
 from lab.simulator.persona import (
     CALLER_RULES,
     END_OF_CALL,
@@ -71,11 +50,8 @@ from lab.simulator.passk import (
 
 __all__ = [
     "AgentReply",
-    "AgentTurn",
-    "AgentUnderTest",
     "CALLER_MODEL_ENV_VAR",
     "CALLER_RULES",
-    "Caller",
     "CallerProfile",
     "CassetteKey",
     "DEFAULT_MAX_TURNS",
@@ -85,14 +61,12 @@ __all__ = [
     "Goal",
     "Handoff",
     "LIVE_CALLER_ENV_VAR",
-    "LLMCaller",
     "OnLeak",
     "PassKPolicy",
     "Persona",
     "REPEAT_LIMIT",
     "RELUCTANT_BELOW",
     "RunOutcome",
-    "ScriptedCaller",
     "Stability",
     "StabilitySummary",
     "StabilityVerdict",
@@ -104,7 +78,6 @@ __all__ = [
     "coerce_turn",
     "format_rate",
     "run_pass_k",
-    "run_scenario",
     "summarise_stability",
     "verdict_from_outcomes",
 ]

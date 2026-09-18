@@ -56,15 +56,6 @@ def test_every_shipped_package_exists_on_disk(config) -> None:
         )
 
 
-def test_the_console_script_points_at_something_importable(config) -> None:
-    scripts = config.get("project", {}).get("scripts", {})
-    assert scripts, "no console script declared"
-    for name, target in scripts.items():
-        module, _, attribute = target.partition(":")
-        imported = __import__(module, fromlist=[attribute or "__name__"])
-        assert hasattr(imported, attribute), f"{name} points at {target}, which does not resolve"
-
-
 def test_the_description_does_not_advertise_a_domain_the_repo_no_longer_ships(config) -> None:
     """The metadata is the first thing a stranger reads on PyPI or GitHub."""
     description = config["project"]["description"].lower()

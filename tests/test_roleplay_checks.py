@@ -364,16 +364,11 @@ def test_every_tag_is_exercised(corpus: Corpus) -> None:
     """An unused tag is a coverage gap, and it should be a test failure rather
     than an aspiration in a document.
 
-    Counted across BOTH corpora, because the vocabulary is shared. The roleplay
-    pack is five rows and cannot reach every tag on its own; the advisory pack
-    reaches the rest. A tag no row anywhere uses is still a failure.
+    With five rows the vocabulary is small enough that this is a real constraint:
+    a tag exists only because a row needs it.
     """
-    from roleplay.corpus import load_advisory_corpus
-
-    used = {tag for tag, n in corpus.tag_counts().items() if n}
-    used |= {tag for tag, n in load_advisory_corpus().tag_counts().items() if n}
-    unused = [tag for tag in corpus.tag_counts() if tag not in used]
-    assert not unused, f"tags described but never used by either corpus: {unused}"
+    unused = [tag for tag, n in corpus.tag_counts().items() if n == 0]
+    assert not unused, f"tags described but never used: {unused}"
 
 
 def test_the_human_column_has_both_labels(corpus: Corpus) -> None:

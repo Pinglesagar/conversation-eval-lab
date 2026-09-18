@@ -1404,7 +1404,7 @@ def resolve_trainee_factory(spec: str | TraineeFactory | None = None) -> Trainee
     if not dotted:
         return model_trainee
     origin = "--trainee-factory" if spec else TRAINEE_FACTORY_ENV_VAR
-    from lab.cli import _import_object  # local: `lab.cli` is argparse-heavy
+    from roleplay._import import import_object as _import_object
 
     try:
         factory = _import_object(dotted)

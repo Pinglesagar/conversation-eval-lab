@@ -21,7 +21,7 @@ PY_OK := $(shell $(PYTHON) -c 'import sys; print(1 if sys.version_info[:2] >= (3
 PY_HAVE := $(shell $(PYTHON) -c 'import sys; print("%d.%d" % sys.version_info[:2])' 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help start python-ok install gate test coverage demo calibrate report validate replay reference live-replay live-score live-record audio-fixtures audio-check-plan-record-evidence audio-setup roleplay-demo roleplay-validate advisory-verdicts spoken-replay spoken-record ragcheck clean
+.PHONY: help start python-ok install gate test coverage demo replay reference live-replay live-score live-record audio-fixtures audio-check-plan-record-evidence audio-setup roleplay-demo roleplay-validate spoken-replay spoken-record ragcheck clean
 
 # The on-ramp, and the first thing anybody should type. One finding, recomputed
 # on this machine from the committed spoken call, printed in a screen, plus what
@@ -104,28 +104,25 @@ test: python-ok  ## start: The full offline test suite. No keys.
 # prompt, a persona or a rubric, a green gate here is necessary and not
 # sufficient — docs/GATES.md says which live tier answers that question instead.
 gate: python-ok  ## every: Every offline check, cheapest first, stops at red.
-	@echo "== 1/6  lint: syntax errors and undefined names =="
+	@echo "== 1/5  lint: syntax errors and undefined names =="
 	@if $(PYTHON) -m ruff --version >/dev/null 2>&1; then \
 		$(PYTHON) -m ruff check --select E9,F63,F7,F82 --exclude .venv . ; \
 	else \
 		echo "   ruff is not installed here, so this stage is skipped."; \
 		echo "   CI installs it; run 'pip install ruff' to have it locally."; \
 	fi
-	@echo "== 2/6  the advisory corpus, against its schema =="
+	@echo "== 2/5  the corpus: five rows, against the schema =="
 	$(PYTHON) -m roleplay.corpus --coverage --list
-	@echo "== 3/6  the calibration gates, then the artefacts they wrote =="
+	@echo "== 3/5  the judge calibration, then the artefacts it wrote =="
 	@echo "        (this diff reads the WORKING TREE: uncommitted work of your own"
 	@echo "         under fixtures/ or lab/judges/ shows up here.)"
-	$(PYTHON) -m lab.cli calibrate --ci
+	$(PYTHON) -m lab.judges.hallucinated_confirmation
 	git diff --exit-code -- fixtures lab/judges
-	@echo "== 4/6  the recorded calls, re-graded with no agent and no key =="
-	$(PYTHON) -m roleplay.spoken
-	$(PYTHON) -m roleplay.scorecard_eval fixtures/audio/spoken_call/trace.jsonl fixtures/audio/spoken_call_pass/trace.jsonl
-	@echo "== 5/6  the other packs and the recorded tiers, all offline =="
+	@echo "== 4/5  the five rows, the recorded call, and the retrieval pack =="
 	$(PYTHON) -m roleplay.demo
-	$(PYTHON) -m roleplay.regime_eval --divergence --shadow
+	$(PYTHON) -m roleplay.spoken
 	$(PYTHON) -m ragcheck
-	@echo "== 6/6  the offline suite =="
+	@echo "== 5/5  the offline suite =="
 	$(PYTHON) -m pytest -q
 
 coverage: python-ok  ## every: Coverage, twice: whole tree, then offline-executable.
@@ -135,9 +132,6 @@ coverage: python-ok  ## every: Coverage, twice: whole tree, then offline-executa
 	@$(PYTHON) -m coverage report \
 	  --omit="scripts/make_audio_fixtures.py,scripts/make_cloud_fixtures.py" \
 	  | grep TOTAL
-
-calibrate: python-ok  ## every: The timing and judge calibration gates.
-	$(PYTHON) -m lab.cli calibrate
 
 audio-fixtures: python-ok  ## record: local TTS  Re-record fixtures/audio. No key, no spend.
 	$(PYTHON) -m scripts.make_audio_fixtures
@@ -171,27 +165,7 @@ roleplay-validate: python-ok  ## evidence: Validate the roleplay corpus, with co
 # limitations block first, because the agreement figure it ends with is in-sample
 # and a reader needs that next to the number rather than in a document they may
 # not open. Zero API keys, like everything else here.
-advisory-verdicts: python-ok  ## evidence: The 18 advisory rows, decided from the registers.
-	$(PYTHON) -m roleplay.regime_eval --divergence --shadow
 
-cited-calls: python-ok  ## evidence: Both recorded calls graded against the cited scorecard.
-	$(PYTHON) -m roleplay.scorecard_eval fixtures/audio/spoken_call/trace.jsonl fixtures/audio/spoken_call_pass/trace.jsonl
-
-# The spoken call: the one place the audio tier and the conversation tier meet.
-# Every other audio entry point above scores single utterances; this one runs a
-# whole advisory conversation turn by turn through real synthesis and real
-# recognition, and grades what the recogniser HEARD.
-#
-# `spoken-replay` is offline and needs no key. It does not read a summary back:
-# the committed per-turn manifest drives the same conversation loop again, so the
-# trace, the disclosure register and the deterministic score are recomputed, and
-# the live scorer's answer replays from a recording held to its prompt digest.
-#
-# `spoken-record` is the only way to produce new recordings and it spends real
-# ElevenLabs characters. It needs LAB_LIVE_SPOKEN=1, both audio keys, a provider
-# key and the three model routes, and it refuses with all of the missing pieces
-# named at once. Synthesis is digest-cached, so re-recording an unchanged call
-# bills nothing.
 spoken-replay: python-ok  ## evidence: Replay the committed spoken call and re-grade it.
 	$(PYTHON) -m roleplay.spoken
 
