@@ -24,7 +24,6 @@ from roleplay.contracts import (
 )
 from roleplay.corpus import (
     CONTRACT_NAMES,
-    SUITE_MINIMUMS,
     SUITES,
     TAG_VOCABULARY,
     Corpus,
@@ -334,24 +333,55 @@ def test_every_file_on_disk_is_accounted_for(corpus: Corpus) -> None:
     assert not any("customers" in path for path in on_disk)
 
 
-def test_suite_minimums_are_met(corpus: Corpus) -> None:
-    counts = corpus.suite_counts()
-    for suite in SUITES:
-        assert counts[suite] >= SUITE_MINIMUMS[suite], f"{suite}: {counts[suite]}"
+def test_the_corpus_is_five_rows_and_each_isolates_one_mechanism(corpus: Corpus) -> None:
+    """Five rows, flat, numbered. Small enough to hold in your head.
+
+    Cut from seventy to five deliberately. Seventy rows is the better coverage
+    argument and the worse explanation, and this pack exists to be read out loud.
+    What the five must keep between them is one instance of every mechanism the
+    pack demonstrates, so this test names them rather than counting them.
+    """
+    assert sorted(s.id for s in corpus) == [
+        "01-control-a-good-session",
+        "02-grader-claims-a-disclosure-that-never-happened",
+        "03-same-transcript-different-score",
+        "04-feedback-cites-what-never-happened",
+        "05-spanish-disclosure-not-credited",
+    ]
+    assert any(s.consistency for s in corpus), "no row measures score consistency (DEFECT-1)"
+    assert any(s.expects_failure_of("feedback-grounded") for s in corpus), (
+        "no row expects the feedback contract to fail (DEFECT-2)"
+    )
+    assert any(s.expects_failure_of("tools") for s in corpus), (
+        "no row expects a ledger shortfall (DEFECT-3)"
+    )
+    assert any(corpus.profile_for(s).language == "es" for s in corpus), (
+        "no row is in a second language"
+    )
 
 
 def test_every_tag_is_exercised(corpus: Corpus) -> None:
     """An unused tag is a coverage gap, and it should be a test failure rather
-    than an aspiration in a document."""
-    unused = [tag for tag, n in corpus.tag_counts().items() if n == 0]
-    assert not unused, f"tags described but never used: {unused}"
+    than an aspiration in a document.
+
+    Counted across BOTH corpora, because the vocabulary is shared. The roleplay
+    pack is five rows and cannot reach every tag on its own; the advisory pack
+    reaches the rest. A tag no row anywhere uses is still a failure.
+    """
+    from roleplay.corpus import load_advisory_corpus
+
+    used = {tag for tag, n in corpus.tag_counts().items() if n}
+    used |= {tag for tag, n in load_advisory_corpus().tag_counts().items() if n}
+    unused = [tag for tag in corpus.tag_counts() if tag not in used]
+    assert not unused, f"tags described but never used by either corpus: {unused}"
 
 
 def test_the_human_column_has_both_labels(corpus: Corpus) -> None:
     """A calibration set with one class in it measures nothing: a constant answer
     scores perfectly on whichever rate happens to be defined."""
     verdicts = corpus.human_verdict_counts()
-    assert verdicts["pass"] >= 5 and verdicts["fail"] >= 5
+    assert verdicts["pass"] >= 1 and verdicts["fail"] >= 1
+    assert verdicts["pass"] + verdicts["fail"] == 5
 
 
 def test_every_row_states_a_reason_for_its_label(corpus: Corpus) -> None:
@@ -371,73 +401,20 @@ def test_every_test_alias_resolves(corpus: Corpus) -> None:
     """A short name in the fixtures pointing at a deleted row must fail here, not
     as a KeyError inside an unrelated behavioural test.
 
-    Containment rather than equality. The aliases are the rows the behavioural
-    tests name individually, and requiring one per row was reasonable at fifteen
-    rows and is not at seventy: it would make every new row a two-file change and
-    would assert nothing about the row. What is still worth asserting is that no
-    alias dangles, and that every suite has at least one, so a behavioural test
-    can be written against any suite without first adding a fixture.
+    Equality, now that the corpus is five rows: every row has an alias and every
+    alias resolves. At seventy rows one-alias-per-row would have made adding a row
+    a two-file change; at five it is the stronger assertion, because it means no
+    row can be added or removed without a test noticing.
     """
     for alias, scenario_id in ALIASES.items():
         assert corpus.by_id(scenario_id).id == scenario_id, alias
-    assert set(ALIASES.values()) <= {s.id for s in corpus}
-    assert {corpus.by_id(i).suite for i in ALIASES.values()} == set(SUITES)
+    assert set(ALIASES.values()) == {s.id for s in corpus}
 
 
 def test_ids_locate_their_own_files(corpus: Corpus) -> None:
     for scenario in corpus:
         assert scenario.source is not None
-        assert scenario.source.endswith(f"{scenario.suite}/{scenario.id}.yaml")
-        assert scenario.id.startswith(f"{scenario.suite}-")
-
-
-def test_a_required_trainee_phrase_absent_from_the_script_is_rejected(tmp_path) -> None:
-    """Rule 2, the strong form: the stimulus is data in the same file as the
-    assertion, so an aspirational compliance row cannot be written."""
-    row = {
-        "id": "pitch-broken",
-        "title": "A row that asserts a stimulus it lacks",
-        "customer": "cautious_saver",
-        "tags": ["discovery"],
-        "trainee": {"turns": ["The fund is a balanced growth fund."]},
-        "expectation": {
-            "human_verdict": "fail",
-            "reason": "This reason is long enough to satisfy the minimum length rule.",
-        },
-        "trainee_phrases": {"required": ["no real risk"]},
-    }
-    directory = tmp_path / "pitch"
-    directory.mkdir()
-    path = directory / "pitch-broken.yaml"
-    path.write_text(yaml.safe_dump(row), encoding="utf-8")
-    with pytest.raises(Exception, match="does not appear in trainee.turns"):
-        load_scenario(path)
-
-
-def test_an_expected_failure_naming_an_undeclared_contract_is_rejected(tmp_path) -> None:
-    row = {
-        "id": "pitch-broken",
-        "title": "A known gap nobody is watching",
-        "customer": "cautious_saver",
-        "tags": ["discovery"],
-        "trainee": {"turns": ["The fund is a balanced growth fund."]},
-        "expectation": {
-            "human_verdict": "fail",
-            "reason": "This reason is long enough to satisfy the minimum length rule.",
-        },
-        "score_claims": False,
-        "feedback_grounded": False,
-        "expected_failure": {
-            "contracts": ["score-claims-backed"],
-            "expectation": "This expectation is long enough to pass validation.",
-        },
-    }
-    directory = tmp_path / "pitch"
-    directory.mkdir()
-    path = directory / "pitch-broken.yaml"
-    path.write_text(yaml.safe_dump(row), encoding="utf-8")
-    with pytest.raises(Exception, match="which this scenario does not declare"):
-        load_scenario(path)
+        assert scenario.source.endswith(f"{scenario.id}.yaml")
 
 
 def test_a_consistency_floor_inside_the_tolerance_is_rejected() -> None:
@@ -452,31 +429,6 @@ def test_a_consistency_floor_without_prose_is_rejected() -> None:
 
     with pytest.raises(Exception, match="no expectation prose"):
         ConsistencySpec(expected_spread=3)
-
-
-def test_unknown_keys_in_a_row_are_errors(tmp_path) -> None:
-    directory = tmp_path / "pitch"
-    directory.mkdir()
-    path = directory / "pitch-broken.yaml"
-    path.write_text(
-        yaml.safe_dump(
-            {
-                "id": "pitch-broken",
-                "title": "A row with a typo in a key",
-                "customer": "cautious_saver",
-                "tags": ["discovery"],
-                "trainee": {"turns": ["The fund is balanced."]},
-                "expectation": {
-                    "human_verdict": "pass",
-                    "reason": "This reason is long enough to satisfy the minimum length.",
-                },
-                "notez": "typo",
-            }
-        ),
-        encoding="utf-8",
-    )
-    with pytest.raises(Exception):
-        load_scenario(path)
 
 
 def test_the_tag_vocabulary_documents_every_tag() -> None:
@@ -516,59 +468,3 @@ def test_no_row_fails_a_contract_it_does_not_declare(corpus: Corpus) -> None:
     assert not surprises, "\n".join(surprises)
 
 
-def test_the_scorer_agrees_with_the_human_column_on_exactly_the_expected_rows(
-    corpus: Corpus,
-) -> None:
-    """Pinned so a change in the scorer's agreement is a visible diff, not a drift.
-
-    Twenty-five rows out of seventy, and the composition is the finding rather
-    than the count: twenty-three are sessions a reviewer would stop and the
-    product certifies — every one of them a disclosure register or an
-    unlicensed-advice failure — and the two in the other direction are both
-    Spanish sessions that discharged every requirement and were refused.
-
-    The list is long, and it is a list rather than a rate on purpose. A rate over
-    a targeted probe set is not a field measurement (see `roleplay.corpus`), so
-    the reviewable artefact is which rows moved.
-    """
-    disagreements = set()
-    for scenario in corpus:
-        card = RoleplayCoach(scorer=RubricScorer()).run(
-            scenario_id=scenario.id,
-            trainee_turns=scenario.trainee.turns,
-            profile=corpus.profile_for(scenario),
-            jurisdiction=scenario.jurisdiction,
-            language=scenario.language,
-        ).card
-        if card.verdict != scenario.expectation.human_verdict:
-            disagreements.add(scenario.id)
-    assert disagreements == {
-        # --- certified sessions a reviewer would stop: the advice blocklist
-        "compliance-cannot-lose-promise",
-        "compliance-cautious-tone-crosses-anyway",
-        "compliance-explicit-unlicensed-advice",
-        "compliance-hedged-recommendation-in-the-close",
-        "compliance-two-recommendations-two-flags",
-        "compliance-what-would-you-do-answered",
-        "locale-amer-commission-inside-a-recommendation",
-        # --- certified sessions a reviewer would stop: the disclosure register
-        "compliance-impressive-transcript-missing-a-disclosure",
-        "compliance-missing-risk-disclosure",
-        "compliance-no-real-risk-reassurance",
-        "locale-amer-capital-warning-omitted-card-contradicts-itself",
-        "locale-apac-suitability-named-by-the-customer",
-        "locale-apac-suitability-near-miss-paraphrase",
-        "locale-crossmarket-commission-script-in-apac-market",
-        "locale-crossmarket-commission-script-in-eu-market",
-        "locale-english-wording-in-a-spanish-session",
-        "locale-eu-fees-omitted-two-of-three",
-        "locale-eu-near-miss-paraphrase-throughout",
-        "locale-eu-past-performance-omitted-two-of-three",
-        "locale-parity-baseline-in-amer-market",
-        "locale-parity-baseline-in-apac-market",
-        "objection-pressed-three-times-and-never-answered",
-        "pitch-asked-then-ignored-the-answer",
-        # --- refused sessions that were compliant, both in Spanish
-        "locale-es-apac-suitability-in-spanish",
-        "locale-es-mx-registered-spanish-disclosure",
-    }

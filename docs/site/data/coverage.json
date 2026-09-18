@@ -37,24 +37,26 @@
       "command": "make roleplay-demo && make calibrate",
       "figures": {
         "advisory_scorer": {
-          "cohens_kappa": 0.241,
+          "cohens_kappa": 0.167,
           "gate_cleared": false,
-          "items": 70,
+          "items": 5,
           "refusal_reasons": [
-            "TPR 0.281 (9/32) is below the required 0.85",
+            "calibrated on only 5 items, below the minimum of 10",
+            "TPR 0.500 (1/2) is below the required 0.85",
+            "TNR 0.667 (2/3) is below the required 0.85",
             "registry refused the judge in CI mode: JudgeBelowThresholdError"
           ],
           "true_negative_rate": {
-            "denominator": 38,
-            "numerator": 36,
-            "text": "0.947 (36/38)",
-            "value": 0.947
+            "denominator": 3,
+            "numerator": 2,
+            "text": "0.667 (2/3)",
+            "value": 0.667
           },
           "true_positive_rate": {
-            "denominator": 32,
-            "numerator": 9,
-            "text": "0.281 (9/32)",
-            "value": 0.281
+            "denominator": 2,
+            "numerator": 1,
+            "text": "0.500 (1/2)",
+            "value": 0.5
           }
         },
         "judge_v1": {
@@ -94,7 +96,7 @@
           "scored_on": "point"
         }
       },
-      "headline": "The advisory scorer catches 9 of 32 sessions a reviewer would fail and the gate refuses it; judge prompt v1 scored TPR 0.250 (2/8) and was refused, v2 scored 1.000 (8/8) and cleared.",
+      "headline": "The advisory scorer catches 1 of 2 sessions a reviewer would fail and the gate refuses it; judge prompt v1 scored TPR 0.250 (2/8) and was refused, v2 scored 1.000 (8/8) and cleared.",
       "id": "llm-as-judge-calibrated-and-gated",
       "recomputed": true,
       "requirement": "LLM-as-judge, calibrated against human labels and gated before it can decide anything",
@@ -111,7 +113,7 @@
       ],
       "command": "make roleplay-validate",
       "figures": {
-        "customer_profiles": 8,
+        "customer_profiles": 6,
         "regimes": [
           "fca",
           "mas",
@@ -119,17 +121,13 @@
           "sfc-ia"
         ],
         "register_entries": 36,
-        "scenario_rows": 70,
+        "scenario_rows": 5,
         "suites": [
-          "compliance",
-          "consistency",
-          "locale",
-          "objection",
-          "pitch"
+          "roleplay"
         ],
-        "yaml_files_under_scenarios": 112
+        "yaml_files_under_scenarios": 42
       },
-      "headline": "70 advisory scenario rows across 5 suites (compliance, consistency, locale, objection, pitch), 8 customer profiles and 36 cited register entries across 4 regimes — all loaded through validating loaders; 112 YAML files under scenarios/.",
+      "headline": "5 advisory scenario rows across 1 suites (roleplay), 6 customer profiles and 36 cited register entries across 4 regimes — all loaded through validating loaders; 42 YAML files under scenarios/.",
       "id": "golden-datasets-validated-corpus",
       "requirement": "Golden datasets: a validated corpus with closed vocabularies, so a typo is a load error and not a green row",
       "what_demonstrates_it": [
@@ -222,7 +220,7 @@
         },
         "retrieval": {
           "context_precision_gold_mean": 1.0,
-          "context_precision_judged_mean": 0.979,
+          "context_precision_judged_mean": 1.0,
           "recall_of_gold_pooled": {
             "denominator": 10,
             "numerator": 9,
@@ -277,93 +275,7 @@
       "requirement": "Voice: real synthesis and recognition, and the grade is computed on the transcript the recogniser produced",
       "what_demonstrates_it": [
         "roleplay/spoken.py — a whole advisory call synthesised by ElevenLabs and recognised by Deepgram, turn by turn, graded on what was heard",
-        "lab/voice/wer.py — raw and normalised word error rate, reported as two numbers because the raw figure against a synthesis reference is a trap",
-        "lab/voice/perturb.py + lab/voice/transport/ — offline perturbation, and a real WebRTC room measured at the far participant",
-        "fixtures/audio/clips/ — ten committed clips so the engine layer replays with no key and no network"
-      ]
-    },
-    {
-      "caveats": [
-        "Both ends of the room were in one process, so the gap is a floor and not a worst case.",
-        "Non-gating in CI by design: a network test that blocks a merge trains people to bypass it."
-      ],
-      "command": "make transport-report",
-      "figures": {
-        "delivery_gap": {
-          "agent_side_figure_ms": 0.0,
-          "mean_ms": 89.0,
-          "n": 12,
-          "net_of_send_queue_mean_ms": 86.0,
-          "other_sessions": [
-            {
-              "mean_ms": 128.3,
-              "n": 12,
-              "reportable": true,
-              "session": "delivery-gap-live-run"
-            },
-            {
-              "mean_ms": 137.6,
-              "n": 12,
-              "reportable": true,
-              "session": "delivery-gap-second-session"
-            }
-          ],
-          "p50": {
-            "label": "p50",
-            "min_n": 2,
-            "n": 12,
-            "reported": true,
-            "value_ms": 89.6
-          },
-          "p90": {
-            "label": "p90",
-            "min_n": 10,
-            "n": 12,
-            "reported": true,
-            "value_ms": 96.9
-          },
-          "p95": {
-            "label": "p95",
-            "min_n": 20,
-            "n": 12,
-            "reported": false,
-            "value_ms": null
-          },
-          "queue_correlation": 0.72
-        },
-        "rows": [
-          {
-            "category": "transport-degradation",
-            "id": "audio-transport-degradation",
-            "verdict": "PASS"
-          },
-          {
-            "category": "delivery-gap",
-            "id": "audio-transport-delivery-gap",
-            "verdict": "PASS"
-          },
-          {
-            "category": "connection-lifecycle",
-            "id": "audio-transport-lifecycle",
-            "verdict": "PASS"
-          }
-        ],
-        "tier_verdict": "PASS",
-        "timing_gate": {
-          "naive_whole_turn_control": "FAIL",
-          "tolerance": "|relative error| <= 5.0% and stdev <= 15.0 ms",
-          "verdict": "PASS"
-        }
-      },
-      "headline": "Delivery gap mean 89.0 ms over n=12 turns (p50 89.6 ms, p90 96.9 ms, p95 refused at n<20); an agent-side stopwatch reports 0.0 ms for the same turns.",
-      "id": "real-time-transport-latency",
-      "recomputed": true,
-      "requirement": "Real-time transport: latency measured at the far participant over a real WebRTC room, behind a calibrated stopwatch",
-      "what_demonstrates_it": [
-        "lab/voice/transport/ — three rows that only exist in transport: delivery gap, degradation, lifecycle",
-        "lab/voice/calibration.py — the timing gate; delivery_gap() refuses without a PASS",
-        "lab/voice/metrics.py — quantiles that refuse below their minimum sample count",
-        "fixtures/audio/transport/ — the recorded rooms every figure is recomputed from"
+        "lab/voice/wer.py — raw and normalised word error rate, reported as two numbers because the raw figure against a synthesis reference is a trap"
       ]
     },
     {

@@ -1,18 +1,20 @@
 {
   "findings": [
     {
-      "cohens_kappa": 0.241,
+      "cohens_kappa": 0.167,
       "confusion": {
-        "false_negative": 23,
-        "false_positive": 2,
-        "n": 70,
-        "true_negative": 36,
-        "true_positive": 9
+        "false_negative": 1,
+        "false_positive": 1,
+        "n": 5,
+        "true_negative": 2,
+        "true_positive": 1
       },
       "gate": {
         "cleared": false,
         "reasons": [
-          "TPR 0.281 (9/32) is below the required 0.85",
+          "calibrated on only 5 items, below the minimum of 10",
+          "TPR 0.500 (1/2) is below the required 0.85",
+          "TNR 0.667 (2/3) is below the required 0.85",
           "registry refused the judge in CI mode: JudgeBelowThresholdError"
         ]
       },
@@ -21,22 +23,22 @@
       "positive_class": "fail",
       "rates": {
         "precision": {
-          "denominator": 11,
-          "numerator": 9,
-          "text": "0.818 (9/11)",
-          "value": 0.818
+          "denominator": 2,
+          "numerator": 1,
+          "text": "0.500 (1/2)",
+          "value": 0.5
         },
         "recall_on_sessions_a_reviewer_would_fail": {
-          "denominator": 32,
-          "numerator": 9,
-          "text": "0.281 (9/32)",
-          "value": 0.281
+          "denominator": 2,
+          "numerator": 1,
+          "text": "0.500 (1/2)",
+          "value": 0.5
         },
         "specificity": {
-          "denominator": 38,
-          "numerator": 36,
-          "text": "0.947 (36/38)",
-          "value": 0.947
+          "denominator": 3,
+          "numerator": 2,
+          "text": "0.667 (2/3)",
+          "value": 0.667
         }
       },
       "reading": "The two rates point opposite ways, which is the finding: the instrument is not noisy, it is biased toward passing. It certifies roughly seven in ten of the sessions a competent reviewer would stop.",

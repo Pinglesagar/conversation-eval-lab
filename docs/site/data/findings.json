@@ -34,39 +34,41 @@
     {
       "command": "make roleplay-demo",
       "figures": {
-        "cohens_kappa": 0.241,
+        "cohens_kappa": 0.167,
         "confusion": {
-          "fn": 23,
-          "fp": 2,
-          "n": 70,
-          "tn": 36,
-          "tp": 9
+          "fn": 1,
+          "fp": 1,
+          "n": 5,
+          "tn": 2,
+          "tp": 1
         },
         "gate_cleared": false,
         "precision": {
-          "denominator": 11,
-          "numerator": 9,
-          "text": "0.818 (9/11)",
-          "value": 0.818
+          "denominator": 2,
+          "numerator": 1,
+          "text": "0.500 (1/2)",
+          "value": 0.5
         },
         "refusal_reasons": [
-          "TPR 0.281 (9/32) is below the required 0.85",
+          "calibrated on only 5 items, below the minimum of 10",
+          "TPR 0.500 (1/2) is below the required 0.85",
+          "TNR 0.667 (2/3) is below the required 0.85",
           "registry refused the judge in CI mode: JudgeBelowThresholdError"
         ],
         "true_negative_rate": {
-          "denominator": 38,
-          "numerator": 36,
-          "text": "0.947 (36/38)",
-          "value": 0.947
+          "denominator": 3,
+          "numerator": 2,
+          "text": "0.667 (2/3)",
+          "value": 0.667
         },
         "true_positive_rate": {
-          "denominator": 32,
-          "numerator": 9,
-          "text": "0.281 (9/32)",
-          "value": 0.281
+          "denominator": 2,
+          "numerator": 1,
+          "text": "0.500 (1/2)",
+          "value": 0.5
         }
       },
-      "headline": "The advisory scorer agrees with the reviewer on 36 of 38 passes and on 9 of 32 fails.",
+      "headline": "The advisory scorer agrees with the reviewer on 2 of 3 passes and on 1 of 2 fails.",
       "id": "grader-reluctant-to-fail",
       "recomputed": true
     },
@@ -236,63 +238,6 @@
       "id": "mcnemar-floor-on-twenty-four-items",
       "reading": "A v3 that fixed three items and broke none would be unpublishable at p = 0.25 however real the improvement.",
       "recomputed": true
-    },
-    {
-      "caveats": [
-        "Both ends of the room were in one process, so the gap is a floor and not a worst case.",
-        "Non-gating in CI by design: a network test that blocks a merge trains people to bypass it."
-      ],
-      "command": "make transport-report",
-      "figures": {
-        "agent_side_figure_ms": 0.0,
-        "mean_ms": 89.0,
-        "n": 12,
-        "net_of_send_queue_mean_ms": 86.0,
-        "other_sessions": [
-          {
-            "mean_ms": 128.3,
-            "n": 12,
-            "reportable": true,
-            "session": "delivery-gap-live-run"
-          },
-          {
-            "mean_ms": 137.6,
-            "n": 12,
-            "reportable": true,
-            "session": "delivery-gap-second-session"
-          }
-        ],
-        "p50": {
-          "label": "p50",
-          "min_n": 2,
-          "n": 12,
-          "reported": true,
-          "value_ms": 89.6
-        },
-        "p90": {
-          "label": "p90",
-          "min_n": 10,
-          "n": 12,
-          "reported": true,
-          "value_ms": 96.9
-        },
-        "p95": {
-          "label": "p95",
-          "min_n": 20,
-          "n": 12,
-          "reported": false,
-          "value_ms": null
-        },
-        "queue_correlation": 0.72
-      },
-      "headline": "Delivery gap mean 89.0 ms over n=12 turns (p50 89.6 ms, p90 96.9 ms, p95 refused at n<20); an agent-side stopwatch reports 0.0 ms for the same turns.",
-      "id": "delivery-gap",
-      "recomputed": true,
-      "timing_gate": {
-        "naive_whole_turn_control": "FAIL",
-        "tolerance": "|relative error| <= 5.0% and stdev <= 15.0 ms",
-        "verdict": "PASS"
-      }
     },
     {
       "caveat": "In-sample: the probes were written with these transcripts in view. The CLI says so on its second line.",

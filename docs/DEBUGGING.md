@@ -25,15 +25,15 @@ carries three deliberately seeded defects, so a healthy tree produces a great ma
 failing rows. `make roleplay-demo` prints both numbers side by side:
 
 ```
-  human verdicts: 38 pass, 32 fail (70 rows)
-  rows with a declared expected failure: 38
+  human verdicts: 3 pass, 2 fail (5 rows)
+  rows with a declared expected failure: 3
 ```
 
-38 of the 70 rows exist *in order to fail*. The build is red only when something
+3 of the 5 rows exist *in order to fail*. The build is red only when something
 fails that no row declared, and those lines are marked:
 
 ```
-  ! locale-eu-three-disclosures-in-one-turn: tools failed and no expected_failure declares it
+  ! 02-grader-claims-a-disclosure-that-never-happened: tools failed and no expected_failure declares it
 ```
 
 If you are staring at a page of failures and a green build, that is why, and it is
@@ -54,12 +54,12 @@ $ make roleplay-demo
   ! pitch-exemplary-eu-retail-run: tools failed and no expected_failure declares it
   ! compliance-guaranteed-return-caught: tools failed and no expected_failure declares it
   ! objection-aggressive-fee-challenge: tools failed and no expected_failure declares it
-  ! locale-eu-three-disclosures-in-one-turn: tools failed and no expected_failure declares it
-  ... 39 rows
+  ! 02-grader-claims-a-disclosure-that-never-happened: tools failed and no expected_failure declares it
+  ... every row that discharges a fee disclosure
 make: *** [roleplay-demo] Error 1
 ```
 
-**Thirty-nine rows, one contract.** That shape is the first piece of diagnosis: one
+**Several rows, one contract.** That shape is the first piece of diagnosis: one
 contract failing across many rows is one cause, not thirty-nine bugs. Two *different*
 contracts failing on the same rows would be one cause seen from two sides. Many
 contracts failing on many rows is usually the harness.
@@ -100,12 +100,12 @@ here by a one-line change you can make yourself in thirty seconds.
 
 ### Step 4 — narrow to one row
 
-`make roleplay-demo` runs all 70. To read the one row that is failing, open its YAML
+`make roleplay-demo` runs all five. To read the one row that is failing, open its YAML
 — the id is the filename:
 
 ```bash
 python -m roleplay.corpus --coverage --list      # every row, with its suite and tags
-cat scenarios/roleplay/locale/locale-eu-three-disclosures-in-one-turn.yaml
+cat scenarios/roleplay/02-grader-claims-a-disclosure-that-never-happened.yaml
 ```
 
 For an advisory row, `python -m roleplay.regime_eval --row <id>` prints that row

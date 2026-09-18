@@ -133,7 +133,6 @@ from roleplay.runtime import TOOL_NAMES
 
 __all__ = [
     "SUITES",
-    "SUITE_MINIMUMS",
     "TAG_VOCABULARY",
     "CONTRACT_NAMES",
     "ARG_OPS",
@@ -166,18 +165,13 @@ __all__ = [
 #: Suite = subdirectory = id prefix, exactly as in the booking corpus. One idea
 #: in three places on purpose: a scenario id from a result row locates its file
 #: with no lookup, and a file's suite is unambiguous.
-Suite = Literal["pitch", "compliance", "objection", "consistency", "locale"]
-SUITES: tuple[str, ...] = ("pitch", "compliance", "objection", "consistency", "locale")
+Suite = str
 
-#: Smallest shippable corpus per suite. Asserted by the tests rather than here, so
-#: a partial corpus is loadable while it is being written and simply not shippable.
-SUITE_MINIMUMS: dict[str, int] = {
-    "pitch": 18,
-    "compliance": 12,
-    "objection": 12,
-    "consistency": 2,
-    "locale": 18,
-}
+#: Empty means the corpus is FLAT: every `*.yaml` beside `customers/` is a row.
+#: The roleplay pack is five files in one directory, and a reader should be able
+#: to see all of them without opening a folder. A non-empty tuple restores the
+#: suite-directory layout, which is what the advisory pack still uses.
+SUITES: tuple[str, ...] = ()
 
 #: The tag vocabulary, each with the line that says what it means: documentation
 #: and validation in one object. The tests assert every tag here is exercised by
@@ -195,15 +189,12 @@ TAG_VOCABULARY: dict[str, str] = {
     "jurisdiction": "the required disclosure set is not the default market's",
     # --- customer behaviour
     "aggressive-customer": "objections are raised unprompted and repeated",
-    "monosyllabic-customer": "the customer volunteers nothing and answers in a word",
     "multilingual": "the session is not conducted in English",
     # --- what is being measured about the scorer
     "score-consistency": "the row exists to be run k times, not once",
     "feedback-groundedness": "the row exists to test what the feedback claims",
     "cohort-curve": "the row exercises the scorer's cross-session state",
     "control": "the row must stay green; it is the counterpart to a failing row",
-    "borderline": "sits deliberately next to the pass threshold",
-    "scorer-stress": "the row is built to catch a bad scorer, not a bad trainee",
     # --- how the disclosure register is being probed
     "market-parity": "one script run in more than one market, so a red names the market",
     "near-miss": "the wording is close to a registered phrasing and does not satisfy it",
@@ -867,15 +858,10 @@ class CorpusValidation:
             lines.append("  " + issue.render())
         if coverage:
             counts = self.corpus.suite_counts()
-            lines.append("  suites:")
-            for suite, seen in counts.items():
-                minimum = SUITE_MINIMUMS.get(suite)
-                flag = (
-                    f"  <- below the minimum of {minimum}"
-                    if minimum is not None and seen < minimum
-                    else ""
-                )
-                lines.append(f"    {suite}: {seen}{flag}")
+            if set(counts) != {"roleplay"}:
+                lines.append("  suites:")
+                for suite, seen in counts.items():
+                    lines.append(f"    {suite}: {seen}")
             unused = [tag for tag, n in self.corpus.tag_counts().items() if n == 0]
             lines.append(
                 f"  tags: {len(TAG_VOCABULARY) - len(unused)}/{len(TAG_VOCABULARY)} exercised"
@@ -904,6 +890,9 @@ def iter_scenario_paths(
     to forking it.
     """
     base = Path(root)
+    if not suites:
+        yield from sorted(base.glob("*.yaml"))
+        return
     for suite in suites:
         directory = base / suite
         if not directory.is_dir():
@@ -919,7 +908,7 @@ def load_scenario(path: str | Path, *, suites: Sequence[str] = SUITES) -> Scenar
     if not isinstance(data, dict):
         raise ValueError(f"expected a YAML mapping, got {type(data).__name__}")
     suite = resolved.parent.name
-    if suite not in suites:
+    if suites and suite not in suites:
         raise ValueError(f"{resolved} is not in a suite directory; legal: {list(suites)}")
     scenario = Scenario(**data, suite=suite, source=str(resolved))
     if scenario.id != resolved.stem:
@@ -927,7 +916,7 @@ def load_scenario(path: str | Path, *, suites: Sequence[str] = SUITES) -> Scenar
             f"id {scenario.id!r} does not match the filename {resolved.stem!r}; a result "
             "row must locate its file without a lookup"
         )
-    if not scenario.id.startswith(f"{suite}-"):
+    if suites and not scenario.id.startswith(f"{suite}-"):
         raise ValueError(f"id {scenario.id!r} must start with its suite prefix {suite!r}-")
     return scenario
 

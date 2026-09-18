@@ -14,7 +14,7 @@ git clone https://github.com/Pinglesagar/conversation-eval-lab.git
 cd conversation-eval-lab
 python3.12 -m venv .venv && .venv/bin/python -m pip install -e ".[dev]"
 make start          # the finding, recomputed offline
-make test           # 1,505 pass, 4 skip
+make test           # 1,343 pass
 ```
 
 Python 3.12 or newer. `make install` refuses an older interpreter with the fix
@@ -27,7 +27,7 @@ rather than a stack trace. If you use [uv](https://docs.astral.sh/uv/):
 python3.12 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 
-pytest                 # 1,505 offline tests, 18 s, no keys
+pytest                 # 1,343 offline tests, 11 s, no keys
 make start             # one finding, printed in a screen
 ```
 
@@ -208,12 +208,11 @@ Install is above. Past that, `make help` groups every target; these are the ones
 that produce evidence, and each finishes in about a second:
 
 ```bash
-make roleplay-demo          # all 70 behavioural rows, contracts and consistency
+make roleplay-demo          # all 5 rows, contracts, consistency, calibration
 make cited-calls            # both recorded calls, shipped rubric vs cited scorecard
 make spoken-replay          # the same call through the recorded speech
 make ragcheck               # retrieval, groundedness, and the judge's own error rate
 make advisory-verdicts      # the 18 advisory rows, decided from the registers
-make transport-report       # the WebRTC tier, recomputed from its recordings
 ```
 
 No keys, no network at test time, no fixture generation step. `[charts]` adds
@@ -323,9 +322,9 @@ object is worse than no name at all.
 
 | The name you may be looking for | What it is here | What it is **not** |
 | --- | --- | --- |
-| **guardrails** | `lab/checks/` — `ToolContract(forbidden=…)` and `PhraseContract(forbidden=…)` declared as scenario data. 41 of 70 rows forbid a tool, 21 forbid a phrase, 49 do at least one | a runtime enforcement layer, a content-safety or PII classifier. These are assertions over a recorded trace, offline, after the fact |
+| **guardrails** | `lab/checks/` — `ToolContract(forbidden=…)` and `PhraseContract(forbidden=…)` declared as scenario data. 4 of the 5 rows forbid a tool, 2 forbid a phrase, 4 do at least one | a runtime enforcement layer, a content-safety or PII classifier. These are assertions over a recorded trace, offline, after the fact |
 | **red-teaming, prompt injection** | `scenarios/roleplay/` — rows where the customer tries to pull the adviser across the licensing boundary, and the seeded blocklist that catches only two phrasings of it. See `roleplay/SEEDED_DEFECTS.md` | a generated attack suite, a fuzzer, or an attack-success rate. A hand-written corpus is a corpus, not coverage |
-| **golden datasets** | `make roleplay-validate` over the committed YAML — 70 advisory rows, 8 customer profiles, 36 cited register entries, plus four hand-labelled sets. The loader **fails the load on an assertion that could never fire** | an annotation UI, a multi-rater workflow, or agreement between two humans. Every label here is one person, one pass |
+| **golden datasets** | `make roleplay-validate` over the committed YAML — 5 behavioural rows, their customer profiles, 36 cited register entries, plus the hand-labelled sets. The loader **fails the load on an assertion that could never fire** | an annotation UI, a multi-rater workflow, or agreement between two humans. Every label here is one person, one pass |
 | **regression testing, drift detection** | a committed baseline diffed in both directions — a finding that *vanishes* fails the build too — and CI diffing `fixtures/` and `lab/judges/` byte for byte | production drift monitoring. Nothing samples live traffic, tracks a metric over time or alerts |
 | **observability** | `lab/trace/` as the schema and `lab/report/interop.py` as the export: langfuse round-trips exactly, promptfoo is a one-way projection, neither is a dependency | a collector, an agent, a hosted backend or a dashboard. This exports *to* an observability tool |
 | **LLM-as-judge, position bias** | `lab/judges/` — TPR/TNR/kappa against hand labels, every disagreement listed, and a registry that raises below threshold. Single-item binary grading against a fixed rubric has no position for a bias to attach to | a mitigation applied afterwards; it is a property of this shape of judge, and a pairwise judge would need the usual remedy |
@@ -578,10 +577,10 @@ roleplay/               the BFSI advisory pack, where the scorer is under test
 ragcheck/               a second KIND of evaluation, not a third domain: retrieval
                         + groundedness. Imports lab.judges, lab.trace, lab.clock
                         and nothing else — that import list is the boundary
-scenarios/              112 files of validated YAML
-  roleplay/             70 behavioural rows across five suites, 8 customer profiles
+scenarios/
+  roleplay/             FIVE rows, flat, numbered. Each isolates one mechanism.
+                        Plus the customer profiles they are played against.
   advisory/             the cited regulatory corpus and the four regulator registers
-  audio/transport/      the three WebRTC instrument-audit rows
 fixtures/               the recordings: two spoken calls, the WebRTC rooms, the
                         calibration report. This folder is why nothing needs a key
 docs/                   trace schema, CLI reference, how to add a scenario
@@ -616,24 +615,21 @@ Published rather than declined, because a repository arguing that instruments
 must be measured before they are trusted cannot be silent about the most
 conspicuous measurement of its own tests. Reproduce with `make coverage`.
 
-Measured at commit `03dfbe7` over 1,505 offline tests, branch mode, every package:
+Measured at commit `e57ab39` over 1,343 offline tests, branch mode, every package:
 
-| denominator | coverage.py reports | statements never executed | branches taken one way only |
-| --- | --- | --- | --- |
-| whole tree | **78%** | 3,183 of 15,460 | 516 of 4,276 |
-| omitting the five recording scripts that need vendor keys or spend | **79%** | 2,918 of 15,195 | 516 of 4,220 |
+| denominator | coverage.py reports | statements never executed |
+| --- | --- | --- |
+| whole tree | **79%** | 2,463 of 12,754 |
+| omitting the recording scripts that need vendor keys | **80%** | 2,266 of 12,557 |
 
-Per package, statements missed of statements total: `ragcheck` **89%**
-(109/999), `roleplay` **86%** (689/5,086), `lab` **83%** (1,401/8,391),
-`scripts` **0%** (974/974).
+Per package: `ragcheck` **89%** (109/999), `lab` **86%** (898/6,801), `roleplay`
+**86%** (566/4,064), `scripts` **0%** (889/889).
 
-**What it excludes.** Nothing is omitted from the headline figure. Twelve modules
-sit at 0%: five generation and recording scripts (974 statements) that either need
-vendor keys or rebuild committed artefacts, so no offline run reaches them; three
-`__main__` entry points; and four modules reached only by a live path. One is worth
-naming rather than burying — **`ragcheck/__main__.py` is what `make ragcheck` runs,
-and no test executes it.** A documented entry point that no test covers is a real
-gap, listed here rather than left for a reviewer to find.
+**What it excludes.** Nothing is omitted from the headline figure. The generation
+and recording scripts sit at 0% because they either need vendor keys or rebuild
+committed artefacts, so no offline run reaches them. `ragcheck/__main__.py` is what
+`make ragcheck` runs and no test executes it — a real gap, listed here rather than
+left for a reviewer to find.
 
 **What it does not tell you, which is most of what you want to know.** Coverage
 says a line ran. It says nothing about whether an assertion would have noticed
@@ -655,8 +651,11 @@ the thing this repository spends its length arguing against.
 
 Read this section as part of every number above.
 
-- **The corpus is synthetic, and it is written by the person it tests.** 70
-  behavioural rows written by one person against a system built by the same person.
+- **The corpus is five rows, synthetic, written by the person it tests.** It was
+  seventy and was cut on purpose: seventy rows is the better coverage argument and
+  the worse explanation, and this pack exists to be read. Five rows cannot support
+  a rate, and nothing here quotes one from them. What they support is one worked
+  instance of each mechanism, which is what they are for.
   The scripted run drives one phrasing per row, which under-samples the way people
   actually talk — exactly how findings 4 and 5 stayed invisible until somebody read
   a transcript and poked the parser by hand. A defect nobody thought to write a row
@@ -703,7 +702,7 @@ Read this section as part of every number above.
   0.81 (95% Wilson lower bounds), and the sessions the judge graded in the live
   run are not the sessions it was calibrated on.
 - **Every hand label is one person, one pass, no second rater.** The 18 RAG claim
-  labels, the 24 judge items and the 70 corpus verdicts were all written by the
+  labels, the 24 judge items and the 5 corpus verdicts were all written by the
   same person who wrote the system they grade. Agreement between two independent
   raters is the measurement that is missing, and nothing here substitutes for it.
 - **The spoken calls are two calls.** `roleplay/spoken.py` drives a whole advisory

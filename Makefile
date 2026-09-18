@@ -21,7 +21,7 @@ PY_OK := $(shell $(PYTHON) -c 'import sys; print(1 if sys.version_info[:2] >= (3
 PY_HAVE := $(shell $(PYTHON) -c 'import sys; print("%d.%d" % sys.version_info[:2])' 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help start python-ok install gate test coverage demo calibrate report validate replay errors reference live-replay live-score live-record audio-fixtures audio-check audio-suite audio-suite-plan audio-suite-record audio-suite-evidence audio-setup transport-report transport-record roleplay-demo roleplay-validate advisory-verdicts spoken-replay spoken-record ragcheck clean
+.PHONY: help start python-ok install gate test coverage demo calibrate report validate replay reference live-replay live-score live-record audio-fixtures audio-check-plan-record-evidence audio-setup roleplay-demo roleplay-validate advisory-verdicts spoken-replay spoken-record ragcheck clean
 
 # The on-ramp, and the first thing anybody should type. One finding, recomputed
 # on this machine from the committed spoken call, printed in a screen, plus what
@@ -125,7 +125,6 @@ gate: python-ok  ## every: Every offline check, cheapest first, stops at red.
 	$(PYTHON) -m roleplay.demo
 	$(PYTHON) -m roleplay.regime_eval --divergence --shadow
 	$(PYTHON) -m ragcheck
-	$(PYTHON) -m lab.voice.transport.report --out reports/transport_report.md
 	@echo "== 6/6  the offline suite =="
 	$(PYTHON) -m pytest -q
 
@@ -134,7 +133,7 @@ coverage: python-ok  ## every: Coverage, twice: whole tree, then offline-executa
 	@echo
 	@echo "== omitting the five key-requiring recording scripts =="
 	@$(PYTHON) -m coverage report \
-	  --omit="scripts/make_audio_fixtures.py,scripts/make_cloud_fixtures.py,scripts/make_transport_fixtures.py" \
+	  --omit="scripts/make_audio_fixtures.py,scripts/make_cloud_fixtures.py" \
 	  | grep TOTAL
 
 calibrate: python-ok  ## every: The timing and judge calibration gates.
@@ -156,47 +155,12 @@ audio-fixtures: python-ok  ## record: local TTS  Re-record fixtures/audio. No ke
 # Re-recording spends money and needs LAB_LIVE_AGENT / LAB_LIVE_CALLER /
 # LAB_LIVE_JUDGE plus a provider key. It draws new samples, so it produces a
 # *different* report — review the diff as a new measurement, not as a regression.
-# The WebRTC transport tier. Three rows, because three things only exist in
-# transport; everything else in this harness runs in process.
-#
-# `transport-report` is offline and needs no key: it recomputes every figure from
-# the committed recordings, which is the whole point of the split between
-# recording a live session and measuring one. `transport-record` opens real rooms
-# and is the only way to produce new recordings — it needs LAB_LIVE_TRANSPORT, the
-# three LiveKit variables and `pip install -e ".[transport]"`. It spends no
-# synthesis characters at all: the tier publishes a clip this repository already
-# committed.
-#
-# Neither target gates a build. A network test that blocks a merge trains people
-# to bypass the gate, so the tier reports and the offline suite gates.
-transport-report: python-ok  ## evidence: Recompute the WebRTC tier from its recordings.
-	$(PYTHON) -m lab.voice.transport.report --out reports/transport_report.md
 
-transport-record: python-ok  ## record: MONEY+KEY  Record live rooms. Needs the LiveKit vars.
-	$(PYTHON) -m scripts.make_transport_fixtures
-	@git --no-pager diff --stat -- fixtures/audio/transport
-
-# The roleplay pack is a second domain on the same framework: a BFSI sales-coach
-# whose scorer is the system under test. It shares `lab/` and nothing else, which
-# is the point of it, so it gets its own entry points rather than being folded
-# into `demo` — a target that ran both would make it impossible to tell which
-# domain a failure came from.
-#
-# `roleplay-demo` prints red findings and exits zero. Those are two different
-# verdicts: the product under test has three real defects and the run reports all
-# of them, while the exit code says only whether anything moved since the last
-# review. See docs/ADVISORY_DEMO.md.
 ragcheck: python-ok  ## evidence: Retrieval + groundedness, scored and never averaged.
 	$(PYTHON) -m ragcheck
 
 roleplay-demo: python-ok  ## evidence: The advisory pack: contracts, consistency, calibration.
 	$(PYTHON) -m roleplay.demo
-
-scenarios-excel: python-ok  ## corpus: Export the advisory scenarios to a workbook for a domain expert to edit.
-	$(PYTHON) -m roleplay.excel_corpus export roleplay_scenarios.xlsx
-
-scenarios-excel-check: python-ok  ## corpus: Validate an edited workbook without writing anything.
-	$(PYTHON) -m roleplay.excel_corpus check roleplay_scenarios.xlsx
 
 roleplay-validate: python-ok  ## evidence: Validate the roleplay corpus, with coverage.
 	$(PYTHON) -m roleplay.corpus --coverage --list

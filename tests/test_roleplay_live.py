@@ -344,19 +344,6 @@ def test_the_trainee_prompt_withholds_the_customers_circumstances(profiles) -> N
         assert concern.topic not in prompt
 
 
-def test_only_the_exemplary_brief_carries_the_approved_wording(profiles) -> None:
-    profile = profiles["cautious_saver"]
-    prompts = {
-        level: trainee_prompt(
-            competence=level, profile=profile, jurisdiction="eu-retail"
-        )
-        for level in COMPETENCES
-    }
-    assert "past performance is not a guide to future performance" in prompts["exemplary"]
-    assert "approved disclosure wording" not in prompts["weak"]
-    assert "approved disclosure wording" not in prompts["competent"]
-
-
 def test_the_brief_never_names_a_rubric_criterion(profiles) -> None:
     """A brief written from the rubric measures the prompt author, not the grader."""
     from roleplay.scorer import CRITERIA

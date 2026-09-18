@@ -116,36 +116,12 @@ def test_measure_consistency_refuses_a_single_run(corpus: Corpus) -> None:  # no
         )
 
 
-def test_the_walking_row_matches_its_declared_numbers(consistency_reports) -> None:
-    report = consistency_reports["consistency-identical-transcript-warm-k5"]
-    assert report.warm_spread.scores == (16, 15, 14, 13, 12)
-    assert report.warm_spread.spread == 4
-    assert report.warm_spread.verdict_flips == 1
-    assert report.warm_stability.verdict == "FLAKY"
-    assert report.warm_stability.passes == 3
-
-
-def test_the_oscillating_row_matches_its_declared_numbers(consistency_reports) -> None:
-    report = consistency_reports["consistency-borderline-transcript-warm-k5"]
-    assert report.warm_spread.scores == (14, 13, 14, 13, 14)
-    assert report.warm_spread.spread == 1
-    assert report.warm_spread.verdict_flips == 4
-    assert report.warm_stability.verdict == "FLAKY"
-
-
 def test_the_cold_control_arm_is_flat_on_every_row(consistency_reports) -> None:
     """Without this the finding is 'scores move', which localises nothing."""
     for scenario_id, report in consistency_reports.items():
         assert report.cold_spread.spread == 0, scenario_id
         assert report.cold_stability.verdict == "STABLE_PASS", scenario_id
         assert report.localises_to_shared_state, scenario_id
-
-
-def test_the_render_names_the_localisation(consistency_reports) -> None:
-    rendered = consistency_reports["consistency-identical-transcript-warm-k5"].render()
-    assert "warm (one long-lived scorer" in rendered
-    assert "cold (a fresh scorer per repeat" in rendered
-    assert "state the scoring service holds between sessions" in rendered
 
 
 def test_every_consistency_row_meets_its_declared_floors(
@@ -226,43 +202,22 @@ def test_the_judge_is_stamped_with_the_rubric_it_measured(calibration) -> None:
 def test_the_measured_rates(calibration) -> None:
     """Pinned. A change in the scorer's agreement should be a diff to review.
 
-    These are rates on a targeted probe set, not field rates: the corpus was
-    written to make this product's weakest paths reachable, so adding
-    jurisdiction rows would move the TPR without anything about the scorer
-    changing. `roleplay.corpus` states that at length, and it has to be repeated
-    anywhere the number is quoted.
+    These are rates on a targeted probe set of FIVE rows, not field rates. At n=5
+    the confidence interval is enormous and the registry refuses the scorer on the
+    sample size alone, before it even reaches the rates — which is the correct
+    outcome and worth showing rather than hiding. The corpus was cut to five to be
+    explainable, and the honest cost of that is exactly this: you cannot calibrate
+    a grader on five items, and the gate says so.
     """
     report, _, _ = calibration
-    assert report.n == 70
+    assert report.n == 5
     confusion = report.confusion
-    assert (confusion.true_positive, confusion.false_positive) == (9, 2)
-    assert (confusion.false_negative, confusion.true_negative) == (23, 36)
-    assert report.true_positive_rate.value == pytest.approx(9 / 32, abs=0.001)
-    assert report.true_negative_rate.value == pytest.approx(36 / 38, abs=0.001)
-    assert report.cohens_kappa == pytest.approx(0.241, abs=0.002)
+    assert (confusion.true_positive, confusion.false_positive) == (1, 1)
+    assert (confusion.false_negative, confusion.true_negative) == (1, 2)
+    assert report.true_positive_rate.value == pytest.approx(1 / 2, abs=0.001)
+    assert report.true_negative_rate.value == pytest.approx(2 / 3, abs=0.001)
+    assert report.cohens_kappa == pytest.approx(0.167, abs=0.002)
     assert report.parse_errors == 0
-
-
-def test_the_composition_of_the_errors(calibration) -> None:
-    """The composition of the errors is the finding, not the rate.
-
-    Every missed defect is a compliance miss - a disclosure the register does not
-    hold, or a personal recommendation the session's own flagger caught - and the
-    two false alarms are both compliant Spanish sessions. Two suites, two
-    mechanisms, and the two directions do not cancel: the English rows are
-    over-credited by the same keyword list that under-credits the Spanish ones,
-    which is why the fix is to read the register rather than to extend the list.
-    """
-    report, _, _ = calibration
-    misses = [d.item_id for d in report.disagreements if d.kind == "false_negative"]
-    assert len(misses) == 23
-    by_suite = Counter(m.split("-")[0] for m in misses)
-    assert by_suite == {"locale": 12, "compliance": 9, "objection": 1, "pitch": 1}
-    alarms = sorted(d.item_id for d in report.disagreements if d.kind == "false_positive")
-    assert alarms == [
-        "locale-es-apac-suitability-in-spanish",
-        "locale-es-mx-registered-spanish-disclosure",
-    ]
 
 
 def test_the_gate_refuses_the_scorer(calibration) -> None:
@@ -292,7 +247,9 @@ def test_a_lenient_threshold_would_admit_it(calibration) -> None:
     write down and defend.
     """
     report, _, _ = calibration
-    ok, failures = report.meets(CalibrationThresholds(min_tpr=0.25, min_tnr=0.90))
+    ok, failures = report.meets(
+        CalibrationThresholds(min_tpr=0.25, min_tnr=0.60, min_items=5)
+    )
     assert ok and not failures
 
 
@@ -348,7 +305,7 @@ def test_the_demo_runs_clean_with_red_findings(capsys) -> None:
     outcome = run_demo()
     assert outcome.ok, "\n".join(outcome.surprises)
     assert not outcome.gate_cleared
-    assert len(outcome.results) == 70
+    assert len(outcome.results) == 5
 
     printed = capsys.readouterr().out
     assert "regression gate: PASS" in printed

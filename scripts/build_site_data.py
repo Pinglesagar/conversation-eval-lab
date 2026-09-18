@@ -1121,10 +1121,6 @@ def _finding_judge_gate() -> dict[str, Any]:
     }
 
 
-
-
-
-
 def build_secondary() -> dict[str, Any]:
     return {
         "note": (
@@ -1256,13 +1252,6 @@ def _rag() -> dict[str, Any]:
     }
 
 
-@functools.lru_cache(maxsize=None)
-def _transport() -> Any:
-    from lab.voice.transport.report import build_report
-
-    return _quiet(build_report)
-
-
 def _run_cli(*args: str) -> tuple[dict[str, Any], int]:
     """Run `evallab run ...` in process into a scratch directory; return its report.
 
@@ -1295,8 +1284,6 @@ def _declared_split(failures: Sequence[dict[str, Any]]) -> dict[str, int]:
 
 
 @functools.lru_cache(maxsize=None)
-
-
 
 
 @functools.lru_cache(maxsize=None)
@@ -1360,10 +1347,6 @@ def _regime() -> dict[str, Any]:
         "whole_register_agreement": register_agree,
         "divergence_rows": divergence_rows,
     }
-
-
-
-
 
 
 @functools.lru_cache(maxsize=None)
@@ -1520,8 +1503,6 @@ def _cov_llm_judge() -> dict[str, Any]:
     }
 
 
-
-
 def _cov_golden_datasets() -> dict[str, Any]:
     """The corpus row of the coverage table, counted from the corpus itself."""
     from roleplay.corpus import load_corpus as load_roleplay  # noqa: PLC0415
@@ -1566,7 +1547,6 @@ def _cov_golden_datasets() -> dict[str, Any]:
             "repository no longer carries one.",
         ],
     }
-
 
 
 def _cov_prompt_regression() -> dict[str, Any]:
@@ -1672,10 +1652,6 @@ def _cov_voice(result: Any, manifest: dict) -> dict[str, Any]:
             "recognised by Deepgram, turn by turn, graded on what was heard",
             "lab/voice/wer.py — raw and normalised word error rate, reported as two "
             "numbers because the raw figure against a synthesis reference is a trap",
-            "lab/voice/perturb.py + lab/voice/transport/ — offline perturbation, and a "
-            "real WebRTC room measured at the far participant",
-            "fixtures/audio/clips/ — ten committed clips so the engine layer replays "
-            "with no key and no network",
         ],
         "command": "make spoken-replay",
         "headline": (
@@ -1696,74 +1672,6 @@ def _cov_voice(result: Any, manifest: dict) -> dict[str, Any]:
             "each disclosure miss is entangled with that setting.",
         ],
     }
-
-
-
-def _cov_transport() -> dict[str, Any]:
-    t = _transport()
-    row = next(r for r in t.rows if r.delivery is not None)
-    d = row.delivery
-    dist = d.distribution
-
-    def quantile(q: float) -> dict[str, Any]:
-        qu = dist.quantile(q)
-        return {
-            "label": qu.label,
-            "value_ms": _round(qu.value_s * 1000.0, 1) if qu.value_s is not None else None,
-            "reported": qu.reported,
-            "n": qu.n,
-            "min_n": qu.min_n,
-        }
-
-    return {
-        "id": "real-time-transport-latency",
-        "requirement": "Real-time transport: latency measured at the far participant over a real WebRTC room, behind a calibrated stopwatch",
-        "what_demonstrates_it": [
-            "lab/voice/transport/ — three rows that only exist in transport: delivery gap, degradation, lifecycle",
-            "lab/voice/calibration.py — the timing gate; delivery_gap() refuses without a PASS",
-            "lab/voice/metrics.py — quantiles that refuse below their minimum sample count",
-            "fixtures/audio/transport/ — the recorded rooms every figure is recomputed from",
-        ],
-        "command": "make transport-report",
-        "headline": (
-            f"Delivery gap mean {_round(d.mean_ms, 1)} ms over n={dist.n} turns "
-            f"(p50 {quantile(0.5)['value_ms']} ms, p90 {quantile(0.9)['value_ms']} ms, p95 refused at n<{quantile(0.95)['min_n']}); "
-            f"an agent-side stopwatch reports {_round(d.agent_side_figure_s * 1000.0, 1)} ms for the same turns."
-        ),
-        "figures": {
-            "timing_gate": {
-                "verdict": t.calibration.verdict,
-                "naive_whole_turn_control": t.calibration.control_verdict,
-                "tolerance": t.calibration.tolerance.describe(),
-            },
-            "delivery_gap": {
-                "n": dist.n,
-                "mean_ms": _round(d.mean_ms, 1),
-                "net_of_send_queue_mean_ms": _round(d.net_mean_ms, 1),
-                "queue_correlation": _round(d.queue_correlation, 2),
-                "p50": quantile(0.5),
-                "p90": quantile(0.9),
-                "p95": quantile(0.95),
-                "agent_side_figure_ms": _round(d.agent_side_figure_s * 1000.0, 1),
-                "other_sessions": [
-                    {"session": name, "reportable": m.reportable, "mean_ms": _round(m.mean_ms, 1), "n": m.distribution.n if m.distribution else 0}
-                    for name, m in row.other_sessions
-                ],
-            },
-            "rows": [
-                {"id": r.row.id, "category": r.outcome.category, "verdict": r.outcome.verdict}
-                for r in t.rows
-            ],
-            "tier_verdict": t.verdict,
-        },
-        "recomputed": True,
-        "caveats": [
-            "Both ends of the room were in one process, so the gap is a floor and not a worst case.",
-            "Non-gating in CI by design: a network test that blocks a merge trains people to bypass it.",
-        ],
-    }
-
-
 
 
 def _cov_release_quality() -> dict[str, Any]:
@@ -1790,7 +1698,6 @@ def _cov_release_quality() -> dict[str, Any]:
             "have degenerated to 'run everything' with no basis for its miss rate.",
         ],
     }
-
 
 
 def _cov_observability() -> dict[str, Any]:
@@ -1839,8 +1746,6 @@ def _cov_observability() -> dict[str, Any]:
     }
 
 
-
-
 def build_coverage(result: Any, manifest: dict) -> dict[str, Any]:
     return {
         "about": (
@@ -1856,7 +1761,6 @@ def build_coverage(result: Any, manifest: dict) -> dict[str, Any]:
             _cov_prompt_regression(),
             _cov_rag(),
             _cov_voice(result, manifest),
-            _cov_transport(),
             _cov_release_quality(),
             _cov_observability(),
         ],
@@ -2069,28 +1973,6 @@ def _fd_mcnemar() -> dict[str, Any]:
     }
 
 
-
-
-
-
-def _fd_delivery_gap() -> dict[str, Any]:
-    cov = _cov_transport()
-    d = cov["figures"]["delivery_gap"]
-    return {
-        "id": "delivery-gap",
-        "headline": cov["headline"],
-        "figures": d,
-        "timing_gate": cov["figures"]["timing_gate"],
-        "command": "make transport-report",
-        "recomputed": True,
-        "caveats": cov["caveats"],
-    }
-
-
-
-
-
-
 def _fd_regime() -> dict[str, Any]:
     r = _regime()
     return {
@@ -2114,9 +1996,6 @@ def _fd_regime() -> dict[str, Any]:
         "recomputed": True,
         "caveat": "In-sample: the probes were written with these transcripts in view. The CLI says so on its second line.",
     }
-
-
-
 
 
 def build_architecture() -> dict[str, Any]:
@@ -2336,7 +2215,6 @@ def build_findings(result: Any, manifest: dict) -> dict[str, Any]:
             _fd_identical_matrix(),
             _fd_wilson(),
             _fd_mcnemar(),
-            _fd_delivery_gap(),
             _fd_regime(),
         ],
     }
@@ -2348,8 +2226,6 @@ def build_findings(result: Any, manifest: dict) -> dict[str, Any]:
 def _first_line(obj: Any) -> str:
     doc = inspect.getdoc(obj) or ""
     return doc.splitlines()[0] if doc else ""
-
-
 
 
 # ----------------------------------------------------------------- adapter.json
@@ -2393,8 +2269,6 @@ def _documented_command(path: Path) -> str | None:
         elif block:
             break
     return " ".join(block) if block else None
-
-
 
 
 # --------------------------------------------------------------------------- #

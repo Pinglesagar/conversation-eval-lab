@@ -28,6 +28,13 @@ rounded.
 
 > ## Read this note first
 >
+> **Status, 18 September 2026 — the corpus was cut after this was written.**
+> The roleplay pack is now FIVE rows, flat, in `scenarios/roleplay/`. Every
+> count of seventy, every suite name (pitch, compliance, objection, consistency,
+> locale) and every per-suite figure in this file is historical. `make
+> roleplay-demo` prints the current numbers in one second, and
+> [adding_a_scenario.md](adding_a_scenario.md) describes the layout that exists.
+>
 > **Status, 18 September 2026.** This wiki was written while the repository carried a
 > second system under test — an unrelated conversational product — and several tiers
 > that have since been removed: the blast-radius test selector, the audio-suite runner

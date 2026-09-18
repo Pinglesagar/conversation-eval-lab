@@ -32,29 +32,11 @@ __all__ = ["ALIASES", "corpus", "profiles", "coach", "script"]
 #: that had to grow with every row would make adding a row a two-file change and
 #: would say nothing about the row that was added.
 ALIASES: dict[str, str] = {
-    "exemplary": "pitch-exemplary-eu-retail-run",
-    "terse": "pitch-terse-customer-patient-probing",
-    "featuredump": "pitch-feature-dump-no-discovery",
-    "cold": "pitch-cold-scorer-single-run-control",
-    "missing": "compliance-missing-risk-disclosure",
-    "advice": "compliance-explicit-unlicensed-advice",
-    "reassurance": "compliance-no-real-risk-reassurance",
-    "guaranteed": "compliance-guaranteed-return-caught",
-    "aggressive": "objection-aggressive-fee-challenge",
-    "unanswered": "objection-lock-in-left-unanswered",
-    "praise": "objection-praise-for-unasked-question",
-    "consistency": "consistency-identical-transcript-warm-k5",
-    "borderline": "consistency-borderline-transcript-warm-k5",
-    "apac": "locale-apac-suitability-disclosure",
-    "spanish": "locale-es-mx-registered-spanish-disclosure",
-    # --- the multi-market rows: one script, three registers
-    "parity_eu": "locale-parity-baseline-in-eu-market",
-    "parity_apac": "locale-parity-baseline-in-apac-market",
-    "parity_amer": "locale-parity-baseline-in-amer-market",
-    # --- the pair that must score the same, and the row on the threshold
-    "pair_a": "pitch-paraphrase-pair-first-wording",
-    "pair_b": "pitch-paraphrase-pair-second-wording",
-    "threshold": "pitch-borderline-fourteen-exactly",
+    "exemplary": "01-control-a-good-session",
+    "missing": "02-grader-claims-a-disclosure-that-never-happened",
+    "consistency": "03-same-transcript-different-score",
+    "featuredump": "04-feedback-cites-what-never-happened",
+    "spanish": "05-spanish-disclosure-not-credited",
 }
 
 
