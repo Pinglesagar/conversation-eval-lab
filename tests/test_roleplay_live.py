@@ -24,14 +24,13 @@ from pathlib import Path
 import pytest
 
 from lab.trace.schema import EventKind
-
 from roleplay.live import (
     CASSETTE_ROOT,
     COMPETENCES,
-    ContentFilterError,
     LIVE_CUSTOMER_ENV_VAR,
     LIVE_MATRIX,
     LIVE_TRAINEE_ENV_VAR,
+    ContentFilterError,
     LiveCustomerVoice,
     LiveRow,
     LiveTrainee,
@@ -51,9 +50,7 @@ from roleplay.persona import SUSPICIOUS_AT, CustomerPersona
 from roleplay.register import compare_with_keyword_check, keyword_shadow_codes
 from roleplay.runtime import TOOL_NAMES, RoleplayCoach, ScriptedTrainee, ScriptedVoice
 from roleplay.scorer import CUSTOMER_AGENT, RubricScorer
-
 from tests.roleplay_fixtures import corpus, profiles, script  # noqa: F401
-
 
 # --------------------------------------------------------------------------- #
 # Fixtures: no keys, no switches, no network

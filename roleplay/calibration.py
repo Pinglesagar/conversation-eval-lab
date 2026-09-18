@@ -48,8 +48,8 @@ fail, and the disagreement list says which ones and why.
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 from lab.judges.calibration import (
     CalibrationReport,
@@ -60,7 +60,6 @@ from lab.judges.calibration import (
 from lab.judges.judge import Judge, JudgeRequest, PromptTemplate
 from lab.judges.registry import JudgeRegistry
 from lab.trace.schema import Trace
-
 from roleplay.corpus import Corpus, load_corpus
 from roleplay.runtime import RoleplayCoach
 from roleplay.scorer import RubricScorer

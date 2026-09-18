@@ -40,7 +40,6 @@ from lab.clock import FakeClock
 from lab.trace.build import TraceBuilder
 from lab.trace.schema import Trace
 
-
 # --------------------------------------------------------------------------- #
 # Trace-building helpers
 # --------------------------------------------------------------------------- #

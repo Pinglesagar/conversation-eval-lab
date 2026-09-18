@@ -49,8 +49,9 @@ no third-party dependency at all and can be printed as a table by
 
 from __future__ import annotations
 
+from collections.abc import Callable, Iterable, Sequence
 from pathlib import Path
-from typing import Callable, Iterable, Literal, Sequence
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 

@@ -23,7 +23,6 @@ import pytest
 
 from lab.judges.calibration import CalibrationThresholds
 from lab.judges.registry import JudgeBelowThresholdError
-
 from ragcheck.report import evaluate
 
 REPORT = evaluate()

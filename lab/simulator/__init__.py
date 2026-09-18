@@ -25,16 +25,6 @@ The one hard rule across all three: no result is reported that cannot be
 recomputed from the trace on disk.
 """
 
-from lab.simulator.persona import (
-    CALLER_RULES,
-    END_OF_CALL,
-    RELUCTANT_BELOW,
-    VOLUNTEERS_AT_OR_ABOVE,
-    CallerProfile,
-    Goal,
-    Persona,
-    Verbosity,
-)
 from lab.simulator.passk import (
     PassKPolicy,
     RunOutcome,
@@ -46,6 +36,16 @@ from lab.simulator.passk import (
     run_pass_k,
     summarise_stability,
     verdict_from_outcomes,
+)
+from lab.simulator.persona import (
+    CALLER_RULES,
+    END_OF_CALL,
+    RELUCTANT_BELOW,
+    VOLUNTEERS_AT_OR_ABOVE,
+    CallerProfile,
+    Goal,
+    Persona,
+    Verbosity,
 )
 
 __all__ = [

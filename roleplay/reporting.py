@@ -59,7 +59,7 @@ def _actual_outcome(result: Any, report: Any) -> str:
     )
 
 
-def build_excel_report(outcome: "DemoOutcome", *, run_label: str | None = None) -> ExcelReport:
+def build_excel_report(outcome: DemoOutcome, *, run_label: str | None = None) -> ExcelReport:
     """Translate a run into the workbook model."""
     scenarios: list[ScenarioRow] = []
     failures: list[FailureRow] = []
@@ -138,7 +138,7 @@ def build_excel_report(outcome: "DemoOutcome", *, run_label: str | None = None) 
     )
 
 
-def _metrics(outcome: "DemoOutcome") -> list[MetricRow]:
+def _metrics(outcome: DemoOutcome) -> list[MetricRow]:
     """Every number the run measured, each with its denominator."""
     rows: list[MetricRow] = []
     total = len(outcome.results)
@@ -180,7 +180,7 @@ def _metrics(outcome: "DemoOutcome") -> list[MetricRow]:
     return rows
 
 
-def _notes(outcome: "DemoOutcome") -> list[str]:
+def _notes(outcome: DemoOutcome) -> list[str]:
     """The prose a reader needs to interpret the sheets, including every failure."""
     notes: list[str] = [
         "HOW TO READ THIS REPORT. The system under test is a sales-coaching product "
@@ -216,7 +216,7 @@ def _notes(outcome: "DemoOutcome") -> list[str]:
     return notes
 
 
-def build_junit_suite(outcome: "DemoOutcome") -> JUnitSuite:
+def build_junit_suite(outcome: DemoOutcome) -> JUnitSuite:
     """Translate a run into JUnit XML, the CI interchange format."""
     suite = JUnitSuite(
         name="roleplay",
@@ -252,7 +252,7 @@ def build_junit_suite(outcome: "DemoOutcome") -> JUnitSuite:
 
 
 def write_reports(
-    outcome: "DemoOutcome",
+    outcome: DemoOutcome,
     out_dir: str | Path = "reports",
     *,
     run_label: str | None = None,

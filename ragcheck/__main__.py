@@ -17,7 +17,6 @@ from __future__ import annotations
 import sys
 
 from lab.judges.registry import CalibrationGateError
-
 from ragcheck.calibration import load_claim_labels
 from ragcheck.report import evaluate
 

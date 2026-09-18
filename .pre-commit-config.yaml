@@ -1,0 +1,40 @@
+# Pre-commit hooks: the cheap checks, run before the commit rather than after it.
+#
+#     pip install pre-commit && pre-commit install
+#
+# Everything here finishes in under a second and none of it needs a key. The
+# expensive checks stay in `make gate`, because a hook slow enough to be annoying
+# is a hook people disable.
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        # The scenario corpus is YAML and a malformed row should never reach a commit.
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=2048]
+      - id: detect-private-key
+      - id: debug-statements
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      # The one project-specific hook. A scenario that does not load is a broken
+      # corpus, and finding that out in CI rather than at commit time wastes a
+      # round trip for something that takes a fifth of a second.
+      - id: corpus-loads
+        name: the scenario corpus loads and validates
+        entry: python -m roleplay.corpus --coverage
+        language: system
+        files: ^scenarios/|^roleplay/corpus\.py$
+        pass_filenames: false

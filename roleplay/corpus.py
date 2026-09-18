@@ -97,9 +97,10 @@ import json
 import re
 import sys
 from collections import Counter
+from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterator, Literal, Sequence
+from typing import Any, Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
@@ -113,7 +114,6 @@ from lab.checks import (
     PhraseContract,
     ToolContract,
 )
-
 from roleplay.contracts import (
     DEFAULT_SCORE_CLAIMS,
     DEFAULT_TOPIC_CLAIMS,
@@ -254,7 +254,7 @@ class ArgSpec(_Block):
     label: str | None = None
 
     @model_validator(mode="after")
-    def _validate(self) -> "ArgSpec":
+    def _validate(self) -> ArgSpec:
         _check_tool(self.tool, where="tools.args.tool")
         if "|" in self.tool:
             raise ValueError(
@@ -294,7 +294,7 @@ class OrderingSpec(_Block):
     strict: bool = False
 
     @model_validator(mode="after")
-    def _validate(self) -> "OrderingSpec":
+    def _validate(self) -> OrderingSpec:
         _check_tool(self.first, where="tools.ordering.first")
         _check_tool(self.then, where="tools.ordering.then")
         return self
@@ -314,7 +314,7 @@ class ToolSpec(_Block):
     args: tuple[ArgSpec, ...] = ()
 
     @model_validator(mode="after")
-    def _validate(self) -> "ToolSpec":
+    def _validate(self) -> ToolSpec:
         for name in self.expected:
             _check_tool(name, where="tools.expected")
         for name in self.forbidden:
@@ -395,7 +395,7 @@ class TraineeSpec(_Block):
     turns: tuple[str, ...] = ()
 
     @model_validator(mode="after")
-    def _validate(self) -> "TraineeSpec":
+    def _validate(self) -> TraineeSpec:
         if not self.turns:
             raise ValueError(
                 "trainee.turns is empty; an empty transcript scores as absence on every "
@@ -452,7 +452,7 @@ class ConsistencySpec(_Block):
     expectation: str = ""
 
     @model_validator(mode="after")
-    def _validate(self) -> "ConsistencySpec":
+    def _validate(self) -> ConsistencySpec:
         declares = self.expected_spread is not None or self.expected_flips is not None
         if declares and len(self.expectation.strip()) < 20:
             raise ValueError(
@@ -477,7 +477,7 @@ class ExpectedFailure(_Block):
     expectation: str = Field(min_length=20)
 
     @model_validator(mode="after")
-    def _validate(self) -> "ExpectedFailure":
+    def _validate(self) -> ExpectedFailure:
         unknown = [c for c in self.contracts if c not in CONTRACT_NAMES]
         if unknown:
             raise ValueError(
@@ -519,7 +519,7 @@ class Scenario(_Block):
     source: str | None = None
 
     @model_validator(mode="after")
-    def _validate(self) -> "Scenario":
+    def _validate(self) -> Scenario:
         if not _ID_RE.match(self.id):
             raise ValueError(f"id {self.id!r} must be lower-case words joined by hyphens")
         unknown = [t for t in self.tags if t not in TAG_VOCABULARY]

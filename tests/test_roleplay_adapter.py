@@ -23,6 +23,7 @@ from pathlib import Path
 
 import pytest
 
+from roleplay import live as live_module
 from roleplay import spoken
 from roleplay.live import (
     CASSETTE_ROOT,
@@ -46,10 +47,8 @@ from roleplay.live import (
     run_live_session,
     trainee_prompt,
 )
-from roleplay import live as live_module
 from roleplay.runtime import RoleplayCoach, ScriptedVoice, Trainee
 from roleplay.scorer import RubricScorer
-
 from tests.roleplay_fixtures import corpus, profiles  # noqa: F401
 
 ECHO = "examples.adapters.echo_trainee:build_trainee"

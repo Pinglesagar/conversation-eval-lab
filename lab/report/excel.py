@@ -40,10 +40,11 @@ lands here as text.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 __all__ = ["ScenarioRow", "FailureRow", "MetricRow", "ExcelReport", "write_excel"]
 
@@ -206,7 +207,7 @@ def write_excel(report: ExcelReport, path: str | Path) -> Path:
     ws["A2"] = report.subject
     ws["A2"].font = Font(name=_FONT, size=11, color="55534D")
     rows = [
-        ("Generated", datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")),
+        ("Generated", datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")),
         ("Run label", report.run_label or "-"),
         ("Verdict", report.headline()),
         ("", ""),

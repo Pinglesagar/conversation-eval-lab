@@ -58,6 +58,19 @@ if TYPE_CHECKING:  # pragma: no cover - for type checkers only, never at runtime
         recover_turn_wall_times,
         run_calibration,
     )
+    from lab.voice.interaction import (  # noqa: F401
+        PRODUCTION_AWAY_TIMEOUT_S,
+        BargeIn,
+        BargeInReport,
+        SilenceAttribution,
+        SpeechActivity,
+        attribute_silence,
+        barge_in,
+        barge_in_report,
+        emit_barge_in,
+        insert_pause,
+        speech_activity,
+    )
     from lab.voice.metrics import (  # noqa: F401
         Distribution,
         Quantile,
@@ -75,19 +88,6 @@ if TYPE_CHECKING:  # pragma: no cover - for type checkers only, never at runtime
         resample_speed,
         shift_pitch,
         telephone_band,
-    )
-    from lab.voice.interaction import (  # noqa: F401
-        PRODUCTION_AWAY_TIMEOUT_S,
-        BargeIn,
-        BargeInReport,
-        SilenceAttribution,
-        SpeechActivity,
-        attribute_silence,
-        barge_in,
-        barge_in_report,
-        emit_barge_in,
-        insert_pause,
-        speech_activity,
     )
     from lab.voice.silence import (  # noqa: F401
         SilenceGap,

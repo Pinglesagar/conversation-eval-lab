@@ -61,8 +61,8 @@ would let a constructed figure be read as a measured one.
 from __future__ import annotations
 
 import statistics
+from collections.abc import Iterable, Iterator, Sequence
 from math import ceil
-from typing import Iterable, Iterator, Sequence
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -185,7 +185,7 @@ class Distribution(BaseModel):
         *,
         description: str = "",
         quantiles: Sequence[float] = DEFAULT_QUANTILES,
-    ) -> "Distribution":
+    ) -> Distribution:
         """Build a distribution, refusing any quantile the sample count cannot support."""
         values = [float(s) for s in samples]
         computed: list[Quantile] = []

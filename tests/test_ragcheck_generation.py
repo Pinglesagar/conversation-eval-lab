@@ -26,7 +26,6 @@ import json
 import pytest
 
 from lab.judges.judge import JudgeParseError, MissingRecordingError, ScriptedCompletion
-
 from ragcheck.corpus import Retrieval, load_corpus
 from ragcheck.dataset import RagCase, load_cases
 from ragcheck.generation import (

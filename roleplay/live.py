@@ -103,9 +103,10 @@ import os
 import re
 import sys
 import time
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, ClassVar, Literal, Mapping, Sequence
+from typing import Any, ClassVar, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -115,7 +116,6 @@ from lab.simulator.persona import (
     Goal,
     Persona,
 )
-
 from roleplay.persona import (
     CustomerPersona,
     CustomerProfile,
@@ -585,7 +585,7 @@ class SessionKey(BaseModel):
         customer_model: str,
         temperature: float,
         turn_budget: int,
-    ) -> "SessionKey":
+    ) -> SessionKey:
         """Derive the key from the objects that actually determine the recording."""
         prompts = "\n\n=====\n\n".join(
             [
@@ -626,7 +626,7 @@ class SessionKey(BaseModel):
         """`<root>/<scenario_id>/<filename>` — one directory per scenario."""
         return Path(root) / self.scenario_id / self.filename()
 
-    def differences(self, other: "SessionKey") -> list[str]:
+    def differences(self, other: SessionKey) -> list[str]:
         out: list[str] = []
         for name in type(self).model_fields:
             mine, theirs = getattr(self, name), getattr(other, name)
@@ -669,7 +669,7 @@ class SessionCassette:
     dirty: bool = False
 
     @classmethod
-    def load(cls, path: str | Path, *, identity: SessionKey | None = None) -> "SessionCassette":
+    def load(cls, path: str | Path, *, identity: SessionKey | None = None) -> SessionCassette:
         source = Path(path)
         if not source.exists():
             return cls(path=source, identity=identity)

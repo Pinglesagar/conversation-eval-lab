@@ -404,7 +404,7 @@ class DeepgramSTT:
         return
 
     @classmethod
-    def for_language(cls, language: str, **kwargs: Any) -> "DeepgramSTT":
+    def for_language(cls, language: str, **kwargs: Any) -> DeepgramSTT:
         """Build an engine for `language`, choosing `multi` when it can switch.
 
         The factory exists so the choice is made in one place and is explainable:

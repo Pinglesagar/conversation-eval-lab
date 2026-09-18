@@ -56,7 +56,8 @@ report so the strength of the claim is always visible next to the claim.
 
 from __future__ import annotations
 
-from typing import Callable, Literal, Sequence
+from collections.abc import Callable, Sequence
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -181,7 +182,7 @@ class PassKPolicy(BaseModel):
     )
 
     @model_validator(mode="after")
-    def _ordered(self) -> "PassKPolicy":
+    def _ordered(self) -> PassKPolicy:
         if self.stable_fail_at_or_below >= self.stable_pass_at_or_above:
             raise ValueError(
                 "stable_fail_at_or_below must be below stable_pass_at_or_above, or "
@@ -235,7 +236,7 @@ class StabilityVerdict(BaseModel):
     )
 
     @model_validator(mode="after")
-    def _consistent(self) -> "StabilityVerdict":
+    def _consistent(self) -> StabilityVerdict:
         if self.passes > self.total_runs:
             raise ValueError(
                 f"{self.scenario_id}: {self.passes} passes out of {self.total_runs} runs"

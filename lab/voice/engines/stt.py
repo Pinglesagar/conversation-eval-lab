@@ -69,8 +69,9 @@ import shutil
 import subprocess
 import tempfile
 import time
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from lab.voice.engines.audiofile import write_audio
 from lab.voice.engines.base import (
@@ -393,7 +394,7 @@ class TranscriptCassette:
         self.entries: dict[str, dict[str, Any]] = dict(self.data.get("entries", {}))
 
     @classmethod
-    def load(cls, path: str | Path) -> "TranscriptCassette":
+    def load(cls, path: str | Path) -> TranscriptCassette:
         source = Path(path)
         if source.is_dir():
             source = source / cls.FILENAME
@@ -406,7 +407,7 @@ class TranscriptCassette:
         return cls(path=source, data=json.loads(source.read_text(encoding="utf-8")))
 
     @classmethod
-    def from_entries(cls, entries: Mapping[str, Mapping[str, Any]]) -> "TranscriptCassette":
+    def from_entries(cls, entries: Mapping[str, Mapping[str, Any]]) -> TranscriptCassette:
         """Build in memory. Used by tests, and by the generator before it writes."""
         return cls(path=None, data={"entries": {k: dict(v) for k, v in entries.items()}})
 

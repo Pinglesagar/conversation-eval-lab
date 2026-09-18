@@ -40,12 +40,11 @@ this whole answer faithful" is an argument.
 
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from lab.clock import FakeClock
 from lab.trace.build import TraceBuilder
 from lab.trace.schema import EventKind, Trace
-
 from ragcheck.corpus import Chunk, Retrieval
 
 __all__ = [

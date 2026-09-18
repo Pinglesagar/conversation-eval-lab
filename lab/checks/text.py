@@ -59,7 +59,8 @@ to the haystack at match time, never to the text a report shows a human.
 from __future__ import annotations
 
 import re
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 __all__ = [
     "NUMBER_WORDS",

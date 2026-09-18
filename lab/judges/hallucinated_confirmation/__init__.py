@@ -178,14 +178,14 @@ from __future__ import annotations
 
 import argparse
 import sys
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 from lab.judges.calibration import (
     CalibrationReport,
-    Rate,
     CalibrationThresholds,
     LabelledTrace,
+    Rate,
     ReplicateBands,
     SelfConsistency,
     calibrate,
@@ -531,7 +531,7 @@ def _how_to_read(report: CalibrationReport) -> str:
     )
 
 
-    def lower(rate: "Rate") -> str:
+    def lower(rate: Rate) -> str:
         interval = rate.interval()
         return "undefined" if interval is None else f"{interval[0]:.3f}"
 

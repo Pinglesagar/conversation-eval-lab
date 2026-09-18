@@ -30,8 +30,8 @@ for measuring the ranking rather than the machinery that produced it.
 from __future__ import annotations
 
 import math
+from collections.abc import Iterable, Iterator, Sequence
 from pathlib import Path
-from typing import Iterable, Iterator, Sequence
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field

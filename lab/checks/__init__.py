@@ -91,9 +91,9 @@ from __future__ import annotations
 from lab.checks.contracts import (
     CONFIRMATION_FRAMES,
     DEFAULT_ASK_PATTERNS,
+    DEFAULT_ATTRIBUTIONS,
     DEFAULT_HEDGES,
     DEFAULT_PROMISES,
-    DEFAULT_ATTRIBUTIONS,
     DEFAULT_REFUSALS,
     ArgPredicate,
     Contract,

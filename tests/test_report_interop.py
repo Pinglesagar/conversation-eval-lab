@@ -21,7 +21,7 @@ Neither package is imported anywhere here or in the module under test.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 
 import pytest
 
@@ -86,7 +86,7 @@ def test_langfuse_export_round_trips_exactly() -> None:
 
 def test_round_trip_survives_a_wall_clock_origin() -> None:
     original = _full_trace()
-    start = datetime(2026, 8, 22, 9, 30, tzinfo=timezone.utc)
+    start = datetime(2026, 8, 22, 9, 30, tzinfo=UTC)
     # The ISO timestamps change; the recovered trace does not, because
     # reconstruction reads the embedded events rather than the derived times.
     assert from_langfuse_batch(to_langfuse_batch(original, start_time=start)) == original
@@ -134,7 +134,7 @@ def test_a_failed_tool_result_is_marked_as_an_error() -> None:
 
 
 def test_timestamps_are_absolute_and_derived_from_the_supplied_origin() -> None:
-    start = datetime(2026, 8, 22, 9, 30, tzinfo=timezone.utc)
+    start = datetime(2026, 8, 22, 9, 30, tzinfo=UTC)
     batch = to_langfuse_batch(_full_trace(), start_time=start)["batch"]
     assert batch[0]["timestamp"] == "2026-08-22T09:30:00Z"
     default_batch = to_langfuse_batch(_full_trace())["batch"]

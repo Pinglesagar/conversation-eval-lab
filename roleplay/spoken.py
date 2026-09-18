@@ -92,9 +92,10 @@ import json
 import os
 import sys
 import time
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
@@ -123,17 +124,17 @@ from lab.voice.engines.elevenlabs_tts import (
 from lab.voice.engines.stt import LIVE_STT_ENV_VAR
 from lab.voice.engines.tts import LIVE_TTS_ENV_VAR
 from lab.voice.wer import UtteranceWER, normalise, wer
-
 from roleplay.live import (
     CASSETTE_ROOT,
+    CUSTOMER_MAX_TOKENS,
     CUSTOMER_MODEL_ENV_VAR,
     KEY_ENV_VARS,
     LIVE_CUSTOMER_ENV_VAR,
     LIVE_TRAINEE_ENV_VAR,
     MODEL_LABEL_ENV_VAR,
     TRAINEE_FACTORY_ENV_VAR,
+    TRAINEE_MAX_TOKENS,
     TRAINEE_MODEL_ENV_VAR,
-    CUSTOMER_MAX_TOKENS,
     LiveCustomerVoice,
     LiveRow,
     LiveTrainee,
@@ -144,7 +145,6 @@ from roleplay.live import (
     TraineeContext,
     TraineeFactory,
     TraineeFactoryError,
-    TRAINEE_MAX_TOKENS,
     build_trainee,
     customer_prompt,
     load_customer_profiles,
@@ -154,13 +154,17 @@ from roleplay.live import (
 )
 from roleplay.livescorer import (
     LIVE_ENV_VAR as LIVE_SCORER_ENV_VAR,
+)
+from roleplay.livescorer import (
     MODEL_ENV_VAR as SCORER_MODEL_ENV_VAR,
+)
+from roleplay.livescorer import (
     LiveRubricScorer,
     live_completion,
     recording_completion,
     replay_completion,
 )
-from roleplay.persona import CustomerProfile, CustomerPersona, PersonaTurn
+from roleplay.persona import CustomerPersona, CustomerProfile, PersonaTurn
 from roleplay.register import required_codes
 from roleplay.runtime import RoleplayCoach, RoleplayConversation, Trainee
 from roleplay.scorer import RubricScorer, ScoreCard, session_view

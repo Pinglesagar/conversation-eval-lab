@@ -14,12 +14,11 @@ import pytest
 
 from lab.clock import FakeClock
 from lab.trace.schema import EventKind
-
 from roleplay.persona import CustomerPersona, classify_trainee_turn, load_profiles
 from roleplay.register import (
-    DisclosureRegister,
     JURISDICTIONS,
     REGISTERED_PHRASINGS,
+    DisclosureRegister,
     normalise,
     required_codes,
 )
@@ -32,9 +31,7 @@ from roleplay.scorer import (
     SessionView,
     session_view,
 )
-
 from tests.roleplay_fixtures import coach, corpus, profiles, script  # noqa: F401
-
 
 # --------------------------------------------------------------------------- #
 # The disclosure register

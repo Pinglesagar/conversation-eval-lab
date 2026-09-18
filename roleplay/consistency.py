@@ -52,8 +52,9 @@ report next to the number it produced.
 from __future__ import annotations
 
 import math
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import Callable, Literal, Sequence
+from typing import Literal
 
 from lab.simulator.passk import (
     PassKPolicy,
@@ -62,7 +63,6 @@ from lab.simulator.passk import (
     verdict_from_outcomes,
 )
 from lab.trace.schema import Trace
-
 from roleplay.persona import CustomerProfile
 from roleplay.runtime import RoleplayCoach, RoleplayResult
 from roleplay.scorer import PASS_TOTAL, RubricScorer
@@ -212,10 +212,10 @@ class ConsistencyReport:
     def render(self) -> str:
         lines = [
             f"score consistency -- {self.scenario_id}",
-            f"  warm (one long-lived scorer, the production shape)",
+            "  warm (one long-lived scorer, the production shape)",
             f"    {self.warm_spread.describe()}",
             f"    {self.warm_stability.describe()}",
-            f"  cold (a fresh scorer per repeat, the control)",
+            "  cold (a fresh scorer per repeat, the control)",
             f"    {self.cold_spread.describe()}",
             f"    {self.cold_stability.describe()}",
         ]

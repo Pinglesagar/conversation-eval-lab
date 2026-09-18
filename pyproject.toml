@@ -156,6 +156,46 @@ roleplay = ["*.md"]
 # went unseen.
 ragcheck = ["prompts/*.md", "fixtures/*.yaml"]
 
+[tool.ruff]
+# Line length matches .editorconfig. Not 79: this repository's docstrings carry
+# its reasoning and 79 columns turns every explanation into a ladder.
+line-length = 100
+target-version = "py312"
+exclude = [".venv", "build", "dist"]
+
+[tool.ruff.lint]
+# E9/F63/F7/F82 is the CI gate — syntax errors and undefined names only, nothing
+# stylistic, because a lint that fails on taste teaches people to skip the lint.
+# The wider set below runs in pre-commit, where a person can see it and fix it.
+select = ["E4", "E7", "E9", "F", "I", "UP", "B", "SIM"]
+ignore = [
+    # A long line inside a docstring is prose, and rewrapping prose to satisfy a
+    # linter makes it worse.
+    "E501",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests may shadow builtins and use assert freely; that is what they are for.
+"tests/*" = ["B011"]
+
+[tool.mypy]
+python_version = "3.12"
+# Not `strict`. This repository is read more than it is extended, and the value
+# of type checking here is catching a wrong attribute name, not proving totality.
+# `strict` on a codebase with this much dynamic YAML loading produces a hundred
+# ignores, and a hundred ignores is the same as no type checking with extra steps.
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+no_implicit_optional = true
+check_untyped_defs = true
+exclude = ['build/', '\.venv/']
+
+[[tool.mypy.overrides]]
+# These have no stubs and are used at the edges only.
+module = ["litellm.*", "soundfile.*", "jiwer.*", "openpyxl.*"]
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 minversion = "8.0"
 testpaths = ["tests"]

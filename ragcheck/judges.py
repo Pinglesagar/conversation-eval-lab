@@ -43,8 +43,9 @@ field a prompt chooses is also the guard it gets.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from lab.judges.judge import (
     Completion,
@@ -54,7 +55,6 @@ from lab.judges.judge import (
     model_from_env,
 )
 from lab.trace.schema import Trace
-
 from ragcheck.corpus import Retrieval
 from ragcheck.traces import answer_of, question_of, retrieval_of
 

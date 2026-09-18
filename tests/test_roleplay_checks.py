@@ -13,7 +13,6 @@ import yaml
 
 from lab.trace.build import TraceBuilder
 from lab.trace.schema import Trace
-
 from roleplay.contracts import (
     DEFAULT_SCORE_CLAIMS,
     DEFAULT_TOPIC_CLAIMS,
@@ -31,11 +30,9 @@ from roleplay.corpus import (
     load_scenario,
     validate_corpus,
 )
-from roleplay.runtime import RoleplayCoach, TOOL_NAMES
+from roleplay.runtime import TOOL_NAMES, RoleplayCoach
 from roleplay.scorer import CUSTOMER_AGENT, SCORER_AGENT, RubricScorer
-
 from tests.roleplay_fixtures import ALIASES, coach, corpus, profiles, script  # noqa: F401
-
 
 # --------------------------------------------------------------------------- #
 # Hand-built traces, so a contract can be tested without the product

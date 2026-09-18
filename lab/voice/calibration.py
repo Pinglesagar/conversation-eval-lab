@@ -116,8 +116,9 @@ import math
 import random
 import statistics
 import sys
+from collections.abc import Callable, Sequence
 from pathlib import Path
-from typing import Callable, Literal, Sequence
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 

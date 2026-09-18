@@ -73,14 +73,14 @@ actually happened rather than the turns that were planned.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any, Protocol, Sequence, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 from lab.clock import Clock, FakeClock
 from lab.trace.build import TraceBuilder
 from lab.trace.schema import Trace
-
 from roleplay.persona import (
     CustomerPersona,
     CustomerProfile,
@@ -547,7 +547,7 @@ class RoleplayCoach:
         customer_voice: CustomerVoice | None = None,
         max_turns: int = DEFAULT_MAX_TURNS,
         adapter: str | None = None,
-    ) -> "_StageOne":
+    ) -> _StageOne:
         """The roleplay itself. Returns the live builder so stage two can append."""
         if trainee is not None and trainee_turns is not None:
             raise ValueError(

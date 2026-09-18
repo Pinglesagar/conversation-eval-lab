@@ -31,7 +31,7 @@ from __future__ import annotations
 
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from pathlib import Path
 from xml.dom import minidom
 
@@ -101,7 +101,7 @@ class JUnitSuite:
                 "errors": str(self.errors),
                 "skipped": str(self.skipped),
                 "time": f"{self.time_s:.3f}",
-                "timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                "timestamp": datetime.now(UTC).isoformat(timespec="seconds"),
             },
         )
         if self.properties:

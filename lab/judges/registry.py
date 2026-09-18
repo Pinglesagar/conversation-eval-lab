@@ -73,7 +73,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Iterator
+from collections.abc import Iterator
 
 from pydantic import BaseModel, ConfigDict
 

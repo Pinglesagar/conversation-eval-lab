@@ -13,7 +13,7 @@ its own history can ignore the argument and read only its last entry.
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 Agent = Callable[[list[tuple[str, str]]], "str | None"]
 

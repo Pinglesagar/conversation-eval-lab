@@ -31,7 +31,6 @@ from lab.stats import (
     z_for_confidence,
 )
 
-
 # --------------------------------------------------------------------------- #
 # The quantile
 # --------------------------------------------------------------------------- #
@@ -39,7 +38,7 @@ from lab.stats import (
 
 def test_the_95_percent_quantile_is_the_familiar_constant() -> None:
     """1.959963985, the number every statistics table prints as 1.96."""
-    assert Z_95 == pytest.approx(1.959963985, abs=1e-9)
+    assert pytest.approx(1.959963985, abs=1e-9) == Z_95
     assert z_for_confidence(0.95) == Z_95
 
 

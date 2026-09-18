@@ -43,12 +43,12 @@ changes except how much the numbers are worth.
 from __future__ import annotations
 
 import json
-from typing import Iterable, Literal, Sequence
+from collections.abc import Iterable, Sequence
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from lab.judges.judge import ScriptedCompletion
-
 from ragcheck.claims import split_claims, split_sentences
 from ragcheck.corpus import Corpus, Retrieval
 from ragcheck.dataset import RagCase, RagDataset

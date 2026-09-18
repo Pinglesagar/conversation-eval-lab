@@ -53,12 +53,11 @@ labelled, with their denominators.
 from __future__ import annotations
 
 import math
-from typing import Iterable, Sequence
+from collections.abc import Iterable, Sequence
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from lab.judges.calibration import Rate
-
 from ragcheck.corpus import Corpus, Retrieval, Retriever
 from ragcheck.dataset import RagCase, RagDataset
 

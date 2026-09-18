@@ -63,9 +63,10 @@ from __future__ import annotations
 
 import json
 import os
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Literal, Mapping, Sequence
+from typing import Any, Literal
 
 from lab.judges.judge import (
     Completion,
@@ -81,7 +82,6 @@ from lab.judges.judge import (
     render_transcript,
 )
 from lab.trace.schema import Trace
-
 from roleplay.scorer import (
     CRITERIA,
     MAX_PER_CRITERION,

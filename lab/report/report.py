@@ -62,8 +62,9 @@ copy of the Wilson formula in the file that does the printing.
 from __future__ import annotations
 
 import json
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Literal, Sequence
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -112,7 +113,7 @@ class Rate(BaseModel):
     denominator: int = Field(ge=0)
 
     @model_validator(mode="after")
-    def _within_bounds(self) -> "Rate":
+    def _within_bounds(self) -> Rate:
         if self.numerator > self.denominator:
             raise ValueError(
                 f"a rate cannot exceed its denominator: {self.numerator}/{self.denominator}"
@@ -182,7 +183,7 @@ class ContractStat(BaseModel):
     )
 
     @model_validator(mode="after")
-    def _within_bounds(self) -> "ContractStat":
+    def _within_bounds(self) -> ContractStat:
         if self.vacuous > self.runs:
             raise ValueError(
                 f"{self.name}: {self.vacuous} vacuous out of {self.runs} runs"
@@ -243,7 +244,7 @@ class JudgeCalibration(BaseModel):
     )
 
     @model_validator(mode="after")
-    def _within_bounds(self) -> "JudgeCalibration":
+    def _within_bounds(self) -> JudgeCalibration:
         if self.true_positives > self.labelled_positive:
             raise ValueError(
                 f"true_positives ({self.true_positives}) exceeds labelled_positive "
@@ -327,7 +328,7 @@ class JudgeSummary(BaseModel):
     )
 
     @model_validator(mode="after")
-    def _within_bounds(self) -> "JudgeSummary":
+    def _within_bounds(self) -> JudgeSummary:
         if self.flagged + self.abstained > self.judged:
             raise ValueError(
                 f"{self.name}: flagged ({self.flagged}) plus abstained "

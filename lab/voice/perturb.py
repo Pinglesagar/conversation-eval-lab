@@ -65,7 +65,8 @@ the `[audio]` extra is unaffected until it asks for a perturbation.
 
 from __future__ import annotations
 
-from typing import Any, Callable, Literal, Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
+from typing import Any, Literal
 
 import numpy as np
 from numpy.typing import NDArray

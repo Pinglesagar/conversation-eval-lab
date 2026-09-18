@@ -70,9 +70,10 @@ trace's `session_start` payload for attribution.
 from __future__ import annotations
 
 import re
-from functools import lru_cache
+from collections.abc import Iterable
+from functools import cache, lru_cache
 from pathlib import Path
-from typing import Any, Iterable, Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -115,7 +116,7 @@ RELUCTANT_BELOW: float = 0.5
 VOLUNTEERS_AT_OR_ABOVE: float = 0.8
 
 
-@lru_cache(maxsize=None)
+@cache
 def _compiled_asks(patterns: tuple[str, ...]) -> tuple[re.Pattern[str], ...]:
     """Compile-and-cache, since one caller asks the same question every turn."""
     return tuple(compile_patterns(patterns))
@@ -263,7 +264,7 @@ class Persona(BaseModel):
         return "\n".join(lines)
 
     @classmethod
-    def from_yaml(cls, path: str | Path) -> "Persona":
+    def from_yaml(cls, path: str | Path) -> Persona:
         """Load a persona from a YAML file containing its fields at the top level."""
         return cls.model_validate(load_yaml_mapping(path))
 
@@ -319,7 +320,7 @@ class Goal(BaseModel):
     )
 
     @model_validator(mode="after")
-    def _validate_keys(self) -> "Goal":
+    def _validate_keys(self) -> Goal:
         """Reject references to facts that do not exist.
 
         A typo in `on_request_only` would otherwise create a gated fact that can
@@ -486,7 +487,7 @@ class Goal(BaseModel):
         return "\n".join(lines)
 
     @classmethod
-    def from_yaml(cls, path: str | Path) -> "Goal":
+    def from_yaml(cls, path: str | Path) -> Goal:
         """Load a goal from a YAML file containing its fields at the top level."""
         return cls.model_validate(load_yaml_mapping(path))
 
@@ -552,7 +553,7 @@ class CallerProfile(BaseModel):
         }
 
     @classmethod
-    def from_yaml(cls, path: str | Path) -> "CallerProfile":
+    def from_yaml(cls, path: str | Path) -> CallerProfile:
         """Load a profile from YAML with `persona:` and `goal:` sections.
 
         A single file per caller, because a persona and a goal that live in

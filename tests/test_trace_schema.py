@@ -71,10 +71,10 @@ def test_v2_kinds_are_reserved_and_have_no_named_builder_method() -> None:
     hatch: the absence of a named `TraceBuilder` method is the standing evidence
     that no adapter discovers an interruption for itself.
     """
-    assert EventKind.V2_RESERVED == {
+    assert {
         "interruption_started",
         "interruption_acknowledged",
-    }
+    } == EventKind.V2_RESERVED
     assert EventKind.V2_RESERVED.isdisjoint(EventKind.KNOWN)
 
     builder = TraceBuilder(scenario_id="s", adapter="a", clock=FakeClock())

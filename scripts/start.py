@@ -22,8 +22,8 @@ import inspect
 import json
 import sys
 import time
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 ROOT = Path(__file__).resolve().parent.parent
 RULE = "-" * 78

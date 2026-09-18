@@ -43,13 +43,13 @@ what stops either of these from going green by going quiet.
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any
 
 from lab.checks.contracts import Contract
 from lab.checks.result import CheckResult, Evidence
 from lab.trace.schema import EventKind, Trace, TraceEvent
-
 from roleplay.register import normalise
 from roleplay.scorer import CUSTOMER_AGENT, SCORER_AGENT
 

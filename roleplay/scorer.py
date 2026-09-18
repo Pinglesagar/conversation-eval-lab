@@ -42,7 +42,6 @@ from dataclasses import dataclass, field, replace
 from typing import Any, Literal
 
 from lab.trace.schema import EventKind, Trace
-
 from roleplay.persona import classify_trainee_turn
 
 __all__ = [

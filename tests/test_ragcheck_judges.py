@@ -25,7 +25,6 @@ import pytest
 from lab.judges.calibration import CalibrationThresholds
 from lab.judges.judge import JudgeError, ScriptedCompletion
 from lab.judges.registry import JudgeBelowThresholdError, UncalibratedJudgeError, require_calibrated
-
 from ragcheck.calibration import (
     calibrate_claim_support,
     gate_claim_support,

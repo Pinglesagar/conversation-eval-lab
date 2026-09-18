@@ -36,8 +36,8 @@ re-run `calibrate_claim_support`, and the gate decides again on the new numbers.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field
@@ -51,7 +51,6 @@ from lab.judges.calibration import (
 )
 from lab.judges.judge import Judge
 from lab.judges.registry import require_calibrated
-
 from ragcheck.corpus import Corpus, Retrieval, load_corpus
 from ragcheck.judges import claim_support_judge
 from ragcheck.offline import STAND_IN_MODEL, LexicalOracle, Probe

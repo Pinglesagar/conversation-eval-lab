@@ -62,8 +62,8 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Sequence
 
 __all__ = [
     "DISCLOSURE_CODES",
@@ -444,7 +444,7 @@ class ShadowComparison:
 
 
 def compare_with_keyword_check(
-    register: "DisclosureRegister", utterances: Sequence[str]
+    register: DisclosureRegister, utterances: Sequence[str]
 ) -> ShadowComparison:
     """Score the same transcript both ways and return the disagreement.
 

@@ -33,8 +33,8 @@ credit" without buying a mishearing from a vendor and hoping it recurs.
 from __future__ import annotations
 
 import json
+from collections.abc import Callable, Sequence
 from pathlib import Path
-from typing import Callable, Sequence
 
 import numpy as np
 import pytest
@@ -47,7 +47,6 @@ from lab.voice.engines.base import (
     Transcription,
     audio_digest,
 )
-
 from roleplay import spoken
 from roleplay.live import (
     CUSTOMER_MAX_TOKENS,
@@ -64,7 +63,6 @@ from roleplay.live import (
 )
 from roleplay.runtime import RoleplayCoach, ScriptedTrainee
 from roleplay.scorer import CUSTOMER_AGENT, RubricScorer, session_view
-
 
 # --------------------------------------------------------------------------- #
 # The channel doubles

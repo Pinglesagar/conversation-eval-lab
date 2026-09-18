@@ -53,9 +53,10 @@ from __future__ import annotations
 
 import re
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
-from functools import lru_cache
-from typing import Any, Iterable, Mapping, Sequence
+from functools import cache, lru_cache
+from typing import Any
 
 from lab.checks.result import CheckResult, Evidence
 from lab.checks.text import (
@@ -97,7 +98,7 @@ __all__ = [
 _MISSING = object()
 
 
-@lru_cache(maxsize=None)
+@cache
 def _compiled(patterns: tuple[str, ...], case_sensitive: bool = False) -> tuple[re.Pattern[str], ...]:
     """Compile-and-cache, so a contract reused across a thousand traces compiles once."""
     return tuple(compile_patterns(patterns, case_sensitive=case_sensitive))

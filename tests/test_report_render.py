@@ -495,4 +495,4 @@ def test_the_gate_threshold_this_module_quotes_is_the_one_that_is_enforced() -> 
     from lab.judges.calibration import CalibrationThresholds
     from lab.report.report import CALIBRATION_GATE_MIN_TPR
 
-    assert CALIBRATION_GATE_MIN_TPR == CalibrationThresholds().min_tpr
+    assert CalibrationThresholds().min_tpr == CALIBRATION_GATE_MIN_TPR

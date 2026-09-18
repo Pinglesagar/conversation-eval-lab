@@ -32,7 +32,6 @@ from lab.judges.calibration import (
 from lab.judges.hallucinated_confirmation import dataset
 from lab.judges.judge import Recording, ReplayJudge, StaleRecordingError
 
-
 # --------------------------------------------------------------------------- #
 # The label set
 # --------------------------------------------------------------------------- #

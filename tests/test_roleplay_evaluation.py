@@ -21,7 +21,6 @@ import pytest
 from lab.judges.calibration import CalibrationThresholds
 from lab.judges.registry import JudgeBelowThresholdError, JudgeRegistry
 from lab.simulator.passk import PassKPolicy, summarise_stability
-
 from roleplay.calibration import (
     JUDGE_NAME,
     PROMPT_VERSION,
@@ -37,9 +36,7 @@ from roleplay.consistency import ConsistencyReport, measure_consistency, spread_
 from roleplay.corpus import Corpus
 from roleplay.demo import run_demo
 from roleplay.scorer import PASS_TOTAL
-
 from tests.roleplay_fixtures import ALIASES, corpus, script  # noqa: F401
-
 
 # --------------------------------------------------------------------------- #
 # ScoreSpread arithmetic

@@ -31,13 +31,12 @@ from __future__ import annotations
 
 import argparse
 import sys
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Sequence
 
 from lab.checks.engine import CheckReport, aggregate
 from lab.judges.calibration import CalibrationThresholds
-
 from roleplay.calibration import calibrate_scorer, gate_report, render_disagreements
 from roleplay.consistency import ConsistencyReport, measure_consistency
 from roleplay.corpus import Corpus, Scenario, validate_corpus

@@ -56,8 +56,9 @@ is one-way by construction, and documented as such.
 from __future__ import annotations
 
 import math
-from datetime import datetime, timedelta, timezone
-from typing import Any, Iterable, Sequence
+from collections.abc import Iterable, Sequence
+from datetime import UTC, datetime, timedelta, timezone
+from typing import Any
 
 from lab.trace.schema import EventKind, Trace, TraceEvent
 
@@ -85,7 +86,7 @@ PROMPTFOO_API_TARGET: str = "promptfoo config `tests[]` with `assert[]` entries"
 #: epoch is the choice that is obviously a placeholder rather than a plausible
 #: lie, and it keeps the export deterministic. Pass the real session start when
 #: you have it — an observability tool sorts by it.
-EPOCH: datetime = datetime(1970, 1, 1, tzinfo=timezone.utc)
+EPOCH: datetime = datetime(1970, 1, 1, tzinfo=UTC)
 
 _LAB_KEY = "lab"
 

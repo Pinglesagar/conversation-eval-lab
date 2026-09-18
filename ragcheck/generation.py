@@ -54,13 +54,12 @@ the aggregate.
 
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from lab.judges.calibration import Rate
 from lab.judges.judge import Judge, Verdict
-
 from ragcheck.claims import split_claims
 from ragcheck.corpus import Retrieval
 from ragcheck.dataset import RagCase

@@ -126,7 +126,8 @@ conventions live in one place instead of being copy-pasted across adapters.
 
 from __future__ import annotations
 
-from typing import Any, Iterator, Literal
+from collections.abc import Iterator
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 

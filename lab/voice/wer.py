@@ -63,7 +63,8 @@ from __future__ import annotations
 import re
 import statistics
 import unicodedata
-from typing import Iterable, Literal, Sequence
+from collections.abc import Iterable, Sequence
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 

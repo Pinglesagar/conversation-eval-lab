@@ -146,8 +146,9 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import Iterable, Literal, Sequence
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 
@@ -581,7 +582,7 @@ class CalibrationReport(BaseModel):
     disagreements: list[Disagreement] = Field(default_factory=list)
     notes: list[str] = Field(default_factory=list)
 
-    bands: "ReplicateBands | None" = Field(
+    bands: ReplicateBands | None = Field(
         default=None,
         description=(
             "The same rates recomputed from every recorded replicate, plus the "
@@ -802,7 +803,7 @@ class CalibrationReport(BaseModel):
             (self.true_negative_rate, thr.min_tnr, "TNR"),
         )
         lines = [
-            f"## The interval, and which number the gate is standing on",
+            "## The interval, and which number the gate is standing on",
             "",
             f"Gate: {thr.describe()}.",
             "",
@@ -2147,11 +2148,11 @@ class ReplicateBands(BaseModel):
             lines.append("")
 
         lines += [
-            f"The band is not a confidence interval and is never added to one. The "
-            f"Wilson interval beside each rate is sampling error over items, assuming "
-            f"the judge's answer per item is fixed; the band is the instrument moving "
-            f"on a fixed set of items. Both are printed, neither is combined, because "
-            f"no measurement here supports a combined distribution.",
+            "The band is not a confidence interval and is never added to one. The "
+            "Wilson interval beside each rate is sampling error over items, assuming "
+            "the judge's answer per item is fixed; the band is the instrument moving "
+            "on a fixed set of items. Both are printed, neither is combined, because "
+            "no measurement here supports a combined distribution.",
             "",
             f"And the band is itself a noisy estimate: {self.runs} replicates "
             "distinguish \"unanimous\" from \"not unanimous\" and very little else. A "

@@ -492,7 +492,7 @@ class ClipManifest:
         self.clips: dict[str, dict[str, Any]] = dict(data.get("clips", {}))
 
     @classmethod
-    def load(cls, directory: str | Path) -> "ClipManifest":
+    def load(cls, directory: str | Path) -> ClipManifest:
         root = Path(directory)
         path = root / cls.FILENAME
         if not path.is_file():

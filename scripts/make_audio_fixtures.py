@@ -41,9 +41,10 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from collections.abc import Sequence
 from datetime import date
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 from lab.voice.engines.audiofile import read_audio, write_audio
 from lab.voice.engines.base import audio_digest, text_digest

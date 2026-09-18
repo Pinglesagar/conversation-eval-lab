@@ -96,16 +96,13 @@ import logging
 import os
 import re
 import time
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
-    Iterable,
     Literal,
-    Mapping,
     Protocol,
-    Sequence,
 )
 
 from pydantic import BaseModel, ConfigDict, Field

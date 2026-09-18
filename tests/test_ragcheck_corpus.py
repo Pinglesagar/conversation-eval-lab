@@ -33,7 +33,6 @@ from ragcheck.corpus import (
 from ragcheck.dataset import RagCase, RagDataset, load_cases
 from ragcheck.text import content_words, numbers, overlap, stem
 
-
 # --------------------------------------------------------------------------- #
 # the committed fixtures
 # --------------------------------------------------------------------------- #

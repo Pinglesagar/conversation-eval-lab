@@ -25,14 +25,13 @@ stand-in oracle. Pass real judges to grade for real; nothing else changes.
 
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from lab.judges.calibration import CalibrationReport, CalibrationThresholds, Rate
 from lab.judges.judge import Judge
 from lab.judges.registry import require_calibrated
-
 from ragcheck.calibration import (
     ClaimLabel,
     calibrate_claim_support,

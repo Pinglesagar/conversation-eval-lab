@@ -1,31 +1,29 @@
 # CI, with no secrets and no network calls at test time.
 #
 # The cardinal rule of this repository is that everything runs with zero API
-# keys, and this file is where that stops being a claim. There is no secrets
-# block, no provider credential, and no step that would work differently if one
-# existed: the live paths are opt-in behind environment variables that are never
-# set here, and every one of them has a recorded fixture that replays instead.
+# keys, and this file is where that stops being a claim. There is no `secrets`
+# block, no provider credential, and no step that would behave differently if one
+# existed: every live path is opt-in behind a `LAB_LIVE_*` variable that is never
+# set here, and each has a recorded fixture that replays instead.
 #
-# Four things are gated, in this order, because each one makes the next
-# believable:
+# Five things are gated, in this order, because each makes the next believable:
 #
-#   1. the suite installs and passes offline
-#   2. the corpus validates against its schema
-#   3. the timing and judge calibration gates pass — an uncalibrated judge and an
-#      unproven stopwatch are refused before any number they produce is read
-#   4. the case study runs, and its findings match the committed baseline
-#      byte for byte
+#   1. lint — syntax errors and undefined names, nothing stylistic
+#   2. the corpus validates against its schema, so a typo is a load error
+#   3. the judge calibration runs, and the artefacts it writes are unchanged
+#   4. the five scenarios, the recorded spoken call and the retrieval pack all
+#      reproduce from their recordings
+#   5. the offline suite
 #
-# Step 4 is the interesting one. `evallab run --ci` writes the report into
-# `fixtures/replay_run/` — the same directory that is committed — and then
-# `git diff --exit-code` fails if a single byte moved. That is a stronger claim
-# than "the tests pass": it says this run of this code reproduces the artefact a
-# reviewer read, on a different machine, to the byte.
+# Step 3 is the interesting one. The calibration writes into the same files that
+# are committed, and `git diff --exit-code` then fails if a single byte moved.
+# That is a stronger claim than "the tests pass": it says this run of this code
+# reproduces the artefact a reviewer read, on a different machine, to the byte.
 #
-# Note that the committed report says FAIL. The system under test has real
-# defects and the report is not allowed to hide them. The build is green because
-# the *regression gate* passed: nothing changed since the baseline. Both verdicts
-# are printed by the run step; see DESIGN.md for why they are separate.
+# Note that the run reports failures and the build is still green. The system
+# under test has three deliberately seeded defects and the report is not allowed
+# to hide them. The build is green because every failure was DECLARED by the
+# corpus in advance; an undeclared one fails the job. See DESIGN.md.
 
 name: CI
 
@@ -44,7 +42,7 @@ concurrency:
 
 jobs:
   offline:
-    name: offline suite, gates and case study
+    name: offline suite, gates and the five scenarios
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -59,48 +57,54 @@ jobs:
       - name: Install
         run: |
           python -m pip install --upgrade pip
-          # [charts] as well as [dev]: the Pareto chart in error_analysis/ is
-          # regenerated below, and a chart that only builds on the author's
-          # laptop is not a committed artefact.
-          pip install -e ".[dev,charts]"
+          pip install -e ".[dev,report]"
 
-      - name: Lint
+      - name: Lint — syntax errors and undefined names
         run: |
           pip install ruff
-          # Real errors only — syntax and undefined names. Deliberately not a
-          # style gate: this repository has not adopted a formatter, and a lint
-          # that argues about line length in files owned by other people gets
-          # switched off within a week and then guards nothing.
           ruff check --select E9,F63,F7,F82 --exclude .venv .
 
-      - name: Tests
-        run: pytest -q
-
       - name: Validate the scenario corpus
-        run: evallab validate --coverage
+        run: python -m roleplay.corpus --coverage --list
 
-      - name: Calibration gates (timing and judge)
-        run: evallab calibrate --ci
+      - name: Judge calibration
+        run: python -m lab.judges.hallucinated_confirmation
 
       - name: Calibration artefacts are unchanged
         run: git diff --exit-code -- fixtures lab/judges
 
-      - name: Run the case study against the recorded fixtures
-        run: evallab run --replay --ci --out fixtures/replay_run
+      - name: The five scenarios
+        run: python -m roleplay.demo
 
-      - name: The run reproduces the committed report byte for byte
-        run: git diff --exit-code -- fixtures/replay_run
+      - name: The recorded spoken call replays and re-grades
+        run: python -m roleplay.spoken
 
-      - name: Error analysis still agrees with the artefacts
-        run: python -m error_analysis.pareto --check --no-chart
-        # Counts and scenario ids are checked; the PNG is not regenerated here.
-        # A matplotlib raster is not byte-stable across platforms and font
-        # stacks, so diffing it would fail for reasons that say nothing about
-        # the analysis. The numbers behind the chart are asserted in
-        # tests/test_cli.py instead.
+      - name: The retrieval pack
+        run: python -m ragcheck
 
-      - name: Report
+      - name: Tests
+        run: pytest -q --junit-xml=reports/pytest-junit.xml
+
+      - name: Run reports — JUnit XML for CI, Excel for triage
         if: always()
+        run: python -m roleplay.demo --report reports --label "${{ github.sha }}"
+
+      # The standard thing to do with a JUnit file: publish it so failures show
+      # on the PR itself rather than only inside a log nobody opens.
+      - name: Publish the test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            reports/junit.xml
+            reports/pytest-junit.xml
+            reports/results.xlsx
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Confirm no key was needed
         run: |
-          echo '### Committed run report' >> "$GITHUB_STEP_SUMMARY"
-          head -n 8 fixtures/replay_run/run_report.md >> "$GITHUB_STEP_SUMMARY"
+          echo "Live paths are opt-in and none were enabled. Asserting that:"
+          ! env | grep -q '^LAB_LIVE_' || (echo "a LAB_LIVE_* variable is set in CI" && exit 1)
+          echo "  no LAB_LIVE_* variable is set — every tier above replayed."
