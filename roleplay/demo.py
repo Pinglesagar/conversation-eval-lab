@@ -274,6 +274,22 @@ def main(argv: Sequence[str] | None = None) -> int:
         default=None,
         help="also write the calibration report (text and markdown) into this directory",
     )
+    parser.add_argument(
+        "--report",
+        nargs="?",
+        const="reports",
+        default=None,
+        metavar="DIR",
+        help=(
+            "write the run reports into DIR (default: reports/) — junit.xml for CI, "
+            "results.xlsx for triage"
+        ),
+    )
+    parser.add_argument(
+        "--label",
+        default=None,
+        help="a label for this run, carried into the report header",
+    )
     args = parser.parse_args(argv)
 
     outcome = run_demo(k_override=args.k)
@@ -284,6 +300,25 @@ def main(argv: Sequence[str] | None = None) -> int:
         print()
         for kind, path in sorted(written.items()):
             print(f"wrote {kind}: {path}")
+
+    if args.report:
+        from roleplay.reporting import write_reports
+
+        print()
+        print(_RULE)
+        print("6. REPORTS")
+        print(_RULE)
+        paths = write_reports(outcome, args.report, run_label=args.label)
+        for kind, path in sorted(paths.items()):
+            print(f"  {kind:6s} {path}")
+        if "excel" not in paths:
+            print("  excel  SKIPPED — openpyxl is not installed "
+                  '(pip install -e ".[report]")')
+        print()
+        print("  junit.xml is the interchange format: Jenkins, GitLab CI, GitHub")
+        print("  Actions, Azure DevOps and TestRail all read it unchanged.")
+        print("  results.xlsx is the triage sheet: status, expected, actual, the")
+        print("  error, and the quote from the trace that proves it.")
 
     return 0 if outcome.ok else 1
 

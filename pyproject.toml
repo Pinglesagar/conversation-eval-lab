@@ -38,6 +38,13 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# openpyxl is the Excel writer and nothing else imports it, so it is optional:
+# `make report` degrades to junit.xml alone without it and says so, rather than
+# failing. JUnit XML needs no dependency at all — it is stdlib ElementTree,
+# deliberately, because the format every CI system reads should never be the
+# thing that cannot be produced.
+report = ["openpyxl>=3.1"]
+
 # numpy and jiwer are dev dependencies as well as [audio] ones, deliberately.
 # `lab.voice.perturb` is pure numpy and `lab.voice.wer` scores against jiwer, and
 # a test that skips itself on a clean checkout is not a test a reviewer can read a

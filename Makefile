@@ -21,7 +21,7 @@ PY_OK := $(shell $(PYTHON) -c 'import sys; print(1 if sys.version_info[:2] >= (3
 PY_HAVE := $(shell $(PYTHON) -c 'import sys; print("%d.%d" % sys.version_info[:2])' 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help start python-ok install gate test coverage demo replay reference live-replay live-score live-record audio-fixtures audio-check-plan-record-evidence audio-setup roleplay-demo roleplay-validate spoken-replay spoken-record ragcheck clean
+.PHONY: help start python-ok install gate test coverage demo replay reference live-replay live-score live-record audio-fixtures audio-check-plan-record-evidence audio-setup roleplay-demo report roleplay-validate spoken-replay spoken-record ragcheck clean
 
 # The on-ramp, and the first thing anybody should type. One finding, recomputed
 # on this machine from the committed spoken call, printed in a screen, plus what
@@ -155,6 +155,9 @@ ragcheck: python-ok  ## evidence: Retrieval + groundedness, scored and never ave
 
 roleplay-demo: python-ok  ## evidence: The advisory pack: contracts, consistency, calibration.
 	$(PYTHON) -m roleplay.demo
+
+report: python-ok  ## evidence: The run reports — junit.xml for CI, results.xlsx for triage.
+	$(PYTHON) -m roleplay.demo --report reports
 
 roleplay-validate: python-ok  ## evidence: Validate the roleplay corpus, with coverage.
 	$(PYTHON) -m roleplay.corpus --coverage --list
