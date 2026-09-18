@@ -52,8 +52,12 @@ trainee_phrases:
     - Shall we get the paperwork started
 
 notes: >-
-  The upper arm of the closing pair. pitch-close-without-a-summary runs the same
-  script with the recap sentence removed and scores nineteen, so the pair prices
-  the summary at exactly one mark and does it without an argument about tone. Pinned
-  totals on both rows are what make the difference legible; a suite that asserted
-  only the verdict would call the two rows identical.
+  THE CONTROL. Everything done right: three open questions before any product is
+  named, both objections answered on their own terms, all three required disclosures
+  in registered wording, and the ask for the business after a recap. Scores 20/20 and
+  every contract passes.
+
+  Without this row you cannot tell a suite that catches defects from a suite that
+  fails everything. It is the only row here whose job is to come back green, and the
+  pinned total (`score_session.total eq 20`) is what makes that a real assertion
+  rather than an absence of complaint.

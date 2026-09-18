@@ -23,7 +23,7 @@ trainee:
 expectation:
   human_verdict: pass
   reason: >-
-    Identical in every respect to pitch-cold-scorer-single-run-control, which a
+    Identical in every respect to a single cold run, which a
     reviewer passes at sixteen out of twenty. The same performance must receive the
     same grade; if it does not, the disagreement is with the product and not with
     the reviewer.

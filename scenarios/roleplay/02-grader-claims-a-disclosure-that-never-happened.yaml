@@ -55,7 +55,7 @@ expected_failure:
     card, two contradictions, both of them checkable without a model.
 
 notes: >-
-  The pair to compliance-missing-risk-disclosure. There the disclosure was absent;
+  THE HEADLINE. There the disclosure was absent;
   here it is inverted. Both score the same on the criterion, which is the finding:
   a keyword-scored compliance check cannot distinguish a warning from its negation,
   because the keyword is in both sentences.
